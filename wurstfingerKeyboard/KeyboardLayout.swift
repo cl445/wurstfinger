@@ -20,6 +20,7 @@ enum MessagEaseOutput {
     case toggleShift(on: Bool)
     case toggleSymbols
     case capitalizeWord(uppercased: Bool)
+    case compose(trigger: String, display: String?)
 }
 
 enum KeyboardDirection: CaseIterable {
@@ -196,34 +197,41 @@ struct KeyboardLayout {
                 Self.makeKey(
                     center: "a",
                     textMap: [
-                        .downLeft: "$",
                         .down: "ä",
                         .downRight: "v",
-                        .right: "-",
-                        .upRight: "¿¡"
+                        .right: "-"
+                    ],
+                    composeMap: [
+                        .downLeft: (display: "$", trigger: "$"),
+                        .upRight: (display: "¿¡", trigger: "!")
                     ]
                 ),
                 Self.makeKey(
                     center: "n",
                     textMap: [
-                        .upLeft: "`",
-                        .up: "^",
-                        .upRight: "´",
                         .down: "l",
                         .downRight: "\\",
                         .downLeft: "/",
-                        .left: "+",
-                        .right: "!"
+                        .left: "+"
+                    ],
+                    composeMap: [
+                        .upLeft: (display: "`", trigger: "`"),
+                        .up: (display: "^", trigger: "^"),
+                        .upRight: (display: "´", trigger: "'"),
+                        .right: (display: "!", trigger: "!")
                     ]
                 ),
                 Self.makeKey(
                     center: "i",
                     textMap: [
-                        .up: "˘",
                         .downLeft: "x",
                         .left: "?",
                         .down: "=",
                         .downRight: "€"
+                    ],
+                    composeMap: [
+                        .up: (display: "˘", trigger: "˘"),
+                        .left: (display: "?", trigger: "?")
                     ]
                 )
             ],
@@ -278,23 +286,28 @@ struct KeyboardLayout {
                 Self.makeKey(
                     center: "t",
                     textMap: [
-                        .upLeft: "~",
                         .upRight: "y",
                         .left: "<",
                         .down: "ß",
                         .right: "*"
+                    ],
+                    composeMap: [
+                        .upLeft: (display: "~", trigger: "~"),
+                        .right: (display: "*", trigger: "*")
                     ]
                 ),
                 makeKey(
                     center: "e",
                     textMap: [
-                        .upLeft: "\"",
                         .up: "w",
-                        .upRight: "'",
                         .right: "z",
                         .downLeft: ",",
                         .down: ".",
                         .downRight: ":"
+                    ],
+                    composeMap: [
+                        .upLeft: (display: "\"", trigger: "\""),
+                        .upRight: (display: "´", trigger: "'")
                     ]
                 ),
                 makeKey(
@@ -302,10 +315,11 @@ struct KeyboardLayout {
                     textMap: [
                         .upLeft: "f",
                         .up: "&",
-                        .upRight: "°",
                         .downLeft: ";",
-                        .left: "#",
                         .right: ">"
+                    ],
+                    composeMap: [
+                        .upRight: (display: "°", trigger: "°")
                     ]
                 )
             ]
@@ -431,19 +445,39 @@ extension CGPoint {
 }
 
 private extension KeyboardLayout {
+    private static let composeTriggers: Set<String> = [
+        "\"", "'", "`", "^", "~", "°", "˘", "!", "$", "゛", "?", "*", "ˇ"
+    ]
+
     private static func makeKey(
         center: String,
         textMap: [KeyboardDirection: String],
+        composeMap: [KeyboardDirection: (display: String?, trigger: String)] = [:],
         additionalOutputs: [KeyboardDirection: MessagEaseOutput] = [:],
         returnOverrides: [KeyboardDirection: MessagEaseOutput] = [:]
     ) -> MessagEaseKey {
         var outputs: [KeyboardDirection: MessagEaseOutput] = additionalOutputs
         var returnOutputs: [KeyboardDirection: MessagEaseOutput] = [:]
 
+        for (direction, compose) in composeMap {
+            let output = MessagEaseOutput.compose(trigger: compose.trigger, display: compose.display)
+            outputs[direction] = output
+            returnOutputs[direction] = output
+        }
+
         for (direction, text) in textMap {
-            outputs[direction] = .text(text)
-            if text.containsLetter {
-                returnOutputs[direction] = .text(uppercaseGerman(text))
+            if composeMap[direction] != nil {
+                continue
+            }
+            if composeTriggers.contains(text) {
+                let output = MessagEaseOutput.compose(trigger: text, display: text)
+                outputs[direction] = output
+                returnOutputs[direction] = output
+            } else {
+                outputs[direction] = .text(text)
+                if text.containsLetter {
+                    returnOutputs[direction] = .text(uppercaseGerman(text))
+                }
             }
         }
 
@@ -485,6 +519,8 @@ extension MessagEaseKey {
             return "123"
         case .capitalizeWord(let uppercased):
             return uppercased ? "W↑" : "W↓"
+        case .compose(let trigger, let display):
+            return display ?? trigger
         }
     }
 }

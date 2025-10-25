@@ -190,4 +190,27 @@ struct wurstfingerTests {
         #expect(didDeleteWord)
     }
 
+    @Test func composeSwipeEmitsComposeAction() async throws {
+        let viewModel = KeyboardViewModel()
+        var captured: String?
+
+        viewModel.bindActionHandler { action in
+            if case let .compose(trigger) = action {
+                captured = trigger
+            }
+        }
+
+        let thirdRow = try #require(viewModel.rows.count > 2 ? viewModel.rows[2] : nil)
+        let eKey = try #require(thirdRow.count > 1 ? thirdRow[1] : nil)
+        viewModel.handleKeySwipe(eKey, direction: .upRight)
+
+        #expect(captured == "'")
+    }
+
+    @Test func composeEngineProducesReplacement() async throws {
+        #expect(ComposeEngine.compose(previous: "a", trigger: "\"") == "ä")
+        #expect(ComposeEngine.compose(previous: "l", trigger: "!") == "ł")
+        #expect(ComposeEngine.compose(previous: "x", trigger: "~") == nil)
+    }
+
 }

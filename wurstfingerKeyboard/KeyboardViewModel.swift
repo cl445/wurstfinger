@@ -18,6 +18,7 @@ enum KeyboardAction {
     case dismissKeyboard
     case capitalizeWord(CapitalizationStyle)
     case moveCursor(offset: Int)
+    case compose(trigger: String)
     case deleteWord
     case startSelection
     case updateSelection(offset: Int)
@@ -207,6 +208,8 @@ final class KeyboardViewModel: ObservableObject {
             toggleSymbols()
         case .capitalizeWord(let uppercased):
             actionHandler?(.capitalizeWord(uppercased ? .uppercased : .lowercased))
+        case .compose(let trigger, _):
+            actionHandler?(.compose(trigger: trigger))
         }
     }
 

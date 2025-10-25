@@ -12,6 +12,7 @@
 		437E1C0E2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437E1C122EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewModel.swift */; };
 		437E1C0F2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437E1C132EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift */; };
 		437E1C102EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437E1C142EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardLayout.swift */; };
+		752601BD3E32A0503D656969 /* wurstfingerKeyboard/ComposeEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F4908133A385A8AB37AF8F5 /* wurstfingerKeyboard/ComposeEngine.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 		437E1C132EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/KeyboardRootView.swift; sourceTree = SOURCE_ROOT; };
 		437E1C142EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/KeyboardLayout.swift; sourceTree = SOURCE_ROOT; };
 		437E1C152EB3D50000C5635A /* wurstfingerKeyboard/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = wurstfingerKeyboard/Info.plist; sourceTree = SOURCE_ROOT; };
+		3F4908133A385A8AB37AF8F5 /* wurstfingerKeyboard/ComposeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/ComposeEngine.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -144,6 +146,7 @@
 				437E1C132EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift */,
 				437E1C122EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewModel.swift */,
 				437E1C112EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewController.swift */,
+				3F4908133A385A8AB37AF8F5 /* wurstfingerKeyboard/ComposeEngine.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -361,6 +364,7 @@
 				437E1C0F2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift in Sources */,
 				437E1C0E2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewModel.swift in Sources */,
 				437E1C0D2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewController.swift in Sources */,
+				752601BD3E32A0503D656969 /* wurstfingerKeyboard/ComposeEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

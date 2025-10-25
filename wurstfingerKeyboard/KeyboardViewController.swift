@@ -76,6 +76,8 @@ final class KeyboardViewController: UIInputViewController {
             updateSelection(by: offset)
         case .endSelection:
             endSelection()
+        case .compose(let trigger):
+            handleCompose(trigger: trigger)
         case .deleteWord:
             deleteWordBeforeCursor()
         }
@@ -166,6 +168,20 @@ final class KeyboardViewController: UIInputViewController {
         selectionActive = false
         selectionOffset = 0
         textDocumentProxy.unmarkText()
+    }
+
+    private func handleCompose(trigger: String) {
+        guard let previous = textDocumentProxy.documentContextBeforeInput?.last else {
+            textDocumentProxy.insertText(trigger)
+            return
+        }
+
+        if let replacement = ComposeEngine.compose(previous: String(previous), trigger: trigger) {
+            textDocumentProxy.deleteBackward()
+            textDocumentProxy.insertText(replacement)
+        } else {
+            textDocumentProxy.insertText(trigger)
+        }
     }
 
     private func deleteWordBeforeCursor() {
