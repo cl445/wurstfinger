@@ -1,11 +1,12 @@
 //
 //  KeyboardViewModel.swift
-//  wurstfingerKeyboard
+//  Wurstfinger
 //
 //  Created by Claas Flint on 24.10.25.
 //
 
 import Combine
+import CoreGraphics
 import Foundation
 
 enum KeyboardAction {
@@ -16,6 +17,11 @@ enum KeyboardAction {
     case advanceToNextInputMode
     case dismissKeyboard
     case capitalizeWord(CapitalizationStyle)
+    case moveCursor(offset: Int)
+    case deleteWord
+    case startSelection
+    case updateSelection(offset: Int)
+    case endSelection
 }
 
 enum CapitalizationStyle {
@@ -23,18 +29,57 @@ enum CapitalizationStyle {
     case lowercased
 }
 
+enum UtilityKey {
+    case globe
+    case symbols
+    case delete
+    case `return`
+}
+
 final class KeyboardViewModel: ObservableObject {
     @Published private(set) var activeLayer: KeyboardLayer = .lower
+    @Published private(set) var utilityColumnLeading = false
 
     private let layout: KeyboardLayout
     private var actionHandler: ((KeyboardAction) -> Void)?
+    private var isSpaceDragging = false
+    private var spaceDragResidual: CGFloat = 0
+    private let spaceDragStep: CGFloat = 14
+    private var isSpaceSelecting = false
+    private var spaceSelectionResidual: CGFloat = 0
+    private var isDeleteDragging = false
+    private var deleteDragResidual: CGFloat = 0
 
     init(layout: KeyboardLayout = .germanDefault) {
         self.layout = layout
     }
 
     var rows: [[MessagEaseKey]] {
-        layout.rows
+        layout.rows(for: activeLayer)
+    }
+
+    var symbolToggleLabel: String {
+        switch activeLayer {
+        case .lower, .upper:
+            return "123"
+        case .numbers:
+            return "#+="
+        case .symbols:
+            return "ABC"
+        }
+    }
+
+    var isSymbolsToggleActive: Bool {
+        switch activeLayer {
+        case .numbers, .symbols:
+            return true
+        default:
+            return false
+        }
+    }
+
+    var spaceColumnSpan: Int {
+        activeLayer == .numbers ? 2 : 3
     }
 
     func bindActionHandler(_ handler: @escaping (KeyboardAction) -> Void) {
@@ -47,7 +92,7 @@ final class KeyboardViewModel: ObservableObject {
             return key.center.lowercased()
         case .upper:
             return key.center.uppercased()
-        case .symbols:
+        case .numbers, .symbols:
             return key.center
         }
     }
@@ -87,12 +132,7 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     func handleCircularGesture(for key: MessagEaseKey, direction: KeyboardCircularDirection) {
-        switch direction {
-        case .clockwise:
-            insertText(uppercaseGerman(key.center))
-        case .counterclockwise:
-            toggleSymbols()
-        }
+        insertText(uppercaseGerman(key.center))
     }
 
     func handleSpace() {
@@ -101,6 +141,10 @@ final class KeyboardViewModel: ObservableObject {
 
     func handleDelete() {
         actionHandler?(.deleteBackward)
+    }
+
+    func handleDeleteWord() {
+        actionHandler?(.deleteWord)
     }
 
     func handleReturn() {
@@ -121,13 +165,20 @@ final class KeyboardViewModel: ObservableObject {
             activeLayer = .upper
         case .upper:
             activeLayer = .lower
-        case .symbols:
+        case .numbers, .symbols:
             activeLayer = .upper
         }
     }
 
     func toggleSymbols() {
-        activeLayer = activeLayer == .symbols ? .lower : .symbols
+        switch activeLayer {
+        case .lower, .upper:
+            activeLayer = .numbers
+        case .numbers:
+            activeLayer = .symbols
+        case .symbols:
+            activeLayer = .lower
+        }
     }
 
     private func resolvedText(_ value: String) -> String {
@@ -157,6 +208,107 @@ final class KeyboardViewModel: ObservableObject {
         case .capitalizeWord(let uppercased):
             actionHandler?(.capitalizeWord(uppercased ? .uppercased : .lowercased))
         }
+    }
+
+    func toggleUtilityColumnPosition() {
+        utilityColumnLeading.toggle()
+    }
+
+    func handleUtilityCircularGesture(_ key: UtilityKey, direction _: KeyboardCircularDirection) {
+        switch key {
+        case .globe:
+            toggleUtilityColumnPosition()
+        default:
+            break
+        }
+    }
+
+    func beginSpaceDrag() {
+        isSpaceDragging = true
+        isSpaceSelecting = false
+        spaceDragResidual = 0
+        spaceSelectionResidual = 0
+    }
+
+    func updateSpaceDrag(deltaX: CGFloat) {
+        guard isSpaceDragging, deltaX != 0 else { return }
+
+        if isSpaceSelecting {
+            updateSpaceSelection(deltaX: deltaX)
+            return
+        }
+
+        spaceDragResidual += deltaX
+
+        while spaceDragResidual <= -spaceDragStep {
+            actionHandler?(.moveCursor(offset: -1))
+            spaceDragResidual += spaceDragStep
+        }
+
+        while spaceDragResidual >= spaceDragStep {
+            actionHandler?(.moveCursor(offset: 1))
+            spaceDragResidual -= spaceDragStep
+        }
+    }
+
+    func endSpaceDrag() {
+        if isSpaceSelecting {
+            actionHandler?(.endSelection)
+        }
+        isSpaceDragging = false
+        isSpaceSelecting = false
+        spaceDragResidual = 0
+        spaceSelectionResidual = 0
+    }
+
+    func beginSpaceSelection() {
+        guard isSpaceDragging else { return }
+        if !isSpaceSelecting {
+            isSpaceSelecting = true
+            spaceSelectionResidual = 0
+            actionHandler?(.startSelection)
+        }
+    }
+
+    private func updateSpaceSelection(deltaX: CGFloat) {
+        guard isSpaceDragging, isSpaceSelecting, deltaX != 0 else { return }
+
+        spaceSelectionResidual += deltaX
+
+        while spaceSelectionResidual <= -spaceDragStep {
+            actionHandler?(.updateSelection(offset: -1))
+            spaceSelectionResidual += spaceDragStep
+        }
+
+        while spaceSelectionResidual >= spaceDragStep {
+            actionHandler?(.updateSelection(offset: 1))
+            spaceSelectionResidual -= spaceDragStep
+        }
+    }
+
+    func beginDeleteDrag() {
+        isDeleteDragging = true
+        deleteDragResidual = 0
+    }
+
+    func updateDeleteDrag(deltaX: CGFloat) {
+        guard isDeleteDragging, deltaX != 0 else { return }
+
+        deleteDragResidual += deltaX
+
+        while deleteDragResidual <= -spaceDragStep {
+            actionHandler?(.deleteBackward)
+            deleteDragResidual += spaceDragStep
+        }
+
+        if deleteDragResidual > 0 {
+            deleteDragResidual = min(deleteDragResidual, spaceDragStep)
+        }
+    }
+
+    func endDeleteDrag() {
+        isDeleteDragging = false
+        deleteDragResidual = 0
     }
 
     private func uppercaseGerman(_ value: String) -> String {

@@ -1,6 +1,6 @@
 //
 //  KeyboardLayout.swift
-//  wurstfingerKeyboard
+//  Wurstfinger
 //
 //  Created by Claas Flint on 24.10.25.
 //
@@ -11,6 +11,7 @@ import Foundation
 enum KeyboardLayer: Equatable {
     case lower
     case upper
+    case numbers
     case symbols
 }
 
@@ -165,6 +166,8 @@ struct MessagEaseKey: Identifiable {
             return center.lowercased()
         case (.center, .upper):
             return center.uppercased()
+        case (.center, .numbers):
+            return center
         case (.center, .symbols):
             return center
         default:
@@ -177,23 +180,37 @@ struct MessagEaseKey: Identifiable {
 }
 
 struct KeyboardLayout {
-    let rows: [[MessagEaseKey]]
+    private let layers: [KeyboardLayer: [[MessagEaseKey]]]
 
-    static let germanDefault = KeyboardLayout(
-        rows: [
+    init(layers: [KeyboardLayer: [[MessagEaseKey]]]) {
+        self.layers = layers
+    }
+
+    func rows(for layer: KeyboardLayer) -> [[MessagEaseKey]] {
+        layers[layer] ?? []
+    }
+
+    static let germanDefault: KeyboardLayout = {
+        let lowerRows: [[MessagEaseKey]] = [
             [
                 Self.makeKey(
                     center: "a",
                     textMap: [
+                        .downLeft: "$",
                         .down: "ä",
                         .downRight: "v",
-                        .right: "-"
+                        .right: "-",
+                        .upRight: "¿¡"
                     ]
                 ),
                 Self.makeKey(
                     center: "n",
                     textMap: [
+                        .upLeft: "`",
+                        .up: "^",
+                        .upRight: "´",
                         .down: "l",
+                        .downRight: "\\",
                         .downLeft: "/",
                         .left: "+",
                         .right: "!"
@@ -202,6 +219,7 @@ struct KeyboardLayout {
                 Self.makeKey(
                     center: "i",
                     textMap: [
+                        .up: "˘",
                         .downLeft: "x",
                         .left: "?",
                         .down: "=",
@@ -215,9 +233,12 @@ struct KeyboardLayout {
                     textMap: [
                         .up: "ü",
                         .down: "ö",
+                        .upLeft: "{",
                         .left: "(",
                         .right: "k",
-                        .upRight: "%"
+                        .upRight: "%",
+                        .downLeft: "[",
+                        .downRight: "_"
                     ]
                 ),
                 Self.makeKey(
@@ -236,9 +257,12 @@ struct KeyboardLayout {
                 Self.makeKey(
                     center: "r",
                     textMap: [
+                        .upLeft: "|",
                         .left: "m",
                         .downLeft: "@",
-                        .right: ")"
+                        .right: ")",
+                        .upRight: "}",
+                        .downRight: "]"
                     ],
                     additionalOutputs: [
                         .up: .toggleShift(on: true),
@@ -254,7 +278,9 @@ struct KeyboardLayout {
                 Self.makeKey(
                     center: "t",
                     textMap: [
+                        .upLeft: "~",
                         .upRight: "y",
+                        .left: "<",
                         .down: "ß",
                         .right: "*"
                     ]
@@ -277,12 +303,121 @@ struct KeyboardLayout {
                         .upLeft: "f",
                         .up: "&",
                         .upRight: "°",
-                        .downLeft: ";"
+                        .downLeft: ";",
+                        .left: "#",
+                        .right: ">"
                     ]
                 )
             ]
         ]
-    )
+
+        let numberRows: [[MessagEaseKey]] = [
+            [
+                Self.makeKey(
+                    center: "7",
+                    textMap: [
+                        .downLeft: "$",
+                        .right: "-",
+                        .downRight: "€"
+                    ]
+                ),
+                Self.makeKey(
+                    center: "8",
+                    textMap: [
+                        .upLeft: "`",
+                        .up: "^",
+                        .upRight: "´",
+                        .right: "!",
+                        .downRight: "\\",
+                        .downLeft: "/",
+                        .left: "+"
+                    ]
+                ),
+                Self.makeKey(
+                    center: "9",
+                    textMap: [
+                        .left: "?",
+                        .downRight: "€",
+                        .downLeft: "£",
+                        .down: "="
+                    ]
+                )
+            ],
+            [
+                Self.makeKey(
+                    center: "4",
+                    textMap: [
+                        .upLeft: "{",
+                        .upRight: "%",
+                        .downRight: "_",
+                        .downLeft: "[",
+                        .left: "("
+                    ]
+                ),
+                Self.makeKey(
+                    center: "5",
+                    textMap: [
+                        .up: "¬"
+                    ]
+                ),
+                Self.makeKey(
+                    center: "6",
+                    textMap: [
+                        .upLeft: "|",
+                        .upRight: "}",
+                        .right: ")",
+                        .downRight: "]",
+                        .downLeft: "@"
+                    ]
+                )
+            ],
+            [
+                Self.makeKey(
+                    center: "1",
+                    textMap: [
+                        .upLeft: "~",
+                        .left: "<",
+                        .right: "*",
+                        .downRight: "\t"
+                    ]
+                ),
+                Self.makeKey(
+                    center: "2",
+                    textMap: [
+                        .upLeft: "\"",
+                        .upRight: "'",
+                        .downRight: ":",
+                        .down: ".",
+                        .downLeft: ","
+                    ]
+                ),
+                Self.makeKey(
+                    center: "3",
+                    textMap: [
+                        .up: "&",
+                        .upRight: "°",
+                        .right: ">",
+                        .downLeft: ";",
+                        .left: "#"
+                    ]
+                )
+            ],
+            [
+                Self.makeKey(center: "0", textMap: [:])
+            ]
+        ]
+
+        let symbolRows: [[MessagEaseKey]] = lowerRows
+
+        return KeyboardLayout(
+            layers: [
+                .lower: lowerRows,
+                .upper: lowerRows,
+                .numbers: numberRows,
+                .symbols: symbolRows
+            ]
+        )
+    }()
 }
 
 extension CGPoint {

@@ -1,6 +1,6 @@
 //
 //  KeyboardViewController.swift
-//  wurstfingerKeyboard
+//  Wurstfinger
 //
 //  Created by Claas Flint on 24.10.25.
 //
@@ -12,6 +12,8 @@ import UIKit
 final class KeyboardViewController: UIInputViewController {
     private var hostingController: UIHostingController<KeyboardRootView>?
     private let viewModel = KeyboardViewModel()
+    private var selectionActive = false
+    private var selectionOffset = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -66,6 +68,16 @@ final class KeyboardViewController: UIInputViewController {
             dismissKeyboard()
         case .capitalizeWord(let style):
             capitalizeCurrentWord(style: style)
+        case .moveCursor(let offset):
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: offset)
+        case .startSelection:
+            beginSelection()
+        case .updateSelection(let offset):
+            updateSelection(by: offset)
+        case .endSelection:
+            endSelection()
+        case .deleteWord:
+            deleteWordBeforeCursor()
         }
     }
 
@@ -97,5 +109,106 @@ final class KeyboardViewController: UIInputViewController {
             textDocumentProxy.deleteBackward()
         }
         textDocumentProxy.insertText(transformed)
+    }
+
+    private func beginSelection() {
+        selectionActive = true
+        selectionOffset = 0
+        textDocumentProxy.unmarkText()
+    }
+
+    private func updateSelection(by delta: Int) {
+        guard selectionActive, delta != 0 else { return }
+        applySelection(targetOffset: selectionOffset + delta)
+    }
+
+    private func applySelection(targetOffset: Int) {
+        guard selectionActive else { return }
+
+        textDocumentProxy.unmarkText()
+
+        selectionOffset = targetOffset
+
+        if selectionOffset == 0 {
+            return
+        }
+
+        if selectionOffset < 0 {
+            let before = textDocumentProxy.documentContextBeforeInput ?? ""
+            let available = before.count
+            let requested = min(available, -selectionOffset)
+            guard requested > 0 else {
+                selectionOffset = 0
+                return
+            }
+            let selectionText = String(before.suffix(requested))
+            let actualCount = selectionText.count
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: -actualCount)
+            textDocumentProxy.setMarkedText(selectionText, selectedRange: NSRange(location: actualCount, length: 0))
+            selectionOffset = -actualCount
+        } else {
+            let after = textDocumentProxy.documentContextAfterInput ?? ""
+            let available = after.count
+            let requested = min(available, selectionOffset)
+            guard requested > 0 else {
+                selectionOffset = 0
+                return
+            }
+            let selectionText = String(after.prefix(requested))
+            let actualCount = selectionText.count
+            textDocumentProxy.setMarkedText(selectionText, selectedRange: NSRange(location: 0, length: actualCount))
+            selectionOffset = actualCount
+        }
+    }
+
+    private func endSelection() {
+        guard selectionActive else { return }
+        selectionActive = false
+        selectionOffset = 0
+        textDocumentProxy.unmarkText()
+    }
+
+    private func deleteWordBeforeCursor() {
+        guard let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty else {
+            textDocumentProxy.deleteBackward()
+            return
+        }
+
+        var characters = before
+        var deleteCount = 0
+        var index = characters.endIndex
+
+        // Remove trailing whitespace first
+        while index > characters.startIndex {
+            let previous = characters.index(before: index)
+            if characters[previous].isWhitespace {
+                deleteCount += 1
+                index = previous
+            } else {
+                break
+            }
+        }
+
+        // Remove word characters (letters/numbers/underscore)
+        let wordSet = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_'’"))
+        while index > characters.startIndex {
+            let previous = characters.index(before: index)
+            let charScalars = characters[previous].unicodeScalars
+            if charScalars.allSatisfy({ wordSet.contains($0) }) {
+                deleteCount += 1
+                index = previous
+            } else {
+                break
+            }
+        }
+
+        if deleteCount == 0 {
+            textDocumentProxy.deleteBackward()
+            return
+        }
+
+        for _ in 0..<deleteCount {
+            textDocumentProxy.deleteBackward()
+        }
     }
 }

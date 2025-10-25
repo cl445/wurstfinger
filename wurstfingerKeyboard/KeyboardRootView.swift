@@ -1,6 +1,6 @@
 //
 //  KeyboardRootView.swift
-//  wurstfingerKeyboard
+//  Wurstfinger
 //
 //  Created by Claas Flint on 24.10.25.
 //
@@ -14,38 +14,85 @@ struct KeyboardRootView: View {
     var body: some View {
         Grid(horizontalSpacing: 8, verticalSpacing: 8) {
             GridRow {
+                if viewModel.utilityColumnLeading {
+                    utilityButton(
+                        height: 54,
+                        onCircularGesture: { direction in
+                            viewModel.handleUtilityCircularGesture(.globe, direction: direction)
+                        }
+                    ) {
+                        Image(systemName: "globe")
+                    } action: {
+                        viewModel.handleAdvanceToNextInputMode()
+                    }
+                }
+
                 keyCells(forRow: 0)
-                utilityButton(height: 54) {
-                    Image(systemName: "globe")
-                } action: {
-                    viewModel.handleAdvanceToNextInputMode()
+
+                if !viewModel.utilityColumnLeading {
+                    utilityButton(
+                        height: 54,
+                        onCircularGesture: { direction in
+                            viewModel.handleUtilityCircularGesture(.globe, direction: direction)
+                        }
+                    ) {
+                        Image(systemName: "globe")
+                    } action: {
+                        viewModel.handleAdvanceToNextInputMode()
+                    }
                 }
             }
 
             GridRow {
+                if viewModel.utilityColumnLeading {
+                    utilityButton(height: 54, highlighted: viewModel.isSymbolsToggleActive) {
+                        Text(viewModel.symbolToggleLabel)
+                    } action: {
+                        viewModel.toggleSymbols()
+                    }
+                }
+
                 keyCells(forRow: 1)
-                utilityButton(height: 54, highlighted: viewModel.activeLayer == .symbols) {
-                    Text(viewModel.activeLayer == .symbols ? "ABC" : "123")
-                } action: {
-                    viewModel.toggleSymbols()
+
+                if !viewModel.utilityColumnLeading {
+                    utilityButton(height: 54, highlighted: viewModel.isSymbolsToggleActive) {
+                        Text(viewModel.symbolToggleLabel)
+                    } action: {
+                        viewModel.toggleSymbols()
+                    }
                 }
             }
 
             GridRow {
+                if viewModel.utilityColumnLeading {
+                    DeleteKeyButton(viewModel: viewModel)
+                }
+
                 keyCells(forRow: 2)
-                utilityButton(height: 54) {
-                    Image(systemName: "delete.left")
-                } action: {
-                    viewModel.handleDelete()
+
+                if !viewModel.utilityColumnLeading {
+                    DeleteKeyButton(viewModel: viewModel)
                 }
             }
 
             GridRow {
-                spaceKey
-                utilityButton(height: 54) {
-                    Text("⏎")
-                } action: {
-                    viewModel.handleReturn()
+                if viewModel.utilityColumnLeading {
+                    utilityButton(height: 54) {
+                        Text("⏎")
+                    } action: {
+                        viewModel.handleReturn()
+                    }
+                }
+
+                keyCells(forRow: 3)
+                spaceKey(columnSpan: viewModel.spaceColumnSpan)
+
+                if !viewModel.utilityColumnLeading {
+                    utilityButton(height: 54) {
+                        Text("⏎")
+                    } action: {
+                        viewModel.handleReturn()
+                    }
                 }
             }
         }
@@ -69,34 +116,27 @@ struct KeyboardRootView: View {
         }
     }
 
-    private var spaceKey: some View {
-        Button {
-            viewModel.handleSpace()
-        } label: {
-            KeyCap(
-                height: 54,
-                fontSize: 22
-            ) {
-                Text("Leerzeichen")
-            }
-        }
-        .buttonStyle(.plain)
-        .gridCellColumns(3)
+    private func spaceKey(columnSpan: Int) -> some View {
+        SpaceKeyButton(viewModel: viewModel)
+            .gridCellColumns(columnSpan)
     }
 
     private func utilityButton(
         height: CGFloat,
         fontSize: CGFloat = 22,
         highlighted: Bool = false,
+        onCircularGesture: ((KeyboardCircularDirection) -> Void)? = nil,
         @ViewBuilder label: () -> some View,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
-            KeyCap(height: height, highlighted: highlighted, fontSize: fontSize) {
-                label()
-            }
-        }
-        .buttonStyle(.plain)
+        UtilityKeyButton(
+            height: height,
+            highlighted: highlighted,
+            fontSize: fontSize,
+            onTap: action,
+            onCircularGesture: onCircularGesture,
+            label: label
+        )
     }
 }
 
@@ -130,6 +170,303 @@ private struct KeyCap<Content: View>: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(highlighted ? Color.accentColor.opacity(0.25) : background)
             )
+    }
+}
+
+private struct SpaceKeyButton: View {
+    let viewModel: KeyboardViewModel
+
+    @State private var isActive = false
+    @State private var dragStarted = false
+    @State private var hasDragged = false
+    @State private var isSelecting = false
+    @State private var lastTranslation: CGSize = .zero
+
+    private let dragActivationThreshold: CGFloat = 8
+    private let selectionActivationThreshold: CGFloat = 24
+
+    var body: some View {
+        KeyCap(
+            height: 54,
+            background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
+            fontSize: 22
+        ) {
+            Color.clear
+        }
+        .accessibilityLabel(Text("Leerzeichen"))
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    if !dragStarted {
+                        dragStarted = true
+                        viewModel.beginSpaceDrag()
+                    }
+
+                    let deltaX = value.translation.width - lastTranslation.width
+                    if !isSelecting, abs(value.translation.height) >= selectionActivationThreshold {
+                        isSelecting = true
+                        hasDragged = true
+                        viewModel.beginSpaceSelection()
+                    }
+
+                    viewModel.updateSpaceDrag(deltaX: deltaX)
+
+                    lastTranslation = value.translation
+
+                    if !hasDragged, !isSelecting, abs(value.translation.width) >= dragActivationThreshold {
+                        hasDragged = true
+                    }
+
+                    isActive = true
+                }
+                .onEnded { _ in
+                    if dragStarted {
+                        viewModel.endSpaceDrag()
+                    }
+
+                    if !hasDragged, !isSelecting {
+                        viewModel.handleSpace()
+                    }
+
+                    resetGestureState()
+                }
+        )
+    }
+
+    private func resetGestureState() {
+        isActive = false
+        dragStarted = false
+        hasDragged = false
+        isSelecting = false
+        lastTranslation = .zero
+    }
+}
+
+private struct DeleteKeyButton: View {
+    let viewModel: KeyboardViewModel
+
+    @State private var isActive = false
+    @State private var dragStarted = false
+    @State private var hasDragged = false
+    @State private var isSliding = false
+    @State private var lastTranslation: CGSize = .zero
+    @State private var totalTranslation: CGSize = .zero
+    @State private var isRepeating = false
+    @State private var repeatTimer: Timer?
+    @State private var repeatTriggered = false
+
+    private let dragActivationThreshold: CGFloat = 8
+    private let slideActivationThreshold: CGFloat = 28
+    private let wordSwipeThreshold: CGFloat = 40
+    private let verticalTolerance: CGFloat = 28
+    private let repeatInterval: TimeInterval = 0.08
+    private let repeatDelay: TimeInterval = 0.35
+
+    var body: some View {
+        KeyCap(
+            height: 54,
+            background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
+            fontSize: 22
+        ) {
+            Image(systemName: "delete.left")
+        }
+        .accessibilityLabel(Text("Löschen"))
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    if isRepeating {
+                        stopRepeat()
+                    }
+
+                    if !dragStarted {
+                        dragStarted = true
+                    }
+
+                    totalTranslation = value.translation
+
+                    if !isSliding,
+                       abs(totalTranslation.width) >= slideActivationThreshold,
+                       abs(totalTranslation.height) <= verticalTolerance {
+                        isSliding = true
+                        hasDragged = true
+                        viewModel.beginDeleteDrag()
+                        lastTranslation = totalTranslation
+                        return
+                    }
+
+                    if isSliding {
+                        let deltaX = totalTranslation.width - lastTranslation.width
+                        viewModel.updateDeleteDrag(deltaX: deltaX)
+                        lastTranslation = totalTranslation
+                    } else {
+                        if abs(totalTranslation.width) >= wordSwipeThreshold {
+                            hasDragged = true
+                        } else if abs(totalTranslation.width) >= dragActivationThreshold {
+                            hasDragged = true
+                        }
+                    }
+
+                    lastTranslation = value.translation
+                    isActive = true
+                }
+                .onEnded { _ in
+                    stopRepeat()
+
+                    if isSliding {
+                        viewModel.endDeleteDrag()
+                    } else {
+                        let translation = totalTranslation
+                        let isWordSwipe = translation.width <= -wordSwipeThreshold &&
+                            abs(translation.height) <= verticalTolerance
+
+                        if isWordSwipe {
+                            viewModel.handleDeleteWord()
+                        } else if !repeatTriggered && !hasDragged {
+                            viewModel.handleDelete()
+                        }
+                    }
+
+                    resetGestureState()
+                }
+        )
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: repeatDelay)
+                .onEnded { _ in
+                    if !isSliding {
+                        startRepeat()
+                    }
+                }
+        )
+        .onDisappear {
+            stopRepeat()
+        }
+    }
+
+    private func startRepeat() {
+        guard !isRepeating else { return }
+        isRepeating = true
+        repeatTriggered = false
+        viewModel.handleDelete()
+        repeatTriggered = true
+        repeatTimer?.invalidate()
+        repeatTimer = Timer.scheduledTimer(withTimeInterval: repeatInterval, repeats: true) { _ in
+            repeatTriggered = true
+            viewModel.handleDelete()
+        }
+    }
+
+    private func stopRepeat() {
+        if isRepeating {
+            repeatTimer?.invalidate()
+            repeatTimer = nil
+        }
+        isRepeating = false
+    }
+
+    private func resetGestureState() {
+        stopRepeat()
+        isActive = false
+        dragStarted = false
+        hasDragged = false
+        isSliding = false
+        lastTranslation = .zero
+        totalTranslation = .zero
+        repeatTriggered = false
+    }
+}
+
+private struct UtilityKeyButton<Content: View>: View {
+    let height: CGFloat
+    let highlighted: Bool
+    let fontSize: CGFloat
+    let onTap: () -> Void
+    let onCircularGesture: ((KeyboardCircularDirection) -> Void)?
+    private let content: Content
+
+    @State private var isActive = false
+    @State private var positions: [CGPoint] = []
+    @State private var maxOffset: CGPoint = .zero
+
+    private let minSwipeLength: CGFloat = 30
+    private let circleCompletionTolerance: CGFloat = 16
+
+    init(
+        height: CGFloat,
+        highlighted: Bool,
+        fontSize: CGFloat,
+        onTap: @escaping () -> Void,
+        onCircularGesture: ((KeyboardCircularDirection) -> Void)?,
+        @ViewBuilder label: () -> Content
+    ) {
+        self.height = height
+        self.highlighted = highlighted
+        self.fontSize = fontSize
+        self.onTap = onTap
+        self.onCircularGesture = onCircularGesture
+        self.content = label()
+    }
+
+    var body: some View {
+        KeyCap(
+            height: height,
+            background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
+            highlighted: highlighted,
+            fontSize: fontSize
+        ) {
+            content
+        }
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    if positions.isEmpty {
+                        positions = [CGPoint.zero]
+                        maxOffset = .zero
+                    }
+
+                    let point = CGPoint(x: value.translation.width, y: value.translation.height)
+                    positions.append(point)
+
+                    if positions.count > 60 {
+                        positions.removeFirst(positions.count - 60)
+                    }
+
+                    if point.magnitude() > maxOffset.magnitude() {
+                        maxOffset = point
+                    }
+
+                    isActive = true
+                }
+                .onEnded { value in
+                    defer { resetGestureState() }
+
+                    let finalPoint = CGPoint(x: value.translation.width, y: value.translation.height)
+                    positions.append(finalPoint)
+
+                    if positions.count > 60 {
+                        positions.removeFirst(positions.count - 60)
+                    }
+
+                    let maxDistance = maxOffset.magnitude()
+
+                    if let onCircularGesture,
+                       maxDistance >= minSwipeLength,
+                       let circle = KeyboardGestureRecognizer.circularDirection(
+                           positions: positions,
+                           circleCompletionTolerance: circleCompletionTolerance,
+                           minSwipeLength: minSwipeLength
+                       ) {
+                        onCircularGesture(circle)
+                    } else {
+                        onTap()
+                    }
+                }
+        )
+    }
+
+    private func resetGestureState() {
+        positions.removeAll(keepingCapacity: false)
+        maxOffset = .zero
+        isActive = false
     }
 }
 
