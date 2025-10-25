@@ -219,6 +219,9 @@ struct KeyboardLayout {
                         .up: (display: "^", trigger: "^"),
                         .upRight: (display: "´", trigger: "'"),
                         .right: (display: "!", trigger: "!")
+                    ],
+                    returnOverrides: [
+                        .left: .text("×")
                     ]
                 ),
                 Self.makeKey(

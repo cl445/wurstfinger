@@ -213,4 +213,22 @@ struct wurstfingerTests {
         #expect(ComposeEngine.compose(previous: "x", trigger: "~") == nil)
     }
 
+    @Test func returnSwipeOnPlusProducesTimes() async throws {
+        let viewModel = KeyboardViewModel()
+        var inserted: [String] = []
+
+        viewModel.bindActionHandler { action in
+            if case let .insert(value) = action {
+                inserted.append(value)
+            }
+        }
+
+        let firstRow = try #require(viewModel.rows.first)
+        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
+
+        viewModel.handleKeySwipeReturn(nKey, direction: .left)
+
+        #expect(inserted.last == "×")
+    }
+
 }
