@@ -6,5 +6,14 @@ build/
 *.xcodeproj/xcuserdata/
 *.xcuserstate
 
+# Swift build artifacts
+*.d
+*.o
+*.swiftdeps
+*.swiftconstvalues
+*.dia
+*.swiftmodule
+*.swiftsourceinfo
+
 # macOS
 .DS_Store
