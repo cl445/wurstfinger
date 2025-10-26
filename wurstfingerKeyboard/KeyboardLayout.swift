@@ -143,22 +143,36 @@ struct MessagEaseKey: Identifiable {
     let center: String
     let swipeOutputs: [KeyboardDirection: MessagEaseOutput]
     let swipeReturnOutputs: [KeyboardDirection: MessagEaseOutput]
+    let circularOutputs: [KeyboardCircularDirection: MessagEaseOutput]
 
     init(
         id: String = UUID().uuidString,
         center: String,
         swipeOutputs: [KeyboardDirection: MessagEaseOutput] = [:],
-        swipeReturnOutputs: [KeyboardDirection: MessagEaseOutput] = [:]
+        swipeReturnOutputs: [KeyboardDirection: MessagEaseOutput] = [:],
+        circularOutputs: [KeyboardCircularDirection: MessagEaseOutput] = [:]
     ) {
         self.id = id
         self.center = center
         self.swipeOutputs = swipeOutputs
         self.swipeReturnOutputs = swipeReturnOutputs
+        self.circularOutputs = circularOutputs
     }
 
     func output(for direction: KeyboardDirection, returning: Bool = false) -> MessagEaseOutput? {
         let map = returning ? swipeReturnOutputs : swipeOutputs
         return map[direction]
+    }
+
+    func circularOutput(for direction: KeyboardCircularDirection) -> MessagEaseOutput? {
+        // Try requested direction first
+        if let output = circularOutputs[direction] {
+            return output
+        }
+
+        // Fallback to opposite direction
+        let oppositeDirection: KeyboardCircularDirection = direction == .clockwise ? .counterclockwise : .clockwise
+        return circularOutputs[oppositeDirection]
     }
 
     func character(for direction: KeyboardDirection, on layer: KeyboardLayer) -> String? {
@@ -471,10 +485,19 @@ private extension KeyboardLayout {
         textMap: [KeyboardDirection: String],
         composeMap: [KeyboardDirection: (display: String?, trigger: String)] = [:],
         additionalOutputs: [KeyboardDirection: MessagEaseOutput] = [:],
-        returnOverrides: [KeyboardDirection: MessagEaseOutput] = [:]
+        returnOverrides: [KeyboardDirection: MessagEaseOutput] = [:],
+        circularOverrides: [KeyboardCircularDirection: MessagEaseOutput] = [:]
     ) -> MessagEaseKey {
         var outputs: [KeyboardDirection: MessagEaseOutput] = additionalOutputs
         var returnOutputs: [KeyboardDirection: MessagEaseOutput] = [:]
+        var circularOutputs: [KeyboardCircularDirection: MessagEaseOutput] = circularOverrides
+
+        // Default circular gesture: uppercase for letters
+        if circularOutputs.isEmpty && center.containsLetter {
+            let uppercased = uppercaseGerman(center)
+            circularOutputs[.clockwise] = .text(uppercased)
+            circularOutputs[.counterclockwise] = .text(uppercased)
+        }
 
         for (direction, compose) in composeMap {
             let output = MessagEaseOutput.compose(trigger: compose.trigger, display: compose.display)
@@ -502,7 +525,12 @@ private extension KeyboardLayout {
             returnOutputs[direction] = override
         }
 
-        return MessagEaseKey(center: center, swipeOutputs: outputs, swipeReturnOutputs: returnOutputs)
+        return MessagEaseKey(
+            center: center,
+            swipeOutputs: outputs,
+            swipeReturnOutputs: returnOutputs,
+            circularOutputs: circularOutputs
+        )
     }
 }
 

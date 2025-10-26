@@ -11,22 +11,36 @@ import UIKit
 
 final class KeyboardViewController: UIInputViewController {
     private var hostingController: UIHostingController<KeyboardRootView>?
-    private let viewModel = KeyboardViewModel()
+    private lazy var viewModel = KeyboardViewModel()
     private var selectionActive = false
     private var selectionOffset = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureHosting()
+
+        // Set background immediately to avoid flash
+        view.backgroundColor = .clear
+
+        // Bind action handler first
         viewModel.bindActionHandler { [weak self] action in
             self?.perform(action: action)
         }
+
+        // Configure UI on next run loop to allow faster initial display
+        DispatchQueue.main.async { [weak self] in
+            self?.configureHosting()
+        }
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Reload settings every time keyboard appears
+        viewModel.reloadSettings()
     }
 
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        // Force background to adapt to the current trait collection.
-        view.backgroundColor = UIColor.systemBackground
+        view.backgroundColor = .clear
     }
 
     override var needsInputModeSwitchKey: Bool {
@@ -37,6 +51,7 @@ final class KeyboardViewController: UIInputViewController {
         let rootView = KeyboardRootView(viewModel: viewModel)
         let controller = UIHostingController(rootView: rootView)
         controller.view.translatesAutoresizingMaskIntoConstraints = false
+        controller.view.backgroundColor = .clear
 
         addChild(controller)
         view.addSubview(controller.view)

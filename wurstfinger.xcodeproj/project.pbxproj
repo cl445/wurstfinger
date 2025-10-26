@@ -54,6 +54,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3F4908133A385A8AB37AF8F5 /* wurstfingerKeyboard/ComposeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/ComposeEngine.swift; sourceTree = SOURCE_ROOT; };
 		427511922EAAF62000C5635A /* wurstfinger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = wurstfinger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4275119F2EAAF62100C5635A /* wurstfingerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = wurstfingerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		427511A92EAAF62100C5635A /* wurstfingerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = wurstfingerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -63,7 +64,6 @@
 		437E1C132EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/KeyboardRootView.swift; sourceTree = SOURCE_ROOT; };
 		437E1C142EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/KeyboardLayout.swift; sourceTree = SOURCE_ROOT; };
 		437E1C152EB3D50000C5635A /* wurstfingerKeyboard/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = wurstfingerKeyboard/Info.plist; sourceTree = SOURCE_ROOT; };
-		3F4908133A385A8AB37AF8F5 /* wurstfingerKeyboard/ComposeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/ComposeEngine.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -513,12 +513,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = wurstfinger/wurstfinger.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = B3WJ7U845U;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Wurstfinger;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -543,12 +545,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = wurstfinger/wurstfinger.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = B3WJ7U845U;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Wurstfinger;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -641,6 +645,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Wurstfinger/Wurstfinger.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -655,10 +660,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.akator.wurstfinger.keyboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_MODULE_NAME = Wurstfinger;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_MODULE_NAME = Wurstfinger;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -669,6 +674,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Wurstfinger/Wurstfinger.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -683,11 +689,11 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.akator.wurstfinger.keyboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_MODULE_NAME = Wurstfinger;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_MODULE_NAME = Wurstfinger;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;

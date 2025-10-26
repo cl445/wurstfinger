@@ -39,9 +39,14 @@ enum UtilityKey {
 
 final class KeyboardViewModel: ObservableObject {
     @Published private(set) var activeLayer: KeyboardLayer = .lower
-    @Published private(set) var utilityColumnLeading = false
+    @Published var utilityColumnLeading: Bool {
+        didSet {
+            sharedDefaults.set(utilityColumnLeading, forKey: "utilityColumnLeading")
+        }
+    }
 
     private let layout: KeyboardLayout
+    private let sharedDefaults: UserDefaults
     private var actionHandler: ((KeyboardAction) -> Void)?
     private var isSpaceDragging = false
     private var spaceDragResidual: CGFloat = 0
@@ -53,6 +58,20 @@ final class KeyboardViewModel: ObservableObject {
 
     init(layout: KeyboardLayout = .germanDefault) {
         self.layout = layout
+
+        // Initialize UserDefaults once
+        let defaults = UserDefaults(suiteName: "group.com.wurstfinger.shared") ?? .standard
+        self.sharedDefaults = defaults
+
+        // Read setting with default value
+        self.utilityColumnLeading = defaults.object(forKey: "utilityColumnLeading") as? Bool ?? false
+    }
+
+    func reloadSettings() {
+        let newValue = sharedDefaults.object(forKey: "utilityColumnLeading") as? Bool ?? false
+        if utilityColumnLeading != newValue {
+            utilityColumnLeading = newValue
+        }
     }
 
     var rows: [[MessagEaseKey]] {
@@ -133,7 +152,13 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     func handleCircularGesture(for key: MessagEaseKey, direction: KeyboardCircularDirection) {
-        insertText(uppercaseGerman(key.center))
+        // Try to get circular output from the key
+        // First tries requested direction, then opposite direction
+        // If neither is defined, does nothing
+        if let output = key.circularOutput(for: direction) {
+            perform(output)
+        }
+        // If no output is defined, do nothing (no fallback to tap)
     }
 
     func handleSpace() {
@@ -215,6 +240,7 @@ final class KeyboardViewModel: ObservableObject {
 
     func toggleUtilityColumnPosition() {
         utilityColumnLeading.toggle()
+        sharedDefaults.set(utilityColumnLeading, forKey: "utilityColumnLeading")
     }
 
     func handleUtilityCircularGesture(_ key: UtilityKey, direction _: KeyboardCircularDirection) {
