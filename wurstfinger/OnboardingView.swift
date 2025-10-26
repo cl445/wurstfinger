@@ -7,80 +7,61 @@
 
 import SwiftUI
 
+#if os(iOS)
 struct OnboardingView: View {
+    @Environment(\.openURL) private var openURL
+
     @State private var keyboardInstalled = false
     @State private var fullAccessEnabled = false
+    @State private var practiced = false
+
+    private let settingsURL = URL(string: "app-settings:")!
 
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Setup Instructions
-                    VStack(alignment: .leading, spacing: 20) {
+        NavigationStack {
+            List {
+                Section("Setup") {
+                    SetupStepView(
+                        number: 1,
+                        title: "Enable keyboard",
+                        description: "Open iOS Settings → General → Keyboard → Keyboards and add Wurstfinger.",
+                        isCompleted: $keyboardInstalled
+                    )
 
-                        SetupStepView(
-                            number: 1,
-                            title: "Enable keyboard",
-                            description: "Open iOS Settings and activate Wurstfinger keyboard",
-                            isCompleted: $keyboardInstalled
-                        )
-
-                        Button(action: openKeyboardSettings) {
-                            HStack {
-                                Image(systemName: "gear")
-                                Text("Open Settings")
-                                Spacer()
-                                Image(systemName: "arrow.right")
-                            }
-                            .padding()
-                            .background(Color.accentColor)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                        }
-                        .padding(.leading, 40)
-
-                        SetupStepView(
-                            number: 2,
-                            title: "Allow full access",
-                            description: "Enable 'Full Access' for cursor movement and text selection",
-                            isCompleted: $fullAccessEnabled
-                        )
-
-                        SetupStepView(
-                            number: 3,
-                            title: "Test keyboard",
-                            description: "Switch to the Test tab and try the keyboard",
-                            isCompleted: .constant(false)
-                        )
+                    Button("Open Settings", systemImage: "gear") {
+                        openURL(settingsURL)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.accentColor)
 
-                    Spacer(minLength: 40)
+                    SetupStepView(
+                        number: 2,
+                        title: "Allow full access",
+                        description: "Activate \"Allow Full Access\" so cursor control and deletion gestures work.",
+                        isCompleted: $fullAccessEnabled
+                    )
+
+                    SetupStepView(
+                        number: 3,
+                        title: "Try the keyboard",
+                        description: "Switch to the Test tab and experiment with gestures.",
+                        isCompleted: $practiced
+                    )
                 }
-                .padding()
             }
             .navigationTitle("Setup")
-            .navigationBarTitleDisplayMode(.inline)
         }
-    }
-
-    private func openKeyboardSettings() {
-        #if !APPEX
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(url)
-        }
-        #endif
     }
 }
 
-struct SetupStepView: View {
+private struct SetupStepView: View {
     let number: Int
     let title: String
     let description: String
     @Binding var isCompleted: Bool
 
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            // Number circle
+        HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle()
                     .fill(isCompleted ? Color.green : Color.accentColor)
@@ -88,41 +69,38 @@ struct SetupStepView: View {
 
                 if isCompleted {
                     Image(systemName: "checkmark")
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .fontWeight(.bold)
                 } else {
                     Text("\(number)")
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .fontWeight(.semibold)
                 }
             }
 
-            // Content
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.headline)
 
                 Text(description)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            // Checkbox
-            Button(action: { isCompleted.toggle() }) {
-                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundColor(isCompleted ? .green : .gray)
+            Toggle(isOn: $isCompleted) {
+                EmptyView()
             }
+            .labelsHidden()
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .padding(.vertical, 8)
     }
 }
+#endif
 
+#if os(iOS)
 #Preview {
     OnboardingView()
 }
+#endif

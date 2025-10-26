@@ -11,8 +11,10 @@ struct SettingsView: View {
     @AppStorage("utilityColumnLeading", store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
     private var utilityColumnLeading = false
 
+    private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section {
                     Toggle(isOn: $utilityColumnLeading) {
@@ -46,7 +48,7 @@ struct SettingsView: View {
                             .foregroundColor(.secondary)
                     }
 
-                    Link(destination: URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!) {
+                    Link(destination: licenseURL) {
                         HStack {
                             Text("License")
                             Spacer()

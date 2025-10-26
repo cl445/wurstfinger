@@ -214,13 +214,12 @@ struct KeyboardLayout {
                         .downLeft: "$",
                         .down: "ä",
                         .downRight: "v",
-                        .right: "-"
-                    ],
-                    composeMap: [
-                        .upRight: (display: "¿¡", trigger: "!")
+                        .right: "-",
+                        .upRight: "?"
                     ],
                     returnOverrides: [
-                        .right: .text("–")
+                        .right: .text("–"),
+                        .upRight: .text("¿")
                     ]
                 ),
                 Self.makeKey(
@@ -567,5 +566,60 @@ extension MessagEaseKey {
         case .compose(let trigger, let display):
             return display ?? trigger
         }
+    }
+}
+
+// MARK: - Keyboard Constants
+
+enum KeyboardConstants {
+    // MARK: - Key Dimensions
+    enum KeyDimensions {
+        static let height: CGFloat = 54
+        static let minWidth: CGFloat = 44
+        static let cornerRadius: CGFloat = 12
+    }
+
+    // MARK: - Font Sizes
+    enum FontSizes {
+        static let keyLabel: CGFloat = 22
+        static let defaultLabel: CGFloat = 18
+        static let utilityLabel: CGFloat = 22
+        static let hintEmphasis: CGFloat = 11
+        static let hintNormal: CGFloat = 10
+    }
+
+    // MARK: - Layout Spacing
+    enum Layout {
+        static let gridHorizontalSpacing: CGFloat = 8
+        static let gridVerticalSpacing: CGFloat = 8
+        static let horizontalPadding: CGFloat = 12
+        static let verticalPadding: CGFloat = 10
+        static let hintMargin: CGFloat = 10
+        static let hintMarginReturning: CGFloat = 22
+    }
+
+    // MARK: - Gesture Recognition
+    enum Gesture {
+        static let minSwipeLength: CGFloat = 30
+        static let circleCompletionTolerance: CGFloat = 16
+        static let finalOffsetMultiplier: CGFloat = 0.71
+        static let positionBufferSize: Int = 60
+    }
+
+    // MARK: - Space Key Gestures
+    enum SpaceGestures {
+        static let dragActivationThreshold: CGFloat = 8
+        static let selectionActivationThreshold: CGFloat = 24
+        static let dragStep: CGFloat = 14
+    }
+
+    // MARK: - Delete Key Gestures
+    enum DeleteGestures {
+        static let dragActivationThreshold: CGFloat = 8
+        static let slideActivationThreshold: CGFloat = 28
+        static let wordSwipeThreshold: CGFloat = 40
+        static let verticalTolerance: CGFloat = 28
+        static let repeatInterval: TimeInterval = 0.08
+        static let repeatDelay: TimeInterval = 0.35
     }
 }

@@ -50,7 +50,6 @@ final class KeyboardViewModel: ObservableObject {
     private var actionHandler: ((KeyboardAction) -> Void)?
     private var isSpaceDragging = false
     private var spaceDragResidual: CGFloat = 0
-    private let spaceDragStep: CGFloat = 14
     private var isSpaceSelecting = false
     private var spaceSelectionResidual: CGFloat = 0
     private var isDeleteDragging = false
@@ -269,14 +268,14 @@ final class KeyboardViewModel: ObservableObject {
 
         spaceDragResidual += deltaX
 
-        while spaceDragResidual <= -spaceDragStep {
+        while spaceDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
             actionHandler?(.moveCursor(offset: -1))
-            spaceDragResidual += spaceDragStep
+            spaceDragResidual += KeyboardConstants.SpaceGestures.dragStep
         }
 
-        while spaceDragResidual >= spaceDragStep {
+        while spaceDragResidual >= KeyboardConstants.SpaceGestures.dragStep {
             actionHandler?(.moveCursor(offset: 1))
-            spaceDragResidual -= spaceDragStep
+            spaceDragResidual -= KeyboardConstants.SpaceGestures.dragStep
         }
     }
 
@@ -304,14 +303,14 @@ final class KeyboardViewModel: ObservableObject {
 
         spaceSelectionResidual += deltaX
 
-        while spaceSelectionResidual <= -spaceDragStep {
+        while spaceSelectionResidual <= -KeyboardConstants.SpaceGestures.dragStep {
             actionHandler?(.updateSelection(offset: -1))
-            spaceSelectionResidual += spaceDragStep
+            spaceSelectionResidual += KeyboardConstants.SpaceGestures.dragStep
         }
 
-        while spaceSelectionResidual >= spaceDragStep {
+        while spaceSelectionResidual >= KeyboardConstants.SpaceGestures.dragStep {
             actionHandler?(.updateSelection(offset: 1))
-            spaceSelectionResidual -= spaceDragStep
+            spaceSelectionResidual -= KeyboardConstants.SpaceGestures.dragStep
         }
     }
 
@@ -325,22 +324,18 @@ final class KeyboardViewModel: ObservableObject {
 
         deleteDragResidual += deltaX
 
-        while deleteDragResidual <= -spaceDragStep {
+        while deleteDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
             actionHandler?(.deleteBackward)
-            deleteDragResidual += spaceDragStep
+            deleteDragResidual += KeyboardConstants.SpaceGestures.dragStep
         }
 
         if deleteDragResidual > 0 {
-            deleteDragResidual = min(deleteDragResidual, spaceDragStep)
+            deleteDragResidual = min(deleteDragResidual, KeyboardConstants.SpaceGestures.dragStep)
         }
     }
 
     func endDeleteDrag() {
         isDeleteDragging = false
         deleteDragResidual = 0
-    }
-
-    private func uppercaseGerman(_ value: String) -> String {
-        value.uppercased(with: Locale(identifier: "de_DE"))
     }
 }

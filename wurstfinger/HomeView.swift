@@ -8,8 +8,11 @@
 import SwiftUI
 
 struct HomeView: View {
+    private let githubURL = URL(string: "https://github.com/cl445/wurstfinger")!
+    private let issuesURL = URL(string: "https://github.com/cl445/wurstfinger/issues")!
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 24) {
                 Spacer()
 
@@ -60,7 +63,7 @@ struct HomeView: View {
                     .padding(.horizontal)
 
                     HStack(spacing: 12) {
-                        Link(destination: URL(string: "https://github.com/cl445/wurstfinger")!) {
+                        Link(destination: githubURL) {
                             HStack {
                                 Image(systemName: "chevron.left.forwardslash.chevron.right")
                                 Text("GitHub")
@@ -73,7 +76,7 @@ struct HomeView: View {
                             .cornerRadius(12)
                         }
 
-                        Link(destination: URL(string: "https://github.com/cl445/wurstfinger/issues")!) {
+                        Link(destination: issuesURL) {
                             HStack {
                                 Image(systemName: "exclamationmark.bubble")
                                 Text("Issues")
@@ -92,7 +95,6 @@ struct HomeView: View {
                 Spacer()
             }
             .navigationTitle("Wurstfinger")
-            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

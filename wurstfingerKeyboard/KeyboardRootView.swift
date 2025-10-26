@@ -12,11 +12,12 @@ struct KeyboardRootView: View {
     @ObservedObject var viewModel: KeyboardViewModel
 
     var body: some View {
-        Grid(horizontalSpacing: 8, verticalSpacing: 8) {
+        Grid(horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
+             verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing) {
             GridRow {
                 if viewModel.utilityColumnLeading {
                     utilityButton(
-                        height: 54,
+                        height: KeyboardConstants.KeyDimensions.height,
                         onCircularGesture: { direction in
                             viewModel.handleUtilityCircularGesture(.globe, direction: direction)
                         }
@@ -31,7 +32,7 @@ struct KeyboardRootView: View {
 
                 if !viewModel.utilityColumnLeading {
                     utilityButton(
-                        height: 54,
+                        height: KeyboardConstants.KeyDimensions.height,
                         onCircularGesture: { direction in
                             viewModel.handleUtilityCircularGesture(.globe, direction: direction)
                         }
@@ -45,7 +46,8 @@ struct KeyboardRootView: View {
 
             GridRow {
                 if viewModel.utilityColumnLeading {
-                    utilityButton(height: 54, highlighted: viewModel.isSymbolsToggleActive) {
+                    utilityButton(height: KeyboardConstants.KeyDimensions.height,
+                                highlighted: viewModel.isSymbolsToggleActive) {
                         Text(viewModel.symbolToggleLabel)
                     } action: {
                         viewModel.toggleSymbols()
@@ -55,7 +57,8 @@ struct KeyboardRootView: View {
                 keyCells(forRow: 1)
 
                 if !viewModel.utilityColumnLeading {
-                    utilityButton(height: 54, highlighted: viewModel.isSymbolsToggleActive) {
+                    utilityButton(height: KeyboardConstants.KeyDimensions.height,
+                                highlighted: viewModel.isSymbolsToggleActive) {
                         Text(viewModel.symbolToggleLabel)
                     } action: {
                         viewModel.toggleSymbols()
@@ -77,7 +80,7 @@ struct KeyboardRootView: View {
 
             GridRow {
                 if viewModel.utilityColumnLeading {
-                    utilityButton(height: 54) {
+                    utilityButton(height: KeyboardConstants.KeyDimensions.height) {
                         Text("⏎")
                     } action: {
                         viewModel.handleReturn()
@@ -88,7 +91,7 @@ struct KeyboardRootView: View {
                 spaceKey(columnSpan: viewModel.spaceColumnSpan)
 
                 if !viewModel.utilityColumnLeading {
-                    utilityButton(height: 54) {
+                    utilityButton(height: KeyboardConstants.KeyDimensions.height) {
                         Text("⏎")
                     } action: {
                         viewModel.handleReturn()
@@ -96,8 +99,8 @@ struct KeyboardRootView: View {
                 }
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
+        .padding(.vertical, KeyboardConstants.Layout.verticalPadding)
         .background(Color(.systemBackground))
     }
 
@@ -123,7 +126,7 @@ struct KeyboardRootView: View {
 
     private func utilityButton(
         height: CGFloat,
-        fontSize: CGFloat = 22,
+        fontSize: CGFloat = KeyboardConstants.FontSizes.utilityLabel,
         highlighted: Bool = false,
         onCircularGesture: ((KeyboardCircularDirection) -> Void)? = nil,
         @ViewBuilder label: () -> some View,
@@ -151,7 +154,7 @@ private struct KeyCap<Content: View>: View {
         height: CGFloat,
         background: Color = Color(.secondarySystemBackground),
         highlighted: Bool = false,
-        fontSize: CGFloat = 18,
+        fontSize: CGFloat = KeyboardConstants.FontSizes.defaultLabel,
         @ViewBuilder content: () -> Content
     ) {
         self.height = height
@@ -165,9 +168,9 @@ private struct KeyCap<Content: View>: View {
         content
             .font(.system(size: fontSize, weight: .semibold, design: .rounded))
             .foregroundStyle(Color.primary)
-            .frame(minWidth: 44, maxWidth: .infinity, minHeight: height)
+            .frame(minWidth: KeyboardConstants.KeyDimensions.minWidth, maxWidth: .infinity, minHeight: height)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
                     .fill(highlighted ? Color.accentColor.opacity(0.25) : background)
             )
     }
@@ -182,14 +185,11 @@ private struct SpaceKeyButton: View {
     @State private var isSelecting = false
     @State private var lastTranslation: CGSize = .zero
 
-    private let dragActivationThreshold: CGFloat = 8
-    private let selectionActivationThreshold: CGFloat = 24
-
     var body: some View {
         KeyCap(
-            height: 54,
+            height: KeyboardConstants.KeyDimensions.height,
             background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
-            fontSize: 22
+            fontSize: KeyboardConstants.FontSizes.keyLabel
         ) {
             Color.clear
         }
@@ -203,7 +203,7 @@ private struct SpaceKeyButton: View {
                     }
 
                     let deltaX = value.translation.width - lastTranslation.width
-                    if !isSelecting, abs(value.translation.height) >= selectionActivationThreshold {
+                    if !isSelecting, abs(value.translation.height) >= KeyboardConstants.SpaceGestures.selectionActivationThreshold {
                         isSelecting = true
                         hasDragged = true
                         viewModel.beginSpaceSelection()
@@ -213,7 +213,7 @@ private struct SpaceKeyButton: View {
 
                     lastTranslation = value.translation
 
-                    if !hasDragged, !isSelecting, abs(value.translation.width) >= dragActivationThreshold {
+                    if !hasDragged, !isSelecting, abs(value.translation.width) >= KeyboardConstants.SpaceGestures.dragActivationThreshold {
                         hasDragged = true
                     }
 
@@ -255,18 +255,11 @@ private struct DeleteKeyButton: View {
     @State private var repeatTimer: Timer?
     @State private var repeatTriggered = false
 
-    private let dragActivationThreshold: CGFloat = 8
-    private let slideActivationThreshold: CGFloat = 28
-    private let wordSwipeThreshold: CGFloat = 40
-    private let verticalTolerance: CGFloat = 28
-    private let repeatInterval: TimeInterval = 0.08
-    private let repeatDelay: TimeInterval = 0.35
-
     var body: some View {
         KeyCap(
-            height: 54,
+            height: KeyboardConstants.KeyDimensions.height,
             background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
-            fontSize: 22
+            fontSize: KeyboardConstants.FontSizes.keyLabel
         ) {
             Image(systemName: "delete.left")
         }
@@ -285,8 +278,8 @@ private struct DeleteKeyButton: View {
                     totalTranslation = value.translation
 
                     if !isSliding,
-                       abs(totalTranslation.width) >= slideActivationThreshold,
-                       abs(totalTranslation.height) <= verticalTolerance {
+                       abs(totalTranslation.width) >= KeyboardConstants.DeleteGestures.slideActivationThreshold,
+                       abs(totalTranslation.height) <= KeyboardConstants.DeleteGestures.verticalTolerance {
                         isSliding = true
                         hasDragged = true
                         viewModel.beginDeleteDrag()
@@ -299,9 +292,9 @@ private struct DeleteKeyButton: View {
                         viewModel.updateDeleteDrag(deltaX: deltaX)
                         lastTranslation = totalTranslation
                     } else {
-                        if abs(totalTranslation.width) >= wordSwipeThreshold {
+                        if abs(totalTranslation.width) >= KeyboardConstants.DeleteGestures.wordSwipeThreshold {
                             hasDragged = true
-                        } else if abs(totalTranslation.width) >= dragActivationThreshold {
+                        } else if abs(totalTranslation.width) >= KeyboardConstants.DeleteGestures.dragActivationThreshold {
                             hasDragged = true
                         }
                     }
@@ -316,8 +309,8 @@ private struct DeleteKeyButton: View {
                         viewModel.endDeleteDrag()
                     } else {
                         let translation = totalTranslation
-                        let isWordSwipe = translation.width <= -wordSwipeThreshold &&
-                            abs(translation.height) <= verticalTolerance
+                        let isWordSwipe = translation.width <= -KeyboardConstants.DeleteGestures.wordSwipeThreshold &&
+                            abs(translation.height) <= KeyboardConstants.DeleteGestures.verticalTolerance
 
                         if isWordSwipe {
                             viewModel.handleDeleteWord()
@@ -330,7 +323,7 @@ private struct DeleteKeyButton: View {
                 }
         )
         .simultaneousGesture(
-            LongPressGesture(minimumDuration: repeatDelay)
+            LongPressGesture(minimumDuration: KeyboardConstants.DeleteGestures.repeatDelay)
                 .onEnded { _ in
                     if !isSliding {
                         startRepeat()
@@ -349,7 +342,7 @@ private struct DeleteKeyButton: View {
         viewModel.handleDelete()
         repeatTriggered = true
         repeatTimer?.invalidate()
-        repeatTimer = Timer.scheduledTimer(withTimeInterval: repeatInterval, repeats: true) { _ in
+        repeatTimer = Timer.scheduledTimer(withTimeInterval: KeyboardConstants.DeleteGestures.repeatInterval, repeats: true) { _ in
             repeatTriggered = true
             viewModel.handleDelete()
         }
@@ -387,9 +380,6 @@ private struct UtilityKeyButton<Content: View>: View {
     @State private var positions: [CGPoint] = []
     @State private var maxOffset: CGPoint = .zero
 
-    private let minSwipeLength: CGFloat = 30
-    private let circleCompletionTolerance: CGFloat = 16
-
     init(
         height: CGFloat,
         highlighted: Bool,
@@ -426,8 +416,8 @@ private struct UtilityKeyButton<Content: View>: View {
                     let point = CGPoint(x: value.translation.width, y: value.translation.height)
                     positions.append(point)
 
-                    if positions.count > 60 {
-                        positions.removeFirst(positions.count - 60)
+                    if positions.count > KeyboardConstants.Gesture.positionBufferSize {
+                        positions.removeFirst(positions.count - KeyboardConstants.Gesture.positionBufferSize)
                     }
 
                     if point.magnitude() > maxOffset.magnitude() {
@@ -442,18 +432,18 @@ private struct UtilityKeyButton<Content: View>: View {
                     let finalPoint = CGPoint(x: value.translation.width, y: value.translation.height)
                     positions.append(finalPoint)
 
-                    if positions.count > 60 {
-                        positions.removeFirst(positions.count - 60)
+                    if positions.count > KeyboardConstants.Gesture.positionBufferSize {
+                        positions.removeFirst(positions.count - KeyboardConstants.Gesture.positionBufferSize)
                     }
 
                     let maxDistance = maxOffset.magnitude()
 
                     if let onCircularGesture,
-                       maxDistance >= minSwipeLength,
+                       maxDistance >= KeyboardConstants.Gesture.minSwipeLength,
                        let circle = KeyboardGestureRecognizer.circularDirection(
                            positions: positions,
-                           circleCompletionTolerance: circleCompletionTolerance,
-                           minSwipeLength: minSwipeLength
+                           circleCompletionTolerance: KeyboardConstants.Gesture.circleCompletionTolerance,
+                           minSwipeLength: KeyboardConstants.Gesture.minSwipeLength
                        ) {
                         onCircularGesture(circle)
                     } else {
@@ -479,15 +469,11 @@ private struct KeyButton: View {
     @State private var positions: [CGPoint] = []
     @State private var maxOffset: CGPoint = .zero
 
-    private let minSwipeLength: CGFloat = 30
-    private let finalOffsetMultiplier: CGFloat = 0.71
-    private let circleCompletionTolerance: CGFloat = 16
-
     var body: some View {
         KeyCap(
-            height: 54,
+            height: KeyboardConstants.KeyDimensions.height,
             background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
-            fontSize: 22
+            fontSize: KeyboardConstants.FontSizes.keyLabel
         ) {
             Text(display)
         }
@@ -503,8 +489,8 @@ private struct KeyButton: View {
                     let point = CGPoint(x: value.translation.width, y: value.translation.height)
                     positions.append(point)
 
-                    if positions.count > 60 {
-                        positions.removeFirst(positions.count - 60)
+                    if positions.count > KeyboardConstants.Gesture.positionBufferSize {
+                        positions.removeFirst(positions.count - KeyboardConstants.Gesture.positionBufferSize)
                     }
 
                     if point.magnitude() > maxOffset.magnitude() {
@@ -517,14 +503,14 @@ private struct KeyButton: View {
                     let finalPoint = CGPoint(x: value.translation.width, y: value.translation.height)
                     positions.append(finalPoint)
 
-                    if positions.count > 60 {
-                        positions.removeFirst(positions.count - 60)
+                    if positions.count > KeyboardConstants.Gesture.positionBufferSize {
+                        positions.removeFirst(positions.count - KeyboardConstants.Gesture.positionBufferSize)
                     }
 
                     let maxDistance = maxOffset.magnitude()
                     let finalDistance = finalPoint.magnitude()
 
-                    let finalOffsetThreshold = minSwipeLength * finalOffsetMultiplier
+                    let finalOffsetThreshold = KeyboardConstants.Gesture.minSwipeLength * KeyboardConstants.Gesture.finalOffsetMultiplier
 
                     let maxDirection = KeyboardDirection.direction(
                         for: CGSize(width: maxOffset.x, height: maxOffset.y),
@@ -533,16 +519,16 @@ private struct KeyButton: View {
 
                     let circle = KeyboardGestureRecognizer.circularDirection(
                         positions: positions,
-                        circleCompletionTolerance: circleCompletionTolerance,
-                        minSwipeLength: minSwipeLength
+                        circleCompletionTolerance: KeyboardConstants.Gesture.circleCompletionTolerance,
+                        minSwipeLength: KeyboardConstants.Gesture.minSwipeLength
                     )
 
                     let finalDirection = KeyboardDirection.direction(
                         for: value.translation,
-                        tolerance: minSwipeLength
+                        tolerance: KeyboardConstants.Gesture.minSwipeLength
                     )
 
-                    if let circle, maxDistance >= minSwipeLength {
+                    if let circle, maxDistance >= KeyboardConstants.Gesture.minSwipeLength {
                         viewModel.handleCircularGesture(for: key, direction: circle)
                         resetGestureState()
                         return
@@ -550,7 +536,7 @@ private struct KeyButton: View {
 
                     let finalOffsetSmallEnough = finalDistance <= finalOffsetThreshold || finalDirection != maxDirection
 
-                    if maxDistance >= minSwipeLength, finalOffsetSmallEnough {
+                    if maxDistance >= KeyboardConstants.Gesture.minSwipeLength, finalOffsetSmallEnough {
                         if maxDirection != .center {
                             viewModel.handleKeySwipeReturn(key, direction: maxDirection)
                         } else {
@@ -592,7 +578,8 @@ private struct KeyHintOverlay: View {
 
     private func hintText(_ text: String, emphasis: Bool) -> some View {
         Text(text)
-            .font(.system(size: emphasis ? 11 : 10, weight: emphasis ? .semibold : .medium, design: .rounded))
+            .font(.system(size: emphasis ? KeyboardConstants.FontSizes.hintEmphasis : KeyboardConstants.FontSizes.hintNormal,
+                         weight: emphasis ? .semibold : .medium, design: .rounded))
             .foregroundStyle(emphasis ? Color.primary.opacity(0.85) : Color.secondary.opacity(0.8))
             .minimumScaleFactor(0.6)
             .lineLimit(1)
@@ -602,7 +589,7 @@ private struct KeyHintOverlay: View {
     private func position(for direction: KeyboardDirection, returning: Bool, in size: CGSize) -> CGPoint {
         let width = size.width
         let height = size.height
-        let margin: CGFloat = returning ? 22 : 10
+        let margin: CGFloat = returning ? KeyboardConstants.Layout.hintMarginReturning : KeyboardConstants.Layout.hintMargin
 
         switch direction {
         case .up:
