@@ -197,12 +197,12 @@ struct KeyboardLayout {
                 Self.makeKey(
                     center: "a",
                     textMap: [
+                        .downLeft: "$",
                         .down: "ä",
                         .downRight: "v",
                         .right: "-"
                     ],
                     composeMap: [
-                        .downLeft: (display: "$", trigger: "$"),
                         .upRight: (display: "¿¡", trigger: "!")
                     ],
                     returnOverrides: [
@@ -215,13 +215,13 @@ struct KeyboardLayout {
                         .down: "l",
                         .downRight: "\\",
                         .downLeft: "/",
-                        .left: "+"
+                        .left: "+",
+                        .right: "!"
                     ],
                     composeMap: [
                         .upLeft: (display: "`", trigger: "`"),
                         .up: (display: "^", trigger: "^"),
-                        .upRight: (display: "´", trigger: "'"),
-                        .right: (display: "!", trigger: "!")
+                        .upRight: (display: "´", trigger: "'")
                     ],
                     returnOverrides: [
                         .left: .text("×"),
@@ -235,11 +235,8 @@ struct KeyboardLayout {
                         .downLeft: "x",
                         .left: "?",
                         .down: "=",
-                        .downRight: "€"
-                    ],
-                    composeMap: [
-                        .up: (display: "˘", trigger: "˘"),
-                        .left: (display: "?", trigger: "?")
+                        .downRight: "€",
+                        .up: "˘"
                     ],
                     returnOverrides: [
                         .left: .text("¿")
@@ -300,13 +297,11 @@ struct KeyboardLayout {
                 Self.makeKey(
                     center: "t",
                     textMap: [
+                        .upLeft: "~",
                         .upRight: "y",
                         .left: "<",
                         .down: "ß",
                         .right: "*"
-                    ],
-                    composeMap: [
-                        .upLeft: (display: "~", trigger: "~")
                     ],
                     returnOverrides: [
                         .left: .text("«"),
@@ -316,15 +311,13 @@ struct KeyboardLayout {
                 makeKey(
                     center: "e",
                     textMap: [
+                        .upLeft: "\"",
                         .up: "w",
+                        .upRight: "'",
                         .right: "z",
                         .downLeft: ",",
                         .down: ".",
                         .downRight: ":"
-                    ],
-                    composeMap: [
-                        .upLeft: (display: "\"", trigger: "\""),
-                        .upRight: (display: "´", trigger: "'")
                     ],
                     returnOverrides: [
                         .down: .text("…"),
@@ -338,11 +331,9 @@ struct KeyboardLayout {
                     textMap: [
                         .upLeft: "f",
                         .up: "&",
+                        .upRight: "°",
                         .downLeft: ";",
                         .right: ">"
-                    ],
-                    composeMap: [
-                        .upRight: (display: "°", trigger: "°")
                     ],
                     returnOverrides: [
                         .right: .text("»")
@@ -472,7 +463,7 @@ extension CGPoint {
 
 private extension KeyboardLayout {
     private static let composeTriggers: Set<String> = [
-        "\"", "'", "`", "^", "~", "°", "˘", "!", "$", "゛", "?", "*", "ˇ"
+        "\"", "'", "`", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
     ]
 
     private static func makeKey(

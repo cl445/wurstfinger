@@ -200,11 +200,11 @@ struct wurstfingerTests {
             }
         }
 
-        let thirdRow = try #require(viewModel.rows.count > 2 ? viewModel.rows[2] : nil)
-        let eKey = try #require(thirdRow.count > 1 ? thirdRow[1] : nil)
-        viewModel.handleKeySwipe(eKey, direction: .upRight)
+        let firstRow = try #require(viewModel.rows.first)
+        let aKey = try #require(firstRow.first)
+        viewModel.handleKeySwipe(aKey, direction: .upRight)
 
-        #expect(captured == "'")
+        #expect(captured == "!")
     }
 
     @Test func composeEngineProducesReplacement() async throws {
@@ -262,6 +262,33 @@ struct wurstfingerTests {
         try trigger(row: 2, column: 0, direction: .right, expected: "†") // * → †
         try trigger(row: 2, column: 2, direction: .right, expected: "»") // > → »
         try trigger(row: 1, column: 0, direction: .upRight, expected: "‰") // % → ‰
+    }
+
+    @Test func directPunctuationSwipeDoesNotCompose() async throws {
+        let viewModel = KeyboardViewModel()
+        var inserts: [String] = []
+        var composed: [String] = []
+
+        viewModel.bindActionHandler { action in
+            switch action {
+            case .insert(let value):
+                inserts.append(value)
+            case .compose(let trigger):
+                composed.append(trigger)
+            default:
+                break
+            }
+        }
+
+        let firstRow = try #require(viewModel.rows.first)
+        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
+        viewModel.handleKeySwipe(nKey, direction: .right)
+
+        let iKey = try #require(firstRow.count > 2 ? firstRow[2] : nil)
+        viewModel.handleKeySwipe(iKey, direction: .left)
+
+        #expect(composed.isEmpty)
+        #expect(inserts.suffix(2) == ["!", "?"])
     }
 
 }
