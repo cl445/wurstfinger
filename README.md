@@ -1,5 +1,10 @@
 # Wurstfinger
 
+I started this project because my favorite keyboard, MessagEase, stopped
+working on iOS 26. The project is in a very early stage and currently only
+implements the German layout. The goal is to build a full replacement for
+MessagEase—pull requests are very welcome!
+
 Wurstfinger is a MessagEase-inspired keyboard for iOS written in SwiftUI. It
 brings thumb-friendly gestures from Thumb-Key and the original MessagEase
 layout to Apple devices, including circular gestures for uppercase letters,
