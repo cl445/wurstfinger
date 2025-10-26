@@ -231,4 +231,37 @@ struct wurstfingerTests {
         #expect(inserted.last == "×")
     }
 
+    @Test func returnSwipesProduceTypographicVariants() async throws {
+        let viewModel = KeyboardViewModel()
+        var inserted: [String] = []
+
+        viewModel.bindActionHandler { action in
+            if case let .insert(value) = action {
+                inserted.append(value)
+            }
+        }
+
+        func trigger(row: Int, column: Int, direction: KeyboardDirection, expected: String, file: StaticString = #file, line: UInt = #line) throws {
+            inserted.removeAll()
+            let rows = viewModel.rows
+            let targetRow = try #require(row < rows.count ? rows[row] : nil)
+            let key = try #require(column < targetRow.count ? targetRow[column] : nil)
+            viewModel.handleKeySwipeReturn(key, direction: direction)
+            #expect(inserted.last == expected, file: file, line: line)
+        }
+
+        try trigger(row: 0, column: 1, direction: .right, expected: "¡") // ! → ¡
+        try trigger(row: 0, column: 1, direction: .downLeft, expected: "÷") // / → ÷
+        try trigger(row: 0, column: 2, direction: .left, expected: "¿") // ? → ¿
+        try trigger(row: 0, column: 0, direction: .right, expected: "–") // - → –
+        try trigger(row: 2, column: 1, direction: .down, expected: "…") // . → …
+        try trigger(row: 2, column: 1, direction: .downLeft, expected: "„") // , → „
+        try trigger(row: 2, column: 1, direction: .upLeft, expected: "“") // " → “
+        try trigger(row: 2, column: 1, direction: .upRight, expected: "’") // ' → ’
+        try trigger(row: 2, column: 0, direction: .left, expected: "«") // < → «
+        try trigger(row: 2, column: 0, direction: .right, expected: "†") // * → †
+        try trigger(row: 2, column: 2, direction: .right, expected: "»") // > → »
+        try trigger(row: 1, column: 0, direction: .upRight, expected: "‰") // % → ‰
+    }
+
 }
