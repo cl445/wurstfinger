@@ -132,7 +132,6 @@
 				427511A22EAAF62100C5635A /* wurstfingerTests */,
 				427511AC2EAAF62100C5635A /* wurstfingerUITests */,
 				427511932EAAF62000C5635A /* Products */,
-				42F77B862EAAFD6200586F94 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -145,13 +144,6 @@
 				437E1C042EB3C30000C5635A /* Wurstfinger.appex */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		42F77B862EAAFD6200586F94 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
