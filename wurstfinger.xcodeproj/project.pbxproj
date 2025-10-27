@@ -8,11 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		437E1C0A2EB3C30000C5635A /* Wurstfinger.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 437E1C042EB3C30000C5635A /* Wurstfinger.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		437E1C0D2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437E1C112EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewController.swift */; };
-		437E1C0E2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437E1C122EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewModel.swift */; };
-		437E1C0F2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437E1C132EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift */; };
-		437E1C102EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437E1C142EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardLayout.swift */; };
-		752601BD3E32A0503D656969 /* wurstfingerKeyboard/ComposeEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F4908133A385A8AB37AF8F5 /* wurstfingerKeyboard/ComposeEngine.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -21,14 +16,14 @@
 			containerPortal = 4275118A2EAAF62000C5635A /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 427511912EAAF62000C5635A;
-			remoteInfo = wurstfinger;
+			remoteInfo = WurstfingerApp;
 		};
 		427511AA2EAAF62100C5635A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4275118A2EAAF62000C5635A /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 427511912EAAF62000C5635A;
-			remoteInfo = wurstfinger;
+			remoteInfo = WurstfingerApp;
 		};
 		437E1C0B2EB3C30000C5635A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -54,17 +49,22 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		3F4908133A385A8AB37AF8F5 /* wurstfingerKeyboard/ComposeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/ComposeEngine.swift; sourceTree = SOURCE_ROOT; };
-		427511922EAAF62000C5635A /* wurstfinger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = wurstfinger.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		4275119F2EAAF62100C5635A /* wurstfingerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = wurstfingerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		427511A92EAAF62100C5635A /* wurstfingerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = wurstfingerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		427511922EAAF62000C5635A /* WurstfingerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WurstfingerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4275119F2EAAF62100C5635A /* WurstfingerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WurstfingerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		427511A92EAAF62100C5635A /* WurstfingerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WurstfingerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		437E1C042EB3C30000C5635A /* Wurstfinger.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Wurstfinger.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		437E1C112EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/KeyboardViewController.swift; sourceTree = SOURCE_ROOT; };
-		437E1C122EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/KeyboardViewModel.swift; sourceTree = SOURCE_ROOT; };
-		437E1C132EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/KeyboardRootView.swift; sourceTree = SOURCE_ROOT; };
-		437E1C142EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wurstfingerKeyboard/KeyboardLayout.swift; sourceTree = SOURCE_ROOT; };
 		437E1C152EB3D50000C5635A /* wurstfingerKeyboard/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = wurstfingerKeyboard/Info.plist; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		422B5FA22EAED9E8002A926E /* Exceptions for "wurstfingerKeyboard" folder */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 437E1C002EB3C30000C5635A /* Wurstfinger */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		427511942EAAF62000C5635A /* wurstfinger */ = {
@@ -80,6 +80,14 @@
 		427511AC2EAAF62100C5635A /* wurstfingerUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = wurstfingerUITests;
+			sourceTree = "<group>";
+		};
+		437E1C052EB3C30000C5635A /* wurstfingerKeyboard */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				422B5FA22EAED9E8002A926E /* Exceptions for "wurstfingerKeyboard" folder */,
+			);
+			path = wurstfingerKeyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -120,9 +128,9 @@
 			isa = PBXGroup;
 			children = (
 				427511942EAAF62000C5635A /* wurstfinger */,
+				437E1C052EB3C30000C5635A /* wurstfingerKeyboard */,
 				427511A22EAAF62100C5635A /* wurstfingerTests */,
 				427511AC2EAAF62100C5635A /* wurstfingerUITests */,
-				437E1C052EB3C30000C5635A /* Wurstfinger */,
 				427511932EAAF62000C5635A /* Products */,
 				42F77B862EAAFD6200586F94 /* Recovered References */,
 			);
@@ -131,9 +139,9 @@
 		427511932EAAF62000C5635A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				427511922EAAF62000C5635A /* wurstfinger.app */,
-				4275119F2EAAF62100C5635A /* wurstfingerTests.xctest */,
-				427511A92EAAF62100C5635A /* wurstfingerUITests.xctest */,
+				427511922EAAF62000C5635A /* WurstfingerApp.app */,
+				4275119F2EAAF62100C5635A /* WurstfingerTests.xctest */,
+				427511A92EAAF62100C5635A /* WurstfingerUITests.xctest */,
 				437E1C042EB3C30000C5635A /* Wurstfinger.appex */,
 			);
 			name = Products;
@@ -142,30 +150,16 @@
 		42F77B862EAAFD6200586F94 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				437E1C142EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardLayout.swift */,
-				437E1C132EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift */,
-				437E1C122EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewModel.swift */,
-				437E1C112EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewController.swift */,
-				3F4908133A385A8AB37AF8F5 /* wurstfingerKeyboard/ComposeEngine.swift */,
 			);
 			name = "Recovered References";
-			sourceTree = "<group>";
-		};
-		437E1C052EB3C30000C5635A /* Wurstfinger */ = {
-			isa = PBXGroup;
-			children = (
-				437E1C152EB3D50000C5635A /* wurstfingerKeyboard/Info.plist */,
-			);
-			name = Wurstfinger;
-			path = wurstfingerKeyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		427511912EAAF62000C5635A /* wurstfinger */ = {
+		427511912EAAF62000C5635A /* WurstfingerApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 427511B32EAAF62100C5635A /* Build configuration list for PBXNativeTarget "wurstfinger" */;
+			buildConfigurationList = 427511B32EAAF62100C5635A /* Build configuration list for PBXNativeTarget "WurstfingerApp" */;
 			buildPhases = (
 				4275118E2EAAF62000C5635A /* Sources */,
 				4275118F2EAAF62000C5635A /* Frameworks */,
@@ -180,16 +174,16 @@
 			fileSystemSynchronizedGroups = (
 				427511942EAAF62000C5635A /* wurstfinger */,
 			);
-			name = wurstfinger;
+			name = WurstfingerApp;
 			packageProductDependencies = (
 			);
-			productName = wurstfinger;
-			productReference = 427511922EAAF62000C5635A /* wurstfinger.app */;
+			productName = WurstfingerApp;
+			productReference = 427511922EAAF62000C5635A /* WurstfingerApp.app */;
 			productType = "com.apple.product-type.application";
 		};
-		4275119E2EAAF62100C5635A /* wurstfingerTests */ = {
+		4275119E2EAAF62100C5635A /* WurstfingerTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 427511B62EAAF62100C5635A /* Build configuration list for PBXNativeTarget "wurstfingerTests" */;
+			buildConfigurationList = 427511B62EAAF62100C5635A /* Build configuration list for PBXNativeTarget "WurstfingerTests" */;
 			buildPhases = (
 				4275119B2EAAF62100C5635A /* Sources */,
 				4275119C2EAAF62100C5635A /* Frameworks */,
@@ -203,16 +197,16 @@
 			fileSystemSynchronizedGroups = (
 				427511A22EAAF62100C5635A /* wurstfingerTests */,
 			);
-			name = wurstfingerTests;
+			name = WurstfingerTests;
 			packageProductDependencies = (
 			);
 			productName = wurstfingerTests;
-			productReference = 4275119F2EAAF62100C5635A /* wurstfingerTests.xctest */;
+			productReference = 4275119F2EAAF62100C5635A /* WurstfingerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		427511A82EAAF62100C5635A /* wurstfingerUITests */ = {
+		427511A82EAAF62100C5635A /* WurstfingerUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 427511B92EAAF62100C5635A /* Build configuration list for PBXNativeTarget "wurstfingerUITests" */;
+			buildConfigurationList = 427511B92EAAF62100C5635A /* Build configuration list for PBXNativeTarget "WurstfingerUITests" */;
 			buildPhases = (
 				427511A52EAAF62100C5635A /* Sources */,
 				427511A62EAAF62100C5635A /* Frameworks */,
@@ -226,11 +220,11 @@
 			fileSystemSynchronizedGroups = (
 				427511AC2EAAF62100C5635A /* wurstfingerUITests */,
 			);
-			name = wurstfingerUITests;
+			name = WurstfingerUITests;
 			packageProductDependencies = (
 			);
 			productName = wurstfingerUITests;
-			productReference = 427511A92EAAF62100C5635A /* wurstfingerUITests.xctest */;
+			productReference = 427511A92EAAF62100C5635A /* WurstfingerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		437E1C002EB3C30000C5635A /* Wurstfinger */ = {
@@ -246,7 +240,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				437E1C052EB3C30000C5635A /* Wurstfinger */,
+				437E1C052EB3C30000C5635A /* wurstfingerKeyboard */,
 			);
 			name = Wurstfinger;
 			packageProductDependencies = (
@@ -281,7 +275,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 4275118D2EAAF62000C5635A /* Build configuration list for PBXProject "wurstfinger" */;
+			buildConfigurationList = 4275118D2EAAF62000C5635A /* Build configuration list for PBXProject "Wurstfinger" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -295,9 +289,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				427511912EAAF62000C5635A /* wurstfinger */,
-				4275119E2EAAF62100C5635A /* wurstfingerTests */,
-				427511A82EAAF62100C5635A /* wurstfingerUITests */,
+				427511912EAAF62000C5635A /* WurstfingerApp */,
+				4275119E2EAAF62100C5635A /* WurstfingerTests */,
+				427511A82EAAF62100C5635A /* WurstfingerUITests */,
 				437E1C002EB3C30000C5635A /* Wurstfinger */,
 			);
 		};
@@ -360,11 +354,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				437E1C102EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardLayout.swift in Sources */,
-				437E1C0F2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardRootView.swift in Sources */,
-				437E1C0E2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewModel.swift in Sources */,
-				437E1C0D2EB3C31F00C5635A /* wurstfingerKeyboard/KeyboardViewController.swift in Sources */,
-				752601BD3E32A0503D656969 /* wurstfingerKeyboard/ComposeEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,12 +362,12 @@
 /* Begin PBXTargetDependency section */
 		427511A12EAAF62100C5635A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 427511912EAAF62000C5635A /* wurstfinger */;
+			target = 427511912EAAF62000C5635A /* WurstfingerApp */;
 			targetProxy = 427511A02EAAF62100C5635A /* PBXContainerItemProxy */;
 		};
 		427511AB2EAAF62100C5635A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 427511912EAAF62000C5635A /* wurstfinger */;
+			target = 427511912EAAF62000C5635A /* WurstfingerApp */;
 			targetProxy = 427511AA2EAAF62100C5635A /* PBXContainerItemProxy */;
 		};
 		437E1C0C2EB3C30000C5635A /* PBXTargetDependency */ = {
@@ -586,7 +575,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/wurstfinger.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/wurstfinger";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WurstfingerApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WurstfingerApp";
 			};
 			name = Debug;
 		};
@@ -604,7 +593,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/wurstfinger.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/wurstfinger";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WurstfingerApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WurstfingerApp";
 			};
 			name = Release;
 		};
@@ -620,7 +609,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = wurstfinger;
+				TEST_TARGET_NAME = WurstfingerApp;
 			};
 			name = Debug;
 		};
@@ -636,14 +625,13 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = wurstfinger;
+				TEST_TARGET_NAME = WurstfingerApp;
 			};
 			name = Release;
 		};
 		437E1C072EB3C30000C5635A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = Wurstfinger/Wurstfinger.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -652,6 +640,7 @@
 				DEVELOPMENT_TEAM = B3WJ7U845U;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = wurstfingerKeyboard/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WurstfingerKeyboard;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -672,7 +661,6 @@
 		437E1C082EB3C30000C5635A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = Wurstfinger/Wurstfinger.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -681,6 +669,7 @@
 				DEVELOPMENT_TEAM = B3WJ7U845U;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = wurstfingerKeyboard/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WurstfingerKeyboard;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -703,7 +692,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4275118D2EAAF62000C5635A /* Build configuration list for PBXProject "wurstfinger" */ = {
+		4275118D2EAAF62000C5635A /* Build configuration list for PBXProject "Wurstfinger" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				427511B12EAAF62100C5635A /* Debug */,
@@ -712,7 +701,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		427511B32EAAF62100C5635A /* Build configuration list for PBXNativeTarget "wurstfinger" */ = {
+		427511B32EAAF62100C5635A /* Build configuration list for PBXNativeTarget "WurstfingerApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				427511B42EAAF62100C5635A /* Debug */,
@@ -721,7 +710,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		427511B62EAAF62100C5635A /* Build configuration list for PBXNativeTarget "wurstfingerTests" */ = {
+		427511B62EAAF62100C5635A /* Build configuration list for PBXNativeTarget "WurstfingerTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				427511B72EAAF62100C5635A /* Debug */,
@@ -730,7 +719,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		427511B92EAAF62100C5635A /* Build configuration list for PBXNativeTarget "wurstfingerUITests" */ = {
+		427511B92EAAF62100C5635A /* Build configuration list for PBXNativeTarget "WurstfingerUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				427511BA2EAAF62100C5635A /* Debug */,
