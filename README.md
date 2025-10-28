@@ -15,6 +15,15 @@ layout to Apple devices, including circular gestures for uppercase letters,
 return swipes for typographic punctuation, and compose rules to generate
 accented characters.
 
+## Preview
+
+<p align="center">
+  <picture>
+    <source srcset="docs/images/demo-showcase.webp" type="image/webp">
+    <img src="docs/images/demo-showcase.png" alt="Wurstfinger keyboard running in the companion test view" width="360">
+  </picture>
+</p>
+
 ## Features
 
 - German MessagEase layout with symbol and numeric layers
