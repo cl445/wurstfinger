@@ -11,6 +11,15 @@ struct SettingsView: View {
     @AppStorage("utilityColumnLeading", store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
     private var utilityColumnLeading = false
 
+    @AppStorage("keyAspectRatio", store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
+    private var keyAspectRatio = 1.5
+
+    @AppStorage("keyboardScale", store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
+    private var keyboardScale = 1.0
+
+    @AppStorage("keyboardHorizontalPosition", store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
+    private var keyboardHorizontalPosition = 0.5
+
     private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!
 
     var body: some View {
@@ -27,10 +36,32 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+
+                    NavigationLink(destination: AspectRatioSettingsView(aspectRatio: $keyAspectRatio)) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Key Aspect Ratio")
+                                .font(.body)
+
+                            Text("Current: \(String(format: "%.2f", keyAspectRatio)):1")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    NavigationLink(destination: KeyboardSizePositionSettingsView(scale: $keyboardScale, position: $keyboardHorizontalPosition)) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Keyboard Size & Position")
+                                .font(.body)
+
+                            Text("Scale: \(Int(keyboardScale * 100))%, Position: \(positionLabel(for: keyboardHorizontalPosition))")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 } header: {
                     Text("Layout")
                 } footer: {
-                    Text("Changes position of utility column with globe, symbols, delete and return keys.")
+                    Text("Adjust the shape, size, and position of the keyboard.")
                 }
 
                 Section {
@@ -68,6 +99,16 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+        }
+    }
+
+    private func positionLabel(for value: Double) -> String {
+        if value < 0.25 {
+            return "Left"
+        } else if value > 0.75 {
+            return "Right"
+        } else {
+            return "Center"
         }
     }
 }

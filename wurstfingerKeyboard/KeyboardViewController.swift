@@ -14,6 +14,7 @@ final class KeyboardViewController: UIInputViewController {
     private lazy var viewModel = KeyboardViewModel()
     private var selectionActive = false
     private var selectionOffset = 0
+    private var heightConstraint: NSLayoutConstraint?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,6 +37,26 @@ final class KeyboardViewController: UIInputViewController {
         super.viewWillAppear(animated)
         // Reload settings every time keyboard appears
         viewModel.reloadSettings()
+        updateKeyboardHeight()
+    }
+
+    private func updateKeyboardHeight() {
+        // Calculate keyboard height including both aspect ratio and scale
+        let keyHeight = KeyboardConstants.KeyDimensions.height * (1.5 / viewModel.keyAspectRatio)
+        let baseHeight = (keyHeight * 4) +
+                         (KeyboardConstants.Layout.gridVerticalSpacing * 3) +
+                         (KeyboardConstants.Layout.verticalPadding * 2)
+        // Apply scale to match the visual size from scaleEffect
+        let finalHeight = baseHeight * viewModel.keyboardScale
+
+        if let constraint = heightConstraint {
+            constraint.constant = finalHeight
+        } else {
+            let constraint = view.heightAnchor.constraint(equalToConstant: finalHeight)
+            constraint.priority = .required
+            constraint.isActive = true
+            heightConstraint = constraint
+        }
     }
 
     override func viewWillLayoutSubviews() {
@@ -59,7 +80,6 @@ final class KeyboardViewController: UIInputViewController {
         NSLayoutConstraint.activate([
             controller.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             controller.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            controller.view.topAnchor.constraint(equalTo: view.topAnchor),
             controller.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 

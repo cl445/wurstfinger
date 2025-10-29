@@ -44,6 +44,21 @@ final class KeyboardViewModel: ObservableObject {
             sharedDefaults.set(utilityColumnLeading, forKey: "utilityColumnLeading")
         }
     }
+    @Published var keyAspectRatio: Double {
+        didSet {
+            sharedDefaults.set(keyAspectRatio, forKey: "keyAspectRatio")
+        }
+    }
+    @Published var keyboardScale: Double {
+        didSet {
+            sharedDefaults.set(keyboardScale, forKey: "keyboardScale")
+        }
+    }
+    @Published var keyboardHorizontalPosition: Double {
+        didSet {
+            sharedDefaults.set(keyboardHorizontalPosition, forKey: "keyboardHorizontalPosition")
+        }
+    }
 
     private let layout: KeyboardLayout
     private let sharedDefaults: UserDefaults
@@ -62,14 +77,42 @@ final class KeyboardViewModel: ObservableObject {
         let defaults = UserDefaults(suiteName: "group.com.wurstfinger.shared") ?? .standard
         self.sharedDefaults = defaults
 
-        // Read setting with default value
+        // Read settings with default values
         self.utilityColumnLeading = defaults.object(forKey: "utilityColumnLeading") as? Bool ?? false
+        // Default 1.5 maintains roughly the original key proportions on most devices
+        let savedRatio = defaults.object(forKey: "keyAspectRatio") as? Double ?? 1.5
+        // Ensure aspect ratio is within valid range
+        self.keyAspectRatio = min(1.62, max(1.0, savedRatio))
+        // Default 1.0 = full width
+        let savedScale = defaults.object(forKey: "keyboardScale") as? Double ?? 1.0
+        self.keyboardScale = min(1.0, max(0.3, savedScale))
+        // Default 0.5 = centered
+        let savedPosition = defaults.object(forKey: "keyboardHorizontalPosition") as? Double ?? 0.5
+        self.keyboardHorizontalPosition = min(1.0, max(0.0, savedPosition))
     }
 
     func reloadSettings() {
-        let newValue = sharedDefaults.object(forKey: "utilityColumnLeading") as? Bool ?? false
-        if utilityColumnLeading != newValue {
-            utilityColumnLeading = newValue
+        let newUtilityValue = sharedDefaults.object(forKey: "utilityColumnLeading") as? Bool ?? false
+        if utilityColumnLeading != newUtilityValue {
+            utilityColumnLeading = newUtilityValue
+        }
+
+        let savedRatio = sharedDefaults.object(forKey: "keyAspectRatio") as? Double ?? 1.5
+        let newAspectRatio = min(1.62, max(1.0, savedRatio))
+        if keyAspectRatio != newAspectRatio {
+            keyAspectRatio = newAspectRatio
+        }
+
+        let savedScale = sharedDefaults.object(forKey: "keyboardScale") as? Double ?? 1.0
+        let newScale = min(1.0, max(0.3, savedScale))
+        if keyboardScale != newScale {
+            keyboardScale = newScale
+        }
+
+        let savedPosition = sharedDefaults.object(forKey: "keyboardHorizontalPosition") as? Double ?? 0.5
+        let newPosition = min(1.0, max(0.0, savedPosition))
+        if keyboardHorizontalPosition != newPosition {
+            keyboardHorizontalPosition = newPosition
         }
     }
 

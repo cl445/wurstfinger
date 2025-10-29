@@ -10,14 +10,26 @@ import SwiftUI
 
 struct KeyboardRootView: View {
     @ObservedObject var viewModel: KeyboardViewModel
+    var scaleAnchor: UnitPoint = .bottom
+    var frameAlignment: Alignment = .bottom
+    var overrideWidth: CGFloat? = nil
 
     var body: some View {
+        // At aspectRatio 1.5 (default), use original height of 54pt
+        // Lower ratio = taller keys, higher ratio = shorter keys
+        let keyHeight = KeyboardConstants.KeyDimensions.height * (1.5 / viewModel.keyAspectRatio)
+
+        // Calculate horizontal position offset
+        let screenWidth = overrideWidth ?? UIScreen.main.bounds.width
+        let availableSpace = screenWidth * (1 - viewModel.keyboardScale)
+        let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
+
         Grid(horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
              verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing) {
-            GridRow {
+                GridRow {
                 if viewModel.utilityColumnLeading {
                     utilityButton(
-                        height: KeyboardConstants.KeyDimensions.height,
+                        height: keyHeight,
                         onCircularGesture: { direction in
                             viewModel.handleUtilityCircularGesture(.globe, direction: direction)
                         }
@@ -28,11 +40,11 @@ struct KeyboardRootView: View {
                     }
                 }
 
-                keyCells(forRow: 0)
+                keyCells(forRow: 0, keyHeight: keyHeight)
 
                 if !viewModel.utilityColumnLeading {
                     utilityButton(
-                        height: KeyboardConstants.KeyDimensions.height,
+                        height: keyHeight,
                         onCircularGesture: { direction in
                             viewModel.handleUtilityCircularGesture(.globe, direction: direction)
                         }
@@ -44,9 +56,9 @@ struct KeyboardRootView: View {
                 }
             }
 
-            GridRow {
-                if viewModel.utilityColumnLeading {
-                    utilityButton(height: KeyboardConstants.KeyDimensions.height,
+                GridRow {
+                    if viewModel.utilityColumnLeading {
+                    utilityButton(height: keyHeight,
                                 highlighted: viewModel.isSymbolsToggleActive) {
                         Text(viewModel.symbolToggleLabel)
                     } action: {
@@ -54,10 +66,10 @@ struct KeyboardRootView: View {
                     }
                 }
 
-                keyCells(forRow: 1)
+                keyCells(forRow: 1, keyHeight: keyHeight)
 
                 if !viewModel.utilityColumnLeading {
-                    utilityButton(height: KeyboardConstants.KeyDimensions.height,
+                    utilityButton(height: keyHeight,
                                 highlighted: viewModel.isSymbolsToggleActive) {
                         Text(viewModel.symbolToggleLabel)
                     } action: {
@@ -66,32 +78,32 @@ struct KeyboardRootView: View {
                 }
             }
 
-            GridRow {
-                if viewModel.utilityColumnLeading {
-                    DeleteKeyButton(viewModel: viewModel)
+                GridRow {
+                    if viewModel.utilityColumnLeading {
+                    DeleteKeyButton(viewModel: viewModel, keyHeight: keyHeight)
                 }
 
-                keyCells(forRow: 2)
+                keyCells(forRow: 2, keyHeight: keyHeight)
 
                 if !viewModel.utilityColumnLeading {
-                    DeleteKeyButton(viewModel: viewModel)
+                    DeleteKeyButton(viewModel: viewModel, keyHeight: keyHeight)
                 }
             }
 
-            GridRow {
-                if viewModel.utilityColumnLeading {
-                    utilityButton(height: KeyboardConstants.KeyDimensions.height) {
+                GridRow {
+                    if viewModel.utilityColumnLeading {
+                    utilityButton(height: keyHeight) {
                         Text("⏎")
                     } action: {
                         viewModel.handleReturn()
                     }
                 }
 
-                keyCells(forRow: 3)
-                spaceKey(columnSpan: viewModel.spaceColumnSpan)
+                keyCells(forRow: 3, keyHeight: keyHeight)
+                spaceKey(columnSpan: viewModel.spaceColumnSpan, keyHeight: keyHeight)
 
                 if !viewModel.utilityColumnLeading {
-                    utilityButton(height: KeyboardConstants.KeyDimensions.height) {
+                    utilityButton(height: keyHeight) {
                         Text("⏎")
                     } action: {
                         viewModel.handleReturn()
@@ -101,17 +113,21 @@ struct KeyboardRootView: View {
         }
         .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
         .padding(.vertical, KeyboardConstants.Layout.verticalPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: frameAlignment)
         .background(Color(.systemBackground))
+        .scaleEffect(viewModel.keyboardScale, anchor: scaleAnchor)
+        .offset(x: horizontalOffset)
     }
 
     @ViewBuilder
-    private func keyCells(forRow index: Int) -> some View {
+    private func keyCells(forRow index: Int, keyHeight: CGFloat) -> some View {
         if index < viewModel.rows.count {
             ForEach(viewModel.rows[index]) { key in
                 KeyButton(
                     key: key,
                     display: viewModel.displayText(for: key),
-                    viewModel: viewModel
+                    viewModel: viewModel,
+                    keyHeight: keyHeight
                 )
             }
         } else {
@@ -119,8 +135,8 @@ struct KeyboardRootView: View {
         }
     }
 
-    private func spaceKey(columnSpan: Int) -> some View {
-        SpaceKeyButton(viewModel: viewModel)
+    private func spaceKey(columnSpan: Int, keyHeight: CGFloat) -> some View {
+        SpaceKeyButton(viewModel: viewModel, keyHeight: keyHeight)
             .gridCellColumns(columnSpan)
     }
 
@@ -168,7 +184,7 @@ private struct KeyCap<Content: View>: View {
         content
             .font(.system(size: fontSize, weight: .semibold, design: .rounded))
             .foregroundStyle(Color.primary)
-            .frame(minWidth: KeyboardConstants.KeyDimensions.minWidth, maxWidth: .infinity, minHeight: height)
+            .frame(minWidth: KeyboardConstants.KeyDimensions.minWidth, maxWidth: .infinity, minHeight: height, maxHeight: height)
             .background(
                 RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
                     .fill(highlighted ? Color.accentColor.opacity(0.25) : background)
@@ -178,6 +194,7 @@ private struct KeyCap<Content: View>: View {
 
 private struct SpaceKeyButton: View {
     let viewModel: KeyboardViewModel
+    let keyHeight: CGFloat
 
     @State private var isActive = false
     @State private var dragStarted = false
@@ -187,7 +204,7 @@ private struct SpaceKeyButton: View {
 
     var body: some View {
         KeyCap(
-            height: KeyboardConstants.KeyDimensions.height,
+            height: keyHeight,
             background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
             fontSize: KeyboardConstants.FontSizes.keyLabel
         ) {
@@ -244,6 +261,7 @@ private struct SpaceKeyButton: View {
 
 private struct DeleteKeyButton: View {
     let viewModel: KeyboardViewModel
+    let keyHeight: CGFloat
 
     @State private var isActive = false
     @State private var dragStarted = false
@@ -257,7 +275,7 @@ private struct DeleteKeyButton: View {
 
     var body: some View {
         KeyCap(
-            height: KeyboardConstants.KeyDimensions.height,
+            height: keyHeight,
             background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
             fontSize: KeyboardConstants.FontSizes.keyLabel
         ) {
@@ -464,6 +482,7 @@ private struct KeyButton: View {
     let key: MessagEaseKey
     let display: String
     let viewModel: KeyboardViewModel
+    let keyHeight: CGFloat
 
     @State private var isActive = false
     @State private var positions: [CGPoint] = []
@@ -471,7 +490,7 @@ private struct KeyButton: View {
 
     var body: some View {
         KeyCap(
-            height: KeyboardConstants.KeyDimensions.height,
+            height: keyHeight,
             background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
             fontSize: KeyboardConstants.FontSizes.keyLabel
         ) {
