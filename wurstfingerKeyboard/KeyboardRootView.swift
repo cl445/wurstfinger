@@ -33,10 +33,9 @@ struct KeyboardRootView: View {
                         height: keyHeight,
                         onCircularGesture: { direction in
                             viewModel.handleUtilityCircularGesture(.globe, direction: direction)
-                        }
+                        },
+                        label: { AnyView(Image(systemName: "globe")) }
                     ) {
-                        Image(systemName: "globe")
-                    } action: {
                         viewModel.handleAdvanceToNextInputMode()
                     }
                 }
@@ -48,10 +47,9 @@ struct KeyboardRootView: View {
                         height: keyHeight,
                         onCircularGesture: { direction in
                             viewModel.handleUtilityCircularGesture(.globe, direction: direction)
-                        }
+                        },
+                        label: { AnyView(Image(systemName: "globe")) }
                     ) {
-                        Image(systemName: "globe")
-                    } action: {
                         viewModel.handleAdvanceToNextInputMode()
                     }
                 }
@@ -59,10 +57,11 @@ struct KeyboardRootView: View {
 
                 GridRow {
                     if viewModel.utilityColumnLeading {
-                    utilityButton(height: keyHeight,
-                                highlighted: viewModel.isSymbolsToggleActive) {
-                        Text(viewModel.symbolToggleLabel)
-                    } action: {
+                    utilityButton(
+                        height: keyHeight,
+                        highlighted: { viewModel.isSymbolsToggleActive },
+                        label: { AnyView(Text(viewModel.symbolToggleLabel)) }
+                    ) {
                         viewModel.toggleSymbols()
                     }
                 }
@@ -70,10 +69,11 @@ struct KeyboardRootView: View {
                 keyCells(forRow: 1, keyHeight: keyHeight)
 
                 if !viewModel.utilityColumnLeading {
-                    utilityButton(height: keyHeight,
-                                highlighted: viewModel.isSymbolsToggleActive) {
-                        Text(viewModel.symbolToggleLabel)
-                    } action: {
+                    utilityButton(
+                        height: keyHeight,
+                        highlighted: { viewModel.isSymbolsToggleActive },
+                        label: { AnyView(Text(viewModel.symbolToggleLabel)) }
+                    ) {
                         viewModel.toggleSymbols()
                     }
                 }
@@ -99,9 +99,10 @@ struct KeyboardRootView: View {
 
                 GridRow {
                     if viewModel.utilityColumnLeading {
-                    utilityButton(height: keyHeight) {
-                        Text("⏎")
-                    } action: {
+                    utilityButton(
+                        height: keyHeight,
+                        label: { AnyView(Text("⏎")) }
+                    ) {
                         viewModel.handleReturn()
                     }
                 }
@@ -110,9 +111,10 @@ struct KeyboardRootView: View {
                 spaceKey(columnSpan: viewModel.spaceColumnSpan, keyHeight: keyHeight)
 
                 if !viewModel.utilityColumnLeading {
-                    utilityButton(height: keyHeight) {
-                        Text("⏎")
-                    } action: {
+                    utilityButton(
+                        height: keyHeight,
+                        label: { AnyView(Text("⏎")) }
+                    ) {
                         viewModel.handleReturn()
                     }
                 }
@@ -133,9 +135,9 @@ struct KeyboardRootView: View {
                 KeyboardButton(
                     height: keyHeight,
                     behavior: DirectionalKeyBehavior(
-                        label: AnyView(Text(viewModel.displayText(for: key))),
-                        overlay: AnyView(KeyHintOverlay(key: key)),
-                        configuration: KeyboardButtonVisualConfiguration(fontSize: KeyboardConstants.FontSizes.keyLabel),
+                        label: { AnyView(Text(viewModel.displayText(for: key))) },
+                        overlay: { Optional.some(AnyView(KeyHintOverlay(key: key))) },
+                        configuration: { KeyboardButtonVisualConfiguration(fontSize: KeyboardConstants.FontSizes.keyLabel) },
                         callbacks: KeyboardButtonCallbacks(
                             onSwipe: { direction in
                                 viewModel.handleKeySwipe(key, direction: direction)
@@ -166,20 +168,22 @@ struct KeyboardRootView: View {
     private func utilityButton(
         height: CGFloat,
         fontSize: CGFloat = KeyboardConstants.FontSizes.utilityLabel,
-        highlighted: Bool = false,
+        highlighted: @escaping () -> Bool = { false },
         onCircularGesture: ((KeyboardCircularDirection) -> Void)? = nil,
-        @ViewBuilder label: () -> some View,
+        label: @escaping () -> AnyView,
         action: @escaping () -> Void
     ) -> some View {
         KeyboardButton(
             height: height,
             behavior: DirectionalKeyBehavior(
-                label: AnyView(label()),
-                overlay: nil,
-                configuration: KeyboardButtonVisualConfiguration(
-                    highlighted: highlighted,
-                    fontSize: fontSize
-                ),
+                label: label,
+                overlay: { nil },
+                configuration: {
+                    KeyboardButtonVisualConfiguration(
+                        highlighted: highlighted(),
+                        fontSize: fontSize
+                    )
+                },
                 callbacks: KeyboardButtonCallbacks(
                     onTap: action,
                     onCircular: onCircularGesture
@@ -378,36 +382,36 @@ private struct KeyboardButton: View {
 }
 
 private final class DirectionalKeyBehavior: KeyboardButtonBehavior {
-    private let label: AnyView
-    private let overlay: AnyView?
-    private let configuration: KeyboardButtonVisualConfiguration
+    private let labelProvider: () -> AnyView
+    private let overlayProvider: () -> AnyView?
+    private let configurationProvider: () -> KeyboardButtonVisualConfiguration
     private let callbacks: KeyboardButtonCallbacks
 
     private var positions: [CGPoint] = []
     private var maxOffset: CGPoint = .zero
 
     init(
-        label: AnyView,
-        overlay: AnyView?,
-        configuration: KeyboardButtonVisualConfiguration,
+        label: @escaping () -> AnyView,
+        overlay: @escaping () -> AnyView?,
+        configuration: @escaping () -> KeyboardButtonVisualConfiguration,
         callbacks: KeyboardButtonCallbacks
     ) {
-        self.label = label
-        self.overlay = overlay
-        self.configuration = configuration
+        self.labelProvider = label
+        self.overlayProvider = overlay
+        self.configurationProvider = configuration
         self.callbacks = callbacks
     }
 
     var visualConfiguration: KeyboardButtonVisualConfiguration {
-        configuration
+        configurationProvider()
     }
 
     func labelView() -> AnyView {
-        label
+        labelProvider()
     }
 
     func overlayView() -> AnyView? {
-        overlay
+        overlayProvider()
     }
 
     func primaryGesture(context: KeyboardButtonGestureContext) -> AnyGesture<Void>? {
