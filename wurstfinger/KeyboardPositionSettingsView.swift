@@ -9,11 +9,7 @@ import SwiftUI
 
 struct KeyboardPositionSettingsView: View {
     @Binding var position: Double
-    @StateObject private var previewViewModel: KeyboardViewModel = {
-        let vm = KeyboardViewModel()
-        vm.keyboardScale = 0.7  // Show at 70% so there's space to move
-        return vm
-    }()
+    @StateObject private var previewViewModel = KeyboardViewModel(shouldPersistSettings: false)
 
     var body: some View {
         // Calculate preview height based on scale (70%)
@@ -38,6 +34,7 @@ struct KeyboardPositionSettingsView: View {
                             previewViewModel.keyboardHorizontalPosition = newValue
                         }
                         .onAppear {
+                            previewViewModel.keyboardScale = 0.7 // Keep preview narrow for clarity
                             previewViewModel.keyboardHorizontalPosition = position
                         }
                 }
