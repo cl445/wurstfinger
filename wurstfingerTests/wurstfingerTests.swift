@@ -240,13 +240,13 @@ struct wurstfingerTests {
             }
         }
 
-        func trigger(row: Int, column: Int, direction: KeyboardDirection, expected: String, file: StaticString = #file, line: UInt = #line) throws {
+        func trigger(row: Int, column: Int, direction: KeyboardDirection, expected: String) throws {
             inserted.removeAll()
             let rows = viewModel.rows
             let targetRow = try #require(row < rows.count ? rows[row] : nil)
             let key = try #require(column < targetRow.count ? targetRow[column] : nil)
             viewModel.handleKeySwipeReturn(key, direction: direction)
-            #expect(inserted.last == expected, file: file, line: line)
+            #expect(inserted.last == expected)
         }
 
         try trigger(row: 0, column: 1, direction: .right, expected: "¡") // ! → ¡
