@@ -4,9 +4,12 @@ platform :ios do
   desc "Build & upload to TestFlight on develop merges"
   lane :beta do
     app_id = ENV.fetch("APP_IDENTIFIER", "de.akator.wurstfinger")
+    team_id = ENV.fetch("APPLE_TEAM_ID")
     key_id = ENV.fetch("ASC_KEY_ID")
     issuer = ENV.fetch("ASC_ISSUER_ID")
     key_b64 = ENV.fetch("ASC_KEY_P8_BASE64")
+
+    UI.user_error!("APPLE_TEAM_ID is required but not set") if team_id.nil? || team_id.empty?
 
     api_key = app_store_connect_api_key(
       key_id: key_id,
@@ -26,7 +29,7 @@ platform :ios do
       export_method: "app-store",
       include_symbols: true,
       include_bitcode: false,
-      xcargs: "-allowProvisioningUpdates DEVELOPMENT_TEAM=#{ENV.fetch('APPLE_TEAM_ID', '')}"
+      xcargs: "-allowProvisioningUpdates DEVELOPMENT_TEAM=#{team_id}"
     )
 
     upload_to_testflight(
