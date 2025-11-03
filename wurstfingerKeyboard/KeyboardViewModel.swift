@@ -60,7 +60,9 @@ final class KeyboardViewModel: ObservableObject {
                 hapticIntensityTap = clamped
                 return
             }
-            sharedDefaults.set(Double(clamped), forKey: Self.hapticTapIntensityKey)
+            if shouldPersistSettings {
+                sharedDefaults.set(Double(clamped), forKey: Self.hapticTapIntensityKey)
+            }
             updateImpactGenerator(for: .tap)
         }
     }
@@ -71,7 +73,9 @@ final class KeyboardViewModel: ObservableObject {
                 hapticIntensityModifier = clamped
                 return
             }
-            sharedDefaults.set(Double(clamped), forKey: Self.hapticModifierIntensityKey)
+            if shouldPersistSettings {
+                sharedDefaults.set(Double(clamped), forKey: Self.hapticModifierIntensityKey)
+            }
             updateImpactGenerator(for: .modifier)
         }
     }
@@ -82,33 +86,44 @@ final class KeyboardViewModel: ObservableObject {
                 hapticIntensityDrag = clamped
                 return
             }
-            sharedDefaults.set(Double(clamped), forKey: Self.hapticDragIntensityKey)
+            if shouldPersistSettings {
+                sharedDefaults.set(Double(clamped), forKey: Self.hapticDragIntensityKey)
+            }
             updateImpactGenerator(for: .drag)
         }
     }
     @Published var utilityColumnLeading: Bool {
         didSet {
-            sharedDefaults.set(utilityColumnLeading, forKey: "utilityColumnLeading")
+            if shouldPersistSettings {
+                sharedDefaults.set(utilityColumnLeading, forKey: "utilityColumnLeading")
+            }
         }
     }
     @Published var keyAspectRatio: Double {
         didSet {
-            sharedDefaults.set(keyAspectRatio, forKey: "keyAspectRatio")
+            if shouldPersistSettings {
+                sharedDefaults.set(keyAspectRatio, forKey: "keyAspectRatio")
+            }
         }
     }
     @Published var keyboardScale: Double {
         didSet {
-            sharedDefaults.set(keyboardScale, forKey: "keyboardScale")
+            if shouldPersistSettings {
+                sharedDefaults.set(keyboardScale, forKey: "keyboardScale")
+            }
         }
     }
     @Published var keyboardHorizontalPosition: Double {
         didSet {
-            sharedDefaults.set(keyboardHorizontalPosition, forKey: "keyboardHorizontalPosition")
+            if shouldPersistSettings {
+                sharedDefaults.set(keyboardHorizontalPosition, forKey: "keyboardHorizontalPosition")
+            }
         }
     }
 
     private let layout: KeyboardLayout
     private let sharedDefaults: UserDefaults
+    private let shouldPersistSettings: Bool
     private var actionHandler: ((KeyboardAction) -> Void)?
     private var isSpaceDragging = false
     private var spaceDragResidual: CGFloat = 0
@@ -118,11 +133,16 @@ final class KeyboardViewModel: ObservableObject {
     private var deleteDragResidual: CGFloat = 0
     private var impactGenerators: [KeyboardHapticEvent: UIImpactFeedbackGenerator] = [:]
 
-    init(layout: KeyboardLayout = .germanDefault) {
+    init(
+        layout: KeyboardLayout = .germanDefault,
+        userDefaults: UserDefaults? = nil,
+        shouldPersistSettings: Bool = true
+    ) {
         self.layout = layout
+        self.shouldPersistSettings = shouldPersistSettings
 
         // Initialize UserDefaults once
-        let defaults = UserDefaults(suiteName: "group.com.wurstfinger.shared") ?? .standard
+        let defaults = userDefaults ?? UserDefaults(suiteName: "group.de.akator.wurstfinger.shared") ?? .standard
         self.sharedDefaults = defaults
 
         let storedTap = defaults.object(forKey: Self.hapticTapIntensityKey) as? NSNumber
@@ -133,11 +153,13 @@ final class KeyboardViewModel: ObservableObject {
         let initialModifier = storedModifier.map { CGFloat(min(max($0.doubleValue, 0), 1)) } ?? Self.defaultModifierIntensity
         let initialDrag = storedDrag.map { CGFloat(min(max($0.doubleValue, 0), 1)) } ?? Self.defaultDragIntensity
 
-        sharedDefaults.register(defaults: [
-            Self.hapticTapIntensityKey: Double(initialTap),
-            Self.hapticModifierIntensityKey: Double(initialModifier),
-            Self.hapticDragIntensityKey: Double(initialDrag)
-        ])
+        if shouldPersistSettings {
+            sharedDefaults.register(defaults: [
+                Self.hapticTapIntensityKey: Double(initialTap),
+                Self.hapticModifierIntensityKey: Double(initialModifier),
+                Self.hapticDragIntensityKey: Double(initialDrag)
+            ])
+        }
 
         self.hapticIntensityTap = initialTap
         self.hapticIntensityModifier = initialModifier
@@ -468,7 +490,9 @@ final class KeyboardViewModel: ObservableObject {
     func toggleUtilityColumnPosition() {
         feedbackModifier()
         utilityColumnLeading.toggle()
-        sharedDefaults.set(utilityColumnLeading, forKey: "utilityColumnLeading")
+        if shouldPersistSettings {
+            sharedDefaults.set(utilityColumnLeading, forKey: "utilityColumnLeading")
+        }
     }
 
     func handleUtilityCircularGesture(_ key: UtilityKey, direction _: KeyboardCircularDirection) {

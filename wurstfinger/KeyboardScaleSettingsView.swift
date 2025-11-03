@@ -9,11 +9,7 @@ import SwiftUI
 
 struct KeyboardScaleSettingsView: View {
     @Binding var scale: Double
-    @StateObject private var previewViewModel: KeyboardViewModel = {
-        let vm = KeyboardViewModel()
-        vm.keyboardScale = 1.0
-        return vm
-    }()
+    @StateObject private var previewViewModel = KeyboardViewModel(shouldPersistSettings: false)
 
     var body: some View {
         // Calculate preview height based on aspect ratio and scale

@@ -8,25 +8,25 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("utilityColumnLeading", store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
+    @AppStorage("utilityColumnLeading", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
     private var utilityColumnLeading = false
 
-    @AppStorage("keyAspectRatio", store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
+    @AppStorage("keyAspectRatio", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
     private var keyAspectRatio = 1.5
 
-    @AppStorage("keyboardScale", store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
+    @AppStorage("keyboardScale", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
     private var keyboardScale = 1.0
 
-    @AppStorage("keyboardHorizontalPosition", store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
+    @AppStorage("keyboardHorizontalPosition", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
     private var keyboardHorizontalPosition = 0.5
 
-    @AppStorage(KeyboardViewModel.hapticTapIntensityKey, store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
+    @AppStorage(KeyboardViewModel.hapticTapIntensityKey, store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
     private var hapticTapIntensity = Double(KeyboardViewModel.defaultTapIntensity)
 
-    @AppStorage(KeyboardViewModel.hapticModifierIntensityKey, store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
+    @AppStorage(KeyboardViewModel.hapticModifierIntensityKey, store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
     private var hapticModifierIntensity = Double(KeyboardViewModel.defaultModifierIntensity)
 
-    @AppStorage(KeyboardViewModel.hapticDragIntensityKey, store: UserDefaults(suiteName: "group.com.wurstfinger.shared"))
+    @AppStorage(KeyboardViewModel.hapticDragIntensityKey, store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
     private var hapticDragIntensity = Double(KeyboardViewModel.defaultDragIntensity)
 
     private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!

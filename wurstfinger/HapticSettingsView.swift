@@ -1,7 +1,7 @@
 import SwiftUI
 
 private enum SharedDefaults {
-    static let suite = "group.com.wurstfinger.shared"
+    static let suite = "group.de.akator.wurstfinger.shared"
     static var store: UserDefaults { UserDefaults(suiteName: suite) ?? .standard }
 }
 
