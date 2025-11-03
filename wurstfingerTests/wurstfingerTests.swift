@@ -6,7 +6,6 @@
 //
 
 import Testing
-@testable import wurstfinger
 @testable import Wurstfinger
 
 struct wurstfingerTests {
