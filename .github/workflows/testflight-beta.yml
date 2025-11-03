@@ -1,11 +1,39 @@
-name: iOS Beta (TestFlight)
+name: iOS Beta (TestFlight Nightly)
 
 on:
-  push:
-    branches: [ "develop" ]
+  schedule:
+    # Run every night at 2 AM UTC (3 AM CET / 4 AM CEST)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check for changes in last 24 hours
+        id: check
+        run: |
+          # Get commits from last 24 hours
+          COMMITS=$(git log --since="24 hours ago" --oneline)
+          if [ -z "$COMMITS" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No commits in the last 24 hours"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Found commits in the last 24 hours:"
+            echo "$COMMITS"
+          fi
+
   build-upload:
+    needs: check-changes
+    if: needs.check-changes.outputs.has_changes == 'true'
     runs-on: macos-latest
     steps:
       - name: Checkout
