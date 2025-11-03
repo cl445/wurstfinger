@@ -23,6 +23,13 @@ platform :ios do
       xcodeproj: "Wurstfinger.xcodeproj"
     )
 
+    # Set export compliance to skip waiting
+    set_info_plist_value(
+      path: "wurstfingerKeyboard/Info.plist",
+      key: "ITSAppUsesNonExemptEncryption",
+      value: false
+    )
+
     # Create temporary keychain for CI
     if ENV["CI"]
       create_keychain(
@@ -77,6 +84,7 @@ platform :ios do
       groups: ["Internal"],
       distribute_external: true,
       submit_beta_review: true,
+      uses_non_exempt_encryption: false,
       beta_app_review_info: {
         contact_email: ENV.fetch("BETA_CONTACT_EMAIL", "info@akator.de"),
         contact_first_name: ENV.fetch("BETA_CONTACT_FIRST_NAME", "Developer"),
