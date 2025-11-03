@@ -32,6 +32,13 @@
 			remoteGlobalIDString = 437E1C002EB3C30000C5635A;
 			remoteInfo = Wurstfinger;
 		};
+	427511FF2EAAF62100C5635A /* PBXContainerItemProxy */ = {
+		isa = PBXContainerItemProxy;
+		containerPortal = 4275118A2EAAF62000C5635A /* Project object */;
+		proxyType = 1;
+		remoteGlobalIDString = 437E1C002EB3C30000C5635A;
+		remoteInfo = Wurstfinger;
+	};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -74,6 +81,15 @@
 			);
 			target = 427511912EAAF62000C5635A /* WurstfingerApp */;
 		};
+	427511FC2EAAF62100C5635A /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerTests" target */ = {
+		isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+		membershipExceptions = (
+			Info.plist,
+			KeyboardViewController.swift,
+			KeyboardRootView.swift,
+		);
+		target = 4275119E2EAAF62100C5635A /* WurstfingerTests */;
+	};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -97,6 +113,7 @@
 			exceptions = (
 				42C0B35D2EB16D3400DF2D45 /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerApp" target */,
 				422B5FA22EAED9E8002A926E /* Exceptions for "wurstfingerKeyboard" folder in "Wurstfinger" target */,
+				427511FC2EAAF62100C5635A /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerTests" target */,
 			);
 			path = wurstfingerKeyboard;
 			sourceTree = "<group>";
@@ -196,9 +213,11 @@
 			);
 			dependencies = (
 				427511A12EAAF62100C5635A /* PBXTargetDependency */,
+			427511FE2EAAF62100C5635A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				427511A22EAAF62100C5635A /* wurstfingerTests */,
+			437E1C052EB3C30000C5635A /* wurstfingerKeyboard */,
 			);
 			name = WurstfingerTests;
 			packageProductDependencies = (
@@ -378,6 +397,11 @@
 			target = 437E1C002EB3C30000C5635A /* Wurstfinger */;
 			targetProxy = 437E1C0B2EB3C30000C5635A /* PBXContainerItemProxy */;
 		};
+	427511FE2EAAF62100C5635A /* PBXTargetDependency */ = {
+		isa = PBXTargetDependency;
+		target = 437E1C002EB3C30000C5635A /* Wurstfinger */;
+		targetProxy = 427511FF2EAAF62100C5635A /* PBXContainerItemProxy */;
+	};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -636,6 +660,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				ENABLE_TESTABILITY = YES;
 				CODE_SIGN_ENTITLEMENTS = Wurstfinger/Wurstfinger.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
