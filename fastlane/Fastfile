@@ -23,13 +23,18 @@ platform :ios do
       xcodeproj: "Wurstfinger.xcodeproj"
     )
 
+    match(
+      type: "appstore",
+      readonly: ENV["CI"] == "true",
+      app_identifier: [app_id, "#{app_id}.keyboard"]
+    )
+
     build_app(
       scheme: "Wurstfinger",
       project: "Wurstfinger.xcodeproj",
       export_method: "app-store",
       include_symbols: true,
-      include_bitcode: false,
-      xcargs: "-allowProvisioningUpdates DEVELOPMENT_TEAM=#{team_id}"
+      include_bitcode: false
     )
 
     upload_to_testflight(

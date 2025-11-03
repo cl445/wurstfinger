@@ -1,0 +1,15 @@
+git_url(ENV["MATCH_GIT_URL"])
+storage_mode("git")
+
+type("appstore")
+
+app_identifier([
+  ENV.fetch("APP_IDENTIFIER", "de.akator.wurstfinger"),
+  "#{ENV.fetch('APP_IDENTIFIER', 'de.akator.wurstfinger')}.keyboard"
+])
+
+username(ENV.fetch("FASTLANE_USER", ENV.fetch("APPLE_ID", "")))
+team_id(ENV.fetch("APPLE_TEAM_ID"))
+
+# Readonly mode for CI
+readonly(ENV["CI"] == "true")
