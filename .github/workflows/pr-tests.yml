@@ -14,11 +14,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug - Show directory structure
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Directory contents:"
+          ls -la
+          echo "Looking for xcodeproj:"
+          find . -name "*.xcodeproj" -type d
+
       - name: Install xcpretty
         run: gem install xcpretty
 
       - name: Build and Run Tests
-        working-directory: wurstfinger
+        working-directory: wurstfinger/wurstfinger
         run: |
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
