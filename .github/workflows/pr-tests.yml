@@ -1,0 +1,40 @@
+name: PR Tests
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  test:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+
+      - name: Install xcpretty
+        run: gem install xcpretty
+
+      - name: Build and Run Tests
+        run: |
+          cd wurstfinger
+          set -o pipefail && xcodebuild test \
+            -scheme Wurstfinger \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -resultBundlePath TestResults.xcresult \
+            | xcpretty --color --report html --output TestResults.html
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            wurstfinger/TestResults.xcresult
+            wurstfinger/TestResults.html
+          retention-days: 30
