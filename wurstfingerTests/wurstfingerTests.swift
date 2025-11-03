@@ -5,6 +5,7 @@
 //  Created by Claas Flint on 24.10.25.
 //
 
+import Foundation
 import Testing
 @testable import Wurstfinger
 
@@ -188,6 +189,56 @@ struct wurstfingerTests {
         viewModel.handleDeleteWord()
 
         #expect(didDeleteWord)
+    }
+
+    @Test func hapticIntensitiesPersistToDefaults() async throws {
+        let suite = "group.de.akator.wurstfinger.tests.hapticsPersist"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let viewModel = KeyboardViewModel(userDefaults: defaults)
+        viewModel.hapticIntensityTap = 0.8
+        viewModel.hapticIntensityModifier = 0.2
+        viewModel.hapticIntensityDrag = 1.1
+
+        #expect(defaults.double(forKey: KeyboardViewModel.hapticTapIntensityKey) == 0.8)
+        #expect(defaults.double(forKey: KeyboardViewModel.hapticModifierIntensityKey) == 0.2)
+        let dragDefault = defaults.double(forKey: KeyboardViewModel.hapticDragIntensityKey)
+        #expect(abs(dragDefault - 1.0) < 0.0001)
+    }
+
+    @Test func previewViewModelDoesNotPersist() async throws {
+        let suite = "group.de.akator.wurstfinger.tests.preview"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        defaults.set(0.3, forKey: KeyboardViewModel.hapticTapIntensityKey)
+
+        let viewModel = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
+        #expect(abs(viewModel.hapticIntensityTap - 0.3) < 0.0001)
+
+        viewModel.hapticIntensityTap = 0.9
+        let persistedTap = defaults.double(forKey: KeyboardViewModel.hapticTapIntensityKey)
+        #expect(abs(persistedTap - 0.3) < 0.0001)
+    }
+
+    @Test func hapticIntensityClampsWithinBounds() async throws {
+        let suite = "group.de.akator.wurstfinger.tests.clamp"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let viewModel = KeyboardViewModel(userDefaults: defaults)
+
+        viewModel.hapticIntensityTap = -0.5
+        viewModel.hapticIntensityDrag = 2.0
+
+        #expect(abs(viewModel.hapticIntensityTap - 0.0) < 0.0001)
+        #expect(abs(viewModel.hapticIntensityDrag - 1.0) < 0.0001)
+        let storedDrag = defaults.double(forKey: KeyboardViewModel.hapticDragIntensityKey)
+        #expect(abs(storedDrag - 1.0) < 0.0001)
     }
 
     @Test(.disabled("Requires UI context - to be fixed later"))

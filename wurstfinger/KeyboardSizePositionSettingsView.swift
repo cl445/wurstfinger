@@ -10,12 +10,7 @@ import SwiftUI
 struct KeyboardSizePositionSettingsView: View {
     @Binding var scale: Double
     @Binding var position: Double
-    @StateObject private var previewViewModel: KeyboardViewModel = {
-        let vm = KeyboardViewModel()
-        vm.keyboardScale = 0.7
-        vm.keyboardHorizontalPosition = 0.5
-        return vm
-    }()
+    @StateObject private var previewViewModel = KeyboardViewModel(shouldPersistSettings: false)
 
     var body: some View {
         // Calculate preview height based on scale

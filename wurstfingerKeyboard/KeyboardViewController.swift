@@ -225,7 +225,7 @@ final class KeyboardViewController: UIInputViewController {
             return
         }
 
-        var characters = before
+        let characters = before
         var deleteCount = 0
         var index = characters.endIndex
 
