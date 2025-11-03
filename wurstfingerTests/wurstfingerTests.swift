@@ -5,6 +5,7 @@
 //  Created by Claas Flint on 24.10.25.
 //
 
+import Foundation
 import Testing
 @testable import Wurstfinger
 
