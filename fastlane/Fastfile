@@ -1,0 +1,50 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build & upload to TestFlight on develop merges"
+  lane :beta do
+    app_id = ENV.fetch("APP_IDENTIFIER", "de.akator.wurstfinger")
+    key_id = ENV.fetch("ASC_KEY_ID")
+    issuer = ENV.fetch("ASC_ISSUER_ID")
+    key_b64 = ENV.fetch("ASC_KEY_P8_BASE64")
+
+    api_key = app_store_connect_api_key(
+      key_id: key_id,
+      issuer_id: issuer,
+      key_content: Base64.decode64(key_b64),
+      duration: 1200,
+      in_house: false
+    )
+
+    ensure_xcode_version(version: "16.4")
+
+    increment_build_number(
+      xcodeproj: "Wurstfinger.xcodeproj"
+    )
+
+    build_app(
+      scheme: "Wurstfinger",
+      project: "Wurstfinger.xcodeproj",
+      export_method: "app-store",
+      include_symbols: true,
+      include_bitcode: false,
+      xcargs: "-allowProvisioningUpdates DEVELOPMENT_TEAM=#{ENV.fetch('APPLE_TEAM_ID', '')}"
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      groups: ["Internal"],
+      distribute_external: true,
+      submit_for_beta_review: true,
+      beta_app_review_info: {
+        contact_email: ENV.fetch("BETA_CONTACT_EMAIL", "info@akator.de"),
+        contact_first_name: ENV.fetch("BETA_CONTACT_FIRST_NAME", "Developer"),
+        contact_last_name: ENV.fetch("BETA_CONTACT_LAST_NAME", "Akator"),
+        contact_phone: ENV.fetch("BETA_CONTACT_PHONE", "+49 000 000000"),
+        demo_account_required: false,
+        notes: "MessagEase-inspired keyboard extension for iOS. Enable in Settings > General > Keyboard > Keyboards > Add New Keyboard."
+      },
+      changelog: ENV.fetch("CHANGELOG", "Automated build from develop.")
+    )
+  end
+end

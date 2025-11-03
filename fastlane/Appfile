@@ -1,0 +1,3 @@
+app_identifier(ENV.fetch("APP_IDENTIFIER", "de.akator.wurstfinger"))
+apple_id(ENV.fetch("APPLE_ID", ""))
+team_id(ENV.fetch("APPLE_TEAM_ID", ""))

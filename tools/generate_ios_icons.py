@@ -73,6 +73,7 @@ def render_svg_to_png(
             str(size_px),
             "-h",
             str(size_px),
+            "--background-color=white",
             "-o",
             str(out_path),
             str(svg_path),
@@ -84,6 +85,8 @@ def render_svg_to_png(
             f"--export-filename={out_path}",
             f"--export-width={size_px}",
             f"--export-height={size_px}",
+            "--export-background=white",
+            "--export-background-opacity=1.0",
         ]
     else:
         from typing import Never
