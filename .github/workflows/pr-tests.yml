@@ -14,17 +14,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app
-
       - name: Install xcpretty
         run: gem install xcpretty
 
       - name: Build and Run Tests
+        working-directory: wurstfinger
         run: |
-          cd wurstfinger
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
+            -project Wurstfinger.xcodeproj \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
             -resultBundlePath TestResults.xcresult \
             | xcpretty --color --report html --output TestResults.html
