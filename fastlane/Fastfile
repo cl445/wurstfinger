@@ -19,8 +19,15 @@ platform :ios do
       in_house: false
     )
 
+    # Get latest build number from TestFlight and increment
+    latest_build = latest_testflight_build_number(
+      api_key: api_key,
+      app_identifier: app_id
+    )
+
     increment_build_number(
-      xcodeproj: "Wurstfinger.xcodeproj"
+      xcodeproj: "Wurstfinger.xcodeproj",
+      build_number: latest_build + 1
     )
 
     # Set export compliance to skip waiting
