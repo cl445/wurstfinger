@@ -14,18 +14,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      - name: Debug - Show directory structure
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Directory contents:"
+          ls -la
+          echo "Looking for xcodeproj:"
+          find . -name "*.xcodeproj" -type d
 
       - name: Install xcpretty
         run: gem install xcpretty
 
       - name: Build and Run Tests
         run: |
-          cd wurstfinger
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -project Wurstfinger.xcodeproj \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -only-testing:WurstfingerTests \
             -resultBundlePath TestResults.xcresult \
             | xcpretty --color --report html --output TestResults.html
 
@@ -35,6 +41,6 @@ jobs:
         with:
           name: test-results
           path: |
-            wurstfinger/TestResults.xcresult
-            wurstfinger/TestResults.html
+            TestResults.xcresult
+            TestResults.html
           retention-days: 30
