@@ -86,7 +86,6 @@
 		membershipExceptions = (
 			Info.plist,
 			KeyboardViewController.swift,
-			KeyboardRootView.swift,
 		);
 		target = 4275119E2EAAF62100C5635A /* WurstfingerTests */;
 	};
