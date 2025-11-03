@@ -76,7 +76,7 @@ platform :ios do
       api_key: api_key,
       groups: ["Internal"],
       distribute_external: true,
-      submit_for_beta_review: true,
+      submit_beta_review: true,
       beta_app_review_info: {
         contact_email: ENV.fetch("BETA_CONTACT_EMAIL", "info@akator.de"),
         contact_first_name: ENV.fetch("BETA_CONTACT_FIRST_NAME", "Developer"),
