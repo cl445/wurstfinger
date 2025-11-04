@@ -608,6 +608,10 @@ extension MessagEaseKey {
         guard let output = output(for: direction, returning: returning) else { return nil }
         switch output {
         case .text(let value):
+            // Special labels for whitespace characters
+            if value == "\t" {
+                return "⇥"
+            }
             return value
         case .toggleShift(let on):
             return on ? "⇧" : "⇩"
