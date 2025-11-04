@@ -347,12 +347,14 @@ struct KeyboardLayout {
                     center: "t",
                     textMap: [
                         .upLeft: "~",
-                        .up: "¨",
                         .upRight: "y",
                         .right: "*",
                         .downRight: "\t",
                         .down: "ß",
                         .left: "<"
+                    ],
+                    composeMap: [
+                        .up: (display: "¨", trigger: "¨")
                     ],
                     returnOverrides: [
                         .upLeft: .text("˜"),
@@ -528,7 +530,7 @@ extension CGPoint {
 
 private extension KeyboardLayout {
     private static let composeTriggers: Set<String> = [
-        "\"", "'", "`", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
+        "¨", "'", "`", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
     ]
 
     private static func makeKey(
