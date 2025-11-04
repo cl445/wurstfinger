@@ -217,6 +217,9 @@ struct KeyboardLayout {
                         .down: "ä",
                         .downLeft: "$"
                     ],
+                    additionalOutputs: [
+                        .upLeft: .cycleAccents
+                    ],
                     returnOverrides: [
                         .upLeft: .cycleAccents,
                         .right: .text("÷"),
