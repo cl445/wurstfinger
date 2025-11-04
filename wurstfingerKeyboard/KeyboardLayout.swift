@@ -618,7 +618,7 @@ extension MessagEaseKey {
         case .compose(let trigger, let display):
             return display ?? trigger
         case .cycleAccents:
-            return "Ↄ"
+            return "\u{1F152}"
         }
     }
 }
