@@ -279,7 +279,7 @@ final class KeyboardViewModel: ObservableObject {
         }
 
         guard let output = key.output(for: direction) else {
-            handleKeyTap(key)
+            // No output defined for this direction - do nothing
             return
         }
 
@@ -296,9 +296,8 @@ final class KeyboardViewModel: ObservableObject {
             perform(output)
         } else if let fallback = key.output(for: direction) {
             perform(fallback)
-        } else {
-            handleKeyTap(key)
         }
+        // No output defined - do nothing
     }
 
     func handleCircularGesture(for key: MessagEaseKey, direction: KeyboardCircularDirection) {
