@@ -394,7 +394,8 @@ struct KeyboardLayout {
                         .upRight: "°",
                         .right: ">",
                         .downRight: " ",
-                        .downLeft: ";"
+                        .downLeft: ";",
+                        .left: "#"
                     ],
                     returnOverrides: [
                         .upLeft: .text("F"),
@@ -568,9 +569,7 @@ private extension KeyboardLayout {
                 returnOutputs[direction] = output
             } else {
                 outputs[direction] = .text(text)
-                if text.containsLetter {
-                    returnOutputs[direction] = .text(uppercaseGerman(text))
-                }
+                // No automatic uppercase fallback - only explicit returnOverrides
             }
         }
 
