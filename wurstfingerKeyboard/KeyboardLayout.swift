@@ -376,9 +376,6 @@ struct KeyboardLayout {
                         .down: ".",
                         .downLeft: ","
                     ],
-                    composeMap: [
-                        .upRight: (display: "'", trigger: "'")
-                    ],
                     returnOverrides: [
                         .upLeft: .text("\u{201C}"),
                         .up: .text("W"),
