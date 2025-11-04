@@ -21,6 +21,7 @@ enum MessagEaseOutput {
     case toggleSymbols
     case capitalizeWord(uppercased: Bool)
     case compose(trigger: String, display: String?)
+    case cycleAccents
 }
 
 enum KeyboardDirection: CaseIterable {
@@ -211,25 +212,27 @@ struct KeyboardLayout {
                 Self.makeKey(
                     center: "a",
                     textMap: [
-                        .downLeft: "$",
-                        .down: "ä",
-                        .downRight: "v",
                         .right: "-",
-                        .upRight: "?"
+                        .downRight: "v",
+                        .down: "ä",
+                        .downLeft: "$"
                     ],
                     returnOverrides: [
-                        .right: .text("–"),
-                        .upRight: .text("¿")
+                        .upLeft: .cycleAccents,
+                        .right: .text("÷"),
+                        .downRight: .text("V"),
+                        .down: .text("Ä"),
+                        .downLeft: .text("¥")
                     ]
                 ),
                 Self.makeKey(
                     center: "n",
                     textMap: [
-                        .down: "l",
+                        .right: "!",
                         .downRight: "\\",
+                        .down: "l",
                         .downLeft: "/",
-                        .left: "+",
-                        .right: "!"
+                        .left: "+"
                     ],
                     composeMap: [
                         .upLeft: (display: "`", trigger: "`"),
@@ -237,21 +240,30 @@ struct KeyboardLayout {
                         .upRight: (display: "´", trigger: "'")
                     ],
                     returnOverrides: [
-                        .left: .text("×"),
+                        .upLeft: .text("'"),
+                        .up: .text("ˆ"),
+                        .upRight: .text("'"),
                         .right: .text("¡"),
-                        .downLeft: .text("÷")
+                        .downRight: .text("—"),
+                        .down: .text("L"),
+                        .downLeft: .text("–"),
+                        .left: .text("×")
                     ]
                 ),
                 Self.makeKey(
                     center: "i",
                     textMap: [
-                        .downLeft: "x",
-                        .left: "?",
-                        .down: "=",
+                        .upRight: "\n",
                         .downRight: "€",
-                        .up: "˘"
+                        .down: "=",
+                        .downLeft: "x",
+                        .left: "?"
                     ],
                     returnOverrides: [
+                        .upRight: .text("\n"),
+                        .downRight: .text("£"),
+                        .down: .text("±"),
+                        .downLeft: .text("X"),
                         .left: .text("¿")
                     ]
                 )
@@ -260,17 +272,24 @@ struct KeyboardLayout {
                 Self.makeKey(
                     center: "h",
                     textMap: [
-                        .up: "ü",
-                        .down: "ö",
                         .upLeft: "{",
-                        .left: "(",
-                        .right: "k",
+                        .up: "ü",
                         .upRight: "%",
+                        .right: "k",
+                        .downRight: "_",
+                        .down: "ö",
                         .downLeft: "[",
-                        .downRight: "_"
+                        .left: "("
                     ],
                     returnOverrides: [
-                        .upRight: .text("‰")
+                        .upLeft: .text("}"),
+                        .up: .text("Ü"),
+                        .upRight: .text("‰"),
+                        .right: .text("K"),
+                        .downRight: .text("¬"),
+                        .down: .text("Ö"),
+                        .downLeft: .text("]"),
+                        .left: .text(")")
                     ]
                 ),
                 Self.makeKey(
@@ -284,25 +303,39 @@ struct KeyboardLayout {
                         .down: "o",
                         .downLeft: "g",
                         .left: "c"
+                    ],
+                    returnOverrides: [
+                        .upLeft: .text("Q"),
+                        .up: .text("U"),
+                        .upRight: .text("P"),
+                        .right: .text("B"),
+                        .downRight: .text("J"),
+                        .down: .text("O"),
+                        .downLeft: .text("G"),
+                        .left: .text("C")
                     ]
                 ),
                 Self.makeKey(
                     center: "r",
                     textMap: [
                         .upLeft: "|",
-                        .left: "m",
-                        .downLeft: "@",
-                        .right: ")",
                         .upRight: "}",
-                        .downRight: "]"
+                        .right: ")",
+                        .downRight: "]",
+                        .downLeft: "@",
+                        .left: "m"
                     ],
                     additionalOutputs: [
-                        .up: .toggleShift(on: true),
-                        .down: .toggleShift(on: false)
+                        .up: .toggleShift(on: true)
                     ],
                     returnOverrides: [
+                        .upLeft: .text("¶"),
                         .up: .capitalizeWord(uppercased: true),
-                        .down: .capitalizeWord(uppercased: false)
+                        .upRight: .text("{"),
+                        .right: .text("("),
+                        .downRight: .text("["),
+                        .downLeft: .text("ª"),
+                        .left: .text("M")
                     ]
                 )
             ],
@@ -311,14 +344,21 @@ struct KeyboardLayout {
                     center: "t",
                     textMap: [
                         .upLeft: "~",
+                        .up: "¨",
                         .upRight: "y",
-                        .left: "<",
+                        .right: "*",
+                        .downRight: "\t",
                         .down: "ß",
-                        .right: "*"
+                        .left: "<"
                     ],
                     returnOverrides: [
-                        .left: .text("«"),
-                        .right: .text("†")
+                        .upLeft: .text("˜"),
+                        .up: .text("˝"),
+                        .upRight: .text("Y"),
+                        .right: .text("†"),
+                        .downRight: .text("\t"),
+                        .down: .text("ß"),
+                        .left: .text("‹")
                     ]
                 ),
                 makeKey(
@@ -326,17 +366,19 @@ struct KeyboardLayout {
                     textMap: [
                         .upLeft: "\"",
                         .up: "w",
-                        .upRight: "'",
                         .right: "z",
-                        .downLeft: ",",
+                        .downRight: ":",
                         .down: ".",
-                        .downRight: ":"
+                        .downLeft: ","
                     ],
                     returnOverrides: [
+                        .upLeft: .text("\u{201C}"),
+                        .up: .text("W"),
+                        .upRight: .text("\u{201D}"),
+                        .right: .text("Z"),
+                        .downRight: .text("„"),
                         .down: .text("…"),
-                        .downLeft: .text("„"),
-                        .upLeft: .text("“"),
-                        .upRight: .text("’")
+                        .downLeft: .text(",")
                     ]
                 ),
                 makeKey(
@@ -345,11 +387,18 @@ struct KeyboardLayout {
                         .upLeft: "f",
                         .up: "&",
                         .upRight: "°",
-                        .downLeft: ";",
-                        .right: ">"
+                        .right: ">",
+                        .downRight: " ",
+                        .downLeft: ";"
                     ],
                     returnOverrides: [
-                        .right: .text("»")
+                        .upLeft: .text("F"),
+                        .up: .text("§"),
+                        .upRight: .text("º"),
+                        .right: .text("›"),
+                        .downRight: .text(" "),
+                        .downLeft: .text(";"),
+                        .left: .text("£")
                     ]
                 )
             ]
@@ -565,6 +614,8 @@ extension MessagEaseKey {
             return uppercased ? "W↑" : "W↓"
         case .compose(let trigger, let display):
             return display ?? trigger
+        case .cycleAccents:
+            return "©"
         }
     }
 }

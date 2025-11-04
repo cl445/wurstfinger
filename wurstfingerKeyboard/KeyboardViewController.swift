@@ -113,6 +113,8 @@ final class KeyboardViewController: UIInputViewController {
             endSelection()
         case .compose(let trigger):
             handleCompose(trigger: trigger)
+        case .cycleAccents:
+            handleCycleAccents()
         case .deleteWord:
             deleteWordBeforeCursor()
         }
@@ -216,6 +218,17 @@ final class KeyboardViewController: UIInputViewController {
             textDocumentProxy.insertText(replacement)
         } else {
             textDocumentProxy.insertText(trigger)
+        }
+    }
+
+    private func handleCycleAccents() {
+        guard let previous = textDocumentProxy.documentContextBeforeInput?.last else {
+            return
+        }
+
+        if let replacement = ComposeEngine.cycleAccent(for: String(previous)) {
+            textDocumentProxy.deleteBackward()
+            textDocumentProxy.insertText(replacement)
         }
     }
 

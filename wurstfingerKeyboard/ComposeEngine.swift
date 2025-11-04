@@ -115,4 +115,53 @@ struct ComposeEngine {
         }
         return replacement
     }
+
+    // Accent cycling: base character → variants in cycle order
+    private static let accentCycles: [String: [String]] = {
+        var cycles: [String: [String]] = [:]
+
+        // Build reverse mapping: character → all its accented variants
+        for (_, charMap) in composeMap {
+            for (base, accented) in charMap {
+                // Skip self-mappings like " " → "\"" or composition mappings
+                if base == " " || base.count > 1 { continue }
+
+                // Add base → accented mapping
+                if cycles[base] == nil {
+                    cycles[base] = []
+                }
+                if !cycles[base]!.contains(accented) {
+                    cycles[base]!.append(accented)
+                }
+
+                // Add reverse: accented → base (for cycling back)
+                if cycles[accented] == nil {
+                    cycles[accented] = []
+                }
+            }
+        }
+
+        // Build complete cycles: base → [base, variant1, variant2, ...]
+        var completeCycles: [String: [String]] = [:]
+        for (base, variants) in cycles where variants.count > 0 {
+            var cycle = [base] + variants
+            completeCycles[base] = cycle
+
+            // Each variant also maps to the same cycle
+            for variant in variants {
+                completeCycles[variant] = cycle
+            }
+        }
+
+        return completeCycles
+    }()
+
+    static func cycleAccent(for character: String) -> String? {
+        guard let cycle = accentCycles[character], let currentIndex = cycle.firstIndex(of: character) else {
+            return nil
+        }
+
+        let nextIndex = (currentIndex + 1) % cycle.count
+        return cycle[nextIndex]
+    }
 }

@@ -20,6 +20,7 @@ enum KeyboardAction {
     case capitalizeWord(CapitalizationStyle)
     case moveCursor(offset: Int)
     case compose(trigger: String)
+    case cycleAccents
     case deleteWord
     case startSelection
     case updateSelection(offset: Int)
@@ -484,6 +485,9 @@ final class KeyboardViewModel: ObservableObject {
         case .compose(let trigger, _):
             feedbackModifier()
             actionHandler?(.compose(trigger: trigger))
+        case .cycleAccents:
+            feedbackModifier()
+            actionHandler?(.cycleAccents)
         }
     }
 
