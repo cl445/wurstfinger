@@ -54,6 +54,7 @@ final class KeyboardViewModel: ObservableObject {
     static let defaultDragIntensity: CGFloat = 0.5
 
     @Published private(set) var activeLayer: KeyboardLayer = .lower
+    @Published private(set) var isCapsLockActive: Bool = false
     @Published var hapticIntensityTap: CGFloat {
         didSet {
             let clamped = clampIntensity(hapticIntensityTap)
@@ -365,7 +366,21 @@ final class KeyboardViewModel: ObservableObject {
 
     private func setShiftState(active: Bool) {
         feedbackModifier()
-        activeLayer = active ? .upper : .lower
+
+        if active {
+            // If shift is already active, activate caps-lock
+            if activeLayer == .upper && !isCapsLockActive {
+                isCapsLockActive = true
+            } else {
+                // First activation - temporary shift
+                isCapsLockActive = false
+                activeLayer = .upper
+            }
+        } else {
+            // Deactivate shift/caps-lock
+            isCapsLockActive = false
+            activeLayer = .lower
+        }
     }
 
     private func resolvedText(_ value: String) -> String {
@@ -417,7 +432,8 @@ final class KeyboardViewModel: ObservableObject {
     private func insertText(_ value: String) {
         feedbackTap()
         actionHandler?(.insert(resolvedText(value)))
-        if activeLayer == .upper {
+        // Only deactivate shift if it's temporary (not caps-lock)
+        if activeLayer == .upper && !isCapsLockActive {
             activeLayer = .lower
         }
     }

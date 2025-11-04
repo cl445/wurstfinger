@@ -329,7 +329,8 @@ struct KeyboardLayout {
                         .left: "m"
                     ],
                     additionalOutputs: [
-                        .up: .toggleShift(on: true)
+                        .up: .toggleShift(on: true),
+                        .down: .toggleShift(on: false)
                     ],
                     returnOverrides: [
                         .upLeft: .text("¶"),
@@ -597,15 +598,15 @@ private func uppercaseGerman(_ value: String) -> String {
 }
 
 extension MessagEaseKey {
-    func primaryLabel(for direction: KeyboardDirection) -> String? {
-        label(for: direction, returning: false)
+    func primaryLabel(for direction: KeyboardDirection, isCapsLock: Bool = false) -> String? {
+        label(for: direction, returning: false, isCapsLock: isCapsLock)
     }
 
-    func returnLabel(for direction: KeyboardDirection) -> String? {
-        label(for: direction, returning: true)
+    func returnLabel(for direction: KeyboardDirection, isCapsLock: Bool = false) -> String? {
+        label(for: direction, returning: true, isCapsLock: isCapsLock)
     }
 
-    private func label(for direction: KeyboardDirection, returning: Bool) -> String? {
+    private func label(for direction: KeyboardDirection, returning: Bool, isCapsLock: Bool) -> String? {
         guard let output = output(for: direction, returning: returning) else { return nil }
         switch output {
         case .text(let value):
@@ -615,6 +616,9 @@ extension MessagEaseKey {
             }
             return value
         case .toggleShift(let on):
+            if on && isCapsLock {
+                return "⇪"  // Caps-lock icon
+            }
             return on ? "⇧" : "⇩"
         case .toggleSymbols:
             return "123"
