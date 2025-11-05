@@ -153,6 +153,28 @@ struct ComposeEngine {
             }
         }
 
+        // Add number cycles: digit → superscript → fractions
+        let numberCycles: [String: [String]] = [
+            "0": ["0", "⁰"],
+            "1": ["1", "¹", "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒"],
+            "2": ["2", "²", "⅔", "⅖"],
+            "3": ["3", "³", "¾", "⅜", "⅗"],
+            "4": ["4", "⁴", "⅘"],
+            "5": ["5", "⁵", "⅚", "⅝"],
+            "6": ["6", "⁶"],
+            "7": ["7", "⁷", "⅞"],
+            "8": ["8", "⁸"],
+            "9": ["9", "⁹"]
+        ]
+
+        for (base, cycle) in numberCycles {
+            completeCycles[base] = cycle
+            // Each variant also maps to the same cycle
+            for variant in cycle where variant != base {
+                completeCycles[variant] = cycle
+            }
+        }
+
         return completeCycles
     }()
 

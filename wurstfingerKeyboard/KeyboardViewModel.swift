@@ -233,9 +233,7 @@ final class KeyboardViewModel: ObservableObject {
         switch activeLayer {
         case .lower, .upper:
             return "123"
-        case .numbers:
-            return "#+="
-        case .symbols:
+        case .numbers, .symbols:
             return "ABC"
         }
     }
@@ -348,7 +346,7 @@ final class KeyboardViewModel: ObservableObject {
         case .upper:
             setShiftState(active: false)
         case .numbers, .symbols:
-            setShiftState(active: true)
+            activeLayer = .lower
         }
     }
 
@@ -357,9 +355,7 @@ final class KeyboardViewModel: ObservableObject {
         switch activeLayer {
         case .lower, .upper:
             activeLayer = .numbers
-        case .numbers:
-            activeLayer = .symbols
-        case .symbols:
+        case .numbers, .symbols:
             activeLayer = .lower
         }
     }

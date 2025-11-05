@@ -416,30 +416,68 @@ struct KeyboardLayout {
                 Self.makeKey(
                     center: "7",
                     textMap: [
-                        .downLeft: "$",
+                        .left: "≤",
                         .right: "-",
-                        .downRight: "€"
+                        .downLeft: "$"
+                    ],
+                    additionalOutputs: [
+                        .upLeft: .cycleAccents
+                    ],
+                    returnOverrides: [
+                        .upLeft: .cycleAccents,
+                        .right: .text("÷"),
+                        .downLeft: .text("¥")
+                    ],
+                    circularOverrides: [
+                        .clockwise: .text("∫"),
+                        .counterclockwise: .text("∫")
                     ]
                 ),
                 Self.makeKey(
                     center: "8",
                     textMap: [
-                        .upLeft: "`",
-                        .up: "^",
-                        .upRight: "´",
                         .right: "!",
                         .downRight: "\\",
                         .downLeft: "/",
                         .left: "+"
+                    ],
+                    composeMap: [
+                        .upLeft: (display: "`", trigger: "`"),
+                        .up: (display: "^", trigger: "^"),
+                        .upRight: (display: "´", trigger: "'")
+                    ],
+                    returnOverrides: [
+                        .upLeft: .text("'"),
+                        .up: .text("ˆ"),
+                        .upRight: .text("'"),
+                        .right: .text("¡"),
+                        .downRight: .text("—"),
+                        .downLeft: .text("–"),
+                        .left: .text("×")
+                    ],
+                    circularOverrides: [
+                        .clockwise: .text("∏"),
+                        .counterclockwise: .text("∏")
                     ]
                 ),
                 Self.makeKey(
                     center: "9",
                     textMap: [
-                        .left: "?",
+                        .upRight: "\n",
+                        .right: "≥",
                         .downRight: "€",
-                        .downLeft: "£",
-                        .down: "="
+                        .down: "=",
+                        .left: "?"
+                    ],
+                    returnOverrides: [
+                        .upRight: .text("\n"),
+                        .downRight: .text("£"),
+                        .down: .text("±"),
+                        .left: .text("¿")
+                    ],
+                    circularOverrides: [
+                        .clockwise: .text("∑"),
+                        .counterclockwise: .text("∑")
                     ]
                 )
             ],
@@ -452,12 +490,25 @@ struct KeyboardLayout {
                         .downRight: "_",
                         .downLeft: "[",
                         .left: "("
+                    ],
+                    returnOverrides: [
+                        .upLeft: .text("}"),
+                        .upRight: .text("‰"),
+                        .downRight: .text("¬"),
+                        .downLeft: .text("]"),
+                        .left: .text(")")
+                    ],
+                    circularOverrides: [
+                        .clockwise: .text("¼"),
+                        .counterclockwise: .text("¼")
                     ]
                 ),
                 Self.makeKey(
                     center: "5",
-                    textMap: [
-                        .up: "¬"
+                    textMap: [:],
+                    circularOverrides: [
+                        .clockwise: .text("a"),
+                        .counterclockwise: .text("a")
                     ]
                 ),
                 Self.makeKey(
@@ -468,6 +519,22 @@ struct KeyboardLayout {
                         .right: ")",
                         .downRight: "]",
                         .downLeft: "@"
+                    ],
+                    additionalOutputs: [
+                        .up: .toggleShift(on: true),
+                        .down: .toggleShift(on: false)
+                    ],
+                    returnOverrides: [
+                        .upLeft: .text("¶"),
+                        .up: .capitalizeWord(uppercased: true),
+                        .upRight: .text("{"),
+                        .right: .text("("),
+                        .downRight: .text("["),
+                        .downLeft: .text("ª")
+                    ],
+                    circularOverrides: [
+                        .clockwise: .text("ⁿ"),
+                        .counterclockwise: .text("ⁿ")
                     ]
                 )
             ],
@@ -476,29 +543,66 @@ struct KeyboardLayout {
                     center: "1",
                     textMap: [
                         .upLeft: "~",
-                        .left: "<",
                         .right: "*",
-                        .downRight: "\t"
+                        .downRight: "\t",
+                        .left: "<"
+                    ],
+                    composeMap: [
+                        .up: (display: "¨", trigger: "¨")
+                    ],
+                    returnOverrides: [
+                        .upLeft: .text("˜"),
+                        .up: .text("˝"),
+                        .right: .text("†"),
+                        .downRight: .text("\t"),
+                        .left: .text("‹")
+                    ],
+                    circularOverrides: [
+                        .clockwise: .text("¹"),
+                        .counterclockwise: .text("¹")
                     ]
                 ),
-                Self.makeKey(
+                makeKey(
                     center: "2",
                     textMap: [
                         .upLeft: "\"",
-                        .upRight: "'",
                         .downRight: ":",
                         .down: ".",
                         .downLeft: ","
+                    ],
+                    returnOverrides: [
+                        .upLeft: .text("\u{201C}"),
+                        .upRight: .text("\u{201D}"),
+                        .downRight: .text("„"),
+                        .down: .text("…"),
+                        .downLeft: .text(",")
+                    ],
+                    circularOverrides: [
+                        .clockwise: .text("²"),
+                        .counterclockwise: .text("²")
                     ]
                 ),
-                Self.makeKey(
+                makeKey(
                     center: "3",
                     textMap: [
                         .up: "&",
                         .upRight: "°",
                         .right: ">",
+                        .downRight: " ",
                         .downLeft: ";",
                         .left: "#"
+                    ],
+                    returnOverrides: [
+                        .up: .text("§"),
+                        .upRight: .text("º"),
+                        .right: .text("›"),
+                        .downRight: .text(" "),
+                        .downLeft: .text(";"),
+                        .left: .text("£")
+                    ],
+                    circularOverrides: [
+                        .clockwise: .text("³"),
+                        .counterclockwise: .text("³")
                     ]
                 )
             ],
