@@ -5,7 +5,6 @@
 //  Created by Claas Flint on 24.10.25.
 //
 
-import Combine
 import CoreGraphics
 import SwiftUI
 
@@ -29,94 +28,93 @@ struct KeyboardRootView: View {
              verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing) {
                 GridRow {
                 if viewModel.utilityColumnLeading {
-                    utilityButton(
+                    KeyboardButton(
                         height: keyHeight,
-                        onCircularGesture: { direction in
-                            viewModel.handleUtilityCircularGesture(.globe, direction: direction)
-                        },
-                        label: { AnyView(Image(systemName: "globe")) }
-                    ) {
-                        viewModel.handleAdvanceToNextInputMode()
-                    }
+                        label: Image(systemName: "globe"),
+                        overlay: EmptyView(),
+                        config: KeyboardButtonConfig(),
+                        callbacks: KeyboardButtonCallbacks(
+                            onTap: viewModel.handleAdvanceToNextInputMode,
+                            onCircular: { viewModel.handleUtilityCircularGesture(.globe, direction: $0) }
+                        )
+                    )
                 }
 
                 keyCells(forRow: 0, keyHeight: keyHeight)
 
                 if !viewModel.utilityColumnLeading {
-                    utilityButton(
+                    KeyboardButton(
                         height: keyHeight,
-                        onCircularGesture: { direction in
-                            viewModel.handleUtilityCircularGesture(.globe, direction: direction)
-                        },
-                        label: { AnyView(Image(systemName: "globe")) }
-                    ) {
-                        viewModel.handleAdvanceToNextInputMode()
-                    }
+                        label: Image(systemName: "globe"),
+                        overlay: EmptyView(),
+                        config: KeyboardButtonConfig(),
+                        callbacks: KeyboardButtonCallbacks(
+                            onTap: viewModel.handleAdvanceToNextInputMode,
+                            onCircular: { viewModel.handleUtilityCircularGesture(.globe, direction: $0) }
+                        )
+                    )
                 }
             }
 
                 GridRow {
                     if viewModel.utilityColumnLeading {
-                    utilityButton(
+                    KeyboardButton(
                         height: keyHeight,
-                        highlighted: { viewModel.isSymbolsToggleActive },
-                        label: { AnyView(Text(viewModel.symbolToggleLabel)) }
-                    ) {
-                        viewModel.toggleSymbols()
-                    }
+                        label: Text(viewModel.symbolToggleLabel),
+                        overlay: EmptyView(),
+                        config: KeyboardButtonConfig(highlighted: viewModel.isSymbolsToggleActive),
+                        callbacks: KeyboardButtonCallbacks(onTap: viewModel.toggleSymbols)
+                    )
                 }
 
                 keyCells(forRow: 1, keyHeight: keyHeight)
 
                 if !viewModel.utilityColumnLeading {
-                    utilityButton(
+                    KeyboardButton(
                         height: keyHeight,
-                        highlighted: { viewModel.isSymbolsToggleActive },
-                        label: { AnyView(Text(viewModel.symbolToggleLabel)) }
-                    ) {
-                        viewModel.toggleSymbols()
-                    }
+                        label: Text(viewModel.symbolToggleLabel),
+                        overlay: EmptyView(),
+                        config: KeyboardButtonConfig(highlighted: viewModel.isSymbolsToggleActive),
+                        callbacks: KeyboardButtonCallbacks(onTap: viewModel.toggleSymbols)
+                    )
                 }
             }
 
                 GridRow {
                     if viewModel.utilityColumnLeading {
-                    KeyboardButton(
-                        height: keyHeight,
-                        behavior: DeleteKeyBehavior(viewModel: viewModel)
-                    )
+                    DeleteKeyButton(viewModel: viewModel, keyHeight: keyHeight)
                 }
 
                 keyCells(forRow: 2, keyHeight: keyHeight)
 
                 if !viewModel.utilityColumnLeading {
-                    KeyboardButton(
-                        height: keyHeight,
-                        behavior: DeleteKeyBehavior(viewModel: viewModel)
-                    )
+                    DeleteKeyButton(viewModel: viewModel, keyHeight: keyHeight)
                 }
             }
 
                 GridRow {
                     if viewModel.utilityColumnLeading {
-                    utilityButton(
+                    KeyboardButton(
                         height: keyHeight,
-                        label: { AnyView(Text("⏎")) }
-                    ) {
-                        viewModel.handleReturn()
-                    }
+                        label: Text("⏎"),
+                        overlay: EmptyView(),
+                        config: KeyboardButtonConfig(),
+                        callbacks: KeyboardButtonCallbacks(onTap: viewModel.handleReturn)
+                    )
                 }
 
                 keyCells(forRow: 3, keyHeight: keyHeight)
-                spaceKey(columnSpan: viewModel.spaceColumnSpan, keyHeight: keyHeight)
+                SpaceKeyButton(viewModel: viewModel, keyHeight: keyHeight)
+                    .gridCellColumns(viewModel.spaceColumnSpan)
 
                 if !viewModel.utilityColumnLeading {
-                    utilityButton(
+                    KeyboardButton(
                         height: keyHeight,
-                        label: { AnyView(Text("⏎")) }
-                    ) {
-                        viewModel.handleReturn()
-                    }
+                        label: Text("⏎"),
+                        overlay: EmptyView(),
+                        config: KeyboardButtonConfig(),
+                        callbacks: KeyboardButtonCallbacks(onTap: viewModel.handleReturn)
+                    )
                 }
             }
         }
@@ -134,62 +132,19 @@ struct KeyboardRootView: View {
             ForEach(viewModel.rows[index]) { key in
                 KeyboardButton(
                     height: keyHeight,
-                    behavior: DirectionalKeyBehavior(
-                        label: { AnyView(Text(viewModel.displayText(for: key))) },
-                        overlay: { Optional.some(AnyView(KeyHintOverlay(key: key))) },
-                        configuration: { KeyboardButtonVisualConfiguration(fontSize: KeyboardConstants.FontSizes.keyLabel) },
-                        callbacks: KeyboardButtonCallbacks(
-                            onSwipe: { direction in
-                                viewModel.handleKeySwipe(key, direction: direction)
-                            },
-                            onSwipeReturn: { direction in
-                                viewModel.handleKeySwipeReturn(key, direction: direction)
-                            },
-                            onCircular: { direction in
-                                viewModel.handleCircularGesture(for: key, direction: direction)
-                            }
-                        )
+                    label: Text(viewModel.displayText(for: key)),
+                    overlay: KeyHintOverlay(key: key),
+                    config: KeyboardButtonConfig(fontSize: KeyboardConstants.FontSizes.keyLabel),
+                    callbacks: KeyboardButtonCallbacks(
+                        onSwipe: { viewModel.handleKeySwipe(key, direction: $0) },
+                        onSwipeReturn: { viewModel.handleKeySwipeReturn(key, direction: $0) },
+                        onCircular: { viewModel.handleCircularGesture(for: key, direction: $0) }
                     )
                 )
             }
         } else {
             EmptyView()
         }
-    }
-
-    private func spaceKey(columnSpan: Int, keyHeight: CGFloat) -> some View {
-        KeyboardButton(
-            height: keyHeight,
-            behavior: SpaceKeyBehavior(viewModel: viewModel)
-        )
-            .gridCellColumns(columnSpan)
-    }
-
-    private func utilityButton(
-        height: CGFloat,
-        fontSize: CGFloat = KeyboardConstants.FontSizes.utilityLabel,
-        highlighted: @escaping () -> Bool = { false },
-        onCircularGesture: ((KeyboardCircularDirection) -> Void)? = nil,
-        label: @escaping () -> AnyView,
-        action: @escaping () -> Void
-    ) -> some View {
-        KeyboardButton(
-            height: height,
-            behavior: DirectionalKeyBehavior(
-                label: label,
-                overlay: { nil },
-                configuration: {
-                    KeyboardButtonVisualConfiguration(
-                        highlighted: highlighted(),
-                        fontSize: fontSize
-                    )
-                },
-                callbacks: KeyboardButtonCallbacks(
-                    onTap: action,
-                    onCircular: onCircularGesture
-                )
-            )
-        )
     }
 }
 
@@ -225,27 +180,8 @@ private struct KeyCap<Content: View>: View {
             )
     }
 }
- 
-private struct KeyboardButtonGestureContext {
-    let activate: () -> Void
-    let deactivate: () -> Void
-    let setActive: (Bool) -> Void
 
-    init(activate: @escaping () -> Void, deactivate: @escaping () -> Void) {
-        self.activate = activate
-        self.deactivate = deactivate
-        self.setActive = { isActive in
-            isActive ? activate() : deactivate()
-        }
-    }
-}
-
-@inline(__always)
-private func eraseToAnyGestureVoid<G: Gesture>(_ gesture: G) -> AnyGesture<Void> {
-    AnyGesture(gesture.map { _ in () })
-}
-
-private struct KeyboardButtonVisualConfiguration {
+private struct KeyboardButtonConfig {
     let highlighted: Bool
     let fontSize: CGFloat
     let inactiveBackground: Color
@@ -254,7 +190,7 @@ private struct KeyboardButtonVisualConfiguration {
 
     init(
         highlighted: Bool = false,
-        fontSize: CGFloat = KeyboardConstants.FontSizes.defaultLabel,
+        fontSize: CGFloat = KeyboardConstants.FontSizes.utilityLabel,
         inactiveBackground: Color = Color(.secondarySystemBackground),
         activeBackground: Color = Color(.tertiarySystemFill),
         accessibilityLabel: Text? = nil
@@ -274,152 +210,33 @@ private struct KeyboardButtonCallbacks {
     var onCircular: ((KeyboardCircularDirection) -> Void)? = nil
 }
 
-private protocol KeyboardButtonBehavior: ObservableObject {
-    var visualConfiguration: KeyboardButtonVisualConfiguration { get }
-    func labelView() -> AnyView
-    func overlayView() -> AnyView?
-    func primaryGesture(context: KeyboardButtonGestureContext) -> AnyGesture<Void>?
-    func simultaneousGestures(context: KeyboardButtonGestureContext) -> [AnyGesture<Void>]
-    func onDisappear()
-}
-
-private final class AnyKeyboardButtonBehavior: ObservableObject {
-    private let wrapped: any KeyboardButtonBehavior
-    private var cancellable: AnyCancellable?
-
-    init(_ wrapped: some KeyboardButtonBehavior) {
-        self.wrapped = wrapped
-        cancellable = wrapped.objectWillChange.sink { [weak self] _ in
-            self?.objectWillChange.send()
-        }
-    }
-
-    deinit {
-        cancellable?.cancel()
-    }
-
-    var visualConfiguration: KeyboardButtonVisualConfiguration {
-        wrapped.visualConfiguration
-    }
-
-    func labelView() -> AnyView {
-        wrapped.labelView()
-    }
-
-    func overlayView() -> AnyView? {
-        wrapped.overlayView()
-    }
-
-    func primaryGesture(context: KeyboardButtonGestureContext) -> AnyGesture<Void>? {
-        wrapped.primaryGesture(context: context)
-    }
-
-    func simultaneousGestures(context: KeyboardButtonGestureContext) -> [AnyGesture<Void>] {
-        wrapped.simultaneousGestures(context: context)
-    }
-
-    func onDisappear() {
-        wrapped.onDisappear()
-    }
-}
-
-private struct KeyboardButton: View {
+private struct KeyboardButton<Label: View, Overlay: View>: View {
     let height: CGFloat
-    @StateObject private var behavior: AnyKeyboardButtonBehavior
-    @State private var isActive = false
+    let label: Label
+    let overlay: Overlay
+    let config: KeyboardButtonConfig
+    let callbacks: KeyboardButtonCallbacks
 
-    init(height: CGFloat, behavior: some KeyboardButtonBehavior) {
-        self.height = height
-        _behavior = StateObject(wrappedValue: AnyKeyboardButtonBehavior(behavior))
-    }
+    @State private var isActive = false
+    @State private var positions: [CGPoint] = []
+    @State private var maxOffset: CGPoint = .zero
 
     var body: some View {
-        let config = behavior.visualConfiguration
-        let context = KeyboardButtonGestureContext(
-            activate: { isActive = true },
-            deactivate: { isActive = false }
-        )
-
-        let baseView = KeyCap(
+        KeyCap(
             height: height,
             background: isActive ? config.activeBackground : config.inactiveBackground,
             highlighted: config.highlighted,
             fontSize: config.fontSize
         ) {
-            behavior.labelView()
+            label
         }
-        .overlay(behavior.overlayView() ?? AnyView(EmptyView()))
-
-        let accessibleView: AnyView = {
-            if let label = config.accessibilityLabel {
-                return AnyView(baseView.accessibilityLabel(label))
-            } else {
-                return AnyView(baseView)
-            }
-        }()
-
-        let primaryAppliedView: AnyView = {
-            guard let primaryGesture = behavior.primaryGesture(context: context) else {
-                return accessibleView
-            }
-            return AnyView(accessibleView.gesture(primaryGesture))
-        }()
-
-        let combinedView = behavior
-            .simultaneousGestures(context: context)
-            .reduce(primaryAppliedView) { view, gesture in
-                AnyView(view.simultaneousGesture(gesture))
-            }
-
-        return AnyView(
-            combinedView
-                .onDisappear {
-                    behavior.onDisappear()
-                    context.deactivate()
-                }
-        )
-    }
-}
-
-private final class DirectionalKeyBehavior: KeyboardButtonBehavior {
-    private let labelProvider: () -> AnyView
-    private let overlayProvider: () -> AnyView?
-    private let configurationProvider: () -> KeyboardButtonVisualConfiguration
-    private let callbacks: KeyboardButtonCallbacks
-
-    private var positions: [CGPoint] = []
-    private var maxOffset: CGPoint = .zero
-
-    init(
-        label: @escaping () -> AnyView,
-        overlay: @escaping () -> AnyView?,
-        configuration: @escaping () -> KeyboardButtonVisualConfiguration,
-        callbacks: KeyboardButtonCallbacks
-    ) {
-        self.labelProvider = label
-        self.overlayProvider = overlay
-        self.configurationProvider = configuration
-        self.callbacks = callbacks
-    }
-
-    var visualConfiguration: KeyboardButtonVisualConfiguration {
-        configurationProvider()
-    }
-
-    func labelView() -> AnyView {
-        labelProvider()
-    }
-
-    func overlayView() -> AnyView? {
-        overlayProvider()
-    }
-
-    func primaryGesture(context: KeyboardButtonGestureContext) -> AnyGesture<Void>? {
-        eraseToAnyGestureVoid(
+        .overlay(overlay)
+        .if(config.accessibilityLabel != nil) { view in
+            view.accessibilityLabel(config.accessibilityLabel!)
+        }
+        .gesture(
             DragGesture(minimumDistance: 0)
-                .onChanged { [weak self] value in
-                    guard let self else { return }
-
+                .onChanged { value in
                     if positions.isEmpty {
                         positions = [CGPoint.zero]
                         maxOffset = .zero
@@ -436,10 +253,10 @@ private final class DirectionalKeyBehavior: KeyboardButtonBehavior {
                         maxOffset = point
                     }
 
-                    context.activate()
+                    isActive = true
                 }
-                .onEnded { [weak self] value in
-                    guard let self else { return }
+                .onEnded { value in
+                    defer { resetGestureState() }
 
                     let finalPoint = CGPoint(x: value.translation.width, y: value.translation.height)
                     positions.append(finalPoint)
@@ -451,59 +268,52 @@ private final class DirectionalKeyBehavior: KeyboardButtonBehavior {
                     let maxDistance = maxOffset.magnitude()
                     let finalDistance = finalPoint.magnitude()
 
-                    let finalOffsetThreshold = KeyboardConstants.Gesture.minSwipeLength * KeyboardConstants.Gesture.finalOffsetMultiplier
+                    // Check for circular gesture first
+                    if let onCircular = callbacks.onCircular,
+                       maxDistance >= KeyboardConstants.Gesture.minSwipeLength,
+                       let circle = KeyboardGestureRecognizer.circularDirection(
+                           positions: positions,
+                           circleCompletionTolerance: KeyboardConstants.Gesture.circleCompletionTolerance,
+                           minSwipeLength: KeyboardConstants.Gesture.minSwipeLength
+                       ) {
+                        onCircular(circle)
+                        return
+                    }
 
+                    // Swipe gestures
+                    let finalOffsetThreshold = KeyboardConstants.Gesture.minSwipeLength * KeyboardConstants.Gesture.finalOffsetMultiplier
                     let maxDirection = KeyboardDirection.direction(
                         for: CGSize(width: maxOffset.x, height: maxOffset.y),
                         tolerance: 0
                     )
-
-                    let circle = KeyboardGestureRecognizer.circularDirection(
-                        positions: positions,
-                        circleCompletionTolerance: KeyboardConstants.Gesture.circleCompletionTolerance,
-                        minSwipeLength: KeyboardConstants.Gesture.minSwipeLength
-                    )
-
                     let finalDirection = KeyboardDirection.direction(
                         for: value.translation,
                         tolerance: KeyboardConstants.Gesture.minSwipeLength
                     )
 
-                    if let circle,
-                       maxDistance >= KeyboardConstants.Gesture.minSwipeLength,
-                       let onCircular = callbacks.onCircular {
-                        onCircular(circle)
-                        reset(context: context)
-                        return
-                    }
-
                     let finalOffsetSmallEnough = finalDistance <= finalOffsetThreshold || finalDirection != maxDirection
 
                     if maxDistance >= KeyboardConstants.Gesture.minSwipeLength, finalOffsetSmallEnough {
+                        // Return swipe
                         if maxDirection != .center {
-                            triggerReturn(direction: maxDirection)
+                            if let onSwipeReturn = callbacks.onSwipeReturn {
+                                onSwipeReturn(maxDirection)
+                            } else if let onSwipe = callbacks.onSwipe {
+                                onSwipe(finalDirection)
+                            } else if finalDirection == .center {
+                                callbacks.onTap?()
+                            }
                         } else {
-                            trigger(direction: finalDirection)
+                            handleDirectionalInput(direction: finalDirection)
                         }
                     } else {
-                        trigger(direction: finalDirection)
+                        handleDirectionalInput(direction: finalDirection)
                     }
-
-                    reset(context: context)
                 }
         )
     }
 
-    func simultaneousGestures(context: KeyboardButtonGestureContext) -> [AnyGesture<Void>] {
-        []
-    }
-
-    func onDisappear() {
-        positions.removeAll(keepingCapacity: false)
-        maxOffset = .zero
-    }
-
-    private func trigger(direction: KeyboardDirection) {
+    private func handleDirectionalInput(direction: KeyboardDirection) {
         if let onSwipe = callbacks.onSwipe {
             onSwipe(direction)
         } else if direction == .center {
@@ -515,54 +325,35 @@ private final class DirectionalKeyBehavior: KeyboardButtonBehavior {
         }
     }
 
-    private func triggerReturn(direction: KeyboardDirection) {
-        if let onSwipeReturn = callbacks.onSwipeReturn {
-            onSwipeReturn(direction)
-        } else {
-            trigger(direction: direction)
-        }
-    }
-
-    private func reset(context: KeyboardButtonGestureContext) {
+    private func resetGestureState() {
         positions.removeAll(keepingCapacity: false)
         maxOffset = .zero
-        context.deactivate()
+        isActive = false
     }
 }
 
-private final class SpaceKeyBehavior: KeyboardButtonBehavior {
-    private let viewModel: KeyboardViewModel
+private struct SpaceKeyButton: View {
+    let viewModel: KeyboardViewModel
+    let keyHeight: CGFloat
 
-    private var dragStarted = false
-    private var hasDragged = false
-    private var isSelecting = false
-    private var lastTranslation: CGSize = .zero
+    @State private var isActive = false
+    @State private var dragStarted = false
+    @State private var hasDragged = false
+    @State private var isSelecting = false
+    @State private var lastTranslation: CGSize = .zero
 
-    init(viewModel: KeyboardViewModel) {
-        self.viewModel = viewModel
-    }
-
-    var visualConfiguration: KeyboardButtonVisualConfiguration {
-        KeyboardButtonVisualConfiguration(
-            fontSize: KeyboardConstants.FontSizes.keyLabel,
-            accessibilityLabel: Text("Leerzeichen")
-        )
-    }
-
-    func labelView() -> AnyView {
-        AnyView(Color.clear)
-    }
-
-    func overlayView() -> AnyView? {
-        nil
-    }
-
-    func primaryGesture(context: KeyboardButtonGestureContext) -> AnyGesture<Void>? {
-        eraseToAnyGestureVoid(
+    var body: some View {
+        KeyCap(
+            height: keyHeight,
+            background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
+            fontSize: KeyboardConstants.FontSizes.keyLabel
+        ) {
+            Color.clear
+        }
+        .accessibilityLabel(Text("Leerzeichen"))
+        .gesture(
             DragGesture(minimumDistance: 0)
-                .onChanged { [weak self] value in
-                    guard let self else { return }
-
+                .onChanged { value in
                     if !dragStarted {
                         dragStarted = true
                         viewModel.beginSpaceDrag()
@@ -584,11 +375,9 @@ private final class SpaceKeyBehavior: KeyboardButtonBehavior {
                         hasDragged = true
                     }
 
-                    context.activate()
+                    isActive = true
                 }
-                .onEnded { [weak self] _ in
-                    guard let self else { return }
-
+                .onEnded { _ in
                     if dragStarted {
                         viewModel.endSpaceDrag()
                     }
@@ -597,28 +386,13 @@ private final class SpaceKeyBehavior: KeyboardButtonBehavior {
                         viewModel.handleSpace()
                     }
 
-                    reset(context: context)
+                    resetGestureState()
                 }
         )
     }
 
-    func simultaneousGestures(context: KeyboardButtonGestureContext) -> [AnyGesture<Void>] {
-        []
-    }
-
-    func onDisappear() {
-        if dragStarted {
-            viewModel.endSpaceDrag()
-        }
-        resetFlags()
-    }
-
-    private func reset(context: KeyboardButtonGestureContext) {
-        resetFlags()
-        context.deactivate()
-    }
-
-    private func resetFlags() {
+    private func resetGestureState() {
+        isActive = false
         dragStarted = false
         hasDragged = false
         isSelecting = false
@@ -626,43 +400,32 @@ private final class SpaceKeyBehavior: KeyboardButtonBehavior {
     }
 }
 
-private final class DeleteKeyBehavior: KeyboardButtonBehavior {
-    private let viewModel: KeyboardViewModel
+private struct DeleteKeyButton: View {
+    let viewModel: KeyboardViewModel
+    let keyHeight: CGFloat
 
-    private var dragStarted = false
-    private var hasDragged = false
-    private var isSliding = false
-    private var lastTranslation: CGSize = .zero
-    private var totalTranslation: CGSize = .zero
-    private var isRepeating = false
-    private var repeatTimer: Timer?
-    private var repeatTriggered = false
+    @State private var isActive = false
+    @State private var dragStarted = false
+    @State private var hasDragged = false
+    @State private var isSliding = false
+    @State private var lastTranslation: CGSize = .zero
+    @State private var totalTranslation: CGSize = .zero
+    @State private var isRepeating = false
+    @State private var repeatTimer: Timer?
+    @State private var repeatTriggered = false
 
-    init(viewModel: KeyboardViewModel) {
-        self.viewModel = viewModel
-    }
-
-    var visualConfiguration: KeyboardButtonVisualConfiguration {
-        KeyboardButtonVisualConfiguration(
-            fontSize: KeyboardConstants.FontSizes.keyLabel,
-            accessibilityLabel: Text("Löschen")
-        )
-    }
-
-    func labelView() -> AnyView {
-        AnyView(Image(systemName: "delete.left"))
-    }
-
-    func overlayView() -> AnyView? {
-        nil
-    }
-
-    func primaryGesture(context: KeyboardButtonGestureContext) -> AnyGesture<Void>? {
-        eraseToAnyGestureVoid(
+    var body: some View {
+        KeyCap(
+            height: keyHeight,
+            background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
+            fontSize: KeyboardConstants.FontSizes.keyLabel
+        ) {
+            Image(systemName: "delete.left")
+        }
+        .accessibilityLabel(Text("Löschen"))
+        .gesture(
             DragGesture(minimumDistance: 0)
-                .onChanged { [weak self] value in
-                    guard let self else { return }
-
+                .onChanged { value in
                     if isRepeating {
                         stopRepeat()
                     }
@@ -696,11 +459,9 @@ private final class DeleteKeyBehavior: KeyboardButtonBehavior {
                     }
 
                     lastTranslation = value.translation
-                    context.activate()
+                    isActive = true
                 }
-                .onEnded { [weak self] _ in
-                    guard let self else { return }
-
+                .onEnded { _ in
                     stopRepeat()
 
                     if isSliding {
@@ -717,31 +478,20 @@ private final class DeleteKeyBehavior: KeyboardButtonBehavior {
                         }
                     }
 
-                    reset(context: context)
+                    resetGestureState()
                 }
         )
-    }
-
-    func simultaneousGestures(context: KeyboardButtonGestureContext) -> [AnyGesture<Void>] {
-        [
-            eraseToAnyGestureVoid(
-                LongPressGesture(minimumDuration: KeyboardConstants.DeleteGestures.repeatDelay)
-                    .onEnded { [weak self] _ in
-                        guard let self else { return }
-                        if !isSliding {
-                            startRepeat()
-                        }
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: KeyboardConstants.DeleteGestures.repeatDelay)
+                .onEnded { _ in
+                    if !isSliding {
+                        startRepeat()
                     }
-            )
-        ]
-    }
-
-    func onDisappear() {
-        stopRepeat()
-        if isSliding {
-            viewModel.endDeleteDrag()
+                }
+        )
+        .onDisappear {
+            stopRepeat()
         }
-        resetFlags()
     }
 
     private func startRepeat() {
@@ -751,10 +501,9 @@ private final class DeleteKeyBehavior: KeyboardButtonBehavior {
         viewModel.handleDelete()
         repeatTriggered = true
         repeatTimer?.invalidate()
-        repeatTimer = Timer.scheduledTimer(withTimeInterval: KeyboardConstants.DeleteGestures.repeatInterval, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            self.repeatTriggered = true
-            self.viewModel.handleDelete()
+        repeatTimer = Timer.scheduledTimer(withTimeInterval: KeyboardConstants.DeleteGestures.repeatInterval, repeats: true) { _ in
+            repeatTriggered = true
+            viewModel.handleDelete()
         }
     }
 
@@ -766,13 +515,9 @@ private final class DeleteKeyBehavior: KeyboardButtonBehavior {
         isRepeating = false
     }
 
-    private func reset(context: KeyboardButtonGestureContext) {
+    private func resetGestureState() {
         stopRepeat()
-        resetFlags()
-        context.deactivate()
-    }
-
-    private func resetFlags() {
+        isActive = false
         dragStarted = false
         hasDragged = false
         isSliding = false
@@ -834,6 +579,18 @@ private struct KeyHintOverlay: View {
             return CGPoint(x: width - margin, y: height - margin)
         case .center:
             return CGPoint(x: width / 2, y: height / 2)
+        }
+    }
+}
+
+// Helper extension for conditional view modifiers
+extension View {
+    @ViewBuilder
+    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
         }
     }
 }
