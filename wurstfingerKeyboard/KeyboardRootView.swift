@@ -133,7 +133,7 @@ struct KeyboardRootView: View {
                 KeyboardButton(
                     height: keyHeight,
                     label: Text(viewModel.displayText(for: key)),
-                    overlay: KeyHintOverlay(key: key),
+                    overlay: KeyHintOverlay(key: key, viewModel: viewModel),
                     config: KeyboardButtonConfig(fontSize: KeyboardConstants.FontSizes.keyLabel),
                     callbacks: KeyboardButtonCallbacks(
                         onSwipe: { viewModel.handleKeySwipe(key, direction: $0) },
@@ -529,6 +529,7 @@ private struct DeleteKeyButton: View {
 
 private struct KeyHintOverlay: View {
     let key: MessagEaseKey
+    @ObservedObject var viewModel: KeyboardViewModel
 
     private let directions: [KeyboardDirection] = KeyboardDirection.allCases.filter { $0 != .center }
 
@@ -536,13 +537,24 @@ private struct KeyHintOverlay: View {
         GeometryReader { proxy in
             let size = proxy.size
             ForEach(directions, id: \.self) { direction in
-                if let label = key.primaryLabel(for: direction) {
-                    hintText(label, emphasis: false)
-                        .position(position(for: direction, returning: false, in: size))
+                if let label = key.primaryLabel(for: direction, isCapsLock: viewModel.isCapsLockActive) {
+                    // Hide down icon on r-key when not in caps mode
+                    if shouldShowLabel(for: direction) {
+                        hintText(label, emphasis: false)
+                            .position(position(for: direction, returning: false, in: size))
+                    }
                 }
             }
         }
         .allowsHitTesting(false)
+    }
+
+    private func shouldShowLabel(for direction: KeyboardDirection) -> Bool {
+        // Only show down arrow on r-key when caps is active (upper layer)
+        if key.center.lowercased() == "r" && direction == .down {
+            return viewModel.activeLayer == .upper
+        }
+        return true
     }
 
     private func hintText(_ text: String, emphasis: Bool) -> some View {

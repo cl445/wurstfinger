@@ -8,11 +8,11 @@ import Foundation
 
 struct ComposeEngine {
     private static let composeMap: [String: [String: String]] = [
-        "\"": [
+        "¨": [
             "a": "ä", "A": "Ä", "e": "ë", "E": "Ë", "h": "ḧ", "H": "Ḧ",
             "i": "ï", "I": "Ï", "o": "ö", "O": "Ö", "t": "ẗ", "u": "ü",
             "U": "Ü", "w": "ẅ", "W": "Ẅ", "x": "ẍ", "X": "Ẍ", "y": "ÿ",
-            "Y": "Ÿ", " ": "\"", "'": "\"", "υ": "ϋ", "ύ": "ΰ",
+            "Y": "Ÿ", " ": "¨", "'": "\"", "υ": "ϋ", "ύ": "ΰ",
             "Υ": "Ϋ", "ι": "ϊ", "ί": "ΐ", "Ι": "Ϊ"
         ],
         "'": [
@@ -114,5 +114,76 @@ struct ComposeEngine {
             return nil
         }
         return replacement
+    }
+
+    // Accent cycling: base character → variants in cycle order
+    private static let accentCycles: [String: [String]] = {
+        var cycles: [String: [String]] = [:]
+
+        // Build reverse mapping: character → all its accented variants
+        for (_, charMap) in composeMap {
+            for (base, accented) in charMap {
+                // Skip self-mappings like " " → "\"" or composition mappings
+                if base == " " || base.count > 1 { continue }
+
+                // Add base → accented mapping
+                if cycles[base] == nil {
+                    cycles[base] = []
+                }
+                if !cycles[base]!.contains(accented) {
+                    cycles[base]!.append(accented)
+                }
+
+                // Add reverse: accented → base (for cycling back)
+                if cycles[accented] == nil {
+                    cycles[accented] = []
+                }
+            }
+        }
+
+        // Build complete cycles: base → [base, variant1, variant2, ...]
+        var completeCycles: [String: [String]] = [:]
+        for (base, variants) in cycles where variants.count > 0 {
+            var cycle = [base] + variants
+            completeCycles[base] = cycle
+
+            // Each variant also maps to the same cycle
+            for variant in variants {
+                completeCycles[variant] = cycle
+            }
+        }
+
+        // Add number cycles: digit → superscript → fractions
+        let numberCycles: [String: [String]] = [
+            "0": ["0", "⁰"],
+            "1": ["1", "¹", "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒"],
+            "2": ["2", "²", "⅔", "⅖"],
+            "3": ["3", "³", "¾", "⅜", "⅗"],
+            "4": ["4", "⁴", "⅘"],
+            "5": ["5", "⁵", "⅚", "⅝"],
+            "6": ["6", "⁶"],
+            "7": ["7", "⁷", "⅞"],
+            "8": ["8", "⁸"],
+            "9": ["9", "⁹"]
+        ]
+
+        for (base, cycle) in numberCycles {
+            completeCycles[base] = cycle
+            // Each variant also maps to the same cycle
+            for variant in cycle where variant != base {
+                completeCycles[variant] = cycle
+            }
+        }
+
+        return completeCycles
+    }()
+
+    static func cycleAccent(for character: String) -> String? {
+        guard let cycle = accentCycles[character], let currentIndex = cycle.firstIndex(of: character) else {
+            return nil
+        }
+
+        let nextIndex = (currentIndex + 1) % cycle.count
+        return cycle[nextIndex]
     }
 }

@@ -20,6 +20,7 @@ enum KeyboardAction {
     case capitalizeWord(CapitalizationStyle)
     case moveCursor(offset: Int)
     case compose(trigger: String)
+    case cycleAccents
     case deleteWord
     case startSelection
     case updateSelection(offset: Int)
@@ -53,6 +54,7 @@ final class KeyboardViewModel: ObservableObject {
     static let defaultDragIntensity: CGFloat = 0.5
 
     @Published private(set) var activeLayer: KeyboardLayer = .lower
+    @Published private(set) var isCapsLockActive: Bool = false
     @Published var hapticIntensityTap: CGFloat {
         didSet {
             let clamped = clampIntensity(hapticIntensityTap)
@@ -231,9 +233,7 @@ final class KeyboardViewModel: ObservableObject {
         switch activeLayer {
         case .lower, .upper:
             return "123"
-        case .numbers:
-            return "#+="
-        case .symbols:
+        case .numbers, .symbols:
             return "ABC"
         }
     }
@@ -278,7 +278,7 @@ final class KeyboardViewModel: ObservableObject {
         }
 
         guard let output = key.output(for: direction) else {
-            handleKeyTap(key)
+            // No output defined for this direction - do nothing
             return
         }
 
@@ -295,9 +295,8 @@ final class KeyboardViewModel: ObservableObject {
             perform(output)
         } else if let fallback = key.output(for: direction) {
             perform(fallback)
-        } else {
-            handleKeyTap(key)
         }
+        // No output defined - do nothing
     }
 
     func handleCircularGesture(for key: MessagEaseKey, direction: KeyboardCircularDirection) {
@@ -347,7 +346,7 @@ final class KeyboardViewModel: ObservableObject {
         case .upper:
             setShiftState(active: false)
         case .numbers, .symbols:
-            setShiftState(active: true)
+            activeLayer = .lower
         }
     }
 
@@ -356,16 +355,28 @@ final class KeyboardViewModel: ObservableObject {
         switch activeLayer {
         case .lower, .upper:
             activeLayer = .numbers
-        case .numbers:
-            activeLayer = .symbols
-        case .symbols:
+        case .numbers, .symbols:
             activeLayer = .lower
         }
     }
 
     private func setShiftState(active: Bool) {
         feedbackModifier()
-        activeLayer = active ? .upper : .lower
+
+        if active {
+            // If shift is already active, activate caps-lock
+            if activeLayer == .upper && !isCapsLockActive {
+                isCapsLockActive = true
+            } else {
+                // First activation - temporary shift
+                isCapsLockActive = false
+                activeLayer = .upper
+            }
+        } else {
+            // Deactivate shift/caps-lock
+            isCapsLockActive = false
+            activeLayer = .lower
+        }
     }
 
     private func resolvedText(_ value: String) -> String {
@@ -417,7 +428,8 @@ final class KeyboardViewModel: ObservableObject {
     private func insertText(_ value: String) {
         feedbackTap()
         actionHandler?(.insert(resolvedText(value)))
-        if activeLayer == .upper {
+        // Only deactivate shift if it's temporary (not caps-lock)
+        if activeLayer == .upper && !isCapsLockActive {
             activeLayer = .lower
         }
     }
@@ -484,6 +496,9 @@ final class KeyboardViewModel: ObservableObject {
         case .compose(let trigger, _):
             feedbackModifier()
             actionHandler?(.compose(trigger: trigger))
+        case .cycleAccents:
+            feedbackModifier()
+            actionHandler?(.cycleAccents)
         }
     }
 
