@@ -30,7 +30,7 @@ jobs:
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
             -project Wurstfinger.xcodeproj \
-            -destination 'platform=iOS Simulator,name=Any iOS Simulator Device' \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6' \
             -only-testing:WurstfingerTests \
             -resultBundlePath TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO \
