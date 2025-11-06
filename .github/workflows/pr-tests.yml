@@ -30,9 +30,10 @@ jobs:
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
             -project Wurstfinger.xcodeproj \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6' \
             -only-testing:WurstfingerTests \
             -resultBundlePath TestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
             | xcpretty --color --report html --output TestResults.html
 
       - name: Upload Test Results
