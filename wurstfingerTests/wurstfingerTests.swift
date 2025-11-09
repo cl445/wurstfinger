@@ -51,10 +51,13 @@ struct wurstfingerTests {
     @Test func symbolsLayerFollowsNumericLayer() async throws {
         let viewModel = KeyboardViewModel()
 
+        // First toggle: lower → numbers
         viewModel.toggleSymbols()
-        viewModel.toggleSymbols()
+        #expect(viewModel.activeLayer == .numbers)
 
-        #expect(viewModel.activeLayer == .symbols)
+        // Second toggle: numbers → lower
+        viewModel.toggleSymbols()
+        #expect(viewModel.activeLayer == .lower)
 
         let rows = viewModel.rows
         let aKey = try #require(rows.first?.first)
@@ -260,7 +263,7 @@ struct wurstfingerTests {
     }
 
     @Test func composeEngineProducesReplacement() async throws {
-        #expect(ComposeEngine.compose(previous: "a", trigger: "\"") == "ä")
+        #expect(ComposeEngine.compose(previous: "a", trigger: "¨") == "ä")
         #expect(ComposeEngine.compose(previous: "l", trigger: "!") == "ł")
         #expect(ComposeEngine.compose(previous: "x", trigger: "~") == nil)
     }
@@ -303,16 +306,16 @@ struct wurstfingerTests {
         }
 
         try trigger(row: 0, column: 1, direction: .right, expected: "¡") // ! → ¡
-        try trigger(row: 0, column: 1, direction: .downLeft, expected: "÷") // / → ÷
+        try trigger(row: 0, column: 1, direction: .downLeft, expected: "–") // / → –
         try trigger(row: 0, column: 2, direction: .left, expected: "¿") // ? → ¿
-        try trigger(row: 0, column: 0, direction: .right, expected: "–") // - → –
+        try trigger(row: 0, column: 0, direction: .right, expected: "÷") // - → ÷
         try trigger(row: 2, column: 1, direction: .down, expected: "…") // . → …
-        try trigger(row: 2, column: 1, direction: .downLeft, expected: "„") // , → „
-        try trigger(row: 2, column: 1, direction: .upLeft, expected: "“") // " → “
-        try trigger(row: 2, column: 1, direction: .upRight, expected: "’") // ' → ’
-        try trigger(row: 2, column: 0, direction: .left, expected: "«") // < → «
+        try trigger(row: 2, column: 1, direction: .downLeft, expected: ",") // , → ,
+        try trigger(row: 2, column: 1, direction: .upLeft, expected: "\u{201C}") // " → "
+        try trigger(row: 2, column: 1, direction: .upRight, expected: "\u{201D}") // upRight → "
+        try trigger(row: 2, column: 0, direction: .left, expected: "‹") // < → ‹
         try trigger(row: 2, column: 0, direction: .right, expected: "†") // * → †
-        try trigger(row: 2, column: 2, direction: .right, expected: "»") // > → »
+        try trigger(row: 2, column: 2, direction: .right, expected: "›") // > → ›
         try trigger(row: 1, column: 0, direction: .upRight, expected: "‰") // % → ‰
     }
 
