@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @StateObject private var languageSettings = LanguageSettings.shared
+
     @AppStorage("utilityColumnLeading", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
     private var utilityColumnLeading = false
 
@@ -35,6 +37,17 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
+                    NavigationLink(destination: LanguageSelectionView()) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Language")
+                                .font(.body)
+
+                            Text(languageSettings.selectedLanguage.name)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
                     Toggle(isOn: $utilityColumnLeading) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Utility Keys on Left")
@@ -70,7 +83,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Layout")
                 } footer: {
-                    Text("Adjust the shape, size, and position of the keyboard.")
+                    Text("Adjust the language, shape, size, and position of the keyboard.")
                 }
 
                 Section {
@@ -95,13 +108,6 @@ struct SettingsView: View {
                         Text("Version")
                         Spacer()
                         Text("1.0.0")
-                            .foregroundColor(.secondary)
-                    }
-
-                    HStack {
-                        Text("Layout")
-                        Spacer()
-                        Text("German (MessagEase)")
                             .foregroundColor(.secondary)
                     }
 

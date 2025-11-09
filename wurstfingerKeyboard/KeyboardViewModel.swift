@@ -55,6 +55,7 @@ final class KeyboardViewModel: ObservableObject {
 
     @Published private(set) var activeLayer: KeyboardLayer = .lower
     @Published private(set) var isCapsLockActive: Bool = false
+    private var locale: Locale
     @Published var hapticIntensityTap: CGFloat {
         didSet {
             let clamped = clampIntensity(hapticIntensityTap)
@@ -123,7 +124,7 @@ final class KeyboardViewModel: ObservableObject {
         }
     }
 
-    private let layout: KeyboardLayout
+    private var layout: KeyboardLayout
     private let sharedDefaults: UserDefaults
     private let shouldPersistSettings: Bool
     private var actionHandler: ((KeyboardAction) -> Void)?
@@ -134,18 +135,30 @@ final class KeyboardViewModel: ObservableObject {
     private var isDeleteDragging = false
     private var deleteDragResidual: CGFloat = 0
     private var impactGenerators: [KeyboardHapticEvent: UIImpactFeedbackGenerator] = [:]
+    private var userDefaultsObserver: NSObjectProtocol?
 
     init(
-        layout: KeyboardLayout = .germanDefault,
+        layout: KeyboardLayout? = nil,
         userDefaults: UserDefaults? = nil,
         shouldPersistSettings: Bool = true
     ) {
-        self.layout = layout
-        self.shouldPersistSettings = shouldPersistSettings
-
         // Initialize UserDefaults once
         let defaults = userDefaults ?? UserDefaults(suiteName: "group.de.akator.wurstfinger.shared") ?? .standard
         self.sharedDefaults = defaults
+
+        // Load layout based on selected language or use provided layout
+        if let providedLayout = layout {
+            self.layout = providedLayout
+            // If a specific layout is provided, use German locale as default
+            // (This is mainly for testing)
+            self.locale = Locale(identifier: "de_DE")
+        } else {
+            let selectedLanguage = LanguageSettings.shared.selectedLanguage
+            self.layout = KeyboardLayout.layout(for: selectedLanguage)
+            self.locale = selectedLanguage.locale
+        }
+
+        self.shouldPersistSettings = shouldPersistSettings
 
         let storedTap = defaults.object(forKey: Self.hapticTapIntensityKey) as? NSNumber
         let storedModifier = defaults.object(forKey: Self.hapticModifierIntensityKey) as? NSNumber
@@ -181,6 +194,22 @@ final class KeyboardViewModel: ObservableObject {
         self.keyboardHorizontalPosition = min(1.0, max(0.0, savedPosition))
 
         refreshImpactGenerators()
+
+        // Observe UserDefaults changes for language updates (works both within
+        // same process and across processes via App Group)
+        userDefaultsObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.reloadLanguage()
+        }
+    }
+
+    deinit {
+        if let observer = userDefaultsObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     func reloadSettings() {
@@ -222,7 +251,28 @@ final class KeyboardViewModel: ObservableObject {
             hapticIntensityDrag = newDragIntensity
         }
 
+        // Reload language if it changed
+        reloadLanguage()
+
         refreshImpactGenerators()
+    }
+
+    private func reloadLanguage() {
+        // Read language ID directly from UserDefaults to catch changes from host app
+        let languageId = sharedDefaults.string(forKey: "selectedLanguageId") ?? LanguageSettings.detectSystemLanguage()
+
+        if languageId != locale.identifier {
+            // Notify SwiftUI that we're about to change the model
+            objectWillChange.send()
+
+            if let newLanguage = LanguageConfig.language(withId: languageId) {
+                layout = KeyboardLayout.layout(for: newLanguage)
+                locale = newLanguage.locale
+                // Reset to lower layer when language changes
+                activeLayer = .lower
+                isCapsLockActive = false
+            }
+        }
     }
 
     var rows: [[MessagEaseKey]] {
@@ -382,10 +432,15 @@ final class KeyboardViewModel: ObservableObject {
     private func resolvedText(_ value: String) -> String {
         switch activeLayer {
         case .upper:
-            return value.uppercased(with: Locale(identifier: "de_DE"))
+            return value.uppercased(with: locale)
         default:
             return value
         }
+    }
+
+    /// Returns the locale for the current keyboard language
+    func currentLocale() -> Locale {
+        return locale
     }
 
     private func triggerHapticFeedback(_ event: KeyboardHapticEvent = .tap) {

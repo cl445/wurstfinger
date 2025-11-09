@@ -7,7 +7,7 @@
 
 import Foundation
 import Testing
-@testable import Wurstfinger
+@testable import WurstfingerApp
 
 struct wurstfingerTests {
 

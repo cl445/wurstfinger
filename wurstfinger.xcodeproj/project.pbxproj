@@ -74,7 +74,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				KeyboardViewController.swift,
 			);
 			target = 4275119E2EAAF62100C5635A /* WurstfingerTests */;
 		};
@@ -86,8 +85,18 @@
 				KeyboardRootView.swift,
 				KeyboardViewController.swift,
 				KeyboardViewModel.swift,
+				LanguageConfig.swift,
+				LanguageSettings.swift,
 			);
 			target = 427511912EAAF62000C5635A /* WurstfingerApp */;
+		};
+		42C0B8E12EBD2C2C00DF2D45 /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				LanguageConfig.swift,
+				LanguageSettings.swift,
+			);
+			target = 427511A82EAAF62100C5635A /* WurstfingerUITests */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -112,6 +121,7 @@
 			exceptions = (
 				42C0B35D2EB16D3400DF2D45 /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerApp" target */,
 				427511FC2EAAF62100C5635A /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerTests" target */,
+				42C0B8E12EBD2C2C00DF2D45 /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerUITests" target */,
 				422B5FA22EAED9E8002A926E /* Exceptions for "wurstfingerKeyboard" folder in "Wurstfinger" target */,
 			);
 			path = wurstfingerKeyboard;
