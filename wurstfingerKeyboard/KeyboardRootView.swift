@@ -141,16 +141,6 @@ struct KeyboardRootView: View {
         return min(max(scaledSize, 20), 34) // min 20pt, max 34pt
     }
 
-    private func scaledMainLabelSize(for keyHeight: CGFloat) -> CGFloat {
-        // Base size at reference height of 54pt
-        let baseSize: CGFloat = 26
-        let referenceHeight: CGFloat = 54
-
-        // Scale proportionally with key height
-        let scaledSize = baseSize * (keyHeight / referenceHeight)
-        return min(max(scaledSize, 20), 34) // min 20pt, max 34pt
-    }
-
     @ViewBuilder
     private func keyCells(forRow index: Int, keyHeight: CGFloat) -> some View {
         if index < viewModel.rows.count {
