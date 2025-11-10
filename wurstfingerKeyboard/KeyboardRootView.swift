@@ -24,7 +24,12 @@ struct KeyboardRootView: View {
         let availableSpace = screenWidth * (1 - viewModel.keyboardScale)
         let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
 
-        Grid(horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
+        ZStack {
+            // Background layer that always fills the entire space
+            Color(.systemBackground)
+                .ignoresSafeArea()
+
+            Grid(horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
              verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing) {
                 GridRow {
                 if viewModel.utilityColumnLeading {
@@ -117,13 +122,23 @@ struct KeyboardRootView: View {
                     )
                 }
             }
+            }
+            .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
+            .padding(.vertical, KeyboardConstants.Layout.verticalPadding)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: frameAlignment)
+            .scaleEffect(viewModel.keyboardScale, anchor: scaleAnchor)
+            .offset(x: horizontalOffset)
         }
-        .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
-        .padding(.vertical, KeyboardConstants.Layout.verticalPadding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: frameAlignment)
-        .background(Color(.systemBackground))
-        .scaleEffect(viewModel.keyboardScale, anchor: scaleAnchor)
-        .offset(x: horizontalOffset)
+    }
+
+    private func scaledMainLabelSize(for keyHeight: CGFloat) -> CGFloat {
+        // Base size at reference height of 54pt
+        let baseSize: CGFloat = 26
+        let referenceHeight: CGFloat = 54
+
+        // Scale proportionally with key height
+        let scaledSize = baseSize * (keyHeight / referenceHeight)
+        return min(max(scaledSize, 20), 34) // min 20pt, max 34pt
     }
 
     private func scaledMainLabelSize(for keyHeight: CGFloat) -> CGFloat {
