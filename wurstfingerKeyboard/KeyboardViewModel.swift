@@ -22,9 +22,6 @@ enum KeyboardAction {
     case compose(trigger: String)
     case cycleAccents
     case deleteWord
-    case startSelection
-    case updateSelection(offset: Int)
-    case endSelection
 }
 
 enum CapitalizationStyle {
@@ -130,8 +127,6 @@ final class KeyboardViewModel: ObservableObject {
     private var actionHandler: ((KeyboardAction) -> Void)?
     private var isSpaceDragging = false
     private var spaceDragResidual: CGFloat = 0
-    private var isSpaceSelecting = false
-    private var spaceSelectionResidual: CGFloat = 0
     private var isDeleteDragging = false
     private var deleteDragResidual: CGFloat = 0
     private var impactGenerators: [KeyboardHapticEvent: UIImpactFeedbackGenerator] = [:]
@@ -576,18 +571,11 @@ final class KeyboardViewModel: ObservableObject {
 
     func beginSpaceDrag() {
         isSpaceDragging = true
-        isSpaceSelecting = false
         spaceDragResidual = 0
-        spaceSelectionResidual = 0
     }
 
     func updateSpaceDrag(deltaX: CGFloat) {
         guard isSpaceDragging, deltaX != 0 else { return }
-
-        if isSpaceSelecting {
-            updateSpaceSelection(deltaX: deltaX)
-            return
-        }
 
         spaceDragResidual += deltaX
 
@@ -605,40 +593,8 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     func endSpaceDrag() {
-        if isSpaceSelecting {
-            actionHandler?(.endSelection)
-        }
         isSpaceDragging = false
-        isSpaceSelecting = false
         spaceDragResidual = 0
-        spaceSelectionResidual = 0
-    }
-
-    func beginSpaceSelection() {
-        guard isSpaceDragging else { return }
-        if !isSpaceSelecting {
-            isSpaceSelecting = true
-            spaceSelectionResidual = 0
-            actionHandler?(.startSelection)
-        }
-    }
-
-    private func updateSpaceSelection(deltaX: CGFloat) {
-        guard isSpaceDragging, isSpaceSelecting, deltaX != 0 else { return }
-
-        spaceSelectionResidual += deltaX
-
-        while spaceSelectionResidual <= -KeyboardConstants.SpaceGestures.dragStep {
-            actionHandler?(.updateSelection(offset: -1))
-            feedbackDrag()
-            spaceSelectionResidual += KeyboardConstants.SpaceGestures.dragStep
-        }
-
-        while spaceSelectionResidual >= KeyboardConstants.SpaceGestures.dragStep {
-            actionHandler?(.updateSelection(offset: 1))
-            feedbackDrag()
-            spaceSelectionResidual -= KeyboardConstants.SpaceGestures.dragStep
-        }
     }
 
     func beginDeleteDrag() {

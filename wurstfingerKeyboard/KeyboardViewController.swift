@@ -12,8 +12,6 @@ import UIKit
 final class KeyboardViewController: UIInputViewController {
     private var hostingController: UIHostingController<KeyboardRootView>?
     private lazy var viewModel = KeyboardViewModel()
-    private var selectionActive = false
-    private var selectionOffset = 0
     private var heightConstraint: NSLayoutConstraint?
 
     /// Tells iOS which language this keyboard is typing in for spell-check and autocorrect
@@ -116,12 +114,6 @@ final class KeyboardViewController: UIInputViewController {
             capitalizeCurrentWord(style: style)
         case .moveCursor(let offset):
             textDocumentProxy.adjustTextPosition(byCharacterOffset: offset)
-        case .startSelection:
-            beginSelection()
-        case .updateSelection(let offset):
-            updateSelection(by: offset)
-        case .endSelection:
-            endSelection()
         case .compose(let trigger):
             handleCompose(trigger: trigger)
         case .cycleAccents:
@@ -159,63 +151,6 @@ final class KeyboardViewController: UIInputViewController {
             textDocumentProxy.deleteBackward()
         }
         textDocumentProxy.insertText(transformed)
-    }
-
-    private func beginSelection() {
-        selectionActive = true
-        selectionOffset = 0
-        textDocumentProxy.unmarkText()
-    }
-
-    private func updateSelection(by delta: Int) {
-        guard selectionActive, delta != 0 else { return }
-        applySelection(targetOffset: selectionOffset + delta)
-    }
-
-    private func applySelection(targetOffset: Int) {
-        guard selectionActive else { return }
-
-        textDocumentProxy.unmarkText()
-
-        selectionOffset = targetOffset
-
-        if selectionOffset == 0 {
-            return
-        }
-
-        if selectionOffset < 0 {
-            let before = textDocumentProxy.documentContextBeforeInput ?? ""
-            let available = before.count
-            let requested = min(available, -selectionOffset)
-            guard requested > 0 else {
-                selectionOffset = 0
-                return
-            }
-            let selectionText = String(before.suffix(requested))
-            let actualCount = selectionText.count
-            textDocumentProxy.adjustTextPosition(byCharacterOffset: -actualCount)
-            textDocumentProxy.setMarkedText(selectionText, selectedRange: NSRange(location: actualCount, length: 0))
-            selectionOffset = -actualCount
-        } else {
-            let after = textDocumentProxy.documentContextAfterInput ?? ""
-            let available = after.count
-            let requested = min(available, selectionOffset)
-            guard requested > 0 else {
-                selectionOffset = 0
-                return
-            }
-            let selectionText = String(after.prefix(requested))
-            let actualCount = selectionText.count
-            textDocumentProxy.setMarkedText(selectionText, selectedRange: NSRange(location: 0, length: actualCount))
-            selectionOffset = actualCount
-        }
-    }
-
-    private func endSelection() {
-        guard selectionActive else { return }
-        selectionActive = false
-        selectionOffset = 0
-        textDocumentProxy.unmarkText()
     }
 
     private func handleCompose(trigger: String) {
