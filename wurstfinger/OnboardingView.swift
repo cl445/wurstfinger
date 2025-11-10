@@ -33,16 +33,18 @@ struct OnboardingView: View {
                         isCompleted: $keyboardInstalled
                     )
 
-                    HStack {
-                        Spacer()
-                        Button("Open Settings", systemImage: "gear") {
-                            openURL(settingsURL)
+                    Button {
+                        openURL(settingsURL)
+                    } label: {
+                        HStack {
+                            Image(systemName: "gear")
+                            Text("Open Settings")
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.accentColor)
-                        Spacer()
+                        .frame(maxWidth: .infinity)
                     }
-                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                    .buttonStyle(.borderedProminent)
+                    .tint(.accentColor)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
 
                     SetupStepView(
                         number: 2,
