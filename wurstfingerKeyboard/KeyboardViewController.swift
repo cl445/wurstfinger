@@ -16,6 +16,17 @@ final class KeyboardViewController: UIInputViewController {
     private var selectionOffset = 0
     private var heightConstraint: NSLayoutConstraint?
 
+    /// Tells iOS which language this keyboard is typing in for spell-check and autocorrect
+    override var primaryLanguage: String? {
+        get {
+            return LanguageSettings.shared.selectedLanguageId
+        }
+        set {
+            // iOS may try to set this, but we ignore it and use our settings
+            super.primaryLanguage = newValue
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -135,7 +146,7 @@ final class KeyboardViewController: UIInputViewController {
         guard !characters.isEmpty else { return }
 
         let word = String(characters.reversed())
-        let locale = Locale(identifier: "de_DE")
+        let locale = viewModel.currentLocale()
         let transformed: String
         switch style {
         case .uppercased:

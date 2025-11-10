@@ -206,15 +206,59 @@ struct KeyboardLayout {
         layers[layer] ?? []
     }
 
+    /// Creates a keyboard layout for the specified language configuration
+    static func layout(for config: LanguageConfig) -> KeyboardLayout {
+        let lowerRows = Self.createLetterRows(for: config)
+        let numberRows = Self.createNumberRows(for: config)
+        let symbolRows = lowerRows
+
+        return KeyboardLayout(
+            layers: [
+                .lower: lowerRows,
+                .upper: lowerRows,
+                .numbers: numberRows,
+                .symbols: symbolRows
+            ]
+        )
+    }
+
     static let germanDefault: KeyboardLayout = {
-        let lowerRows: [[MessagEaseKey]] = [
+        layout(for: .german)
+    }()
+}
+
+extension CGPoint {
+    func magnitude() -> CGFloat {
+        sqrt(x * x + y * y)
+    }
+
+    func distance(to other: CGPoint) -> CGFloat {
+        CGPoint(x: other.x - x, y: other.y - y).magnitude()
+    }
+}
+
+private extension KeyboardLayout {
+    private static let composeTriggers: Set<String> = [
+        "¨", "'", "`", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
+    ]
+
+    /// Creates the 3x3 letter grid rows using the language configuration
+    private static func createLetterRows(for config: LanguageConfig) -> [[MessagEaseKey]] {
+        let centers = config.centerCharacters
+        guard centers.count == 3 else {
+            fatalError("LanguageConfig must have exactly 3 rows")
+        }
+
+        return [
+            // Row 0
             [
                 Self.makeKey(
-                    center: "a",
+                    center: centers[0][0],
+                    locale: config.locale,
                     textMap: [
                         .right: "-",
-                        .downRight: "v",
-                        .down: "ä",
+                        .downRight: config.specialCharacters["0_0_downRight"] ?? "v",
+                        .down: config.specialCharacters["0_0_down"] ?? "",
                         .downLeft: "$"
                     ],
                     additionalOutputs: [
@@ -223,17 +267,18 @@ struct KeyboardLayout {
                     returnOverrides: [
                         .upLeft: .cycleAccents,
                         .right: .text("÷"),
-                        .downRight: .text("V"),
-                        .down: .text("Ä"),
+                        .downRight: .text((config.specialCharacters["0_0_downRight"] ?? "v").uppercased(with: config.locale)),
+                        .down: .text((config.specialCharacters["0_0_down"] ?? "").uppercased(with: config.locale)),
                         .downLeft: .text("¥")
                     ]
                 ),
                 Self.makeKey(
-                    center: "n",
+                    center: centers[0][1],
+                    locale: config.locale,
                     textMap: [
                         .right: "!",
                         .downRight: "\\",
-                        .down: "l",
+                        .down: config.specialCharacters["0_1_down"] ?? "l",
                         .downLeft: "/",
                         .left: "+"
                     ],
@@ -248,13 +293,14 @@ struct KeyboardLayout {
                         .upRight: .text("'"),
                         .right: .text("¡"),
                         .downRight: .text("—"),
-                        .down: .text("L"),
+                        .down: .text((config.specialCharacters["0_1_down"] ?? "l").uppercased(with: config.locale)),
                         .downLeft: .text("–"),
                         .left: .text("×")
                     ]
                 ),
                 Self.makeKey(
-                    center: "i",
+                    center: centers[0][2],
+                    locale: config.locale,
                     textMap: [
                         .upRight: "\n",
                         .downRight: "€",
@@ -271,41 +317,44 @@ struct KeyboardLayout {
                     ]
                 )
             ],
+            // Row 1
             [
                 Self.makeKey(
-                    center: "h",
+                    center: centers[1][0],
+                    locale: config.locale,
                     textMap: [
                         .upLeft: "{",
-                        .up: "ü",
+                        .up: config.specialCharacters["1_0_up"] ?? "",
                         .upRight: "%",
-                        .right: "k",
+                        .right: config.specialCharacters["1_0_right"] ?? "k",
                         .downRight: "_",
-                        .down: "ö",
+                        .down: config.specialCharacters["1_0_down"] ?? "",
                         .downLeft: "[",
                         .left: "("
                     ],
                     returnOverrides: [
                         .upLeft: .text("}"),
-                        .up: .text("Ü"),
+                        .up: .text((config.specialCharacters["1_0_up"] ?? "u").uppercased(with: config.locale)),
                         .upRight: .text("‰"),
                         .right: .text("K"),
                         .downRight: .text("¬"),
-                        .down: .text("Ö"),
+                        .down: .text((config.specialCharacters["1_0_down"] ?? "o").uppercased(with: config.locale)),
                         .downLeft: .text("]"),
                         .left: .text(")")
                     ]
                 ),
                 Self.makeKey(
-                    center: "d",
+                    center: centers[1][1],
+                    locale: config.locale,
                     textMap: [
-                        .upLeft: "q",
-                        .up: "u",
-                        .upRight: "p",
-                        .right: "b",
-                        .downRight: "j",
-                        .down: "o",
-                        .downLeft: "g",
-                        .left: "c"
+                        .upLeft: config.specialCharacters["1_1_upLeft"] ?? "q",
+                        .up: config.specialCharacters["1_1_up"] ?? "u",
+                        .upRight: config.specialCharacters["1_1_upRight"] ?? "p",
+                        .right: config.specialCharacters["1_1_right"] ?? "b",
+                        .downRight: config.specialCharacters["1_1_downRight"] ?? "j",
+                        .down: config.specialCharacters["1_1_down"] ?? "d",
+                        .downLeft: config.specialCharacters["1_1_downLeft"] ?? "g",
+                        .left: config.specialCharacters["1_1_left"] ?? "c"
                     ],
                     returnOverrides: [
                         .upLeft: .text("Q"),
@@ -313,20 +362,21 @@ struct KeyboardLayout {
                         .upRight: .text("P"),
                         .right: .text("B"),
                         .downRight: .text("J"),
-                        .down: .text("O"),
+                        .down: .text((config.specialCharacters["1_1_down"] ?? "o").uppercased(with: config.locale)),
                         .downLeft: .text("G"),
                         .left: .text("C")
                     ]
                 ),
                 Self.makeKey(
-                    center: "r",
+                    center: centers[1][2],
+                    locale: config.locale,
                     textMap: [
                         .upLeft: "|",
                         .upRight: "}",
                         .right: ")",
                         .downRight: "]",
                         .downLeft: "@",
-                        .left: "m"
+                        .left: config.specialCharacters["1_2_left"] ?? "m"
                     ],
                     additionalOutputs: [
                         .up: .toggleShift(on: true),
@@ -343,15 +393,18 @@ struct KeyboardLayout {
                     ]
                 )
             ],
+            // Row 2
             [
                 Self.makeKey(
-                    center: "t",
+                    center: centers[2][0],
+                    locale: config.locale,
                     textMap: [
                         .upLeft: "~",
-                        .upRight: "y",
+                        .up: config.specialCharacters["2_0_up"] ?? "",
+                        .upRight: config.specialCharacters["2_0_upRight"] ?? "y",
                         .right: "*",
                         .downRight: "\t",
-                        .down: "ß",
+                        .down: config.specialCharacters["2_0_down"] ?? "",
                         .left: "<"
                     ],
                     composeMap: [
@@ -363,16 +416,17 @@ struct KeyboardLayout {
                         .upRight: .text("Y"),
                         .right: .text("†"),
                         .downRight: .text("\t"),
-                        .down: .text("ß"),
+                        .down: .text((config.specialCharacters["2_0_down"] ?? "").uppercased(with: config.locale)),
                         .left: .text("‹")
                     ]
                 ),
-                makeKey(
-                    center: "e",
+                Self.makeKey(
+                    center: centers[2][1],
+                    locale: config.locale,
                     textMap: [
                         .upLeft: "\"",
-                        .up: "w",
-                        .right: "z",
+                        .up: config.specialCharacters["2_1_up"] ?? "w",
+                        .right: config.specialCharacters["2_1_right"] ?? "z",
                         .downRight: ":",
                         .down: ".",
                         .downLeft: ","
@@ -387,10 +441,11 @@ struct KeyboardLayout {
                         .downLeft: .text(",")
                     ]
                 ),
-                makeKey(
-                    center: "s",
+                Self.makeKey(
+                    center: centers[2][2],
+                    locale: config.locale,
                     textMap: [
-                        .upLeft: "f",
+                        .upLeft: config.specialCharacters["2_2_upLeft"] ?? "f",
                         .up: "&",
                         .upRight: "°",
                         .right: ">",
@@ -410,11 +465,15 @@ struct KeyboardLayout {
                 )
             ]
         ]
+    }
 
-        let numberRows: [[MessagEaseKey]] = [
+    /// Creates the number layer rows using the language configuration
+    private static func createNumberRows(for config: LanguageConfig) -> [[MessagEaseKey]] {
+        return [
             [
                 Self.makeKey(
                     center: "7",
+                    locale: config.locale,
                     textMap: [
                         .left: "≤",
                         .right: "-",
@@ -435,6 +494,7 @@ struct KeyboardLayout {
                 ),
                 Self.makeKey(
                     center: "8",
+                    locale: config.locale,
                     textMap: [
                         .right: "!",
                         .downRight: "\\",
@@ -462,6 +522,7 @@ struct KeyboardLayout {
                 ),
                 Self.makeKey(
                     center: "9",
+                    locale: config.locale,
                     textMap: [
                         .upRight: "\n",
                         .right: "≥",
@@ -484,6 +545,7 @@ struct KeyboardLayout {
             [
                 Self.makeKey(
                     center: "4",
+                    locale: config.locale,
                     textMap: [
                         .upLeft: "{",
                         .upRight: "%",
@@ -505,6 +567,7 @@ struct KeyboardLayout {
                 ),
                 Self.makeKey(
                     center: "5",
+                    locale: config.locale,
                     textMap: [:],
                     circularOverrides: [
                         .clockwise: .text("a"),
@@ -513,6 +576,7 @@ struct KeyboardLayout {
                 ),
                 Self.makeKey(
                     center: "6",
+                    locale: config.locale,
                     textMap: [
                         .upLeft: "|",
                         .upRight: "}",
@@ -541,6 +605,7 @@ struct KeyboardLayout {
             [
                 Self.makeKey(
                     center: "1",
+                    locale: config.locale,
                     textMap: [
                         .upLeft: "~",
                         .right: "*",
@@ -562,8 +627,9 @@ struct KeyboardLayout {
                         .counterclockwise: .text("¹")
                     ]
                 ),
-                makeKey(
+                Self.makeKey(
                     center: "2",
+                    locale: config.locale,
                     textMap: [
                         .upLeft: "\"",
                         .downRight: ":",
@@ -582,8 +648,9 @@ struct KeyboardLayout {
                         .counterclockwise: .text("²")
                     ]
                 ),
-                makeKey(
+                Self.makeKey(
                     center: "3",
+                    locale: config.locale,
                     textMap: [
                         .up: "&",
                         .upRight: "°",
@@ -607,40 +674,18 @@ struct KeyboardLayout {
                 )
             ],
             [
-                Self.makeKey(center: "0", textMap: [:])
+                Self.makeKey(
+                    center: "0",
+                    locale: config.locale,
+                    textMap: [:]
+                )
             ]
         ]
-
-        let symbolRows: [[MessagEaseKey]] = lowerRows
-
-        return KeyboardLayout(
-            layers: [
-                .lower: lowerRows,
-                .upper: lowerRows,
-                .numbers: numberRows,
-                .symbols: symbolRows
-            ]
-        )
-    }()
-}
-
-extension CGPoint {
-    func magnitude() -> CGFloat {
-        sqrt(x * x + y * y)
     }
-
-    func distance(to other: CGPoint) -> CGFloat {
-        CGPoint(x: other.x - x, y: other.y - y).magnitude()
-    }
-}
-
-private extension KeyboardLayout {
-    private static let composeTriggers: Set<String> = [
-        "¨", "'", "`", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
-    ]
 
     private static func makeKey(
         center: String,
+        locale: Locale,
         textMap: [KeyboardDirection: String],
         composeMap: [KeyboardDirection: (display: String?, trigger: String)] = [:],
         additionalOutputs: [KeyboardDirection: MessagEaseOutput] = [:],
@@ -653,7 +698,7 @@ private extension KeyboardLayout {
 
         // Default circular gesture: uppercase for letters
         if circularOutputs.isEmpty && center.containsLetter {
-            let uppercased = uppercaseGerman(center)
+            let uppercased = center.uppercased(with: locale)
             circularOutputs[.clockwise] = .text(uppercased)
             circularOutputs[.counterclockwise] = .text(uppercased)
         }
@@ -695,10 +740,6 @@ private extension String {
     var containsLetter: Bool {
         rangeOfCharacter(from: .letters) != nil
     }
-}
-
-private func uppercaseGerman(_ value: String) -> String {
-    value.uppercased(with: Locale(identifier: "de_DE"))
 }
 
 extension MessagEaseKey {
