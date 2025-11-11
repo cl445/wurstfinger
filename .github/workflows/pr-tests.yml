@@ -14,27 +14,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug - Show directory structure
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Directory contents:"
-          ls -la
-          echo "Looking for xcodeproj:"
-          find . -name "*.xcodeproj" -type d
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.xcodeproj/**') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
 
-      - name: Install xcpretty
-        run: gem install xcpretty
+      - name: Pre-boot Simulator
+        run: |
+          SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | grep -oE '\([A-F0-9-]+\)' | tr -d '()')
+          echo "Booting simulator: $SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || true
 
       - name: Build and Run Tests
         run: |
-          set -o pipefail && xcodebuild test \
+          xcodebuild test \
             -scheme Wurstfinger \
             -project Wurstfinger.xcodeproj \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
             -only-testing:WurstfingerTests \
             -resultBundlePath TestResults.xcresult \
-            CODE_SIGNING_ALLOWED=NO \
-            | xcpretty --color --report html --output TestResults.html
+            -parallel-testing-enabled YES \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Upload Test Results
         if: always()
