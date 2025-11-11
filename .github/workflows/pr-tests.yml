@@ -14,24 +14,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Cache DerivedData
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.xcodeproj/**') }}
-          restore-keys: |
-            ${{ runner.os }}-deriveddata-
-
-      - name: Pre-boot Simulator
-        run: |
-          SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | grep -oE '\([A-F0-9-]+\)' | tr -d '()')
-          echo "Booting simulator: $SIMULATOR_ID"
-          xcrun simctl boot "$SIMULATOR_ID" || true
-
       - name: Install xcpretty
         run: gem install xcpretty
 
       - name: Build and Run Tests
+        working-directory: wurstfinger
         run: |
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
@@ -48,6 +35,6 @@ jobs:
         with:
           name: test-results
           path: |
-            TestResults.xcresult
-            TestResults.html
+            wurstfinger/TestResults.xcresult
+            wurstfinger/TestResults.html
           retention-days: 30
