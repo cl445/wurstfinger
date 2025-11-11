@@ -18,7 +18,6 @@ jobs:
         run: gem install xcpretty
 
       - name: Build and Run Tests
-        working-directory: wurstfinger
         run: |
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
@@ -35,6 +34,6 @@ jobs:
         with:
           name: test-results
           path: |
-            wurstfinger/TestResults.xcresult
-            wurstfinger/TestResults.html
+            TestResults.xcresult
+            TestResults.html
           retention-days: 30
