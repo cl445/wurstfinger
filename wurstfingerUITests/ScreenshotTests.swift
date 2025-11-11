@@ -28,7 +28,7 @@ final class ScreenshotTests: XCTestCase {
         let layouts = ["lower", "numbers"]
         let appearances = ["light", "dark"]
 
-        // Screenshot 1-4: Keyboard-only screenshots
+        // Generate 4 keyboard-only screenshots for README
         for appearance in appearances {
             for layout in layouts {
                 app.launchEnvironment["FORCE_LAYER"] = layout
@@ -47,27 +47,6 @@ final class ScreenshotTests: XCTestCase {
                 app.terminate()
                 Thread.sleep(forTimeInterval: 0.5)
             }
-        }
-
-        // Screenshot 5-6: Screenshots with text
-        for appearance in appearances {
-            app.launchArguments = ["TEXT_SCREENSHOT_MODE"]
-            app.launchEnvironment["FORCE_LANGUAGE"] = "en_US"
-            app.launchEnvironment["FORCE_APPEARANCE"] = appearance
-            app.launch()
-
-            let keyboard = app.otherElements["showcaseKeyboard"]
-            XCTAssertTrue(keyboard.waitForExistence(timeout: 5))
-            Thread.sleep(forTimeInterval: 1.0)  // Wait for layout to settle
-
-            let screenshot = app.screenshot()
-            let attachment = XCTAttachment(screenshot: screenshot)
-            attachment.name = "demo-text-\(appearance)"
-            attachment.lifetime = .keepAlways
-            add(attachment)
-
-            app.terminate()
-            Thread.sleep(forTimeInterval: 0.5)
         }
     }
 }
