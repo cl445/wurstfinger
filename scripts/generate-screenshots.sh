@@ -25,7 +25,7 @@ cd "$PROJECT_ROOT"
 SCHEME="Wurstfinger"
 DESTINATION="platform=iOS Simulator,name=iPhone 16,OS=18.6"
 TEST_TARGET="WurstfingerUITests/ScreenshotTests"
-DOCS_DIR="$PROJECT_ROOT/../docs/images"
+DOCS_DIR="$PROJECT_ROOT/docs/images"
 DERIVED_DATA="/tmp/WurstfingerScreenshots"
 
 # Create docs directory if it doesn't exist
