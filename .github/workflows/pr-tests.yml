@@ -14,13 +14,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug - Show directory structure
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.xcodeproj/**') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
+
+      - name: Pre-boot Simulator
         run: |
-          echo "Current directory: $(pwd)"
-          echo "Directory contents:"
-          ls -la
-          echo "Looking for xcodeproj:"
-          find . -name "*.xcodeproj" -type d
+          SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | grep -oE '\([A-F0-9-]+\)' | tr -d '()')
+          echo "Booting simulator: $SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || true
 
       - name: Install xcpretty
         run: gem install xcpretty

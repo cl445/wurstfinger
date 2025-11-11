@@ -134,33 +134,6 @@ struct wurstfingerTests {
         #expect(moves == [1, 1, -1, -1])
     }
 
-    @Test func spaceSelectionEmitsSelectionActions() async throws {
-        let viewModel = KeyboardViewModel()
-        var sequence: [String] = []
-
-        viewModel.bindActionHandler { action in
-            switch action {
-            case .startSelection:
-                sequence.append("start")
-            case .updateSelection(let offset):
-                sequence.append("update:\(offset)")
-            case .endSelection:
-                sequence.append("end")
-            default:
-                break
-            }
-        }
-
-        viewModel.beginSpaceDrag()
-        viewModel.beginSpaceSelection()
-        viewModel.updateSpaceDrag(deltaX: 20)
-        viewModel.updateSpaceDrag(deltaX: 20)
-        viewModel.updateSpaceDrag(deltaX: -40)
-        viewModel.endSpaceDrag()
-
-        #expect(sequence == ["start", "update:1", "update:1", "update:-1", "update:-1", "end"])
-    }
-
     @Test func deleteDragEmitsRepeatedDeletes() async throws {
         let viewModel = KeyboardViewModel()
         var deletes = 0

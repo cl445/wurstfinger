@@ -354,7 +354,6 @@ private struct SpaceKeyButton: View {
     @State private var isActive = false
     @State private var dragStarted = false
     @State private var hasDragged = false
-    @State private var isSelecting = false
     @State private var lastTranslation: CGSize = .zero
 
     var body: some View {
@@ -375,18 +374,11 @@ private struct SpaceKeyButton: View {
                     }
 
                     let deltaX = value.translation.width - lastTranslation.width
-
-                    if !isSelecting, abs(value.translation.height) >= KeyboardConstants.SpaceGestures.selectionActivationThreshold {
-                        isSelecting = true
-                        hasDragged = true
-                        viewModel.beginSpaceSelection()
-                    }
-
                     viewModel.updateSpaceDrag(deltaX: deltaX)
 
                     lastTranslation = value.translation
 
-                    if !hasDragged, !isSelecting, abs(value.translation.width) >= KeyboardConstants.SpaceGestures.dragActivationThreshold {
+                    if !hasDragged, abs(value.translation.width) >= KeyboardConstants.SpaceGestures.dragActivationThreshold {
                         hasDragged = true
                     }
 
@@ -397,7 +389,7 @@ private struct SpaceKeyButton: View {
                         viewModel.endSpaceDrag()
                     }
 
-                    if !hasDragged, !isSelecting {
+                    if !hasDragged {
                         viewModel.handleSpace()
                     }
 
@@ -410,7 +402,6 @@ private struct SpaceKeyButton: View {
         isActive = false
         dragStarted = false
         hasDragged = false
-        isSelecting = false
         lastTranslation = .zero
     }
 }
