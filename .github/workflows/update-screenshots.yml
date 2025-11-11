@@ -27,14 +27,15 @@ jobs:
           pip3 install Pillow numpy
 
       - name: Generate screenshots
-        working-directory: wurstfinger
-        run: ./scripts/generate-screenshots.sh
+        run: |
+          cd wurstfinger
+          ./scripts/generate-screenshots.sh
         timeout-minutes: 15
 
       - name: Check for screenshot changes
         id: check_changes
-        working-directory: wurstfinger
         run: |
+          cd wurstfinger
           if git diff --quiet docs/images/*.webp; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
@@ -43,8 +44,8 @@ jobs:
 
       - name: Commit and push screenshots
         if: steps.check_changes.outputs.changed == 'true'
-        working-directory: wurstfinger
         run: |
+          cd wurstfinger
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/images/*.webp
