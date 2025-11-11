@@ -30,6 +30,22 @@ struct KeyboardShowcaseView: View {
             if let forcedLanguage = ProcessInfo.processInfo.environment["FORCE_LANGUAGE"] {
                 languageSettings.selectedLanguageId = forcedLanguage
             }
+
+            // Set keyboard layer from environment if specified (for UI tests)
+            if let forcedLayer = ProcessInfo.processInfo.environment["FORCE_LAYER"] {
+                switch forcedLayer {
+                case "numbers":
+                    viewModel.setLayer(.numbers)
+                case "symbols":
+                    viewModel.setLayer(.symbols)
+                case "upper":
+                    viewModel.setLayer(.upper)
+                case "lower":
+                    viewModel.setLayer(.lower)
+                default:
+                    break
+                }
+            }
         }
     }
 }

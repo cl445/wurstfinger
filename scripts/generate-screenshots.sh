@@ -23,7 +23,7 @@ cd "$PROJECT_ROOT"
 
 # Configuration
 SCHEME="Wurstfinger"
-DESTINATION="platform=iOS Simulator,name=iPhone 16"
+DESTINATION="platform=iOS Simulator,name=iPhone 16,OS=18.6"
 TEST_TARGET="WurstfingerUITests/ScreenshotTests"
 DOCS_DIR="$PROJECT_ROOT/../docs/images"
 DERIVED_DATA="/tmp/WurstfingerScreenshots"
@@ -60,38 +60,53 @@ fi
 
 echo "  Results bundle: $RESULTS_BUNDLE"
 
-# Export screenshots using xcresulttool
-ATTACHMENTS_DIR=$(find "$RESULTS_BUNDLE" -name "Attachments" -type d | head -n 1)
+# Extract screenshots using xcresulttool export attachments
+echo ""
+echo -e "${BLUE}🔍 Extracting screenshots with proper names...${NC}"
 
-if [ -z "$ATTACHMENTS_DIR" ]; then
-  echo -e "${RED}❌ Error: Could not find attachments directory${NC}"
-  exit 1
+# Export all attachments
+TEMP_EXPORT="/tmp/screenshot-exports"
+rm -rf "$TEMP_EXPORT"
+xcrun xcresulttool export attachments --path "$RESULTS_BUNDLE" --output-path "$TEMP_EXPORT"
+
+# Map exported files to proper names based on manifest
+if [ -f "$TEMP_EXPORT/manifest.json" ]; then
+    # Parse manifest and copy files with proper names
+    export TEMP_EXPORT
+    export DOCS_DIR
+    python3 << 'EOF'
+import json
+import shutil
+import os
+
+manifest_path = os.environ['TEMP_EXPORT'] + '/manifest.json'
+docs_dir = os.environ['DOCS_DIR']
+
+with open(manifest_path, 'r') as f:
+    manifest = json.load(f)
+
+for test_result in manifest:
+    for attachment in test_result.get('attachments', []):
+        exported_file = attachment['exportedFileName']
+        suggested_name = attachment['suggestedHumanReadableName']
+
+        # Extract base name (e.g., "keyboard-lower" from "keyboard-lower_0_UUID.png")
+        base_name = suggested_name.split('_')[0]
+
+        src_path = os.path.join(os.environ['TEMP_EXPORT'], exported_file)
+        dst_path = os.path.join(docs_dir, f'{base_name}.png')
+
+        if os.path.exists(src_path):
+            shutil.copy2(src_path, dst_path)
+            print(f"  ✓ Copied {base_name}.png")
+EOF
+
+    # Count copied files
+    COPIED=$(ls -1 "$DOCS_DIR"/*.png 2>/dev/null | wc -l | tr -d ' ')
 fi
 
-echo "  Attachments dir: $ATTACHMENTS_DIR"
-
-# Copy screenshots to docs folder
-COPIED=0
-for screenshot in "$ATTACHMENTS_DIR"/*.png; do
-  if [ -f "$screenshot" ]; then
-    BASENAME=$(basename "$screenshot")
-    # Screenshots are named with hash, we need to match them to our names
-    # For now, copy all and let user rename or use xcrun xcresulttool
-    cp "$screenshot" "$DOCS_DIR/"
-    COPIED=$((COPIED + 1))
-  fi
-done
-
-# Try to extract with proper names using xcresulttool
-echo ""
-echo -e "${BLUE}🔍 Extracting named screenshots...${NC}"
-
-# Get screenshot IDs and names
-xcrun xcresulttool get --path "$RESULTS_BUNDLE" --format json > /tmp/test-results.json
-
-# Extract attachments with proper names (this is complex, for now we'll use a simpler approach)
-# List all attachments
-xcrun xcresulttool get attachments --path "$RESULTS_BUNDLE" 2>/dev/null || true
+# Clean up temp export
+rm -rf "$TEMP_EXPORT"
 
 echo ""
 if [ $COPIED -gt 0 ]; then
