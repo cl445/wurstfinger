@@ -16,29 +16,28 @@ accented characters.
 
 ## Preview
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/demo-text-dark.webp">
-    <source media="(prefers-color-scheme: light)" srcset="docs/images/demo-text-light.webp">
-    <img src="docs/images/demo-text-light.webp" alt="Wurstfinger keyboard in action" width="300">
-  </picture>
-</p>
-
-<details>
-<summary><b>More Screenshots</b></summary>
-
-### Light Theme
-<p align="center">
-  <img src="docs/images/keyboard-lower-light.webp" alt="Lower case layout" width="250">
-  <img src="docs/images/keyboard-numbers-light.webp" alt="Numbers layout" width="250">
-</p>
-
-### Dark Theme
-<p align="center">
-  <img src="docs/images/keyboard-lower-dark.webp" alt="Lower case layout (dark)" width="250">
-  <img src="docs/images/keyboard-numbers-dark.webp" alt="Numbers layout (dark)" width="250">
-</p>
-</details>
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/images/keyboard-lower-light.webp" alt="Lower case layout (light)" width="100%">
+      <p align="center"><i>Light Theme</i></p>
+    </td>
+    <td width="50%">
+      <img src="docs/images/keyboard-lower-dark.webp" alt="Lower case layout (dark)" width="100%">
+      <p align="center"><i>Dark Theme</i></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/images/keyboard-numbers-light.webp" alt="Numbers layout (light)" width="100%">
+      <p align="center"><i>Numbers Layer</i></p>
+    </td>
+    <td width="50%">
+      <img src="docs/images/keyboard-numbers-dark.webp" alt="Numbers layout (dark)" width="100%">
+      <p align="center"><i>Numbers Layer (Dark)</i></p>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
