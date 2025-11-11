@@ -2,10 +2,6 @@
 
 *The keyboard for fat fingers.*
 
-I started this project because my favorite keyboard, MessagEase, stopped
-working on iOS 26. The project now supports 14 languages and aims to be a full
-replacement for MessagEase—pull requests are very welcome!
-
 The name “Wurstfinger” is a nod to the “fat finger” problem—thumb-heavy typing on small screens.
 
 Wurstfinger is a MessagEase-inspired keyboard for iOS written in SwiftUI. It
