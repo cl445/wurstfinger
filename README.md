@@ -18,10 +18,27 @@ accented characters.
 
 <p align="center">
   <picture>
-    <source srcset="docs/images/demo-showcase.webp" type="image/webp">
-    <img src="docs/images/demo-showcase.png" alt="Wurstfinger keyboard running in the companion test view" width="360">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/demo-text-dark.webp">
+    <source media="(prefers-color-scheme: light)" srcset="docs/images/demo-text-light.webp">
+    <img src="docs/images/demo-text-light.webp" alt="Wurstfinger keyboard in action" width="300">
   </picture>
 </p>
+
+<details>
+<summary><b>More Screenshots</b></summary>
+
+### Light Theme
+<p align="center">
+  <img src="docs/images/keyboard-lower-light.webp" alt="Lower case layout" width="250">
+  <img src="docs/images/keyboard-numbers-light.webp" alt="Numbers layout" width="250">
+</p>
+
+### Dark Theme
+<p align="center">
+  <img src="docs/images/keyboard-lower-dark.webp" alt="Lower case layout (dark)" width="250">
+  <img src="docs/images/keyboard-numbers-dark.webp" alt="Numbers layout (dark)" width="250">
+</p>
+</details>
 
 ## Features
 

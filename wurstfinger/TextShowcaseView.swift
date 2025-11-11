@@ -1,22 +1,37 @@
 //
-//  KeyboardShowcaseView.swift
+//  TextShowcaseView.swift
 //  wurstfinger
 //
-//  Keyboard showcase view for automated screenshots
+//  Showcase view with demo text for screenshots
 //
 
 import SwiftUI
 
-struct KeyboardShowcaseView: View {
+struct TextShowcaseView: View {
     @StateObject private var viewModel = KeyboardViewModel(shouldPersistSettings: false)
     @StateObject private var languageSettings = LanguageSettings.shared
     @State private var colorScheme: ColorScheme?
+    @State private var testText: String = "hello Wurstfinger!"
 
     var body: some View {
         VStack(spacing: 0) {
+            // Text display area
+            VStack(alignment: .leading, spacing: 0) {
+                Text(testText)
+                    .font(.system(size: 17))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(.systemBackground))
+            .accessibilityIdentifier("textEditor")
+
+            // Wurstfinger keyboard
             KeyboardRootView(viewModel: viewModel)
                 .frame(maxWidth: .infinity)
-                .background(Color(.systemBackground))
+                .background(Color(.systemGroupedBackground))
                 .accessibilityIdentifier("showcaseKeyboard")
                 .padding(.vertical, 8)
         }
@@ -27,22 +42,6 @@ struct KeyboardShowcaseView: View {
             // Set language from environment if specified (for UI tests)
             if let forcedLanguage = ProcessInfo.processInfo.environment["FORCE_LANGUAGE"] {
                 languageSettings.selectedLanguageId = forcedLanguage
-            }
-
-            // Set keyboard layer from environment if specified (for UI tests)
-            if let forcedLayer = ProcessInfo.processInfo.environment["FORCE_LAYER"] {
-                switch forcedLayer {
-                case "numbers":
-                    viewModel.setLayer(.numbers)
-                case "symbols":
-                    viewModel.setLayer(.symbols)
-                case "upper":
-                    viewModel.setLayer(.upper)
-                case "lower":
-                    viewModel.setLayer(.lower)
-                default:
-                    break
-                }
             }
 
             // Set appearance from environment if specified (for UI tests)
@@ -61,5 +60,5 @@ struct KeyboardShowcaseView: View {
 }
 
 #Preview {
-    KeyboardShowcaseView()
+    TextShowcaseView()
 }

@@ -102,7 +102,7 @@ for test_result in manifest:
             # Open image and auto-crop to keyboard
             img = Image.open(src_path)
 
-            # Convert to RGB if necessary (for WebP)
+            # Convert to RGB if necessary
             if img.mode in ('RGBA', 'LA', 'P'):
                 background = Image.new('RGB', img.size, (255, 255, 255))
                 if img.mode == 'P':
@@ -110,22 +110,32 @@ for test_result in manifest:
                 background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
                 img = background
 
-            # Get bounding box of non-white content (auto-crop)
-            bbox = img.getbbox()
-            if bbox:
-                # Add small padding
-                padding = 10
-                bbox = (
-                    max(0, bbox[0] - padding),
-                    max(0, bbox[1] - padding),
-                    min(img.width, bbox[2] + padding),
-                    min(img.height, bbox[3] + padding)
-                )
-                img = img.crop(bbox)
+            # Smart crop: find non-background content
+            import numpy as np
+            arr = np.array(img)
+
+            # Find rows and columns that aren't mostly background
+            # Calculate variance across RGB channels - background has low variance
+            gray = np.mean(arr, axis=2)
+            row_variance = np.var(gray, axis=1)
+            col_variance = np.var(gray, axis=0)
+
+            # Find content boundaries (variance above threshold)
+            threshold = 10
+            content_rows = np.where(row_variance > threshold)[0]
+            content_cols = np.where(col_variance > threshold)[0]
+
+            if len(content_rows) > 0 and len(content_cols) > 0:
+                top = max(0, content_rows[0] - 10)
+                bottom = min(img.height, content_rows[-1] + 10)
+                left = max(0, content_cols[0] - 10)
+                right = min(img.width, content_cols[-1] + 10)
+
+                img = img.crop((left, top, right, bottom))
 
             # Save as WebP with good quality
             img.save(final_webp, 'WEBP', quality=85)
-            print(f"  ✓ Created {base_name}.webp")
+            print(f"  ✓ Created {base_name}.webp ({img.width}x{img.height})")
 EOF
 
     # Count created files
@@ -140,10 +150,14 @@ if [ $COPIED -gt 0 ]; then
   echo -e "${GREEN}✅ Success! Created $COPIED WebP screenshot(s) in $DOCS_DIR${NC}"
   echo ""
   echo -e "${BLUE}📝 Generated screenshots:${NC}"
-  echo "  - keyboard-lower-light.webp"
-  echo "  - keyboard-lower-dark.webp"
-  echo "  - keyboard-numbers-light.webp"
-  echo "  - keyboard-numbers-dark.webp"
+  echo "  Keyboard-only:"
+  echo "    - keyboard-lower-light.webp"
+  echo "    - keyboard-lower-dark.webp"
+  echo "    - keyboard-numbers-light.webp"
+  echo "    - keyboard-numbers-dark.webp"
+  echo "  With text:"
+  echo "    - demo-text-light.webp"
+  echo "    - demo-text-dark.webp"
 else
   echo -e "${RED}❌ No screenshots found${NC}"
   echo ""
