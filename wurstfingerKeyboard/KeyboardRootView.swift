@@ -67,7 +67,7 @@ struct KeyboardRootView: View {
                         height: keyHeight,
                         label: Text(viewModel.symbolToggleLabel),
                         overlay: EmptyView(),
-                        config: KeyboardButtonConfig(highlighted: viewModel.isSymbolsToggleActive),
+                        config: KeyboardButtonConfig(highlighted: viewModel.isSymbolsToggleActive, accessibilityIdentifier: "symbols"),
                         callbacks: KeyboardButtonCallbacks(onTap: viewModel.toggleSymbols)
                     )
                 }
@@ -79,7 +79,7 @@ struct KeyboardRootView: View {
                         height: keyHeight,
                         label: Text(viewModel.symbolToggleLabel),
                         overlay: EmptyView(),
-                        config: KeyboardButtonConfig(highlighted: viewModel.isSymbolsToggleActive),
+                        config: KeyboardButtonConfig(highlighted: viewModel.isSymbolsToggleActive, accessibilityIdentifier: "symbols"),
                         callbacks: KeyboardButtonCallbacks(onTap: viewModel.toggleSymbols)
                     )
                 }
@@ -202,19 +202,22 @@ private struct KeyboardButtonConfig {
     let inactiveBackground: Color
     let activeBackground: Color
     let accessibilityLabel: Text?
+    let accessibilityIdentifier: String?
 
     init(
         highlighted: Bool = false,
         fontSize: CGFloat = KeyboardConstants.FontSizes.utilityLabel,
         inactiveBackground: Color = Color(.secondarySystemBackground),
         activeBackground: Color = Color(.tertiarySystemFill),
-        accessibilityLabel: Text? = nil
+        accessibilityLabel: Text? = nil,
+        accessibilityIdentifier: String? = nil
     ) {
         self.highlighted = highlighted
         self.fontSize = fontSize
         self.inactiveBackground = inactiveBackground
         self.activeBackground = activeBackground
         self.accessibilityLabel = accessibilityLabel
+        self.accessibilityIdentifier = accessibilityIdentifier
     }
 }
 
@@ -249,6 +252,10 @@ private struct KeyboardButton<Label: View, Overlay: View>: View {
         .if(config.accessibilityLabel != nil) { view in
             view.accessibilityLabel(config.accessibilityLabel!)
         }
+        .if(config.accessibilityIdentifier != nil) { view in
+            view.accessibilityIdentifier(config.accessibilityIdentifier!)
+        }
+        .accessibilityAddTraits(.isButton)
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in

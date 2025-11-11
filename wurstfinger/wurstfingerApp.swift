@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct wurstfingerApp: App {
+    @State private var showScreenshotMode = ProcessInfo.processInfo.arguments.contains("SCREENSHOT_MODE")
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if showScreenshotMode {
+                KeyboardShowcaseView()
+            } else {
+                ContentView()
+            }
         }
     }
 }

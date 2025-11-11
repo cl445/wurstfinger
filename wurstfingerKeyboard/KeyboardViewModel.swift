@@ -405,6 +405,10 @@ final class KeyboardViewModel: ObservableObject {
         }
     }
 
+    func setLayer(_ layer: KeyboardLayer) {
+        activeLayer = layer
+    }
+
     private func setShiftState(active: Bool) {
         feedbackModifier()
 
