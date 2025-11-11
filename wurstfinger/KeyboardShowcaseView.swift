@@ -10,21 +10,18 @@ import SwiftUI
 struct KeyboardShowcaseView: View {
     @StateObject private var viewModel = KeyboardViewModel(shouldPersistSettings: false)
     @StateObject private var languageSettings = LanguageSettings.shared
+    @State private var colorScheme: ColorScheme?
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
-
             KeyboardRootView(viewModel: viewModel)
                 .frame(maxWidth: .infinity)
                 .background(Color(.systemBackground))
                 .accessibilityIdentifier("showcaseKeyboard")
-
-            Spacer()
-                .frame(height: 20)
+                .padding(.vertical, 8)
         }
-        .background(Color(.systemGray6))
-        .edgesIgnoringSafeArea(.all)
+        .background(Color(.systemBackground))
+        .preferredColorScheme(colorScheme)
         .onAppear {
             // Set language from environment if specified (for UI tests)
             if let forcedLanguage = ProcessInfo.processInfo.environment["FORCE_LANGUAGE"] {
@@ -44,6 +41,18 @@ struct KeyboardShowcaseView: View {
                     viewModel.setLayer(.lower)
                 default:
                     break
+                }
+            }
+
+            // Set appearance from environment if specified (for UI tests)
+            if let forcedAppearance = ProcessInfo.processInfo.environment["FORCE_APPEARANCE"] {
+                switch forcedAppearance {
+                case "dark":
+                    colorScheme = .dark
+                case "light":
+                    colorScheme = .light
+                default:
+                    colorScheme = nil
                 }
             }
         }
