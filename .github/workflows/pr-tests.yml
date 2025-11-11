@@ -28,17 +28,19 @@ jobs:
           echo "Booting simulator: $SIMULATOR_ID"
           xcrun simctl boot "$SIMULATOR_ID" || true
 
+      - name: Install xcpretty
+        run: gem install xcpretty
+
       - name: Build and Run Tests
         run: |
-          xcodebuild test \
+          set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
             -project Wurstfinger.xcodeproj \
             -destination 'platform=iOS Simulator,name=iPhone 16' \
             -only-testing:WurstfingerTests \
             -resultBundlePath TestResults.xcresult \
-            -parallel-testing-enabled YES \
-            -quiet \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty --color --report html --output TestResults.html
 
       - name: Upload Test Results
         if: always()
