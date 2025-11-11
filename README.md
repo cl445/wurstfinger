@@ -3,9 +3,8 @@
 *The keyboard for fat fingers.*
 
 I started this project because my favorite keyboard, MessagEase, stopped
-working on iOS 26. The project is in a very early stage and currently only
-implements the German layout. The goal is to build a full replacement for
-MessagEase—pull requests are very welcome!
+working on iOS 26. The project now supports 14 languages and aims to be a full
+replacement for MessagEase—pull requests are very welcome!
 
 The name “Wurstfinger” is a nod to the “fat finger” problem—thumb-heavy typing on small screens.
 
@@ -26,11 +25,14 @@ accented characters.
 
 ## Features
 
-- German MessagEase layout with symbol and numeric layers
-- Compose engine that reproduces Thumb-Key's combination triggers (e.g. `' + a → á`)
-- Return swipes for punctuation and math symbols (`?`→`¿`, `*`→`†`, `/`→`÷`, ...)
-- Circular gestures on the center key to uppercase letters
-- Drag gestures for cursor movement, text selection, and progressive deletion
+- **Multi-language support**: 14 languages including English, German, Spanish, French, Portuguese, Italian, Dutch, Swedish, Norwegian, Danish, Finnish, Polish, Czech, and Vietnamese
+- **MessagEase layout** with symbol and numeric layers
+- **Compose engine** that reproduces Thumb-Key's combination triggers (e.g. `' + a → á`)
+- **Return swipes** for punctuation and math symbols (`?`→`¿`, `*`→`†`, `/`→`÷`, ...)
+- **Circular gestures** on keys to insert uppercase letters
+- **Drag gestures** for cursor movement and progressive deletion
+- **Customizable settings**: Adjust haptic feedback intensity, keyboard scale, and key aspect ratio
+- **Onboarding flow** with interactive setup guide
 - Support for iOS 17+ (Swift 5, SwiftUI)
 
 ## Getting Started
@@ -52,7 +54,7 @@ or build from the command line on macOS:
 
 ```bash
 cd wurstfinger/wurstfinger
-xcodebuild -scheme wurstfinger -destination 'platform=iOS Simulator,name=iPhone 15' build
+xcodebuild -scheme Wurstfinger -destination 'platform=iOS Simulator,name=iPhone 16' build
 ```
 
 ### Running Tests
@@ -62,7 +64,7 @@ all tests with:
 
 ```bash
 cd wurstfinger/wurstfinger
-xcodebuild test -scheme wurstfinger -destination 'platform=iOS Simulator,name=iPhone 15'
+xcodebuild test -scheme Wurstfinger -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:WurstfingerTests
 ```
 
 > **Note:** Some tests require an available iOS Simulator. Adjust the
@@ -70,10 +72,11 @@ xcodebuild test -scheme wurstfinger -destination 'platform=iOS Simulator,name=iP
 
 ### Installing the Keyboard
 
-1. Build and run the `wurstfinger` scheme on a device or simulator.
-2. On the device go to **Settings › General › Keyboard › Keyboards › Add New Keyboard** and select **Wurstfinger**.
-3. Enable "Allow Full Access" if you want to use features that require cursor
-   control and deletion shortcuts.
+1. Build and run the `Wurstfinger` scheme on a device or simulator.
+2. The app includes an interactive onboarding guide that walks you through:
+   - Adding the keyboard in **Settings › General › Keyboard › Keyboards**
+   - Enabling "Allow Full Access" for cursor control and deletion features
+   - Testing the keyboard in the practice view
 
 ### Project Layout
 
@@ -98,4 +101,3 @@ This project is licensed under the [MIT License](LICENSE).
 - [MessagEase](https://www.exideas.com/) for the original layout concepts
 - [Thumb-Key](https://github.com/dessalines/thumb-key) for inspiration and
   compose rules
-# Test PR
