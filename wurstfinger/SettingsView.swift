@@ -31,6 +31,9 @@ struct SettingsView: View {
     @AppStorage(KeyboardViewModel.hapticDragIntensityKey, store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
     private var hapticDragIntensity = Double(KeyboardViewModel.defaultDragIntensity)
 
+    @AppStorage(KeyboardViewModel.numpadStyleKey, store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    private var numpadStyleRaw = NumpadStyle.phone.rawValue
+
     private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!
 
     var body: some View {
@@ -54,6 +57,20 @@ struct SettingsView: View {
                                 .font(.body)
 
                             Text("Places globe, symbols, delete and return on the left")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    Picker(selection: $numpadStyleRaw) {
+                        Text("Phone (1-2-3)").tag(NumpadStyle.phone.rawValue)
+                        Text("Classic (7-8-9)").tag(NumpadStyle.classic.rawValue)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Numpad Style")
+                                .font(.body)
+
+                            Text(numpadStyleDescription)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -131,6 +148,16 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+        }
+    }
+
+    private var numpadStyleDescription: String {
+        let style = NumpadStyle(rawValue: numpadStyleRaw) ?? .phone
+        switch style {
+        case .phone:
+            return "Phone layout with numbers starting at 1-2-3 on top"
+        case .classic:
+            return "Classic calculator layout with 7-8-9 on top"
         }
     }
 
