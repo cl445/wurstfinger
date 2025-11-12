@@ -28,6 +28,7 @@ jobs:
 
       - name: Build and Run Tests
         timeout-minutes: 10
+        working-directory: wurstfinger
         run: |
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
@@ -40,6 +41,7 @@ jobs:
 
       - name: Upload Test Results
         if: always()
+        working-directory: wurstfinger
         uses: actions/upload-artifact@v4
         with:
           name: test-results
