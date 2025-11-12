@@ -25,7 +25,7 @@ struct SpaceKeyButton: View {
         ) {
             Color.clear
         }
-        .accessibilityLabel(Text("Leerzeichen"))
+        .accessibilityLabel(Text("Space"))
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in

@@ -30,7 +30,7 @@ struct DeleteKeyButton: View {
         ) {
             Image(systemName: "delete.left")
         }
-        .accessibilityLabel(Text("Löschen"))
+        .accessibilityLabel(Text("Delete"))
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
