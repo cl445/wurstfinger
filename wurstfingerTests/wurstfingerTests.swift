@@ -42,7 +42,7 @@ struct wurstfingerTests {
         #expect(rows.count == 4)
 
         let firstKey = try #require(rows.first?.first)
-        #expect(firstKey.center == "7")
+        #expect(firstKey.center == "1")
 
         let zeroKey = try #require(rows[3].first)
         #expect(zeroKey.center == "0")
@@ -88,15 +88,15 @@ struct wurstfingerTests {
 
         viewModel.toggleSymbols()
 
-        let sevenKey = try #require(viewModel.rows.first?.first)
-        viewModel.handleKeyTap(sevenKey)
+        let oneKey = try #require(viewModel.rows.first?.first)
+        viewModel.handleKeyTap(oneKey)
 
         #expect(viewModel.rows.count == 4)
 
         let zeroKey = try #require(viewModel.rows[3].first)
         viewModel.handleKeyTap(zeroKey)
 
-        #expect(inserted == ["7", "0"])
+        #expect(inserted == ["1", "0"])
     }
 
     @Test(.disabled("Requires UI context - to be fixed later"))

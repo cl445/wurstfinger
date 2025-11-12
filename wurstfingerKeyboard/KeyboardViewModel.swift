@@ -46,6 +46,7 @@ final class KeyboardViewModel: ObservableObject {
     static let hapticTapIntensityKey = "hapticIntensityTap"
     static let hapticModifierIntensityKey = "hapticIntensityModifier"
     static let hapticDragIntensityKey = "hapticIntensityDrag"
+    static let numpadStyleKey = "numpadStyle"
     static let defaultTapIntensity: CGFloat = 0.5
     static let defaultModifierIntensity: CGFloat = 0.5
     static let defaultDragIntensity: CGFloat = 0.5
@@ -149,7 +150,10 @@ final class KeyboardViewModel: ObservableObject {
             self.locale = Locale(identifier: "de_DE")
         } else {
             let selectedLanguage = LanguageSettings.shared.selectedLanguage
-            self.layout = KeyboardLayout.layout(for: selectedLanguage)
+            // Read numpad style from UserDefaults (default to phone style)
+            let numpadStyleRaw = defaults.string(forKey: Self.numpadStyleKey) ?? NumpadStyle.phone.rawValue
+            let numpadStyle = NumpadStyle(rawValue: numpadStyleRaw) ?? .phone
+            self.layout = KeyboardLayout.layout(for: selectedLanguage, numpadStyle: numpadStyle)
             self.locale = selectedLanguage.locale
         }
 
@@ -261,7 +265,10 @@ final class KeyboardViewModel: ObservableObject {
             objectWillChange.send()
 
             if let newLanguage = LanguageConfig.language(withId: languageId) {
-                layout = KeyboardLayout.layout(for: newLanguage)
+                // Read numpad style from UserDefaults (default to phone style)
+                let numpadStyleRaw = sharedDefaults.string(forKey: Self.numpadStyleKey) ?? NumpadStyle.phone.rawValue
+                let numpadStyle = NumpadStyle(rawValue: numpadStyleRaw) ?? .phone
+                layout = KeyboardLayout.layout(for: newLanguage, numpadStyle: numpadStyle)
                 locale = newLanguage.locale
                 // Reset to lower layer when language changes
                 activeLayer = .lower
