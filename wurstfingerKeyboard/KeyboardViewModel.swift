@@ -139,7 +139,7 @@ final class KeyboardViewModel: ObservableObject {
         shouldPersistSettings: Bool = true
     ) {
         // Initialize UserDefaults once
-        let defaults = userDefaults ?? UserDefaults(suiteName: "group.de.akator.wurstfinger.shared") ?? .standard
+        let defaults = userDefaults ?? SharedDefaults.store
         self.sharedDefaults = defaults
 
         // Load layout based on selected language or use provided layout

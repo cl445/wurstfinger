@@ -1,10 +1,5 @@
 import SwiftUI
 
-private enum SharedDefaults {
-    static let suite = "group.de.akator.wurstfinger.shared"
-    static var store: UserDefaults { UserDefaults(suiteName: suite) ?? .standard }
-}
-
 struct HapticSettingsView: View {
     @AppStorage(KeyboardViewModel.hapticTapIntensityKey, store: SharedDefaults.store)
     private var tapIntensity = Double(KeyboardViewModel.defaultTapIntensity)
