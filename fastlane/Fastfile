@@ -89,7 +89,7 @@ platform :ios do
     begin
       upload_to_testflight(
         api_key: api_key,
-        groups: ["Internal"],
+        groups: ["Internal", "Public Beta"],
         distribute_external: true,
         submit_beta_review: true,
         uses_non_exempt_encryption: false,

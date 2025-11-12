@@ -10,6 +10,23 @@ layout to Apple devices, including circular gestures for uppercase letters,
 return swipes for typographic punctuation, and compose rules to generate
 accented characters.
 
+## Join the Beta
+
+Want to try Wurstfinger before the official release? Join our public TestFlight beta!
+
+[![Join TestFlight Beta](https://img.shields.io/badge/TestFlight-Join%20Beta-blue?logo=apple&logoColor=white)](https://testflight.apple.com/join/trX4rBPf)
+
+**Beta Features:**
+- Nightly builds with the latest features from the `develop` branch
+- Help shape the keyboard with your feedback
+- Early access to experimental features
+
+**Requirements:**
+- iOS 17.0 or later
+- TestFlight app ([free download from App Store](https://apps.apple.com/app/testflight/id899247664))
+
+**Note:** Beta builds are automatically generated every night at 2 AM UTC when there are new changes. The first build after joining may take 1-2 hours for Apple's beta review process.
+
 ## Preview
 
 <table>
