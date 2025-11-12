@@ -17,7 +17,19 @@ jobs:
       - name: Install xcpretty
         run: gem install xcpretty
 
+      - name: Boot Simulator
+        run: |
+          SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | grep -oE '\([A-F0-9-]+\)' | tr -d '()')
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "iPhone 16 simulator not found, using iPhone 15"
+            SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 15" | grep -v "Plus\|Pro" | head -1 | grep -oE '\([A-F0-9-]+\)' | tr -d '()')
+          fi
+          echo "Using simulator: $SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || true
+          xcrun simctl bootstatus "$SIMULATOR_ID"
+
       - name: Build and Run Tests
+        timeout-minutes: 10
         run: |
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
