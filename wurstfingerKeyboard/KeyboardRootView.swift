@@ -103,6 +103,7 @@ struct KeyboardRootView: View {
         case 0: // Globe button
             KeyboardButton(
                 height: keyHeight,
+                aspectRatio: viewModel.keyAspectRatio,
                 label: Image(systemName: "globe"),
                 overlay: EmptyView(),
                 config: KeyboardButtonConfig(),
@@ -114,6 +115,7 @@ struct KeyboardRootView: View {
         case 1: // Symbols toggle button
             KeyboardButton(
                 height: keyHeight,
+                aspectRatio: viewModel.keyAspectRatio,
                 label: Text(viewModel.symbolToggleLabel),
                 overlay: EmptyView(),
                 config: KeyboardButtonConfig(highlighted: viewModel.isSymbolsToggleActive, accessibilityIdentifier: "symbols"),
@@ -124,6 +126,7 @@ struct KeyboardRootView: View {
         case 3: // Return button
             KeyboardButton(
                 height: keyHeight,
+                aspectRatio: viewModel.keyAspectRatio,
                 label: Text("⏎"),
                 overlay: EmptyView(),
                 config: KeyboardButtonConfig(),
@@ -140,6 +143,7 @@ struct KeyboardRootView: View {
             ForEach(viewModel.rows[index]) { key in
                 KeyboardButton(
                     height: keyHeight,
+                    aspectRatio: viewModel.keyAspectRatio,
                     label: Text(viewModel.displayText(for: key)),
                     overlay: KeyHintOverlay(key: key, viewModel: viewModel, keyHeight: keyHeight),
                     config: KeyboardButtonConfig(fontSize: scaledMainLabelSize(for: keyHeight)),
