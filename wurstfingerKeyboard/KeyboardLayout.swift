@@ -829,6 +829,8 @@ enum KeyboardConstants {
         static let height: CGFloat = 54
         static let minWidth: CGFloat = 44
         static let cornerRadius: CGFloat = 12
+        static let defaultAspectRatio: CGFloat = 1.5
+        static let totalRows: Int = 4
     }
 
     // MARK: - Font Sizes
@@ -838,6 +840,24 @@ enum KeyboardConstants {
         static let utilityLabel: CGFloat = 22
         static let hintEmphasis: CGFloat = 11
         static let hintNormal: CGFloat = 10
+
+        // Main label scaling
+        static let mainLabelBaseSize: CGFloat = 26
+        static let mainLabelReferenceHeight: CGFloat = 54
+        static let mainLabelMinSize: CGFloat = 20
+        static let mainLabelMaxSize: CGFloat = 34
+
+        // Hint label scaling
+        static let hintBaseSize: CGFloat = 14
+        static let hintReferenceHeight: CGFloat = 54
+        static let hintMinSize: CGFloat = 10
+        static let hintMaxSize: CGFloat = 22
+        static let hintEmphasisMultiplier: CGFloat = 1.1
+        static let hintReferenceFontSize: CGFloat = 10
+
+        // Hint padding
+        static let hintBaseHorizontalPadding: CGFloat = 2
+        static let hintBaseVerticalPadding: CGFloat = 0.5
     }
 
     // MARK: - Layout Spacing
@@ -873,5 +893,27 @@ enum KeyboardConstants {
         static let verticalTolerance: CGFloat = 28
         static let repeatInterval: TimeInterval = 0.08
         static let repeatDelay: TimeInterval = 0.35
+    }
+
+    // MARK: - Preview Settings
+    enum Preview {
+        static let minHeight: CGFloat = 100
+        static let maxHeight: CGFloat = 400
+    }
+
+    // MARK: - Keyboard Calculations
+    enum Calculations {
+        /// Calculates the adjusted key height based on aspect ratio
+        static func keyHeight(aspectRatio: CGFloat) -> CGFloat {
+            KeyDimensions.height * (KeyDimensions.defaultAspectRatio / aspectRatio)
+        }
+
+        /// Calculates the total keyboard base height (without scaling)
+        static func baseHeight(aspectRatio: CGFloat) -> CGFloat {
+            let keyHeight = keyHeight(aspectRatio: aspectRatio)
+            return (keyHeight * CGFloat(KeyDimensions.totalRows)) +
+                   (Layout.gridVerticalSpacing * CGFloat(KeyDimensions.totalRows - 1)) +
+                   (Layout.verticalPadding * 2)
+        }
     }
 }

@@ -14,10 +14,9 @@ struct KeyboardSizePositionSettingsView: View {
 
     var body: some View {
         // Calculate preview height based on scale
-        let keyHeight = 54.0 * (1.5 / previewViewModel.keyAspectRatio)
-        let baseHeight = (keyHeight * 4) + (8 * 3) + (10 * 2)
+        let baseHeight = KeyboardConstants.Calculations.baseHeight(aspectRatio: previewViewModel.keyAspectRatio)
         let scaledHeight = baseHeight * scale
-        let previewHeight = min(400, max(100, scaledHeight))
+        let previewHeight = min(KeyboardConstants.Preview.maxHeight, max(KeyboardConstants.Preview.minHeight, scaledHeight))
 
         VStack(spacing: 20) {
             // Keyboard Preview

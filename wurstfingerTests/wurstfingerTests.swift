@@ -99,7 +99,7 @@ struct wurstfingerTests {
         #expect(inserted == ["1", "0"])
     }
 
-    @Test(.disabled("Requires UI context - to be fixed later"))
+    @Test(.disabled("Test assertions failing - needs investigation"))
     func letterLayerProvidesAdditionalSymbols() async throws {
         let viewModel = KeyboardViewModel()
         let firstRow = try #require(viewModel.rows.first)
@@ -217,7 +217,7 @@ struct wurstfingerTests {
         #expect(abs(storedDrag - 1.0) < 0.0001)
     }
 
-    @Test(.disabled("Requires UI context - to be fixed later"))
+    @Test(.disabled("Test assertions failing - needs investigation"))
     func composeSwipeEmitsComposeAction() async throws {
         let viewModel = KeyboardViewModel()
         var captured: String?

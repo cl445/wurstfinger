@@ -10,28 +10,28 @@ import SwiftUI
 struct SettingsView: View {
     @StateObject private var languageSettings = LanguageSettings.shared
 
-    @AppStorage("utilityColumnLeading", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage("utilityColumnLeading", store: SharedDefaults.store)
     private var utilityColumnLeading = false
 
-    @AppStorage("keyAspectRatio", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage("keyAspectRatio", store: SharedDefaults.store)
     private var keyAspectRatio = 1.5
 
-    @AppStorage("keyboardScale", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage("keyboardScale", store: SharedDefaults.store)
     private var keyboardScale = 1.0
 
-    @AppStorage("keyboardHorizontalPosition", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage("keyboardHorizontalPosition", store: SharedDefaults.store)
     private var keyboardHorizontalPosition = 0.5
 
-    @AppStorage(KeyboardViewModel.hapticTapIntensityKey, store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage(KeyboardViewModel.hapticTapIntensityKey, store: SharedDefaults.store)
     private var hapticTapIntensity = Double(KeyboardViewModel.defaultTapIntensity)
 
-    @AppStorage(KeyboardViewModel.hapticModifierIntensityKey, store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage(KeyboardViewModel.hapticModifierIntensityKey, store: SharedDefaults.store)
     private var hapticModifierIntensity = Double(KeyboardViewModel.defaultModifierIntensity)
 
-    @AppStorage(KeyboardViewModel.hapticDragIntensityKey, store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage(KeyboardViewModel.hapticDragIntensityKey, store: SharedDefaults.store)
     private var hapticDragIntensity = Double(KeyboardViewModel.defaultDragIntensity)
 
-    @AppStorage(KeyboardViewModel.numpadStyleKey, store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage(KeyboardViewModel.numpadStyleKey, store: SharedDefaults.store)
     private var numpadStyleRaw = NumpadStyle.phone.rawValue
 
     private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!

@@ -51,10 +51,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private func updateKeyboardHeight() {
         // Calculate keyboard height including both aspect ratio and scale
-        let keyHeight = KeyboardConstants.KeyDimensions.height * (1.5 / viewModel.keyAspectRatio)
-        let baseHeight = (keyHeight * 4) +
-                         (KeyboardConstants.Layout.gridVerticalSpacing * 3) +
-                         (KeyboardConstants.Layout.verticalPadding * 2)
+        let baseHeight = KeyboardConstants.Calculations.baseHeight(aspectRatio: viewModel.keyAspectRatio)
         // Apply scale to match the visual size from scaleEffect
         let finalHeight = baseHeight * viewModel.keyboardScale
 

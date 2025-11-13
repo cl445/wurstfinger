@@ -11,13 +11,13 @@ import SwiftUI
 struct OnboardingView: View {
     @Environment(\.openURL) private var openURL
 
-    @AppStorage("onboarding.keyboardInstalled", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage("onboarding.keyboardInstalled", store: SharedDefaults.store)
     private var keyboardInstalled = false
 
-    @AppStorage("onboarding.fullAccessEnabled", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage("onboarding.fullAccessEnabled", store: SharedDefaults.store)
     private var fullAccessEnabled = false
 
-    @AppStorage("onboarding.practiced", store: UserDefaults(suiteName: "group.de.akator.wurstfinger.shared"))
+    @AppStorage("onboarding.practiced", store: SharedDefaults.store)
     private var practiced = false
 
     private let settingsURL = URL(string: "app-settings:")!
