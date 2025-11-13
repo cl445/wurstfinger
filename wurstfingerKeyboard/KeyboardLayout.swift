@@ -40,17 +40,22 @@ enum KeyboardDirection: CaseIterable {
     case downLeft
     case downRight
 
-    static func direction(for translation: CGSize, tolerance: CGFloat) -> KeyboardDirection {
+    static func direction(for translation: CGSize, tolerance: CGFloat, aspectRatio: CGFloat = 1.0) -> KeyboardDirection {
         let dx = Double(translation.width)
         let dy = Double(translation.height)
         let threshold = Double(tolerance)
-        let swipeLength = sqrt(dx * dx + dy * dy)
+
+        // Compensate for non-square keys: divide horizontal movement by aspect ratio
+        // If aspectRatio > 1 (wider than tall), reduce dx to make horizontal swipes harder to trigger
+        // If aspectRatio < 1 (taller than wide), increase dx to make horizontal swipes easier to trigger
+        let dxCorrected = dx / Double(aspectRatio)
+        let swipeLength = sqrt(dxCorrected * dxCorrected + dy * dy)
 
         if swipeLength <= threshold {
             return .center
         }
 
-        let angleDir = atan2(dx, dy) / .pi * 180.0
+        let angleDir = atan2(dxCorrected, dy) / .pi * 180.0
         let angle = angleDir < 0 ? 360 + angleDir : angleDir
 
         switch angle {

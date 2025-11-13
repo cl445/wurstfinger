@@ -10,6 +10,7 @@ import SwiftUI
 /// Main keyboard button component with comprehensive gesture recognition
 struct KeyboardButton<Label: View, Overlay: View>: View {
     let height: CGFloat
+    let aspectRatio: CGFloat
     let label: Label
     let overlay: Overlay
     let config: KeyboardButtonConfig
@@ -86,11 +87,13 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
                     let finalOffsetThreshold = KeyboardConstants.Gesture.minSwipeLength * KeyboardConstants.Gesture.finalOffsetMultiplier
                     let maxDirection = KeyboardDirection.direction(
                         for: CGSize(width: maxOffset.x, height: maxOffset.y),
-                        tolerance: 0
+                        tolerance: 0,
+                        aspectRatio: aspectRatio
                     )
                     let finalDirection = KeyboardDirection.direction(
                         for: value.translation,
-                        tolerance: KeyboardConstants.Gesture.minSwipeLength
+                        tolerance: KeyboardConstants.Gesture.minSwipeLength,
+                        aspectRatio: aspectRatio
                     )
 
                     let finalOffsetSmallEnough = finalDistance <= finalOffsetThreshold || finalDirection != maxDirection
