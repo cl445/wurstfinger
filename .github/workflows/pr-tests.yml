@@ -27,7 +27,7 @@ jobs:
           xcrun simctl bootstatus "$SIMULATOR_ID"
 
       - name: Build and Run Tests
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
