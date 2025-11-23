@@ -42,6 +42,28 @@ enum KeyboardHapticEvent {
     case drag
 }
 
+struct DeviceLayoutUtils {
+    /// Calculates the default keyboard scale to achieve a target width of ~270pt
+    /// (which corresponds to ~67% of an iPhone 17 Pro width).
+    static var defaultKeyboardScale: Double {
+        let targetWidth: CGFloat = 270.0
+        let screenWidth = UIScreen.main.bounds.width
+        
+        // Avoid division by zero
+        guard screenWidth > 0 else { return 1.0 }
+        
+        // Calculate scale required to hit target width
+        let calculatedScale = targetWidth / screenWidth
+        
+        // Clamp between reasonable min/max (e.g., 0.26 to 1.0)
+        // 0.26 is roughly iPad width (1024pt) -> 270/1024 = 0.26
+        return min(1.0, max(0.25, calculatedScale))
+    }
+    
+    static let defaultKeyAspectRatio: Double = 1.0
+    static let defaultKeyboardPosition: Double = 0.5
+}
+
 final class KeyboardViewModel: ObservableObject {
     static let hapticTapIntensityKey = "hapticIntensityTap"
     static let hapticModifierIntensityKey = "hapticIntensityModifier"
@@ -64,7 +86,6 @@ final class KeyboardViewModel: ObservableObject {
             if shouldPersistSettings {
                 sharedDefaults.set(Double(clamped), forKey: Self.hapticTapIntensityKey)
             }
-            updateImpactGenerator(for: .tap)
         }
     }
     @Published var hapticIntensityModifier: CGFloat {
@@ -77,7 +98,6 @@ final class KeyboardViewModel: ObservableObject {
             if shouldPersistSettings {
                 sharedDefaults.set(Double(clamped), forKey: Self.hapticModifierIntensityKey)
             }
-            updateImpactGenerator(for: .modifier)
         }
     }
     @Published var hapticIntensityDrag: CGFloat {
@@ -90,7 +110,6 @@ final class KeyboardViewModel: ObservableObject {
             if shouldPersistSettings {
                 sharedDefaults.set(Double(clamped), forKey: Self.hapticDragIntensityKey)
             }
-            updateImpactGenerator(for: .drag)
         }
     }
     @Published var utilityColumnLeading: Bool {
@@ -121,6 +140,13 @@ final class KeyboardViewModel: ObservableObject {
             }
         }
     }
+    @Published var hapticEnabled: Bool {
+        didSet {
+            if shouldPersistSettings {
+                sharedDefaults.set(hapticEnabled, forKey: "hapticEnabled")
+            }
+        }
+    }
 
     private var layout: KeyboardLayout
     private let sharedDefaults: UserDefaults
@@ -130,7 +156,6 @@ final class KeyboardViewModel: ObservableObject {
     private var spaceDragResidual: CGFloat = 0
     private var isDeleteDragging = false
     private var deleteDragResidual: CGFloat = 0
-    private var impactGenerators: [KeyboardHapticEvent: UIImpactFeedbackGenerator] = [:]
     private var userDefaultsObserver: NSObjectProtocol?
 
     init(
@@ -181,18 +206,18 @@ final class KeyboardViewModel: ObservableObject {
 
         // Read settings with default values
         self.utilityColumnLeading = defaults.object(forKey: "utilityColumnLeading") as? Bool ?? false
-        // Default 1.5 maintains roughly the original key proportions on most devices
-        let savedRatio = defaults.object(forKey: "keyAspectRatio") as? Double ?? 1.5
+        // Default 1.0 (Square)
+        let savedRatio = defaults.object(forKey: "keyAspectRatio") as? Double ?? DeviceLayoutUtils.defaultKeyAspectRatio
         // Ensure aspect ratio is within valid range
         self.keyAspectRatio = min(1.62, max(1.0, savedRatio))
-        // Default 1.0 = full width
-        let savedScale = defaults.object(forKey: "keyboardScale") as? Double ?? 1.0
-        self.keyboardScale = min(1.0, max(0.3, savedScale))
+        // Default dynamic scale based on device width
+        let savedScale = defaults.object(forKey: "keyboardScale") as? Double ?? DeviceLayoutUtils.defaultKeyboardScale
+        self.keyboardScale = min(1.0, max(0.25, savedScale))
         // Default 0.5 = centered
-        let savedPosition = defaults.object(forKey: "keyboardHorizontalPosition") as? Double ?? 0.5
+        let savedPosition = defaults.object(forKey: "keyboardHorizontalPosition") as? Double ?? DeviceLayoutUtils.defaultKeyboardPosition
         self.keyboardHorizontalPosition = min(1.0, max(0.0, savedPosition))
-
-        refreshImpactGenerators()
+        
+        self.hapticEnabled = defaults.object(forKey: "hapticEnabled") as? Bool ?? true
 
         // Observe UserDefaults changes for language updates (works both within
         // same process and across processes via App Group)
@@ -201,7 +226,7 @@ final class KeyboardViewModel: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.reloadLanguage()
+            self?.reloadSettings()
         }
     }
 
@@ -234,6 +259,11 @@ final class KeyboardViewModel: ObservableObject {
         if keyboardHorizontalPosition != newPosition {
             keyboardHorizontalPosition = newPosition
         }
+        
+        let newHapticEnabled = sharedDefaults.object(forKey: "hapticEnabled") as? Bool ?? true
+        if hapticEnabled != newHapticEnabled {
+            hapticEnabled = newHapticEnabled
+        }
 
         let newTapIntensity = (sharedDefaults.object(forKey: Self.hapticTapIntensityKey) as? NSNumber).map { CGFloat(min(max($0.doubleValue, 0), 1)) } ?? Self.defaultTapIntensity
         if abs(hapticIntensityTap - newTapIntensity) > 0.0001 {
@@ -252,8 +282,6 @@ final class KeyboardViewModel: ObservableObject {
 
         // Reload language if it changed
         reloadLanguage()
-
-        refreshImpactGenerators()
     }
 
     private func reloadLanguage() {
@@ -450,21 +478,16 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     private func triggerHapticFeedback(_ event: KeyboardHapticEvent = .tap) {
+        guard hapticEnabled else { return }
         let resolvedIntensity = clampIntensity(intensity(for: event))
         guard resolvedIntensity > 0 else { return }
 
-        let generator: UIImpactFeedbackGenerator
-        if let existing = impactGenerators[event] {
-            generator = existing
-        } else {
-            let newGenerator = makeImpactGenerator(for: event, overrideIntensity: resolvedIntensity)
-            impactGenerators[event] = newGenerator
-            generator = newGenerator
-        }
-
         let performFeedback = {
-            generator.impactOccurred(intensity: resolvedIntensity)
+            // Create a new generator for each event to ensure reliability
+            // This matches the behavior in HapticSettingsView which is confirmed to work
+            let generator = UIImpactFeedbackGenerator(style: .rigid)
             generator.prepare()
+            generator.impactOccurred(intensity: resolvedIntensity)
         }
 
         if Thread.isMainThread {
@@ -495,48 +518,25 @@ final class KeyboardViewModel: ObservableObject {
         }
     }
 
-    private func refreshImpactGenerators() {
-        updateImpactGenerator(for: .tap)
-        updateImpactGenerator(for: .modifier)
-        updateImpactGenerator(for: .drag)
-    }
 
     private func intensity(for event: KeyboardHapticEvent) -> CGFloat {
+        let rawValue: CGFloat
         switch event {
         case .tap:
-            return hapticIntensityTap
+            rawValue = hapticIntensityTap
         case .modifier:
-            return hapticIntensityModifier
+            rawValue = hapticIntensityModifier
         case .drag:
-            return hapticIntensityDrag
+            rawValue = hapticIntensityDrag
         }
-    }
-
-    private func updateImpactGenerator(for event: KeyboardHapticEvent) {
-        let current = clampIntensity(intensity(for: event))
-        if current <= 0 {
-            impactGenerators[event] = nil
-            return
-        }
-        impactGenerators[event] = makeImpactGenerator(for: event, overrideIntensity: current)
-    }
-
-    private func makeImpactGenerator(for event: KeyboardHapticEvent, overrideIntensity: CGFloat? = nil) -> UIImpactFeedbackGenerator {
-        let resolved = clampIntensity(overrideIntensity ?? intensity(for: event))
-        let generator = UIImpactFeedbackGenerator(style: feedbackStyle(for: resolved))
-        generator.prepare()
-        return generator
+        // Return raw value directly (linear)
+        return rawValue
     }
 
     private func feedbackStyle(for intensity: CGFloat) -> UIImpactFeedbackGenerator.FeedbackStyle {
-        switch intensity {
-        case ..<0.3:
-            return .soft
-        case ..<0.65:
-            return .light
-        default:
-            return .medium
-        }
+        // Use a constant style to avoid jarring jumps between styles (soft -> light -> medium)
+        // .rigid provides a crisp, responsive feel that scales well with intensity
+        return .rigid
     }
 
     private func clampIntensity(_ value: CGFloat) -> CGFloat {

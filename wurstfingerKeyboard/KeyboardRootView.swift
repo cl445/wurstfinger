@@ -21,8 +21,15 @@ struct KeyboardRootView: View {
         let keyHeight = KeyboardConstants.Calculations.keyHeight(aspectRatio: viewModel.keyAspectRatio)
 
         // Calculate horizontal position offset
-        let screenWidth = overrideWidth ?? UIScreen.main.bounds.width
-        let availableSpace = screenWidth * (1 - viewModel.keyboardScale)
+        let screenBounds = UIScreen.main.bounds
+        let screenShortestSide = min(screenBounds.width, screenBounds.height)
+        let currentWidth = overrideWidth ?? screenBounds.width
+        
+        // Constrain the base width to the device's shortest side (portrait width)
+        // This prevents the keyboard from stretching in landscape
+        let baseWidth = min(currentWidth, screenShortestSide)
+        
+        let availableSpace = currentWidth - (baseWidth * viewModel.keyboardScale)
         let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
 
         ZStack {
@@ -84,7 +91,7 @@ struct KeyboardRootView: View {
             }
             .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
             .padding(.vertical, KeyboardConstants.Layout.verticalPadding)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: frameAlignment)
+            .frame(width: baseWidth, alignment: frameAlignment)
             .scaleEffect(viewModel.keyboardScale, anchor: scaleAnchor)
             .offset(x: horizontalOffset)
         }
