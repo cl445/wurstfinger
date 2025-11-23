@@ -23,7 +23,7 @@ cd "$PROJECT_ROOT"
 
 # Configuration
 SCHEME="Wurstfinger"
-DESTINATION="platform=iOS Simulator,name=iPhone 16,OS=18.6"
+DESTINATION="platform=iOS Simulator,name=iPhone 16"
 TEST_TARGET="WurstfingerUITests/ScreenshotTests"
 DOCS_DIR="$PROJECT_ROOT/docs/images"
 DERIVED_DATA="/tmp/WurstfingerScreenshots"
@@ -45,7 +45,7 @@ xcodebuild test \
   -only-testing:"$TEST_TARGET" \
   -derivedDataPath "$DERIVED_DATA" \
   CODE_SIGNING_ALLOWED=NO \
-  | xcpretty --color || true
+  | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi || true
 
 echo ""
 echo -e "${BLUE}📤 Exporting screenshots...${NC}"
