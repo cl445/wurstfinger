@@ -22,11 +22,15 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install Pillow numpy
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install Pillow numpy
 
       - name: Generate screenshots
-        run: ./scripts/generate-screenshots.sh
+        run: |
+          source venv/bin/activate
+          ./scripts/generate-screenshots.sh
         timeout-minutes: 15
 
       - name: Check for screenshot changes
