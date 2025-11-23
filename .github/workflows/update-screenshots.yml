@@ -7,6 +7,8 @@ on:
     paths:
       - 'wurstfinger/**/*.swift'
       - 'wurstfingerKeyboard/**/*.swift'
+      - 'scripts/**'
+      - '.github/workflows/update-screenshots.yml'
 
 jobs:
   update-screenshots:
