@@ -11,6 +11,15 @@ import SwiftUI
 struct wurstfingerApp: App {
     @State private var showScreenshotMode = ProcessInfo.processInfo.arguments.contains("SCREENSHOT_MODE")
 
+    init() {
+        let defaults: [String: Any] = [
+            "keyAspectRatio": DeviceLayoutUtils.defaultKeyAspectRatio,
+            "keyboardScale": DeviceLayoutUtils.defaultKeyboardScale,
+            "keyboardHorizontalPosition": DeviceLayoutUtils.defaultKeyboardPosition
+        ]
+        SharedDefaults.store.register(defaults: defaults)
+    }
+
     var body: some Scene {
         WindowGroup {
             if showScreenshotMode {

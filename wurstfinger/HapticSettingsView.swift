@@ -10,69 +10,123 @@ struct HapticSettingsView: View {
     @AppStorage(KeyboardViewModel.hapticDragIntensityKey, store: SharedDefaults.store)
     private var dragIntensity = Double(KeyboardViewModel.defaultDragIntensity)
 
-    private let sliderRange: ClosedRange<Double> = 0...1
-    private let sliderStep: Double = 0.01
+    @AppStorage("hapticEnabled", store: SharedDefaults.store)
+    private var hapticEnabled = true
+
+    @AppStorage("keyAspectRatio", store: SharedDefaults.store)
+    private var previewAspectRatio = 1.0
+
+    @AppStorage("keyboardScale", store: SharedDefaults.store)
+    private var previewScale = 1.0
+
+    @AppStorage("keyboardHorizontalPosition", store: SharedDefaults.store)
+    private var previewPosition = 0.5
 
     var body: some View {
-        Form {
-            hapticSection(title: "Tap Feedback",
-                          value: $tapIntensity,
-                          description: "Applies when you press letters or utility buttons.")
+        VStack(spacing: 20) {
+            // Keyboard Preview
+            InteractiveKeyboardPreview(aspectRatio: $previewAspectRatio, scale: $previewScale, position: $previewPosition)
+                .padding(.horizontal, 16)
 
-            hapticSection(title: "Modifier Feedback",
-                          value: $modifierIntensity,
-                          description: "Used for shift, globe, return, compose and other mode changes.")
-
-            hapticSection(title: "Drag Feedback",
-                          value: $dragIntensity,
-                          description: "Controls the strength while dragging space or delete.",
-                          footer: "Drag feedback is naturally a bit more pronounced so cursor and delete drags remain easy to feel.")
-        }
-        .navigationTitle("Haptics")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    @ViewBuilder
-    private func hapticSection(title: String,
-                               value: Binding<Double>,
-                               description: String,
-                               footer: String? = nil) -> some View {
-        Section {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-
-                VStack(spacing: 6) {
-                    Slider(value: value, in: sliderRange, step: sliderStep)
-
-                    HStack {
-                        Text("Off")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text(formattedIntensity(value.wrappedValue))
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Global Toggle
+                    VStack(spacing: 8) {
+                        Toggle("Haptic Feedback", isOn: $hapticEnabled)
+                            .font(.headline)
+                        
+                        Text("Enable or disable all haptic feedback vibrations.")
                             .font(.caption)
                             .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal, 16)
+
+                    if hapticEnabled {
+                        Divider()
+                            .padding(.horizontal, 16)
+
+                        // Sliders
+                        VStack(spacing: 24) {
+                            hapticControl(title: "Tap Feedback",
+                                          value: $tapIntensity,
+                                          description: "Applies when you press letters or utility buttons.")
+
+                            hapticControl(title: "Modifier Feedback",
+                                          value: $modifierIntensity,
+                                          description: "Applies when you press Shift, Symbols, or other modifier keys.")
+
+                            hapticControl(title: "Drag Feedback",
+                                          value: $dragIntensity,
+                                          description: "Applies when you drag the Space or Delete key to move the cursor or delete text.")
+                        }
                     }
                 }
+                .padding(.vertical, 8)
             }
-        } header: {
-            Text(title)
-        } footer: {
-            if let footer {
-                Text(footer)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            } else {
-                Text("Slide to 0% to turn this feedback off.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 20)
+        .navigationTitle("Haptics")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Reset") {
+                    tapIntensity = Double(KeyboardViewModel.defaultTapIntensity)
+                    modifierIntensity = Double(KeyboardViewModel.defaultModifierIntensity)
+                    dragIntensity = Double(KeyboardViewModel.defaultDragIntensity)
+                    hapticEnabled = true
+                }
             }
         }
     }
 
-    private func formattedIntensity(_ value: Double) -> String {
-        value <= 0.001 ? "Off" : "\(Int(round(value * 100)))%"
+    private let sliderRange: ClosedRange<Double> = 0...1
+    private let sliderStep: Double = 0.05
+
+    @ViewBuilder
+    private func hapticControl(title: String,
+                               value: Binding<Double>,
+                               description: String) -> some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text(title)
+                    .font(.headline)
+                Spacer()
+                TextField("Value", value: value, formatter: NumberFormatter.decimalFormatter)
+                    .keyboardType(.decimalPad)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 80)
+                    .multilineTextAlignment(.trailing)
+            }
+
+            VStack(spacing: 8) {
+                Slider(value: value, in: sliderRange, step: sliderStep) { editing in
+                    if !editing {
+                        // Trigger feedback when user releases the slider
+                        let generator = UIImpactFeedbackGenerator(style: .rigid)
+                        generator.prepare()
+                        generator.impactOccurred(intensity: value.wrappedValue)
+                    }
+                }
+                
+                HStack {
+                    Text("Off")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text("Max")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            Text(description)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 16)
     }
 }
+
+
