@@ -23,7 +23,17 @@ cd "$PROJECT_ROOT"
 
 # Configuration
 SCHEME="Wurstfinger"
-DESTINATION="platform=iOS Simulator,name=iPhone 16"
+# Detect available iPhone simulator
+DEVICE_NAME=$(xcrun simctl list devices available | grep "iPhone" | grep -v "SE" | head -n 1 | sed 's/    //g' | sed 's/ (.*//g' | xargs)
+
+if [ -z "$DEVICE_NAME" ]; then
+    DEVICE_NAME="iPhone 16"
+    echo "⚠️  Could not detect available simulator, falling back to $DEVICE_NAME"
+else
+    echo "📱 Detected simulator: $DEVICE_NAME"
+fi
+
+DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
 TEST_TARGET="WurstfingerUITests/ScreenshotTests"
 DOCS_DIR="$PROJECT_ROOT/docs/images"
 DERIVED_DATA="/tmp/WurstfingerScreenshots"
