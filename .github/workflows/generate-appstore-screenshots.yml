@@ -1,0 +1,115 @@
+name: Generate App Store Screenshots
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_artifact:
+        description: 'Upload screenshots as artifact'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  generate-screenshots:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: List available simulators
+        run: |
+          echo "Available iOS Simulators:"
+          xcrun simctl list devices available | grep -E "(iPhone|iPad)"
+
+      - name: Install required simulators
+        run: |
+          # Check if required simulators are available
+          echo "Checking for required simulators..."
+
+          # The macos-latest runner should have these simulators
+          # If not, we'll use the closest available ones
+
+          declare -a REQUIRED_DEVICES=(
+            "iPhone 15 Plus"
+            "iPhone 11 Pro Max"
+            "iPhone 8 Plus"
+            "iPad Pro (12.9-inch)"
+          )
+
+          for device in "${REQUIRED_DEVICES[@]}"; do
+            if xcrun simctl list devices available | grep -q "$device"; then
+              echo "✓ Found: $device"
+            else
+              echo "⚠ Not found: $device (will try alternatives)"
+            fi
+          done
+
+      - name: Boot simulators
+        run: |
+          # Boot one simulator at a time to avoid resource issues
+          # We'll boot them in sequence as needed in the test runs
+
+          # Get first available iPhone 15 Plus or similar
+          IPHONE_67=$(xcrun simctl list devices available | grep "iPhone 15 Plus\|iPhone 14 Plus\|iPhone 15 Pro Max" | head -n 1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')
+          if [ -n "$IPHONE_67" ]; then
+            echo "Booting 6.7\" device: $IPHONE_67"
+            xcrun simctl boot "$IPHONE_67" 2>/dev/null || true
+          fi
+
+      - name: Cache Python venv
+        uses: actions/cache@v4
+        with:
+          path: venv
+          key: ${{ runner.os }}-venv-appstore-${{ hashFiles('scripts/generate-appstore-screenshots.sh') }}
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install Pillow numpy
+
+      - name: Generate App Store screenshots
+        run: |
+          source venv/bin/activate
+          chmod +x ./scripts/generate-appstore-screenshots.sh
+          ./scripts/generate-appstore-screenshots.sh
+        timeout-minutes: 30
+
+      - name: List generated screenshots
+        run: |
+          echo "Generated screenshots:"
+          find appstore-screenshots -type f -name "*.png" | sort
+
+          echo ""
+          echo "Screenshot sizes:"
+          for file in $(find appstore-screenshots -type f -name "*.png"); do
+            size=$(file "$file" | grep -oE '[0-9]+ x [0-9]+' || echo "unknown")
+            echo "  $file: $size"
+          done
+
+      - name: Upload screenshots artifact
+        if: ${{ inputs.upload_artifact }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: appstore-screenshots
+          path: appstore-screenshots/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Summary
+        run: |
+          echo "## App Store Screenshots Generated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Device | Size | Resolution |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| iPhone 6.7\" | 6.7-inch | 1290 x 2796 |" >> $GITHUB_STEP_SUMMARY
+          echo "| iPhone 6.5\" | 6.5-inch | 1242 x 2688 |" >> $GITHUB_STEP_SUMMARY
+          echo "| iPhone 5.5\" | 5.5-inch | 1242 x 2208 |" >> $GITHUB_STEP_SUMMARY
+          echo "| iPad Pro 12.9\" | 12.9-inch | 2048 x 2732 |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download the artifact to get all screenshots." >> $GITHUB_STEP_SUMMARY
