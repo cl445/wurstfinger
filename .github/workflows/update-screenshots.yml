@@ -3,12 +3,14 @@ name: Update Screenshots
 on:
   push:
     branches:
+      - main
       - develop
     paths:
       - 'wurstfinger/**/*.swift'
       - 'wurstfingerKeyboard/**/*.swift'
       - 'scripts/**'
       - '.github/workflows/update-screenshots.yml'
+  workflow_dispatch:
 
 jobs:
   update-screenshots:
