@@ -49,13 +49,22 @@ echo ""
 
 # Run UI tests to generate screenshots
 echo -e "${BLUE}🧪 Running UI tests to generate screenshots...${NC}"
+
+TEST_OUTPUT=$(mktemp)
+set +e
 xcodebuild test \
   -scheme "$SCHEME" \
   -destination "$DESTINATION" \
   -only-testing:"$TEST_TARGET" \
   -derivedDataPath "$DERIVED_DATA" \
   CODE_SIGNING_ALLOWED=NO \
-  | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi || true
+  2>&1 | tee "$TEST_OUTPUT" | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi
+TEST_EXIT_CODE=${PIPESTATUS[0]}
+set -e
+
+if [ $TEST_EXIT_CODE -ne 0 ]; then
+  echo -e "${RED}⚠️  UI tests failed (exit code: $TEST_EXIT_CODE), but continuing to check for screenshots...${NC}"
+fi
 
 echo ""
 echo -e "${BLUE}📤 Exporting screenshots...${NC}"

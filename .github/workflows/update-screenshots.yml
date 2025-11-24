@@ -55,9 +55,20 @@ jobs:
       - name: Check for screenshot changes
         id: check_changes
         run: |
-          if git diff --quiet docs/images/*.webp; then
+          echo "📁 Files in docs/images/:"
+          ls -la docs/images/ || echo "Directory does not exist"
+          echo ""
+          echo "📊 Git status:"
+          git status docs/images/ || true
+          echo ""
+          echo "🔍 Git diff:"
+          git diff --stat docs/images/*.webp || true
+          echo ""
+          if git diff --quiet docs/images/*.webp 2>/dev/null; then
+            echo "Result: No changes detected"
             echo "changed=false" >> $GITHUB_OUTPUT
           else
+            echo "Result: Changes detected!"
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
