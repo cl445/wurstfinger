@@ -50,6 +50,11 @@ echo ""
 # Run UI tests to generate screenshots
 echo -e "${BLUE}🧪 Running UI tests to generate screenshots...${NC}"
 
+# Debug: Show simulator status
+echo -e "${BLUE}📱 Simulator status before test:${NC}"
+xcrun simctl list devices booted || echo "No booted devices"
+echo ""
+
 TEST_OUTPUT=$(mktemp)
 set +e
 xcodebuild test \

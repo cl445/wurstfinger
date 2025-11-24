@@ -50,7 +50,7 @@ jobs:
         run: |
           source venv/bin/activate
           ./scripts/generate-screenshots.sh
-        timeout-minutes: 15
+        timeout-minutes: 25
 
       - name: Check for screenshot changes
         id: check_changes
