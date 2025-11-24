@@ -12,6 +12,9 @@ on:
       - '.github/workflows/update-screenshots.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   update-screenshots:
     runs-on: macos-latest
