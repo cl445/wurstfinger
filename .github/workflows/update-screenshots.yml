@@ -19,8 +19,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Cache Python venv
+        uses: actions/cache@v4
         with:
-          fetch-depth: 0
+          path: venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('scripts/generate-screenshots.sh') }}
 
       - name: Install Python dependencies
         run: |
@@ -28,6 +32,11 @@ jobs:
           source venv/bin/activate
           pip install --upgrade pip
           pip install Pillow numpy
+
+      - name: Boot iOS Simulator
+        run: |
+          DEVICE=$(xcrun simctl list devices available | grep "iPhone" | grep -v "SE" | head -n 1 | sed 's/.*(\([^)]*\)).*/\1/' | head -n 1)
+          xcrun simctl boot "$DEVICE" 2>/dev/null || true
 
       - name: Generate screenshots
         run: |
