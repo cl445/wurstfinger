@@ -53,11 +53,13 @@ jobs:
           # Boot one simulator at a time to avoid resource issues
           # We'll boot them in sequence as needed in the test runs
 
-          # Get first available iPhone 15 Plus or similar
-          IPHONE_67=$(xcrun simctl list devices available | grep "iPhone 15 Plus\|iPhone 14 Plus\|iPhone 15 Pro Max" | head -n 1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')
+          # Get first available iPhone 15 Plus or similar (use -E for extended regex)
+          IPHONE_67=$(xcrun simctl list devices available | grep -E "iPhone 15 Plus|iPhone 14 Plus|iPhone 15 Pro Max" | head -n 1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' || true)
           if [ -n "$IPHONE_67" ]; then
             echo "Booting 6.7\" device: $IPHONE_67"
             xcrun simctl boot "$IPHONE_67" 2>/dev/null || true
+          else
+            echo "No 6.7\" device found, will be handled by screenshot script"
           fi
 
       - name: Cache Python venv
