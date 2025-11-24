@@ -12,6 +12,9 @@ on:
       - '.github/workflows/update-screenshots.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   update-screenshots:
     runs-on: macos-latest
@@ -19,8 +22,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Cache Python venv
+        uses: actions/cache@v4
         with:
-          fetch-depth: 0
+          path: venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('scripts/generate-screenshots.sh') }}
 
       - name: Install Python dependencies
         run: |
@@ -28,6 +35,16 @@ jobs:
           source venv/bin/activate
           pip install --upgrade pip
           pip install Pillow numpy
+
+      - name: Boot iOS Simulator
+        run: |
+          # Get device UDID
+          DEVICE_UDID=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | head -n 1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')
+          echo "Booting simulator: $DEVICE_UDID"
+          xcrun simctl boot "$DEVICE_UDID" 2>/dev/null || true
+          # Wait for simulator to be ready
+          xcrun simctl bootstatus "$DEVICE_UDID" -b
+          echo "Simulator ready"
 
       - name: Generate screenshots
         run: |

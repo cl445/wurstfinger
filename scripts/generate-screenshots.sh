@@ -101,6 +101,11 @@ for test_result in manifest:
         exported_file = attachment['exportedFileName']
         suggested_name = attachment['suggestedHumanReadableName']
 
+        # Skip non-image files (videos, etc.)
+        if not exported_file.lower().endswith(('.png', '.jpg', '.jpeg')):
+            print(f"  ⏭ Skipping non-image: {exported_file}")
+            continue
+
         # Extract base name (e.g., "keyboard-lower-light" from "keyboard-lower-light_0_UUID.png")
         base_name = suggested_name.split('_')[0]
 
