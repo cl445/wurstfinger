@@ -11,6 +11,7 @@ import SwiftUI
 struct DeleteKeyButton: View {
     let viewModel: KeyboardViewModel
     let keyHeight: CGFloat
+    let aspectRatio: CGFloat
 
     @State private var isActive = false
     @State private var dragStarted = false
@@ -25,6 +26,7 @@ struct DeleteKeyButton: View {
     var body: some View {
         KeyCap(
             height: keyHeight,
+            aspectRatio: aspectRatio,
             background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
             fontSize: KeyboardConstants.FontSizes.keyLabel
         ) {

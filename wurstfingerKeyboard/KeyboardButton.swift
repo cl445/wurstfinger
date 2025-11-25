@@ -23,6 +23,7 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
     var body: some View {
         KeyCap(
             height: height,
+            aspectRatio: aspectRatio,
             background: isActive ? config.activeBackground : config.inactiveBackground,
             highlighted: config.highlighted,
             fontSize: config.fontSize

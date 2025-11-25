@@ -81,7 +81,7 @@ struct KeyboardRootView: View {
                     }
 
                     keyCells(forRow: 3, keyHeight: keyHeight)
-                    SpaceKeyButton(viewModel: viewModel, keyHeight: keyHeight)
+                    SpaceKeyButton(viewModel: viewModel, keyHeight: keyHeight, aspectRatio: viewModel.keyAspectRatio)
                         .gridCellColumns(viewModel.spaceColumnSpan)
 
                     if !viewModel.utilityColumnLeading {
@@ -129,7 +129,7 @@ struct KeyboardRootView: View {
                 callbacks: KeyboardButtonCallbacks(onTap: viewModel.toggleSymbols)
             )
         case 2: // Delete button
-            DeleteKeyButton(viewModel: viewModel, keyHeight: keyHeight)
+            DeleteKeyButton(viewModel: viewModel, keyHeight: keyHeight, aspectRatio: viewModel.keyAspectRatio)
         case 3: // Return button
             KeyboardButton(
                 height: keyHeight,
