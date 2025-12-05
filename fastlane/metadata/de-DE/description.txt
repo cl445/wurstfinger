@@ -1,0 +1,24 @@
+Wurstfinger - Die Tastatur für dicke Finger
+
+Genug von Tippfehlern? Wurstfinger ist eine innovative iOS-Tastatur, die speziell für die Einhandbedienung entwickelt wurde. Inspiriert vom bewährten MessagEase-Layout bietet sie große Tasten und intuitive Gesten für schnelles, präzises Tippen.
+
+FUNKTIONEN:
+
+• Große Tasten - Weniger Fehler, mehr Komfort
+• Wischgesten - Buchstaben durch Wischen in 8 Richtungen eingeben
+• 14 Sprachen - Deutsch, Englisch, Spanisch, Französisch, Portugiesisch, Italienisch, Niederländisch, Schwedisch, Norwegisch, Dänisch, Finnisch, Polnisch, Tschechisch und Vietnamesisch
+• Compose-Engine - Akzente und Sonderzeichen durch Kombinationen erstellen (z.B. ' + a = á)
+• Kreisbewegungen - Großbuchstaben durch kreisförmige Gesten
+• Cursor-Steuerung - Cursor durch Ziehen auf der Leertaste bewegen
+• Haptisches Feedback - Einstellbare Vibrationsintensität
+• Anpassbar - Tastaturgröße nach Wunsch skalieren
+
+PERFEKT FÜR:
+
+• Einhandbedienung unterwegs
+• Nutzer mit größeren Fingern
+• Alle, die eine ergonomische Alternative zur Standardtastatur suchen
+
+Wurstfinger erfordert eine kurze Eingewöhnungszeit, aber sobald du die Gesten beherrschst, tippst du schneller und genauer als je zuvor.
+
+Probier es aus - deine Daumen werden es dir danken!

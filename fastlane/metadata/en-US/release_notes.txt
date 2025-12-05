@@ -1,0 +1,8 @@
+First release of Wurstfinger!
+
+• MessagEase-inspired gesture layout
+• 14 language layouts
+• Customizable keyboard size
+• Haptic feedback
+• Cursor control via space bar
+• Open source

@@ -1,0 +1,8 @@
+Erste Veröffentlichung von Wurstfinger!
+
+• MessagEase-inspiriertes Gestenlayout
+• 14 Sprachlayouts
+• Anpassbare Tastaturgröße
+• Haptisches Feedback
+• Cursor-Steuerung über die Leertaste
+• Open Source
