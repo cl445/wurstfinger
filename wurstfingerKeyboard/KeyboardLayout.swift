@@ -833,7 +833,7 @@ enum KeyboardConstants {
     enum KeyDimensions {
         static let height: CGFloat = 54
         static let minWidth: CGFloat = 44
-        static let cornerRadius: CGFloat = 12
+        static let cornerRadius: CGFloat = 8
         static let defaultAspectRatio: CGFloat = 1.5
         static let totalRows: Int = 4
     }
@@ -867,8 +867,8 @@ enum KeyboardConstants {
 
     // MARK: - Layout Spacing
     enum Layout {
-        static let gridHorizontalSpacing: CGFloat = 8
-        static let gridVerticalSpacing: CGFloat = 8
+        static let gridHorizontalSpacing: CGFloat = 5
+        static let gridVerticalSpacing: CGFloat = 5
         static let horizontalPadding: CGFloat = 12
         /// Top padding - minimal since keyboard sits directly below text input
         static let verticalPaddingTop: CGFloat = 4

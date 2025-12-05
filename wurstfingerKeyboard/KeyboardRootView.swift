@@ -59,12 +59,20 @@ struct KeyboardRootView: View {
                         utilityButton(forRow: 3, keyHeight: keyHeight)
                     }
 
-                    // For numbers layer: show "0" key cell + space
-                    // For letters layer: space spans full width
+                    // For numbers layer: show "0" key cell + space spans 2 columns
+                    // For letters layer: space spans 3 columns
                     if viewModel.activeLayer == .numbers {
                         keyCells(forRow: 3, keyHeight: keyHeight)
                     }
+
+                    // Calculate space bar width based on column span
+                    let keyWidth = keyHeight * viewModel.keyAspectRatio
+                    let spaceColumnSpan = viewModel.activeLayer == .numbers ? 2 : 3
+                    let spaceWidth = (keyWidth * CGFloat(spaceColumnSpan)) +
+                                     (KeyboardConstants.Layout.gridHorizontalSpacing * CGFloat(spaceColumnSpan - 1))
+
                     SpaceKeyButton(viewModel: viewModel, keyHeight: keyHeight)
+                        .frame(width: spaceWidth)
 
                     if !viewModel.utilityColumnLeading {
                         utilityButton(forRow: 3, keyHeight: keyHeight)

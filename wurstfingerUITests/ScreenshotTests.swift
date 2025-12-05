@@ -179,18 +179,19 @@ final class ScreenshotTests: XCTestCase {
             .replacingOccurrences(of: " ", with: "-")
             .lowercased()
 
-        // Configurations: layer, appearance, screenshot number, display text
-        let configurations: [(layer: String, appearance: String, number: String, text: String)] = [
-            ("lower", "light", "01", "Hello Wurstfinger!"),
-            ("lower", "dark", "02", "Hello Wurstfinger!"),
-            ("numbers", "light", "03", "Call me: 0800 123456"),
-            ("numbers", "dark", "04", "Call me: 0800 123456")
+        // Configurations: layer, appearance, screenshot number, sent text, received text
+        let configurations: [(layer: String, appearance: String, number: String, sent: String, received: String)] = [
+            ("lower", "light", "01", "So fast and precise! 🎯", "How do you like the new keyboard?"),
+            ("lower", "dark", "02", "Works great in dark mode too!", "Can you try it at night?"),
+            ("numbers", "light", "03", "Here: 555-0123", "What's your number?"),
+            ("numbers", "dark", "04", "Meeting at 7:30pm", "What time works for you?")
         ]
 
         for config in configurations {
             app.launchEnvironment["FORCE_LAYER"] = config.layer
             app.launchEnvironment["FORCE_APPEARANCE"] = config.appearance
-            app.launchEnvironment["FORCE_TEXT"] = config.text
+            app.launchEnvironment["FORCE_TEXT"] = config.sent
+            app.launchEnvironment["FORCE_RECEIVED_TEXT"] = config.received
             app.launch()
 
             XCTAssertTrue(keyboard.waitForExistence(timeout: 5), "Keyboard not found for \(config.layer)-\(config.appearance)")

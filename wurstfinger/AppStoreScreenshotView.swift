@@ -13,24 +13,26 @@ struct AppStoreScreenshotView: View {
     @State private var colorScheme: ColorScheme?
 
     // Sample text to display - can be overridden via environment
-    @State private var displayText: String = "Hello Wurstfinger!"
+    @State private var displayText: String = "I love it!"
+    @State private var receivedText: String = "How do you like the new keyboard?"
 
     var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // Text display area (simulated text field)
-                textDisplayArea
-                    .frame(maxWidth: .infinity)
-                    .frame(height: geometry.size.height * 0.35)
+        VStack(spacing: 0) {
+            // iPhone status bar - at the very top
+            statusBar
 
-                Spacer()
+            // Chat area - takes remaining space
+            chatArea
 
-                // Keyboard
-                KeyboardRootView(viewModel: viewModel)
-                    .frame(maxWidth: .infinity)
-                    .accessibilityIdentifier("screenshotKeyboard")
-            }
+            // Text input bar directly above keyboard
+            textInputBar
+
+            // Keyboard at the bottom
+            KeyboardRootView(viewModel: viewModel)
+                .frame(maxWidth: .infinity)
+                .accessibilityIdentifier("screenshotKeyboard")
         }
+        .ignoresSafeArea(edges: [.top, .bottom])
         .background(Color(.systemBackground))
         .preferredColorScheme(colorScheme)
         .statusBarHidden(true)
@@ -39,67 +41,103 @@ struct AppStoreScreenshotView: View {
         }
     }
 
-    private var textDisplayArea: some View {
+    private var statusBar: some View {
+        HStack {
+            Text("9:41")
+                .font(.system(size: 15, weight: .semibold))
+
+            Spacer()
+
+            HStack(spacing: 5) {
+                Image(systemName: "cellularbars")
+                    .font(.system(size: 14))
+                Image(systemName: "wifi")
+                    .font(.system(size: 14))
+                Image(systemName: "battery.100")
+                    .font(.system(size: 18))
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+    }
+
+    private var chatArea: some View {
         VStack(spacing: 0) {
             // App header bar (simulated)
             HStack {
-                Text("Messages")
-                    .font(.headline)
-                    .fontWeight(.semibold)
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.accentColor)
+
                 Spacer()
+
+                VStack(spacing: 2) {
+                    Text("Sarah")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    Text("online")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "video")
+                    .font(.system(size: 18))
+                    .foregroundColor(.accentColor)
             }
             .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 8)
+            .padding(.vertical, 10)
 
             Divider()
 
             // Chat-style message display
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 16) {
                     // Received message
                     HStack(alignment: .bottom, spacing: 8) {
-                        receivedMessageBubble("Hey! How's the new keyboard?")
-                        Spacer(minLength: 60)
+                        receivedMessageBubble(receivedText)
+                        Spacer(minLength: 50)
                     }
 
                     // Sent message (our text)
                     HStack(alignment: .bottom, spacing: 8) {
-                        Spacer(minLength: 60)
+                        Spacer(minLength: 50)
                         sentMessageBubble(displayText)
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.vertical, 16)
             }
+        }
+    }
 
-            Divider()
+    private var textInputBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "camera.fill")
+                .font(.system(size: 20))
+                .foregroundColor(.secondary)
 
-            // Text input area (simulated, shows cursor)
-            HStack(spacing: 12) {
-                HStack {
-                    Text(viewModel.activeLayer == .numbers || viewModel.activeLayer == .symbols ? "123" : "Aa")
-                        .foregroundColor(.secondary)
-                        .font(.system(size: 14))
-
-                    Rectangle()
-                        .fill(Color.accentColor)
-                        .frame(width: 2, height: 20)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color(.secondarySystemBackground))
-                .cornerRadius(20)
+            // Text field simulation
+            HStack {
+                Text("Message")
+                    .foregroundColor(Color(.placeholderText))
+                    .font(.system(size: 16))
 
                 Spacer()
-
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundColor(.accentColor)
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.vertical, 6)
+            .background(Color(.secondarySystemBackground))
+            .cornerRadius(18)
+
+            Image(systemName: "arrow.up.circle.fill")
+                .font(.system(size: 28))
+                .foregroundColor(.accentColor)
         }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
     }
 
     private func receivedMessageBubble(_ text: String) -> some View {
@@ -123,7 +161,13 @@ struct AppStoreScreenshotView: View {
     private func configureFromEnvironment() {
         let env = ProcessInfo.processInfo.environment
 
-        // Set language
+        // Default to English for App Store screenshots
+        languageSettings.selectedLanguageId = "en_US"
+
+        // Use full-size keyboard for screenshots (no scaling)
+        viewModel.keyboardScale = 1.0
+
+        // Override language if specified
         if let forcedLanguage = env["FORCE_LANGUAGE"] {
             languageSettings.selectedLanguageId = forcedLanguage
         }
@@ -156,9 +200,14 @@ struct AppStoreScreenshotView: View {
             }
         }
 
-        // Set display text
+        // Set display text (sent message)
         if let forcedText = env["FORCE_TEXT"] {
             displayText = forcedText
+        }
+
+        // Set received message text
+        if let forcedReceived = env["FORCE_RECEIVED_TEXT"] {
+            receivedText = forcedReceived
         }
     }
 }
