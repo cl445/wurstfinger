@@ -44,6 +44,7 @@ struct KeyboardButtonCallbacks {
 /// Visual key cap component used as the base for all keyboard buttons
 struct KeyCap<Content: View>: View {
     let height: CGFloat
+    let aspectRatio: CGFloat?
     let background: Color
     let highlighted: Bool
     let fontSize: CGFloat
@@ -51,12 +52,14 @@ struct KeyCap<Content: View>: View {
 
     init(
         height: CGFloat,
+        aspectRatio: CGFloat? = nil,
         background: Color = Color(.secondarySystemBackground),
         highlighted: Bool = false,
         fontSize: CGFloat = KeyboardConstants.FontSizes.defaultLabel,
         @ViewBuilder content: () -> Content
     ) {
         self.height = height
+        self.aspectRatio = aspectRatio
         self.background = background
         self.highlighted = highlighted
         self.fontSize = fontSize
@@ -67,7 +70,7 @@ struct KeyCap<Content: View>: View {
         content
             .font(.system(size: fontSize, weight: .semibold, design: .rounded))
             .foregroundStyle(Color.primary)
-            .frame(minWidth: KeyboardConstants.KeyDimensions.minWidth, maxWidth: .infinity, minHeight: height, maxHeight: height)
+            .frame(minWidth: KeyboardConstants.KeyDimensions.minWidth, maxWidth: aspectRatio.map { height * $0 } ?? .infinity, minHeight: height, maxHeight: height)
             .background(
                 RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
                     .fill(highlighted ? Color.accentColor.opacity(0.25) : background)
