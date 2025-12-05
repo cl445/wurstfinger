@@ -163,6 +163,46 @@ final class ScreenshotTests: XCTestCase {
         }
     }
 
+    // MARK: - App Store Keyboard with Chat UI Screenshots
+
+    /// Generate App Store screenshots showing keyboard with chat interface and sample text
+    /// Uses APPSTORE_SCREENSHOT_MODE to show AppStoreScreenshotView
+    /// These are the primary screenshots showing the keyboard in action
+    @MainActor
+    func testGenerateAppStoreKeyboardScreenshots() throws {
+        app.launchArguments = ["APPSTORE_SCREENSHOT_MODE"]
+
+        let keyboard = app.otherElements["screenshotKeyboard"]
+
+        // Get device identifier for naming
+        let deviceName = UIDevice.current.name
+            .replacingOccurrences(of: " ", with: "-")
+            .lowercased()
+
+        // Configurations: layer, appearance, screenshot number, display text
+        let configurations: [(layer: String, appearance: String, number: String, text: String)] = [
+            ("lower", "light", "01", "Hello Wurstfinger!"),
+            ("lower", "dark", "02", "Hello Wurstfinger!"),
+            ("numbers", "light", "03", "Call me: 0800 123456"),
+            ("numbers", "dark", "04", "Call me: 0800 123456")
+        ]
+
+        for config in configurations {
+            app.launchEnvironment["FORCE_LAYER"] = config.layer
+            app.launchEnvironment["FORCE_APPEARANCE"] = config.appearance
+            app.launchEnvironment["FORCE_TEXT"] = config.text
+            app.launch()
+
+            XCTAssertTrue(keyboard.waitForExistence(timeout: 5), "Keyboard not found for \(config.layer)-\(config.appearance)")
+            Thread.sleep(forTimeInterval: 1.0)
+
+            takeAppStoreScreenshot(name: "appstore-\(deviceName)-keyboard-\(config.number)-\(config.layer)-\(config.appearance)")
+
+            app.terminate()
+            Thread.sleep(forTimeInterval: 0.5)
+        }
+    }
+
     // MARK: - Helper Methods
 
     private func takeAppStoreScreenshot(name: String) {
