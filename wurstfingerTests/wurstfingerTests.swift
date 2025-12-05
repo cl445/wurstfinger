@@ -99,18 +99,23 @@ struct wurstfingerTests {
         #expect(inserted == ["1", "0"])
     }
 
-    @Test(.disabled("Test assertions failing - needs investigation"))
-    func letterLayerProvidesAdditionalSymbols() async throws {
+    @Test func letterLayerProvidesAdditionalSymbols() async throws {
         let viewModel = KeyboardViewModel()
         let firstRow = try #require(viewModel.rows.first)
         let aKey = try #require(firstRow.first)
         let nKey = try #require(firstRow.dropFirst().first)
         let sKey = try #require(viewModel.rows[2].last)
 
+        // A-key (row 0, col 0) swipe outputs
         #expect(aKey.primaryLabel(for: .downLeft) == "$")
-        #expect(aKey.primaryLabel(for: .upRight) == "¿¡")
+        #expect(aKey.primaryLabel(for: .right) == "-")
+
+        // N-key (row 0, col 1) swipe outputs including compose triggers
         #expect(nKey.primaryLabel(for: .up) == "^")
         #expect(nKey.primaryLabel(for: .downRight) == "\\")
+        #expect(nKey.primaryLabel(for: .right) == "!")
+
+        // S-key (row 2, col 2) swipe outputs
         #expect(sKey.primaryLabel(for: .left) == "#")
         #expect(sKey.primaryLabel(for: .right) == ">")
     }
@@ -217,8 +222,7 @@ struct wurstfingerTests {
         #expect(abs(storedDrag - 1.0) < 0.0001)
     }
 
-    @Test(.disabled("Test assertions failing - needs investigation"))
-    func composeSwipeEmitsComposeAction() async throws {
+    @Test func composeSwipeEmitsComposeAction() async throws {
         let viewModel = KeyboardViewModel()
         var captured: String?
 
@@ -228,11 +232,12 @@ struct wurstfingerTests {
             }
         }
 
+        // N-key (row 0, col 1) has compose triggers: upLeft=`, up=^, upRight='
         let firstRow = try #require(viewModel.rows.first)
-        let aKey = try #require(firstRow.first)
-        viewModel.handleKeySwipe(aKey, direction: .upRight)
+        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
+        viewModel.handleKeySwipe(nKey, direction: .upRight)
 
-        #expect(captured == "!")
+        #expect(captured == "'")
     }
 
     @Test func composeEngineProducesReplacement() async throws {
