@@ -30,7 +30,11 @@ cd "$PROJECT_ROOT"
 
 # Configuration
 SCHEME="Wurstfinger"
-TEST_TARGET="WurstfingerUITests/ScreenshotTests/testGenerateAppStoreScreenshots"
+# Run both App Store screenshot tests
+TEST_TARGETS=(
+    "WurstfingerUITests/ScreenshotTests/testGenerateAppStoreScreenshots"
+    "WurstfingerUITests/ScreenshotTests/testGenerateKeyboardShowcaseScreenshots"
+)
 OUTPUT_DIR="$PROJECT_ROOT/appstore-screenshots"
 DERIVED_DATA="/tmp/WurstfingerAppStoreScreenshots"
 
@@ -90,11 +94,17 @@ run_tests_on_device() {
     echo "  Running screenshot tests..."
     local device_derived="$DERIVED_DATA/$display_size"
 
+    # Build the -only-testing arguments for all test targets
+    local only_testing_args=""
+    for target in "${TEST_TARGETS[@]}"; do
+        only_testing_args="$only_testing_args -only-testing:$target"
+    done
+
     set +e
     xcodebuild test \
         -scheme "$SCHEME" \
         -destination "platform=iOS Simulator,id=$udid" \
-        -only-testing:"$TEST_TARGET" \
+        $only_testing_args \
         -derivedDataPath "$device_derived" \
         CODE_SIGNING_ALLOWED=NO \
         2>&1 | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi
