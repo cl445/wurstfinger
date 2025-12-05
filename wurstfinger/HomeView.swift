@@ -26,22 +26,10 @@ struct HomeView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
 
-                // Development Notice
-                VStack(spacing: 8) {
-                    Label("Work in Progress", systemImage: "exclamationmark.triangle")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.orange)
-
-                    Text("This keyboard is in early development. Contributions welcome!")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .padding()
-                .background(Color.orange.opacity(0.1))
-                .cornerRadius(12)
-                .padding(.horizontal)
+                // Tagline
+                Text("The Keyboard for Fat Fingers")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
 
                 Spacer()
 
