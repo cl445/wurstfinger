@@ -12,19 +12,17 @@ final class ScreenshotTests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
-
         app = XCUIApplication()
-        app.launchArguments = ["SCREENSHOT_MODE"]
-
-        // Set English as language
-        let languageId = "en_US"
-        app.launchEnvironment["FORCE_LANGUAGE"] = languageId
     }
 
     // MARK: - README Screenshots (keyboard-only, cropped)
 
+    /// Generate keyboard-only screenshots for README documentation
+    /// Uses SCREENSHOT_MODE to show KeyboardShowcaseView
     @MainActor
     func testGenerateScreenshots() throws {
+        app.launchArguments = ["SCREENSHOT_MODE"]
+
         let keyboard = app.otherElements["showcaseKeyboard"]
 
         let layouts = ["lower", "numbers"]
@@ -55,6 +53,7 @@ final class ScreenshotTests: XCTestCase {
     // MARK: - App Store Screenshots
 
     /// Generate App Store screenshots showing the full app experience
+    /// Does NOT use SCREENSHOT_MODE - shows normal app with TabView
     /// Run this test on different simulators to get all required sizes:
     /// - iPhone 15 Plus (6.7" - 1290x2796)
     /// - iPhone 11 Pro Max (6.5" - 1242x2688)
@@ -62,6 +61,9 @@ final class ScreenshotTests: XCTestCase {
     /// - iPad Pro 12.9" (2048x2732)
     @MainActor
     func testGenerateAppStoreScreenshots() throws {
+        // Don't use SCREENSHOT_MODE - we want the full app with tabs
+        app.launchArguments = []
+
         // Get device identifier for naming
         let deviceName = UIDevice.current.name
             .replacingOccurrences(of: " ", with: "-")
@@ -73,7 +75,7 @@ final class ScreenshotTests: XCTestCase {
 
         // Wait for app to load and navigate to Home tab
         let homeTab = app.tabBars.buttons["Home"]
-        XCTAssertTrue(homeTab.waitForExistence(timeout: 5))
+        XCTAssertTrue(homeTab.waitForExistence(timeout: 5), "Home tab not found")
         homeTab.tap()
         Thread.sleep(forTimeInterval: 1.0)
 
@@ -93,7 +95,7 @@ final class ScreenshotTests: XCTestCase {
         app.launchEnvironment["FORCE_APPEARANCE"] = "dark"
         app.launch()
 
-        XCTAssertTrue(testTab.waitForExistence(timeout: 5))
+        XCTAssertTrue(testTab.waitForExistence(timeout: 5), "Test tab not found after relaunch")
         testTab.tap()
         Thread.sleep(forTimeInterval: 1.0)
 
@@ -107,7 +109,7 @@ final class ScreenshotTests: XCTestCase {
         app.launch()
 
         let settingsTab = app.tabBars.buttons["Settings"]
-        XCTAssertTrue(settingsTab.waitForExistence(timeout: 5))
+        XCTAssertTrue(settingsTab.waitForExistence(timeout: 5), "Settings tab not found")
         settingsTab.tap()
         Thread.sleep(forTimeInterval: 1.0)
 
@@ -125,8 +127,12 @@ final class ScreenshotTests: XCTestCase {
 
     // MARK: - Keyboard Showcase Screenshots (for App Store, showing keyboard layers)
 
+    /// Generate keyboard showcase screenshots for App Store
+    /// Uses SCREENSHOT_MODE to show KeyboardShowcaseView with different layers
     @MainActor
     func testGenerateKeyboardShowcaseScreenshots() throws {
+        app.launchArguments = ["SCREENSHOT_MODE"]
+
         let keyboard = app.otherElements["showcaseKeyboard"]
 
         // Get device identifier for naming
@@ -147,7 +153,7 @@ final class ScreenshotTests: XCTestCase {
             app.launchEnvironment["FORCE_APPEARANCE"] = config.appearance
             app.launch()
 
-            XCTAssertTrue(keyboard.waitForExistence(timeout: 5))
+            XCTAssertTrue(keyboard.waitForExistence(timeout: 5), "Keyboard not found for \(config.layer)-\(config.appearance)")
             Thread.sleep(forTimeInterval: 1.0)
 
             takeAppStoreScreenshot(name: "appstore-\(deviceName)-\(config.number)-keyboard-\(config.layer)-\(config.appearance)")
