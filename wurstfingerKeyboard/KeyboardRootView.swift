@@ -37,52 +37,34 @@ struct KeyboardRootView: View {
             Color(.systemBackground)
                 .ignoresSafeArea()
 
-            Grid(horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
-             verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing) {
-                GridRow {
-                    if viewModel.utilityColumnLeading {
-                        utilityButton(forRow: 0, keyHeight: keyHeight)
-                    }
+            VStack(spacing: KeyboardConstants.Layout.gridVerticalSpacing) {
+                // Rows 0-2: Standard letter/number rows
+                ForEach(0..<3, id: \.self) { rowIndex in
+                    HStack(spacing: KeyboardConstants.Layout.gridHorizontalSpacing) {
+                        if viewModel.utilityColumnLeading {
+                            utilityButton(forRow: rowIndex, keyHeight: keyHeight)
+                        }
 
-                    keyCells(forRow: 0, keyHeight: keyHeight)
+                        keyCells(forRow: rowIndex, keyHeight: keyHeight)
 
-                    if !viewModel.utilityColumnLeading {
-                        utilityButton(forRow: 0, keyHeight: keyHeight)
-                    }
-                }
-
-                GridRow {
-                    if viewModel.utilityColumnLeading {
-                        utilityButton(forRow: 1, keyHeight: keyHeight)
-                    }
-
-                    keyCells(forRow: 1, keyHeight: keyHeight)
-
-                    if !viewModel.utilityColumnLeading {
-                        utilityButton(forRow: 1, keyHeight: keyHeight)
+                        if !viewModel.utilityColumnLeading {
+                            utilityButton(forRow: rowIndex, keyHeight: keyHeight)
+                        }
                     }
                 }
 
-                GridRow {
-                    if viewModel.utilityColumnLeading {
-                        utilityButton(forRow: 2, keyHeight: keyHeight)
-                    }
-
-                    keyCells(forRow: 2, keyHeight: keyHeight)
-
-                    if !viewModel.utilityColumnLeading {
-                        utilityButton(forRow: 2, keyHeight: keyHeight)
-                    }
-                }
-
-                GridRow {
+                // Row 3: Space bar row
+                HStack(spacing: KeyboardConstants.Layout.gridHorizontalSpacing) {
                     if viewModel.utilityColumnLeading {
                         utilityButton(forRow: 3, keyHeight: keyHeight)
                     }
 
-                    keyCells(forRow: 3, keyHeight: keyHeight)
-                    SpaceKeyButton(viewModel: viewModel, keyHeight: keyHeight, aspectRatio: viewModel.keyAspectRatio)
-                        .gridCellColumns(viewModel.spaceColumnSpan)
+                    // For numbers layer: show "0" key cell + space
+                    // For letters layer: space spans full width
+                    if viewModel.activeLayer == .numbers {
+                        keyCells(forRow: 3, keyHeight: keyHeight)
+                    }
+                    SpaceKeyButton(viewModel: viewModel, keyHeight: keyHeight)
 
                     if !viewModel.utilityColumnLeading {
                         utilityButton(forRow: 3, keyHeight: keyHeight)
@@ -90,7 +72,8 @@ struct KeyboardRootView: View {
                 }
             }
             .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
-            .padding(.vertical, KeyboardConstants.Layout.verticalPadding)
+            .padding(.top, KeyboardConstants.Layout.verticalPaddingTop)
+            .padding(.bottom, KeyboardConstants.Layout.verticalPaddingBottom)
             .frame(width: baseWidth, alignment: frameAlignment)
             .scaleEffect(viewModel.keyboardScale, anchor: scaleAnchor)
             .offset(x: horizontalOffset)

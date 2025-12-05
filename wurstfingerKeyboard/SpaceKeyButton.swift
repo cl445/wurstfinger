@@ -11,7 +11,6 @@ import SwiftUI
 struct SpaceKeyButton: View {
     let viewModel: KeyboardViewModel
     let keyHeight: CGFloat
-    let aspectRatio: CGFloat
 
     @State private var isActive = false
     @State private var dragStarted = false
@@ -21,7 +20,9 @@ struct SpaceKeyButton: View {
     var body: some View {
         KeyCap(
             height: keyHeight,
-            aspectRatio: aspectRatio,
+            // Don't apply aspectRatio to space bar - it spans multiple grid columns
+            // and should fill the available width from .gridCellColumns()
+            aspectRatio: nil,
             background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
             fontSize: KeyboardConstants.FontSizes.keyLabel
         ) {

@@ -870,7 +870,10 @@ enum KeyboardConstants {
         static let gridHorizontalSpacing: CGFloat = 8
         static let gridVerticalSpacing: CGFloat = 8
         static let horizontalPadding: CGFloat = 12
-        static let verticalPadding: CGFloat = 10
+        /// Top padding - minimal since keyboard sits directly below text input
+        static let verticalPaddingTop: CGFloat = 4
+        /// Bottom padding - accounts for home indicator safe area
+        static let verticalPaddingBottom: CGFloat = 10
         static let hintMargin: CGFloat = 10
         static let hintMarginReturning: CGFloat = 22
     }
@@ -918,7 +921,7 @@ enum KeyboardConstants {
             let keyHeight = keyHeight(aspectRatio: aspectRatio)
             return (keyHeight * CGFloat(KeyDimensions.totalRows)) +
                    (Layout.gridVerticalSpacing * CGFloat(KeyDimensions.totalRows - 1)) +
-                   (Layout.verticalPadding * 2)
+                   Layout.verticalPaddingTop + Layout.verticalPaddingBottom
         }
     }
 }
