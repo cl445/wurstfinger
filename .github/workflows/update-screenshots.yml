@@ -1,0 +1,96 @@
+name: Update Screenshots
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'wurstfinger/**/*.swift'
+      - 'wurstfingerKeyboard/**/*.swift'
+      - 'scripts/**'
+      - '.github/workflows/update-screenshots.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-screenshots:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache Python venv
+        uses: actions/cache@v4
+        with:
+          path: venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('scripts/generate-screenshots.sh') }}
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install Pillow numpy
+
+      - name: Boot iOS Simulator
+        run: |
+          # Get device UDID
+          DEVICE_UDID=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | head -n 1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')
+          echo "Booting simulator: $DEVICE_UDID"
+          xcrun simctl boot "$DEVICE_UDID" 2>/dev/null || true
+          # Wait for simulator to be ready
+          xcrun simctl bootstatus "$DEVICE_UDID" -b
+          echo "Simulator ready"
+
+      - name: Generate screenshots
+        run: |
+          source venv/bin/activate
+          ./scripts/generate-screenshots.sh
+        timeout-minutes: 25
+
+      - name: Check for screenshot changes
+        id: check_changes
+        run: |
+          echo "📁 Files in docs/images/:"
+          ls -la docs/images/ || echo "Directory does not exist"
+          echo ""
+          echo "📊 Git status:"
+          git status docs/images/ || true
+          echo ""
+          echo "🔍 Git diff:"
+          git diff --stat docs/images/*.webp || true
+          echo ""
+          if git diff --quiet docs/images/*.webp 2>/dev/null; then
+            echo "Result: No changes detected"
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Result: Changes detected!"
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create PR with screenshots
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create a new branch for the PR
+          BRANCH_NAME="automated/update-screenshots-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH_NAME"
+
+          git add docs/images/*.webp
+          git commit -m "Update screenshots"
+          git push -u origin "$BRANCH_NAME"
+
+          # Create PR
+          gh pr create \
+            --title "Update screenshots" \
+            --body "Automated screenshot update from CI workflow." \
+            --base "${{ github.ref_name }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

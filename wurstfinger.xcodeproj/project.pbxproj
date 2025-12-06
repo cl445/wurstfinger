@@ -25,6 +25,13 @@
 			remoteGlobalIDString = 427511912EAAF62000C5635A;
 			remoteInfo = WurstfingerApp;
 		};
+		427511FF2EAAF62100C5635A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4275118A2EAAF62000C5635A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 437E1C002EB3C30000C5635A;
+			remoteInfo = Wurstfinger;
+		};
 		437E1C0B2EB3C30000C5635A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4275118A2EAAF62000C5635A /* Project object */;
@@ -63,14 +70,29 @@
 			);
 			target = 437E1C002EB3C30000C5635A /* Wurstfinger */;
 		};
+		427511FC2EAAF62100C5635A /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4275119E2EAAF62100C5635A /* WurstfingerTests */;
+		};
 		42C0B35D2EB16D3400DF2D45 /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				ComposeEngine.swift,
+				DeleteKeyButton.swift,
+				KeyboardButton.swift,
+				KeyboardButtonComponents.swift,
 				KeyboardLayout.swift,
 				KeyboardRootView.swift,
 				KeyboardViewController.swift,
 				KeyboardViewModel.swift,
+				KeyHintOverlay.swift,
+				LanguageConfig.swift,
+				LanguageSettings.swift,
+				SpaceKeyButton.swift,
+				ViewExtensions.swift,
 			);
 			target = 427511912EAAF62000C5635A /* WurstfingerApp */;
 		};
@@ -96,6 +118,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				42C0B35D2EB16D3400DF2D45 /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerApp" target */,
+				427511FC2EAAF62100C5635A /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerTests" target */,
 				422B5FA22EAED9E8002A926E /* Exceptions for "wurstfingerKeyboard" folder in "Wurstfinger" target */,
 			);
 			path = wurstfingerKeyboard;
@@ -196,9 +219,11 @@
 			);
 			dependencies = (
 				427511A12EAAF62100C5635A /* PBXTargetDependency */,
+				427511FE2EAAF62100C5635A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				427511A22EAAF62100C5635A /* wurstfingerTests */,
+				437E1C052EB3C30000C5635A /* wurstfingerKeyboard */,
 			);
 			name = WurstfingerTests;
 			packageProductDependencies = (
@@ -373,6 +398,11 @@
 			target = 427511912EAAF62000C5635A /* WurstfingerApp */;
 			targetProxy = 427511AA2EAAF62100C5635A /* PBXContainerItemProxy */;
 		};
+		427511FE2EAAF62100C5635A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 437E1C002EB3C30000C5635A /* Wurstfinger */;
+			targetProxy = 427511FF2EAAF62100C5635A /* PBXContainerItemProxy */;
+		};
 		437E1C0C2EB3C30000C5635A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 437E1C002EB3C30000C5635A /* Wurstfinger */;
@@ -433,7 +463,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -490,7 +520,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -509,7 +539,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B3WJ7U845U;
+				DEVELOPMENT_TEAM = 4WPG6NQAWC;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Wurstfinger;
@@ -541,7 +571,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B3WJ7U845U;
+				DEVELOPMENT_TEAM = 4WPG6NQAWC;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Wurstfinger;
@@ -571,7 +601,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.akator.wurstfingerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -589,7 +619,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.akator.wurstfingerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -636,15 +666,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = Wurstfinger/Wurstfinger.entitlements;
+				CODE_SIGN_ENTITLEMENTS = wurstfingerKeyboard/wurstfingerKeyboard.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B3WJ7U845U;
+				DEVELOPMENT_TEAM = 4WPG6NQAWC;
+				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = wurstfingerKeyboard/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = WurstfingerKeyboard;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -665,15 +696,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = Wurstfinger/Wurstfinger.entitlements;
+				CODE_SIGN_ENTITLEMENTS = wurstfingerKeyboard/wurstfingerKeyboard.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B3WJ7U845U;
+				DEVELOPMENT_TEAM = 4WPG6NQAWC;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = wurstfingerKeyboard/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = WurstfingerKeyboard;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

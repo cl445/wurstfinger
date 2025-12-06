@@ -11,9 +11,14 @@ import SwiftUI
 struct OnboardingView: View {
     @Environment(\.openURL) private var openURL
 
-    @State private var keyboardInstalled = false
-    @State private var fullAccessEnabled = false
-    @State private var practiced = false
+    @AppStorage("onboarding.keyboardInstalled", store: SharedDefaults.store)
+    private var keyboardInstalled = false
+
+    @AppStorage("onboarding.fullAccessEnabled", store: SharedDefaults.store)
+    private var fullAccessEnabled = false
+
+    @AppStorage("onboarding.practiced", store: SharedDefaults.store)
+    private var practiced = false
 
     private let settingsURL = URL(string: "app-settings:")!
 
@@ -28,11 +33,18 @@ struct OnboardingView: View {
                         isCompleted: $keyboardInstalled
                     )
 
-                    Button("Open Settings", systemImage: "gear") {
+                    Button {
                         openURL(settingsURL)
+                    } label: {
+                        HStack {
+                            Image(systemName: "gear")
+                            Text("Open Settings")
+                        }
+                        .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.accentColor)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
 
                     SetupStepView(
                         number: 2,

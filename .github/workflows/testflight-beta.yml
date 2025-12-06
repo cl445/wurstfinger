@@ -1,0 +1,67 @@
+name: iOS Beta (TestFlight Nightly)
+
+on:
+  schedule:
+    # Run every night at 2 AM UTC (3 AM CET / 4 AM CEST)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check for changes in last 24 hours
+        id: check
+        run: |
+          # Get commits from last 24 hours
+          COMMITS=$(git log --since="24 hours ago" --oneline)
+          if [ -z "$COMMITS" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No commits in the last 24 hours"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Found commits in the last 24 hours:"
+            echo "$COMMITS"
+          fi
+
+  build-upload:
+    needs: check-changes
+    if: needs.check-changes.outputs.has_changes == 'true'
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Install gems
+        run: bundle install
+
+      - name: Fastlane beta
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          BETA_CONTACT_EMAIL: ${{ secrets.BETA_CONTACT_EMAIL }}
+          BETA_CONTACT_FIRST_NAME: ${{ secrets.BETA_CONTACT_FIRST_NAME }}
+          BETA_CONTACT_LAST_NAME: ${{ secrets.BETA_CONTACT_LAST_NAME }}
+          BETA_CONTACT_PHONE: ${{ secrets.BETA_CONTACT_PHONE }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          CI: true
+        run: bundle exec fastlane ios beta

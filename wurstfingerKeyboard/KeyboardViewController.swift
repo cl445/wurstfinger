@@ -12,9 +12,18 @@ import UIKit
 final class KeyboardViewController: UIInputViewController {
     private var hostingController: UIHostingController<KeyboardRootView>?
     private lazy var viewModel = KeyboardViewModel()
-    private var selectionActive = false
-    private var selectionOffset = 0
     private var heightConstraint: NSLayoutConstraint?
+
+    /// Tells iOS which language this keyboard is typing in for spell-check and autocorrect
+    override var primaryLanguage: String? {
+        get {
+            return LanguageSettings.shared.selectedLanguageId
+        }
+        set {
+            // iOS may try to set this, but we ignore it and use our settings
+            super.primaryLanguage = newValue
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,10 +51,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private func updateKeyboardHeight() {
         // Calculate keyboard height including both aspect ratio and scale
-        let keyHeight = KeyboardConstants.KeyDimensions.height * (1.5 / viewModel.keyAspectRatio)
-        let baseHeight = (keyHeight * 4) +
-                         (KeyboardConstants.Layout.gridVerticalSpacing * 3) +
-                         (KeyboardConstants.Layout.verticalPadding * 2)
+        let baseHeight = KeyboardConstants.Calculations.baseHeight(aspectRatio: viewModel.keyAspectRatio)
         // Apply scale to match the visual size from scaleEffect
         let finalHeight = baseHeight * viewModel.keyboardScale
 
@@ -105,14 +111,10 @@ final class KeyboardViewController: UIInputViewController {
             capitalizeCurrentWord(style: style)
         case .moveCursor(let offset):
             textDocumentProxy.adjustTextPosition(byCharacterOffset: offset)
-        case .startSelection:
-            beginSelection()
-        case .updateSelection(let offset):
-            updateSelection(by: offset)
-        case .endSelection:
-            endSelection()
         case .compose(let trigger):
             handleCompose(trigger: trigger)
+        case .cycleAccents:
+            handleCycleAccents()
         case .deleteWord:
             deleteWordBeforeCursor()
         }
@@ -133,7 +135,7 @@ final class KeyboardViewController: UIInputViewController {
         guard !characters.isEmpty else { return }
 
         let word = String(characters.reversed())
-        let locale = Locale(identifier: "de_DE")
+        let locale = viewModel.currentLocale()
         let transformed: String
         switch style {
         case .uppercased:
@@ -146,63 +148,6 @@ final class KeyboardViewController: UIInputViewController {
             textDocumentProxy.deleteBackward()
         }
         textDocumentProxy.insertText(transformed)
-    }
-
-    private func beginSelection() {
-        selectionActive = true
-        selectionOffset = 0
-        textDocumentProxy.unmarkText()
-    }
-
-    private func updateSelection(by delta: Int) {
-        guard selectionActive, delta != 0 else { return }
-        applySelection(targetOffset: selectionOffset + delta)
-    }
-
-    private func applySelection(targetOffset: Int) {
-        guard selectionActive else { return }
-
-        textDocumentProxy.unmarkText()
-
-        selectionOffset = targetOffset
-
-        if selectionOffset == 0 {
-            return
-        }
-
-        if selectionOffset < 0 {
-            let before = textDocumentProxy.documentContextBeforeInput ?? ""
-            let available = before.count
-            let requested = min(available, -selectionOffset)
-            guard requested > 0 else {
-                selectionOffset = 0
-                return
-            }
-            let selectionText = String(before.suffix(requested))
-            let actualCount = selectionText.count
-            textDocumentProxy.adjustTextPosition(byCharacterOffset: -actualCount)
-            textDocumentProxy.setMarkedText(selectionText, selectedRange: NSRange(location: actualCount, length: 0))
-            selectionOffset = -actualCount
-        } else {
-            let after = textDocumentProxy.documentContextAfterInput ?? ""
-            let available = after.count
-            let requested = min(available, selectionOffset)
-            guard requested > 0 else {
-                selectionOffset = 0
-                return
-            }
-            let selectionText = String(after.prefix(requested))
-            let actualCount = selectionText.count
-            textDocumentProxy.setMarkedText(selectionText, selectedRange: NSRange(location: 0, length: actualCount))
-            selectionOffset = actualCount
-        }
-    }
-
-    private func endSelection() {
-        guard selectionActive else { return }
-        selectionActive = false
-        selectionOffset = 0
-        textDocumentProxy.unmarkText()
     }
 
     private func handleCompose(trigger: String) {
@@ -219,13 +164,24 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
+    private func handleCycleAccents() {
+        guard let previous = textDocumentProxy.documentContextBeforeInput?.last else {
+            return
+        }
+
+        if let replacement = ComposeEngine.cycleAccent(for: String(previous)) {
+            textDocumentProxy.deleteBackward()
+            textDocumentProxy.insertText(replacement)
+        }
+    }
+
     private func deleteWordBeforeCursor() {
         guard let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty else {
             textDocumentProxy.deleteBackward()
             return
         }
 
-        var characters = before
+        let characters = before
         var deleteCount = 0
         var index = characters.endIndex
 

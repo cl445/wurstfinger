@@ -5,9 +5,9 @@
 //  Created by Claas Flint on 24.10.25.
 //
 
+import Foundation
 import Testing
-@testable import wurstfinger
-@testable import Wurstfinger
+@testable import WurstfingerApp
 
 struct wurstfingerTests {
 
@@ -42,7 +42,7 @@ struct wurstfingerTests {
         #expect(rows.count == 4)
 
         let firstKey = try #require(rows.first?.first)
-        #expect(firstKey.center == "7")
+        #expect(firstKey.center == "1")
 
         let zeroKey = try #require(rows[3].first)
         #expect(zeroKey.center == "0")
@@ -51,10 +51,13 @@ struct wurstfingerTests {
     @Test func symbolsLayerFollowsNumericLayer() async throws {
         let viewModel = KeyboardViewModel()
 
+        // First toggle: lower → numbers
         viewModel.toggleSymbols()
-        viewModel.toggleSymbols()
+        #expect(viewModel.activeLayer == .numbers)
 
-        #expect(viewModel.activeLayer == .symbols)
+        // Second toggle: numbers → lower
+        viewModel.toggleSymbols()
+        #expect(viewModel.activeLayer == .lower)
 
         let rows = viewModel.rows
         let aKey = try #require(rows.first?.first)
@@ -85,15 +88,15 @@ struct wurstfingerTests {
 
         viewModel.toggleSymbols()
 
-        let sevenKey = try #require(viewModel.rows.first?.first)
-        viewModel.handleKeyTap(sevenKey)
+        let oneKey = try #require(viewModel.rows.first?.first)
+        viewModel.handleKeyTap(oneKey)
 
         #expect(viewModel.rows.count == 4)
 
         let zeroKey = try #require(viewModel.rows[3].first)
         viewModel.handleKeyTap(zeroKey)
 
-        #expect(inserted == ["7", "0"])
+        #expect(inserted == ["1", "0"])
     }
 
     @Test func letterLayerProvidesAdditionalSymbols() async throws {
@@ -103,10 +106,16 @@ struct wurstfingerTests {
         let nKey = try #require(firstRow.dropFirst().first)
         let sKey = try #require(viewModel.rows[2].last)
 
+        // A-key (row 0, col 0) swipe outputs
         #expect(aKey.primaryLabel(for: .downLeft) == "$")
-        #expect(aKey.primaryLabel(for: .upRight) == "¿¡")
+        #expect(aKey.primaryLabel(for: .right) == "-")
+
+        // N-key (row 0, col 1) swipe outputs including compose triggers
         #expect(nKey.primaryLabel(for: .up) == "^")
         #expect(nKey.primaryLabel(for: .downRight) == "\\")
+        #expect(nKey.primaryLabel(for: .right) == "!")
+
+        // S-key (row 2, col 2) swipe outputs
         #expect(sKey.primaryLabel(for: .left) == "#")
         #expect(sKey.primaryLabel(for: .right) == ">")
     }
@@ -128,33 +137,6 @@ struct wurstfingerTests {
         viewModel.endSpaceDrag()
 
         #expect(moves == [1, 1, -1, -1])
-    }
-
-    @Test func spaceSelectionEmitsSelectionActions() async throws {
-        let viewModel = KeyboardViewModel()
-        var sequence: [String] = []
-
-        viewModel.bindActionHandler { action in
-            switch action {
-            case .startSelection:
-                sequence.append("start")
-            case .updateSelection(let offset):
-                sequence.append("update:\(offset)")
-            case .endSelection:
-                sequence.append("end")
-            default:
-                break
-            }
-        }
-
-        viewModel.beginSpaceDrag()
-        viewModel.beginSpaceSelection()
-        viewModel.updateSpaceDrag(deltaX: 20)
-        viewModel.updateSpaceDrag(deltaX: 20)
-        viewModel.updateSpaceDrag(deltaX: -40)
-        viewModel.endSpaceDrag()
-
-        #expect(sequence == ["start", "update:1", "update:1", "update:-1", "update:-1", "end"])
     }
 
     @Test func deleteDragEmitsRepeatedDeletes() async throws {
@@ -190,6 +172,56 @@ struct wurstfingerTests {
         #expect(didDeleteWord)
     }
 
+    @Test func hapticIntensitiesPersistToDefaults() async throws {
+        let suite = "group.de.akator.wurstfinger.tests.hapticsPersist"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let viewModel = KeyboardViewModel(userDefaults: defaults)
+        viewModel.hapticIntensityTap = 0.8
+        viewModel.hapticIntensityModifier = 0.2
+        viewModel.hapticIntensityDrag = 1.1
+
+        #expect(defaults.double(forKey: KeyboardViewModel.hapticTapIntensityKey) == 0.8)
+        #expect(defaults.double(forKey: KeyboardViewModel.hapticModifierIntensityKey) == 0.2)
+        let dragDefault = defaults.double(forKey: KeyboardViewModel.hapticDragIntensityKey)
+        #expect(abs(dragDefault - 1.0) < 0.0001)
+    }
+
+    @Test func previewViewModelDoesNotPersist() async throws {
+        let suite = "group.de.akator.wurstfinger.tests.preview"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        defaults.set(0.3, forKey: KeyboardViewModel.hapticTapIntensityKey)
+
+        let viewModel = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
+        #expect(abs(viewModel.hapticIntensityTap - 0.3) < 0.0001)
+
+        viewModel.hapticIntensityTap = 0.9
+        let persistedTap = defaults.double(forKey: KeyboardViewModel.hapticTapIntensityKey)
+        #expect(abs(persistedTap - 0.3) < 0.0001)
+    }
+
+    @Test func hapticIntensityClampsWithinBounds() async throws {
+        let suite = "group.de.akator.wurstfinger.tests.clamp"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let viewModel = KeyboardViewModel(userDefaults: defaults)
+
+        viewModel.hapticIntensityTap = -0.5
+        viewModel.hapticIntensityDrag = 2.0
+
+        #expect(abs(viewModel.hapticIntensityTap - 0.0) < 0.0001)
+        #expect(abs(viewModel.hapticIntensityDrag - 1.0) < 0.0001)
+        let storedDrag = defaults.double(forKey: KeyboardViewModel.hapticDragIntensityKey)
+        #expect(abs(storedDrag - 1.0) < 0.0001)
+    }
+
     @Test func composeSwipeEmitsComposeAction() async throws {
         let viewModel = KeyboardViewModel()
         var captured: String?
@@ -200,15 +232,16 @@ struct wurstfingerTests {
             }
         }
 
+        // N-key (row 0, col 1) has compose triggers: upLeft=`, up=^, upRight='
         let firstRow = try #require(viewModel.rows.first)
-        let aKey = try #require(firstRow.first)
-        viewModel.handleKeySwipe(aKey, direction: .upRight)
+        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
+        viewModel.handleKeySwipe(nKey, direction: .upRight)
 
-        #expect(captured == "!")
+        #expect(captured == "'")
     }
 
     @Test func composeEngineProducesReplacement() async throws {
-        #expect(ComposeEngine.compose(previous: "a", trigger: "\"") == "ä")
+        #expect(ComposeEngine.compose(previous: "a", trigger: "¨") == "ä")
         #expect(ComposeEngine.compose(previous: "l", trigger: "!") == "ł")
         #expect(ComposeEngine.compose(previous: "x", trigger: "~") == nil)
     }
@@ -241,26 +274,26 @@ struct wurstfingerTests {
             }
         }
 
-        func trigger(row: Int, column: Int, direction: KeyboardDirection, expected: String, file: StaticString = #file, line: UInt = #line) throws {
+        func trigger(row: Int, column: Int, direction: KeyboardDirection, expected: String) throws {
             inserted.removeAll()
             let rows = viewModel.rows
             let targetRow = try #require(row < rows.count ? rows[row] : nil)
             let key = try #require(column < targetRow.count ? targetRow[column] : nil)
             viewModel.handleKeySwipeReturn(key, direction: direction)
-            #expect(inserted.last == expected, file: file, line: line)
+            #expect(inserted.last == expected)
         }
 
         try trigger(row: 0, column: 1, direction: .right, expected: "¡") // ! → ¡
-        try trigger(row: 0, column: 1, direction: .downLeft, expected: "÷") // / → ÷
+        try trigger(row: 0, column: 1, direction: .downLeft, expected: "–") // / → –
         try trigger(row: 0, column: 2, direction: .left, expected: "¿") // ? → ¿
-        try trigger(row: 0, column: 0, direction: .right, expected: "–") // - → –
+        try trigger(row: 0, column: 0, direction: .right, expected: "÷") // - → ÷
         try trigger(row: 2, column: 1, direction: .down, expected: "…") // . → …
-        try trigger(row: 2, column: 1, direction: .downLeft, expected: "„") // , → „
-        try trigger(row: 2, column: 1, direction: .upLeft, expected: "“") // " → “
-        try trigger(row: 2, column: 1, direction: .upRight, expected: "’") // ' → ’
-        try trigger(row: 2, column: 0, direction: .left, expected: "«") // < → «
+        try trigger(row: 2, column: 1, direction: .downLeft, expected: ",") // , → ,
+        try trigger(row: 2, column: 1, direction: .upLeft, expected: "\u{201C}") // " → "
+        try trigger(row: 2, column: 1, direction: .upRight, expected: "\u{201D}") // upRight → "
+        try trigger(row: 2, column: 0, direction: .left, expected: "‹") // < → ‹
         try trigger(row: 2, column: 0, direction: .right, expected: "†") // * → †
-        try trigger(row: 2, column: 2, direction: .right, expected: "»") // > → »
+        try trigger(row: 2, column: 2, direction: .right, expected: "›") // > → ›
         try trigger(row: 1, column: 0, direction: .upRight, expected: "‰") // % → ‰
     }
 

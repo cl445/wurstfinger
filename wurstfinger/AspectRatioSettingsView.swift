@@ -9,43 +9,18 @@ import SwiftUI
 
 struct AspectRatioSettingsView: View {
     @Binding var aspectRatio: Double
-    @StateObject private var previewViewModel: KeyboardViewModel = {
-        let vm = KeyboardViewModel()
-        vm.keyAspectRatio = 1.5
-        return vm
-    }()
+    
+    @AppStorage("keyboardScale", store: SharedDefaults.store)
+    private var keyboardScale = 1.0
+
+    @AppStorage("keyboardHorizontalPosition", store: SharedDefaults.store)
+    private var keyboardHorizontalPosition = 0.5
 
     var body: some View {
-        // Calculate preview height based on aspect ratio
-        // Same formula as in KeyboardRootView
-        let keyHeight = 54.0 * (1.5 / aspectRatio)
-        let totalKeyboardHeight = (keyHeight * 4) + (8 * 3) + (10 * 2) // 4 rows, 3 spacings, 2 paddings
-        let previewHeight = min(400, max(200, totalKeyboardHeight))
-
         VStack(spacing: 20) {
             // Keyboard Preview
-            VStack(spacing: 12) {
-                Text("Preview")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                ZStack {
-                    Color(.systemGray6)
-
-                    KeyboardRootView(viewModel: previewViewModel, scaleAnchor: .center, frameAlignment: .center)
-                        .id(previewViewModel.keyAspectRatio)
-                        .onChange(of: aspectRatio) { oldValue, newValue in
-                            previewViewModel.keyAspectRatio = newValue
-                        }
-                        .onAppear {
-                            previewViewModel.keyAspectRatio = aspectRatio
-                        }
-                }
-                .frame(height: previewHeight)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .animation(.easeInOut(duration: 0.2), value: aspectRatio)
-            }
-            .padding(.horizontal, 16)
+            InteractiveKeyboardPreview(aspectRatio: $aspectRatio, scale: $keyboardScale, position: $keyboardHorizontalPosition)
+                .padding(.horizontal, 16)
 
             // Slider Section
             VStack(spacing: 16) {
@@ -53,9 +28,11 @@ struct AspectRatioSettingsView: View {
                     Text("Aspect Ratio")
                         .font(.headline)
                     Spacer()
-                    Text("\(String(format: "%.2f", aspectRatio)):1")
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundColor(.secondary)
+                    TextField("Value", value: $aspectRatio, formatter: NumberFormatter.decimalFormatter)
+                        .keyboardType(.decimalPad)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 80)
+                        .multilineTextAlignment(.trailing)
                 }
 
                 VStack(spacing: 8) {
@@ -100,6 +77,13 @@ struct AspectRatioSettingsView: View {
         .padding(.vertical, 20)
         .navigationTitle("Key Aspect Ratio")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Reset") {
+                    aspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
+                }
+            }
+        }
     }
 }
 

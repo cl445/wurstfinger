@@ -10,51 +10,15 @@ import SwiftUI
 struct KeyboardSizePositionSettingsView: View {
     @Binding var scale: Double
     @Binding var position: Double
-    @StateObject private var previewViewModel: KeyboardViewModel = {
-        let vm = KeyboardViewModel()
-        vm.keyboardScale = 0.7
-        vm.keyboardHorizontalPosition = 0.5
-        return vm
-    }()
+    
+    @AppStorage("keyAspectRatio", store: SharedDefaults.store)
+    private var keyAspectRatio = 1.0
 
     var body: some View {
-        // Calculate preview height based on scale
-        let keyHeight = 54.0 * (1.5 / previewViewModel.keyAspectRatio)
-        let baseHeight = (keyHeight * 4) + (8 * 3) + (10 * 2)
-        let scaledHeight = baseHeight * scale
-        let previewHeight = min(400, max(100, scaledHeight))
-
         VStack(spacing: 20) {
             // Keyboard Preview
-            VStack(spacing: 12) {
-                Text("Preview")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                GeometryReader { geometry in
-                    ZStack(alignment: .top) {
-                        Color(.systemGray6)
-
-                        KeyboardRootView(viewModel: previewViewModel, scaleAnchor: .top, frameAlignment: .top, overrideWidth: geometry.size.width)
-                            .id("\(previewViewModel.keyboardScale)-\(previewViewModel.keyboardHorizontalPosition)")
-                            .onChange(of: scale) { oldValue, newValue in
-                                previewViewModel.keyboardScale = newValue
-                            }
-                            .onChange(of: position) { oldValue, newValue in
-                                previewViewModel.keyboardHorizontalPosition = newValue
-                            }
-                            .onAppear {
-                                previewViewModel.keyboardScale = scale
-                                previewViewModel.keyboardHorizontalPosition = position
-                            }
-                    }
-                }
-                .frame(height: previewHeight)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .animation(.easeInOut(duration: 0.2), value: scale)
-                .animation(.easeInOut(duration: 0.2), value: position)
-            }
-            .padding(.horizontal, 16)
+            InteractiveKeyboardPreview(aspectRatio: $keyAspectRatio, scale: $scale, position: $position)
+                .padding(.horizontal, 16)
 
             // Scale Slider
             VStack(spacing: 16) {
@@ -62,9 +26,12 @@ struct KeyboardSizePositionSettingsView: View {
                     Text("Keyboard Scale")
                         .font(.headline)
                     Spacer()
-                    Text("\(Int(scale * 100))%")
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundColor(.secondary)
+                    Spacer()
+                    TextField("Value", value: $scale, formatter: NumberFormatter.decimalFormatter)
+                        .keyboardType(.decimalPad)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 80)
+                        .multilineTextAlignment(.trailing)
                 }
 
                 VStack(spacing: 8) {
@@ -109,9 +76,12 @@ struct KeyboardSizePositionSettingsView: View {
                         .font(.headline)
                         .foregroundColor(scale < 1.0 ? .primary : .secondary)
                     Spacer()
-                    Text(positionLabel(for: position))
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundColor(.secondary)
+                    TextField("Value", value: $position, formatter: NumberFormatter.decimalFormatter)
+                        .keyboardType(.decimalPad)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 80)
+                        .multilineTextAlignment(.trailing)
+                        .disabled(scale >= 1.0)
                 }
 
                 VStack(spacing: 8) {
@@ -153,15 +123,13 @@ struct KeyboardSizePositionSettingsView: View {
         .padding(.vertical, 20)
         .navigationTitle("Size & Position")
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private func positionLabel(for value: Double) -> String {
-        if value < 0.25 {
-            return "Left"
-        } else if value > 0.75 {
-            return "Right"
-        } else {
-            return "Center"
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Reset") {
+                    scale = DeviceLayoutUtils.defaultKeyboardScale
+                    position = DeviceLayoutUtils.defaultKeyboardPosition
+                }
+            }
         }
     }
 }
