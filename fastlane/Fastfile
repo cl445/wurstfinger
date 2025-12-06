@@ -113,4 +113,111 @@ platform :ios do
       delete_keychain(name: "fastlane_tmp_keychain")
     end
   end
+
+  desc "Submit to App Store for review"
+  lane :release do
+    app_id = ENV.fetch("APP_IDENTIFIER", "de.akator.wurstfinger")
+    team_id = ENV.fetch("APPLE_TEAM_ID")
+    key_id = ENV.fetch("ASC_KEY_ID")
+    issuer = ENV.fetch("ASC_ISSUER_ID")
+    key_b64 = ENV.fetch("ASC_KEY_P8_BASE64")
+
+    UI.user_error!("APPLE_TEAM_ID is required but not set") if team_id.nil? || team_id.empty?
+
+    api_key = app_store_connect_api_key(
+      key_id: key_id,
+      issuer_id: issuer,
+      key_content: Base64.decode64(key_b64),
+      duration: 1200,
+      in_house: false
+    )
+
+    # Get latest build number from App Store and increment
+    latest_build = app_store_build_number(
+      api_key: api_key,
+      app_identifier: app_id,
+      live: false
+    )
+
+    increment_build_number(
+      xcodeproj: "Wurstfinger.xcodeproj",
+      build_number: latest_build + 1
+    )
+
+    # Set export compliance to skip waiting
+    set_info_plist_value(
+      path: "wurstfingerKeyboard/Info.plist",
+      key: "ITSAppUsesNonExemptEncryption",
+      value: false
+    )
+
+    # Create temporary keychain for CI
+    if ENV["CI"]
+      create_keychain(
+        name: "fastlane_tmp_keychain",
+        password: "temp_password_123",
+        default_keychain: true,
+        unlock: true,
+        timeout: 3600,
+        lock_when_sleeps: false
+      )
+    end
+
+    match(
+      type: "appstore",
+      readonly: ENV["CI"] == "true",
+      app_identifier: [app_id, "#{app_id}.keyboard"],
+      keychain_name: ENV["CI"] ? "fastlane_tmp_keychain" : "login.keychain",
+      keychain_password: ENV["CI"] ? "temp_password_123" : nil
+    )
+
+    # Update signing for main app target
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Wurstfinger.xcodeproj",
+      targets: ["WurstfingerApp"],
+      bundle_identifier: app_id,
+      profile_name: "match AppStore #{app_id}",
+      code_sign_identity: "iPhone Distribution"
+    )
+
+    # Update signing for keyboard extension target
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Wurstfinger.xcodeproj",
+      targets: ["Wurstfinger"],
+      bundle_identifier: "#{app_id}.keyboard",
+      profile_name: "match AppStore #{app_id}.keyboard",
+      code_sign_identity: "iPhone Distribution"
+    )
+
+    build_app(
+      scheme: "Wurstfinger",
+      project: "Wurstfinger.xcodeproj",
+      export_method: "app-store",
+      include_symbols: true,
+      include_bitcode: false,
+      xcargs: ENV["CI"] ? "OTHER_CODE_SIGN_FLAGS='--keychain fastlane_tmp_keychain'" : nil
+    )
+
+    upload_to_app_store(
+      api_key: api_key,
+      skip_metadata: false,
+      skip_screenshots: false,
+      force: true,
+      submit_for_review: true,
+      automatic_release: true,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        export_compliance_uses_encryption: false,
+        export_compliance_is_exempt: true
+      },
+      precheck_include_in_app_purchases: false
+    )
+
+    # Cleanup temporary keychain for CI
+    if ENV["CI"]
+      delete_keychain(name: "fastlane_tmp_keychain")
+    end
+  end
 end
