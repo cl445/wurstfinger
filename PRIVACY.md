@@ -1,39 +1,37 @@
 # Privacy Policy
 
-**Last updated:** November 2025
+**Last updated: December 2025**
 
 ## Overview
 
-Wurstfinger is a keyboard app that respects your privacy. We do not collect, store, or transmit any personal data.
+Wurstfinger is a keyboard app that respects your privacy. We believe your typing should stay private.
 
 ## Data Collection
 
-**We do not collect any data.** Specifically:
+**Wurstfinger does not collect, store, or transmit any personal data.**
 
-- No keystrokes are recorded or transmitted
-- No personal information is collected
-- No analytics or tracking is used
-- No data is sent to external servers
-
-## Local Storage
-
-Wurstfinger stores your preferences (such as keyboard size, haptic feedback settings, and language selection) locally on your device using iOS UserDefaults. This data:
-
-- Never leaves your device
-- Is not accessible to us or any third party
-- Is deleted when you uninstall the app
+Specifically:
+- We do not collect what you type
+- We do not collect usage statistics
+- We do not use analytics services
+- We do not track your location
+- We do not access your contacts
+- We do not share any data with third parties
 
 ## Full Access Permission
 
-iOS requires keyboard extensions to request "Full Access" to enable certain features like haptic feedback. Even with Full Access enabled:
+iOS may ask you to grant "Full Access" to the keyboard. This permission is **optional** and only used for:
+- Haptic feedback (vibration when you tap keys)
 
-- We do not access or transmit any typed content
-- We do not use network capabilities
-- The permission is only used for local haptic feedback functionality
+Even with Full Access enabled, Wurstfinger does not transmit any data. All processing happens locally on your device.
 
-## Third-Party Services
+## Network Access
 
-Wurstfinger does not integrate any third-party services, SDKs, or analytics tools.
+Wurstfinger does not require network access and does not connect to the internet.
+
+## Data Storage
+
+Your keyboard preferences (such as haptic feedback intensity and keyboard scale) are stored locally on your device using iOS's standard settings storage. This data never leaves your device.
 
 ## Children's Privacy
 
@@ -41,16 +39,13 @@ Wurstfinger does not collect any personal information from anyone, including chi
 
 ## Changes to This Policy
 
-If we update this privacy policy, we will post the new version in this repository and update the "Last updated" date.
+If we make changes to this privacy policy, we will update the "Last updated" date above.
 
 ## Contact
 
-If you have questions about this privacy policy, please open an issue on our GitHub repository:
-
+If you have questions about this privacy policy, please open an issue at:
 https://github.com/cl445/wurstfinger/issues
 
-## Open Source
+---
 
-Wurstfinger is open source. You can review the complete source code to verify our privacy practices:
-
-https://github.com/cl445/wurstfinger
+*Wurstfinger - The Keyboard for Fat Fingers*
