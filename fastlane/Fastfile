@@ -206,13 +206,7 @@ platform :ios do
       skip_screenshots: false,
       screenshots_path: "./fastlane/screenshots",
       force: true,
-      submit_for_review: true,
-      automatic_release: true,
-      submission_information: {
-        add_id_info_uses_idfa: false,
-        export_compliance_uses_encryption: false,
-        export_compliance_is_exempt: true
-      },
+      submit_for_review: false,
       precheck_include_in_app_purchases: false
     )
 
