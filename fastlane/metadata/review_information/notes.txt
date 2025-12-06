@@ -1,0 +1,20 @@
+To test the Wurstfinger keyboard:
+
+1. Install the app and open it
+2. Follow the in-app setup guide, or manually:
+   - Open Settings > General > Keyboard > Keyboards
+   - Tap "Add New Keyboard..."
+   - Select "Wurstfinger"
+3. Optionally enable "Allow Full Access" for haptic feedback:
+   - Tap "Wurstfinger" in the keyboard list
+   - Toggle "Allow Full Access"
+   - Note: Full Access is only used for haptic feedback, no data is collected
+4. Open any app with text input (e.g., Notes, Messages)
+5. Tap the globe icon (🌐) on the keyboard to switch to Wurstfinger
+6. Type by tapping the center of keys, or swipe in 8 directions for additional characters
+
+Gesture tips:
+- Swipe from center outward for secondary characters
+- Draw a circle on a letter key for uppercase
+- Drag on the space bar to move the cursor
+- Drag left on the delete key for continuous deletion
