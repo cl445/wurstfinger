@@ -204,6 +204,7 @@ platform :ios do
       api_key: api_key,
       skip_metadata: false,
       skip_screenshots: false,
+      screenshots_path: "./fastlane/metadata/screenshots",
       force: true,
       submit_for_review: true,
       automatic_release: true,
