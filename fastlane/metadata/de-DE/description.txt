@@ -1,24 +1,27 @@
 Wurstfinger - Die Tastatur für dicke Finger
 
-Genug von Tippfehlern? Wurstfinger ist eine innovative iOS-Tastatur, die speziell für die Einhandbedienung entwickelt wurde. Inspiriert vom bewährten MessagEase-Layout bietet sie große Tasten und intuitive Gesten für schnelles, präzises Tippen.
+Genug von Tippfehlern? Wurstfinger ist eine datenschutzfreundliche Tastatur mit großen Tasten und Wischgesten. Basierend auf dem bewährten MessagEase-Layout ersetzt sie das enge QWERTY-Raster durch ein 3x3-Layout, das für Daumentypen optimiert ist.
+
+Anders als herkömmliche Tastaturen verzichtet Wurstfinger auf invasive Wortvorhersage - stattdessen erreicht sie Genauigkeit durch ergonomisches Design. Große, gut platzierte Tasten bedeuten weniger Vertipper, und das Gestensystem ermöglicht Zugriff auf alle Zeichen ohne Suchen nach winzigen Tasten.
 
 FUNKTIONEN:
 
-• Große Tasten - Weniger Fehler, mehr Komfort
-• Wischgesten - Buchstaben durch Wischen in 8 Richtungen eingeben
+• Großes 3x3-Tastenfeld - Optimiert für Daumen, nicht für Präzisionszeiger
+• Wischgesten - 8 zusätzliche Zeichen pro Taste durch Wischen
 • 14 Sprachen - Deutsch, Englisch, Spanisch, Französisch, Portugiesisch, Italienisch, Niederländisch, Schwedisch, Norwegisch, Dänisch, Finnisch, Polnisch, Tschechisch und Vietnamesisch
-• Compose-Engine - Akzente und Sonderzeichen durch Kombinationen erstellen (z.B. ' + a = á)
-• Kreisbewegungen - Großbuchstaben durch kreisförmige Gesten
-• Cursor-Steuerung - Cursor durch Ziehen auf der Leertaste bewegen
+• Compose-Regeln - Akzente durch Kombinationen erstellen (z.B. ' + a = á)
+• Kreisbewegungen - Kreis zeichnen für Großbuchstaben
+• Cursor-Steuerung - Auf Leertaste ziehen zum Bewegen, lange drücken für Textauswahl
 • Haptisches Feedback - Einstellbare Vibrationsintensität
-• Anpassbar - Tastaturgröße nach Wunsch skalieren
+• Voll anpassbar - Tastaturgröße nach Wunsch skalieren
 
-PERFEKT FÜR:
+DATENSCHUTZ ZUERST:
 
-• Einhandbedienung unterwegs
-• Nutzer mit größeren Fingern
-• Alle, die eine ergonomische Alternative zur Standardtastatur suchen
+• Keine Datensammlung
+• Kein Netzwerkzugriff
+• Kein Tracking der Wortvorhersage
+• Alle Verarbeitung findet lokal auf deinem Gerät statt
 
-Wurstfinger erfordert eine kurze Eingewöhnungszeit, aber sobald du die Gesten beherrschst, tippst du schneller und genauer als je zuvor.
+Wurstfinger erfordert Training - rechne mit ein paar Tagen, um Muskelgedächtnis aufzubauen. Aber sobald du diesen Punkt überschritten hast, willst du nie wieder zurück zur Standardtastatur. Die Gesten werden zur zweiten Natur, und du tippst schneller und mit weniger Fehlern als je zuvor.
 
-Probier es aus - deine Daumen werden es dir danken!
+Deine Finger werden es dir danken!

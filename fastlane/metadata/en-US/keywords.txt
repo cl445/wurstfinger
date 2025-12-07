@@ -1,1 +1,1 @@
-keyboard,gestures,MessagEase,one-handed,typing,swipe,thumb,ergonomic,accessible,fat fingers
+keyboard,MessagEase,typing,swipe,thumb,ergonomic,privacy,gesture,large keys,accessible
