@@ -1,1 +1,1 @@
-Tastatur,MessagEase,tippen,wischen,Daumen,ergonomisch,Datenschutz,Gesten,große Tasten
+Tastatur,MessagEase,ThumbKey,tippen,wischen,Daumen,ergonomisch,Datenschutz,Gesten
