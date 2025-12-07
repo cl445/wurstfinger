@@ -21,7 +21,7 @@ build/
 # Fastlane
 fastlane/report.xml
 fastlane/Preview.html
-fastlane/screenshots/**/*.png
+# fastlane/screenshots/**/*.png  # Keep screenshots in repo for CI
 fastlane/test_output/
 *.ipa
 *.dSYM.zip
