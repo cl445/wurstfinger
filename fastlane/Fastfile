@@ -214,10 +214,10 @@ platform :ios do
       },
       precheck_include_in_app_purchases: false,
       app_review_information: {
-        first_name: ENV.fetch("REVIEW_CONTACT_FIRST_NAME", "Developer"),
-        last_name: ENV.fetch("REVIEW_CONTACT_LAST_NAME", "Akator"),
-        email_address: ENV.fetch("REVIEW_CONTACT_EMAIL", "info@akator.de"),
-        phone_number: ENV.fetch("REVIEW_CONTACT_PHONE", "+49 000 000000"),
+        first_name: ENV.fetch("REVIEW_CONTACT_FIRST_NAME"),
+        last_name: ENV.fetch("REVIEW_CONTACT_LAST_NAME"),
+        email_address: ENV.fetch("REVIEW_CONTACT_EMAIL"),
+        phone_number: ENV.fetch("REVIEW_CONTACT_PHONE"),
         demo_user: "",
         demo_password: "",
         notes: File.read("fastlane/metadata/review_information/notes.txt")
