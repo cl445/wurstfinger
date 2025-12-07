@@ -8,6 +8,9 @@ on:
 jobs:
   release:
     runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: wurstfinger
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,6 +20,7 @@ jobs:
         with:
           ruby-version: '3.2'
           bundler-cache: true
+          working-directory: wurstfinger
 
       - name: Install gems
         run: bundle install
