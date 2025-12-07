@@ -32,7 +32,7 @@ cd "$PROJECT_ROOT"
 
 # Configuration
 SCHEME="Wurstfinger"
-TEST_TARGET="WurstfingerUITests/ScreenshotTests/testGenerateAppStoreScreenshots"
+TEST_TARGET="WurstfingerUITests/ScreenshotTests/testGenerateAppStoreKeyboardScreenshots"
 FASTLANE_SCREENSHOTS="$PROJECT_ROOT/fastlane/screenshots/en-US"
 DERIVED_DATA="/tmp/WurstfingerAppStoreScreenshots"
 TEMP_SCREENSHOTS="/tmp/wurstfinger-screenshots-raw"
