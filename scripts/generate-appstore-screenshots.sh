@@ -40,28 +40,26 @@ TEMP_SCREENSHOTS="/tmp/wurstfinger-screenshots-raw"
 # Source device (iPhone 16 Plus = 1290x2796)
 SOURCE_DEVICE="iPhone 16 Plus"
 
-# App Store required dimensions (width x height)
-declare -A APPSTORE_SIZES=(
-    ["APP_IPHONE_67"]="1290x2796"
-    ["APP_IPHONE_65"]="1284x2778"
-    ["APP_IPHONE_61"]="1179x2556"
-)
+# App Store required dimensions
+SIZE_67="1290x2796"
+SIZE_65="1284x2778"
+SIZE_61="1179x2556"
 
 # Create directories
 mkdir -p "$FASTLANE_SCREENSHOTS"
 mkdir -p "$TEMP_SCREENSHOTS"
-for size_name in "${!APPSTORE_SIZES[@]}"; do
-    mkdir -p "$FASTLANE_SCREENSHOTS/$size_name"
-done
+mkdir -p "$FASTLANE_SCREENSHOTS/APP_IPHONE_67"
+mkdir -p "$FASTLANE_SCREENSHOTS/APP_IPHONE_65"
+mkdir -p "$FASTLANE_SCREENSHOTS/APP_IPHONE_61"
 
 echo -e "${BLUE}📋 Configuration:${NC}"
 echo "  Source Device: $SOURCE_DEVICE"
 echo "  Output: $FASTLANE_SCREENSHOTS"
 echo ""
 echo -e "${BLUE}📱 Target Sizes:${NC}"
-for size_name in "${!APPSTORE_SIZES[@]}"; do
-    echo "  - $size_name: ${APPSTORE_SIZES[$size_name]}"
-done
+echo "  - APP_IPHONE_67: $SIZE_67"
+echo "  - APP_IPHONE_65: $SIZE_65"
+echo "  - APP_IPHONE_61: $SIZE_61"
 echo ""
 
 # Get device UDID
@@ -151,30 +149,43 @@ fi
 echo ""
 echo -e "${BLUE}🔄 Step 3: Scale screenshots for App Store${NC}"
 
+# Clear old screenshots
+rm -f "$FASTLANE_SCREENSHOTS/APP_IPHONE_67"/*.png
+rm -f "$FASTLANE_SCREENSHOTS/APP_IPHONE_65"/*.png
+rm -f "$FASTLANE_SCREENSHOTS/APP_IPHONE_61"/*.png
+
 # Copy original 6.7" screenshots
 echo "  Processing APP_IPHONE_67 (original size)..."
 COUNTER=1
-find "$TEMP_SCREENSHOTS" -name "*.png" -type f | sort | while read -r src; do
+for src in $(find "$TEMP_SCREENSHOTS" -name "*.png" -type f | sort); do
     filename=$(printf "%02d-screenshot.png" $COUNTER)
     cp "$src" "$FASTLANE_SCREENSHOTS/APP_IPHONE_67/$filename"
     echo "    ✓ $filename"
     COUNTER=$((COUNTER + 1))
 done
 
-# Scale to other sizes
-for size_name in "APP_IPHONE_65" "APP_IPHONE_61"; do
-    target_size="${APPSTORE_SIZES[$size_name]}"
-    echo "  Processing $size_name ($target_size)..."
+# Scale to 6.5"
+echo "  Processing APP_IPHONE_65 ($SIZE_65)..."
+COUNTER=1
+for src in "$FASTLANE_SCREENSHOTS/APP_IPHONE_67"/*.png; do
+    if [ -f "$src" ]; then
+        filename=$(printf "%02d-screenshot.png" $COUNTER)
+        scale_screenshot "$src" "$FASTLANE_SCREENSHOTS/APP_IPHONE_65/$filename" "$SIZE_65"
+        echo "    ✓ $filename"
+        COUNTER=$((COUNTER + 1))
+    fi
+done
 
-    COUNTER=1
-    for src in "$FASTLANE_SCREENSHOTS/APP_IPHONE_67"/*.png; do
-        if [ -f "$src" ]; then
-            filename=$(printf "%02d-screenshot.png" $COUNTER)
-            scale_screenshot "$src" "$FASTLANE_SCREENSHOTS/$size_name/$filename" "$target_size"
-            echo "    ✓ $filename"
-            COUNTER=$((COUNTER + 1))
-        fi
-    done
+# Scale to 6.1"
+echo "  Processing APP_IPHONE_61 ($SIZE_61)..."
+COUNTER=1
+for src in "$FASTLANE_SCREENSHOTS/APP_IPHONE_67"/*.png; do
+    if [ -f "$src" ]; then
+        filename=$(printf "%02d-screenshot.png" $COUNTER)
+        scale_screenshot "$src" "$FASTLANE_SCREENSHOTS/APP_IPHONE_61/$filename" "$SIZE_61"
+        echo "    ✓ $filename"
+        COUNTER=$((COUNTER + 1))
+    fi
 done
 
 # Cleanup
@@ -186,10 +197,9 @@ rm -rf "$TEMP_SCREENSHOTS"
 # Summary
 echo ""
 echo -e "${BLUE}📊 Summary:${NC}"
-for size_name in "${!APPSTORE_SIZES[@]}"; do
-    count=$(find "$FASTLANE_SCREENSHOTS/$size_name" -name "*.png" -type f | wc -l | tr -d ' ')
-    echo "  $size_name: $count screenshots"
-done
+echo "  APP_IPHONE_67: $(find "$FASTLANE_SCREENSHOTS/APP_IPHONE_67" -name "*.png" -type f | wc -l | tr -d ' ') screenshots"
+echo "  APP_IPHONE_65: $(find "$FASTLANE_SCREENSHOTS/APP_IPHONE_65" -name "*.png" -type f | wc -l | tr -d ' ') screenshots"
+echo "  APP_IPHONE_61: $(find "$FASTLANE_SCREENSHOTS/APP_IPHONE_61" -name "*.png" -type f | wc -l | tr -d ' ') screenshots"
 
 echo ""
 echo -e "${GREEN}✅ App Store screenshots generated successfully!${NC}"
