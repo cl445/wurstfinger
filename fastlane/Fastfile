@@ -212,7 +212,16 @@ platform :ios do
         export_compliance_uses_encryption: false,
         export_compliance_is_exempt: true
       },
-      precheck_include_in_app_purchases: false
+      precheck_include_in_app_purchases: false,
+      app_review_information: {
+        first_name: ENV.fetch("REVIEW_CONTACT_FIRST_NAME", "Developer"),
+        last_name: ENV.fetch("REVIEW_CONTACT_LAST_NAME", "Akator"),
+        email_address: ENV.fetch("REVIEW_CONTACT_EMAIL", "info@akator.de"),
+        phone_number: ENV.fetch("REVIEW_CONTACT_PHONE", "+49 000 000000"),
+        demo_user: "",
+        demo_password: "",
+        notes: File.read("fastlane/metadata/review_information/notes.txt")
+      }
     )
 
     # Cleanup temporary keychain for CI
