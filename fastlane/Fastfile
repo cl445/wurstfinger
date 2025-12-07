@@ -207,7 +207,16 @@ platform :ios do
       screenshots_path: "./fastlane/screenshots",
       force: true,
       submit_for_review: false,
-      precheck_include_in_app_purchases: false
+      precheck_include_in_app_purchases: false,
+      app_review_information: {
+        first_name: ENV.fetch("REVIEW_CONTACT_FIRST_NAME", ""),
+        last_name: ENV.fetch("REVIEW_CONTACT_LAST_NAME", ""),
+        email_address: ENV.fetch("REVIEW_CONTACT_EMAIL", ""),
+        phone_number: ENV.fetch("REVIEW_CONTACT_PHONE", ""),
+        demo_user: "",
+        demo_password: "",
+        notes: File.read("fastlane/metadata/review_information/notes.txt")
+      }
     )
 
     # Cleanup temporary keychain for CI
