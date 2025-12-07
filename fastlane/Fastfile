@@ -205,7 +205,7 @@ platform :ios do
       skip_metadata: false,
       skip_screenshots: false,
       screenshots_path: "./fastlane/screenshots",
-      overwrite_screenshots: true,
+      overwrite_screenshots: false,
       force: true,
       submit_for_review: false,
       precheck_include_in_app_purchases: false,
