@@ -215,7 +215,7 @@ platform :ios do
         phone_number: ENV.fetch("REVIEW_CONTACT_PHONE", ""),
         demo_user: "",
         demo_password: "",
-        notes: File.read("fastlane/metadata/review_information/notes.txt")
+        notes: File.read("metadata/review_information/notes.txt")
       }
     )
 
