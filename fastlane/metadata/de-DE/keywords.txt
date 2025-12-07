@@ -1,1 +1,1 @@
-Tastatur,Gesten,MessagEase,einhändig,tippen,wischen,Daumen,ergonomisch,barrierefrei
+Tastatur,MessagEase,tippen,wischen,Daumen,ergonomisch,Datenschutz,Gesten,große Tasten

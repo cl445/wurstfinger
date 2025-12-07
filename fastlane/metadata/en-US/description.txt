@@ -1,24 +1,27 @@
 Wurstfinger - The Keyboard for Fat Fingers
 
-Tired of typos? Wurstfinger is an innovative iOS keyboard designed specifically for one-handed use. Inspired by the proven MessagEase layout, it offers large keys and intuitive gestures for fast, accurate typing.
+Tired of typos? Wurstfinger is a privacy-conscious keyboard with large keys and swipe gestures. Based on the proven MessagEase layout, it replaces the cramped QWERTY grid with a 3x3 layout optimized for thumb typing.
+
+Unlike mainstream keyboards, Wurstfinger doesn't rely on invasive word prediction - instead, it achieves accuracy through ergonomic design. Large, well-spaced keys mean fewer missed taps, and the gesture system lets you access all characters without hunting for tiny buttons.
 
 FEATURES:
 
-• Large Keys - Fewer mistakes, more comfort
-• Swipe Gestures - Type letters by swiping in 8 directions
-• 14 Languages - English, German, Spanish, French, Portuguese, Italian, Dutch, Swedish, Norwegian, Danish, Finnish, Polish, Czech, and Vietnamese
-• Compose Engine - Create accents and special characters through combinations (e.g. ' + a = á)
-• Circular Gestures - Uppercase letters through circular motions
-• Cursor Control - Move the cursor by dragging on the space bar
-• Haptic Feedback - Adjustable vibration intensity
-• Customizable - Scale the keyboard to your preferences
+• Large 3x3 Key Grid - Optimized for thumbs, not precision pointers
+• Swipe Gestures - Access 8 additional characters per key by swiping
+• 14 Languages - German, English, Spanish, French, Portuguese, Italian, Dutch, Swedish, Norwegian, Danish, Finnish, Polish, Czech, and Vietnamese
+• Compose Rules - Create accents through combinations (e.g. ' + a = á)
+• Circular Gestures - Draw a circle for uppercase letters
+• Cursor Control - Drag on space bar to move cursor, long-press for text selection
+• Haptic Feedback - Customizable vibration intensity
+• Fully Adjustable - Scale keyboard size to your preference
 
-PERFECT FOR:
+PRIVACY FIRST:
 
-• One-handed use on the go
-• Users with larger fingers
-• Anyone looking for an ergonomic alternative to the standard keyboard
+• No data collection
+• No network access
+• No word prediction tracking
+• All processing happens locally on your device
 
-Wurstfinger requires a short learning curve, but once you've mastered the gestures, you'll type faster and more accurately than ever before.
+Wurstfinger requires training - expect a few days to build muscle memory. But once you've crossed that threshold, you'll never want to go back to a standard keyboard. The gestures become second nature, and you'll type faster and with fewer errors than ever before.
 
-Try it now - your thumbs will thank you!
+Your fingers will thank you!
