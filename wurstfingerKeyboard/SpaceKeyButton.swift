@@ -17,6 +17,11 @@ struct SpaceKeyButton: View {
     @State private var hasDragged = false
     @State private var lastTranslation: CGSize = .zero
 
+    /// Extra touch area extension to cover margins
+    private var touchPadding: CGFloat {
+        KeyboardConstants.Layout.gridHorizontalSpacing / 2 + 2
+    }
+
     var body: some View {
         KeyCap(
             height: keyHeight,
@@ -29,6 +34,7 @@ struct SpaceKeyButton: View {
             Color.clear
         }
         .accessibilityLabel(Text("Space"))
+        .contentShape(Rectangle().inset(by: -touchPadding))
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in

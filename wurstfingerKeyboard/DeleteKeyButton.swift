@@ -23,6 +23,11 @@ struct DeleteKeyButton: View {
     @State private var repeatTimer: Timer?
     @State private var repeatTriggered = false
 
+    /// Extra touch area extension to cover margins
+    private var touchPadding: CGFloat {
+        KeyboardConstants.Layout.gridHorizontalSpacing / 2 + 2
+    }
+
     var body: some View {
         KeyCap(
             height: keyHeight,
@@ -33,6 +38,7 @@ struct DeleteKeyButton: View {
             Image(systemName: "delete.left")
         }
         .accessibilityLabel(Text("Delete"))
+        .contentShape(Rectangle().inset(by: -touchPadding))
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in

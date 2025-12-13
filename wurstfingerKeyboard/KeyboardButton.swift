@@ -26,6 +26,13 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
     /// Advanced gesture recognizer instance
     private let advancedRecognizer = AdvancedGestureRecognizer()
 
+    /// Extra touch area extension to cover margins between keys
+    private var touchPadding: CGFloat {
+        // Extend touch area by half the grid spacing on each side
+        // This ensures the entire margin area is covered by adjacent keys
+        KeyboardConstants.Layout.gridHorizontalSpacing / 2 + 2
+    }
+
     var body: some View {
         KeyCap(
             height: height,
@@ -44,6 +51,8 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
             view.accessibilityIdentifier(config.accessibilityIdentifier!)
         }
         .accessibilityAddTraits(.isButton)
+        // Extend the touch area beyond the visual bounds to cover margins
+        .contentShape(Rectangle().inset(by: -touchPadding))
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
