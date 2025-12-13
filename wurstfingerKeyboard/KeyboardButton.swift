@@ -16,9 +16,15 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
     let config: KeyboardButtonConfig
     let callbacks: KeyboardButtonCallbacks
 
+    /// Whether to use the advanced DTW-based gesture recognizer
+    var useAdvancedRecognition: Bool = true
+
     @State private var isActive = false
     @State private var positions: [CGPoint] = []
     @State private var maxOffset: CGPoint = .zero
+
+    /// Advanced gesture recognizer instance
+    private let advancedRecognizer = AdvancedGestureRecognizer()
 
     var body: some View {
         KeyCap(
@@ -69,54 +75,111 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
                         positions.removeFirst(positions.count - KeyboardConstants.Gesture.positionBufferSize)
                     }
 
-                    let maxDistance = maxOffset.magnitude()
-                    let finalDistance = finalPoint.magnitude()
-
-                    // Check for circular gesture first
-                    if let onCircular = callbacks.onCircular,
-                       maxDistance >= KeyboardConstants.Gesture.minSwipeLength,
-                       let circle = KeyboardGestureRecognizer.circularDirection(
-                           positions: positions,
-                           circleCompletionTolerance: KeyboardConstants.Gesture.circleCompletionTolerance,
-                           minSwipeLength: KeyboardConstants.Gesture.minSwipeLength
-                       ) {
-                        onCircular(circle)
-                        return
-                    }
-
-                    // Swipe gestures
-                    let finalOffsetThreshold = KeyboardConstants.Gesture.minSwipeLength * KeyboardConstants.Gesture.finalOffsetMultiplier
-                    let maxDirection = KeyboardDirection.direction(
-                        for: CGSize(width: maxOffset.x, height: maxOffset.y),
-                        tolerance: 0,
-                        aspectRatio: aspectRatio
-                    )
-                    let finalDirection = KeyboardDirection.direction(
-                        for: value.translation,
-                        tolerance: KeyboardConstants.Gesture.minSwipeLength,
-                        aspectRatio: aspectRatio
-                    )
-
-                    let finalOffsetSmallEnough = finalDistance <= finalOffsetThreshold || finalDirection != maxDirection
-
-                    if maxDistance >= KeyboardConstants.Gesture.minSwipeLength, finalOffsetSmallEnough {
-                        // Return swipe
-                        if maxDirection != .center {
-                            if let onSwipeReturn = callbacks.onSwipeReturn {
-                                onSwipeReturn(maxDirection)
-                            } else if let onSwipe = callbacks.onSwipe {
-                                onSwipe(finalDirection)
-                            } else if finalDirection == .center {
-                                callbacks.onTap?()
-                            }
-                        } else {
-                            handleDirectionalInput(direction: finalDirection)
-                        }
+                    if useAdvancedRecognition {
+                        handleAdvancedRecognition()
                     } else {
-                        handleDirectionalInput(direction: finalDirection)
+                        handleLegacyRecognition(value: value, finalPoint: finalPoint)
                     }
                 }
         )
+    }
+
+    // MARK: - Advanced Recognition (DTW-based)
+
+    private func handleAdvancedRecognition() {
+        let result = advancedRecognizer.recognize(
+            positions: positions,
+            aspectRatio: aspectRatio
+        )
+
+        switch result.gestureType {
+        case .tap:
+            callbacks.onTap?()
+
+        case .circular:
+            if let circularDir = result.circularDirection,
+               let onCircular = callbacks.onCircular {
+                onCircular(circularDir)
+            } else {
+                // Fallback to tap if no circular handler
+                callbacks.onTap?()
+            }
+
+        case .swipeReturn:
+            if result.direction != .center {
+                if let onSwipeReturn = callbacks.onSwipeReturn {
+                    onSwipeReturn(result.direction)
+                } else if let onSwipe = callbacks.onSwipe {
+                    onSwipe(result.direction)
+                } else {
+                    callbacks.onTap?()
+                }
+            } else {
+                callbacks.onTap?()
+            }
+
+        case .swipe:
+            if result.direction != .center {
+                if let onSwipe = callbacks.onSwipe {
+                    onSwipe(result.direction)
+                } else {
+                    callbacks.onTap?()
+                }
+            } else {
+                callbacks.onTap?()
+            }
+        }
+    }
+
+    // MARK: - Legacy Recognition (original implementation)
+
+    private func handleLegacyRecognition(value: DragGesture.Value, finalPoint: CGPoint) {
+        let maxDistance = maxOffset.magnitude()
+        let finalDistance = finalPoint.magnitude()
+
+        // Check for circular gesture first
+        if let onCircular = callbacks.onCircular,
+           maxDistance >= KeyboardConstants.Gesture.minSwipeLength,
+           let circle = KeyboardGestureRecognizer.circularDirection(
+               positions: positions,
+               circleCompletionTolerance: KeyboardConstants.Gesture.circleCompletionTolerance,
+               minSwipeLength: KeyboardConstants.Gesture.minSwipeLength
+           ) {
+            onCircular(circle)
+            return
+        }
+
+        // Swipe gestures
+        let finalOffsetThreshold = KeyboardConstants.Gesture.minSwipeLength * KeyboardConstants.Gesture.finalOffsetMultiplier
+        let maxDirection = KeyboardDirection.direction(
+            for: CGSize(width: maxOffset.x, height: maxOffset.y),
+            tolerance: 0,
+            aspectRatio: aspectRatio
+        )
+        let finalDirection = KeyboardDirection.direction(
+            for: value.translation,
+            tolerance: KeyboardConstants.Gesture.minSwipeLength,
+            aspectRatio: aspectRatio
+        )
+
+        let finalOffsetSmallEnough = finalDistance <= finalOffsetThreshold || finalDirection != maxDirection
+
+        if maxDistance >= KeyboardConstants.Gesture.minSwipeLength, finalOffsetSmallEnough {
+            // Return swipe
+            if maxDirection != .center {
+                if let onSwipeReturn = callbacks.onSwipeReturn {
+                    onSwipeReturn(maxDirection)
+                } else if let onSwipe = callbacks.onSwipe {
+                    onSwipe(finalDirection)
+                } else if finalDirection == .center {
+                    callbacks.onTap?()
+                }
+            } else {
+                handleDirectionalInput(direction: finalDirection)
+            }
+        } else {
+            handleDirectionalInput(direction: finalDirection)
+        }
     }
 
     private func handleDirectionalInput(direction: KeyboardDirection) {
