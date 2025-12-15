@@ -7,6 +7,9 @@
 
 import SwiftUI
 
+/// Default preprocessor config (defined outside generic type)
+private let defaultPreprocessorConfig = GesturePreprocessorConfig.default
+
 /// Main keyboard button component with comprehensive gesture recognition
 struct KeyboardButton<Label: View, Overlay: View>: View {
     let height: CGFloat
@@ -18,7 +21,13 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
 
     @State private var isActive = false
     @State private var positions: [CGPoint] = []
-    @State private var maxOffset: CGPoint = .zero
+
+    /// Extra touch area extension to cover margins between keys
+    private var touchPadding: CGFloat {
+        // Extend touch area by half the grid spacing on each side
+        // This ensures the entire margin area is covered by adjacent keys
+        KeyboardConstants.Layout.gridHorizontalSpacing / 2 + 2
+    }
 
     /// Extra touch area extension to cover margins between keys
     private var touchPadding: CGFloat {
@@ -52,7 +61,6 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
                 .onChanged { value in
                     if positions.isEmpty {
                         positions = [CGPoint.zero]
-                        maxOffset = .zero
                     }
 
                     let point = CGPoint(x: value.translation.width, y: value.translation.height)
@@ -62,87 +70,106 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
                         positions.removeFirst(positions.count - KeyboardConstants.Gesture.positionBufferSize)
                     }
 
-                    if point.magnitude() > maxOffset.magnitude() {
-                        maxOffset = point
-                    }
-
                     isActive = true
                 }
-                .onEnded { value in
+                .onEnded { _ in
                     defer { resetGestureState() }
 
-                    let finalPoint = CGPoint(x: value.translation.width, y: value.translation.height)
-                    positions.append(finalPoint)
-
-                    if positions.count > KeyboardConstants.Gesture.positionBufferSize {
-                        positions.removeFirst(positions.count - KeyboardConstants.Gesture.positionBufferSize)
-                    }
-
-                    let maxDistance = maxOffset.magnitude()
-                    let finalDistance = finalPoint.magnitude()
-
-                    // Check for circular gesture first
-                    if let onCircular = callbacks.onCircular,
-                       maxDistance >= KeyboardConstants.Gesture.minSwipeLength,
-                       let circle = KeyboardGestureRecognizer.circularDirection(
-                           positions: positions,
-                           circleCompletionTolerance: KeyboardConstants.Gesture.circleCompletionTolerance,
-                           minSwipeLength: KeyboardConstants.Gesture.minSwipeLength
-                       ) {
-                        onCircular(circle)
-                        return
-                    }
-
-                    // Swipe gestures
-                    let finalOffsetThreshold = KeyboardConstants.Gesture.minSwipeLength * KeyboardConstants.Gesture.finalOffsetMultiplier
-                    let maxDirection = KeyboardDirection.direction(
-                        for: CGSize(width: maxOffset.x, height: maxOffset.y),
-                        tolerance: 0,
-                        aspectRatio: aspectRatio
-                    )
-                    let finalDirection = KeyboardDirection.direction(
-                        for: value.translation,
-                        tolerance: KeyboardConstants.Gesture.minSwipeLength,
-                        aspectRatio: aspectRatio
-                    )
-
-                    let finalOffsetSmallEnough = finalDistance <= finalOffsetThreshold || finalDirection != maxDirection
-
-                    if maxDistance >= KeyboardConstants.Gesture.minSwipeLength, finalOffsetSmallEnough {
-                        // Return swipe
-                        if maxDirection != .center {
-                            if let onSwipeReturn = callbacks.onSwipeReturn {
-                                onSwipeReturn(maxDirection)
-                            } else if let onSwipe = callbacks.onSwipe {
-                                onSwipe(finalDirection)
-                            } else if finalDirection == .center {
-                                callbacks.onTap?()
-                            }
-                        } else {
-                            handleDirectionalInput(direction: finalDirection)
-                        }
-                    } else {
-                        handleDirectionalInput(direction: finalDirection)
-                    }
+                    handleFeatureBasedRecognition()
                 }
         )
     }
 
-    private func handleDirectionalInput(direction: KeyboardDirection) {
-        if let onSwipe = callbacks.onSwipe {
-            onSwipe(direction)
-        } else if direction == .center {
-            callbacks.onTap?()
-        } else if let onSwipeReturn = callbacks.onSwipeReturn {
-            onSwipeReturn(direction)
+    // MARK: - Feature-Based Recognition
+
+    private func handleFeatureBasedRecognition() {
+        // Create preprocessor with correct aspect ratio
+        let config = defaultPreprocessorConfig.with(aspectRatio: aspectRatio)
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // Preprocess: jitter filter, outlier filter, aspect normalization, smoothing
+        let processed = preprocessor.preprocess(positions)
+
+        // Extract features
+        let features = GestureFeatures.extract(from: processed)
+
+        // Determine swipe direction
+        let direction = angleToDirection(features.maxDisplacementAngle)
+        let isCircular = features.isCircular
+        let circularDir: KeyboardCircularDirection? = isCircular ? (features.isClockwise ? .clockwise : .counterclockwise) : nil
+
+        // Handle tap
+        if features.isTap {
+            handleTap()
+            return
+        }
+
+        // Handle circular gesture
+        if isCircular, let onCircular = callbacks.onCircular, let dir = circularDir {
+            onCircular(dir)
+            return
+        }
+
+        // Handle return-swipe
+        if features.isReturn {
+            if let onSwipeReturn = callbacks.onSwipeReturn {
+                onSwipeReturn(direction)
+            } else if let onSwipe = callbacks.onSwipe {
+                onSwipe(direction)
+            } else {
+                handleTap()
+            }
         } else {
-            callbacks.onTap?()
+            // Handle regular swipe
+            if let onSwipe = callbacks.onSwipe {
+                onSwipe(direction)
+            } else {
+                handleTap()
+            }
+        }
+    }
+
+    /// Converts angle (radians) to KeyboardDirection
+    private func angleToDirection(_ angle: CGFloat) -> KeyboardDirection {
+        // Normalize to 0...2π
+        let normalized = angle < 0 ? angle + 2 * .pi : angle
+
+        // Convert to degrees for easier sector math
+        let degrees = normalized * 180 / .pi
+
+        // 8 sectors of 45° each, starting from right (0°)
+        switch degrees {
+        case 337.5...360, 0..<22.5:
+            return .right
+        case 22.5..<67.5:
+            return .downRight
+        case 67.5..<112.5:
+            return .down
+        case 112.5..<157.5:
+            return .downLeft
+        case 157.5..<202.5:
+            return .left
+        case 202.5..<247.5:
+            return .upLeft
+        case 247.5..<292.5:
+            return .up
+        case 292.5..<337.5:
+            return .upRight
+        default:
+            return .center
+        }
+    }
+
+    private func handleTap() {
+        if let onTap = callbacks.onTap {
+            onTap()
+        } else if let onSwipe = callbacks.onSwipe {
+            onSwipe(.center)
         }
     }
 
     private func resetGestureState() {
         positions.removeAll(keepingCapacity: false)
-        maxOffset = .zero
         isActive = false
     }
 }

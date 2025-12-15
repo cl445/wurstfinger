@@ -83,6 +83,7 @@
 				AutoCapitalization.swift,
 				ComposeEngine.swift,
 				DeleteKeyButton.swift,
+				GesturePreprocessor.swift,
 				KeyboardButton.swift,
 				KeyboardButtonComponents.swift,
 				KeyboardLayout.swift,
