@@ -96,13 +96,37 @@ struct GesturePreprocessorConfig {
     /// Aspect ratio of the key (width/height) for normalizing coordinates
     let aspectRatio: CGFloat
 
+    // MARK: - Default Values
+
+    static let defaultJitterThreshold: CGFloat = 3.0
+    static let defaultMaxJumpDistance: CGFloat = 50.0
+    static let defaultSmoothingWindow: Int = 5
+
+    // MARK: - UserDefaults Keys
+
+    static let jitterThresholdKey = "gesture.jitterThreshold"
+    static let maxJumpDistanceKey = "gesture.maxJumpDistance"
+    static let smoothingWindowKey = "gesture.smoothingWindow"
+
     static let `default` = GesturePreprocessorConfig(
-        jitterThreshold: 3.0,
-        maxJumpDistance: 50.0,  // Points jumping more than this are outliers
-        smoothingWindow: 5,
+        jitterThreshold: defaultJitterThreshold,
+        maxJumpDistance: defaultMaxJumpDistance,
+        smoothingWindow: defaultSmoothingWindow,
         smoothingOrder: 2,
         aspectRatio: 1.0
     )
+
+    /// Loads config from SharedDefaults with fallback to defaults
+    static func fromUserDefaults() -> GesturePreprocessorConfig {
+        let store = SharedDefaults.store
+        return GesturePreprocessorConfig(
+            jitterThreshold: store.object(forKey: jitterThresholdKey) as? CGFloat ?? defaultJitterThreshold,
+            maxJumpDistance: store.object(forKey: maxJumpDistanceKey) as? CGFloat ?? defaultMaxJumpDistance,
+            smoothingWindow: store.object(forKey: smoothingWindowKey) as? Int ?? defaultSmoothingWindow,
+            smoothingOrder: 2,
+            aspectRatio: 1.0
+        )
+    }
 
     /// Creates a config with custom aspect ratio
     func with(aspectRatio: CGFloat) -> GesturePreprocessorConfig {
@@ -270,14 +294,52 @@ struct GestureClassificationThresholds {
     let minCircularity: CGFloat
     /// Minimum angular span (radians) to be considered circular
     let minAngularSpan: CGFloat
+    /// Minimum path separation to distinguish spiral from return-swipe
+    let minPathSeparation: CGFloat
+
+    // MARK: - Default Values
+
+    static let defaultMinSwipeLength: CGFloat = 30
+    static let defaultMaxReturnRatio: CGFloat = 0.5
+    static let defaultReturnDisplacementStart: CGFloat = 0.2
+    static let defaultReturnDisplacementEnd: CGFloat = 0.8
+    static let defaultMinCircularity: CGFloat = 0.3
+    static let defaultMinAngularSpan: CGFloat = .pi * 1.5  // 270°
+    static let defaultMinPathSeparation: CGFloat = 0.5
+
+    // MARK: - UserDefaults Keys
+
+    static let minSwipeLengthKey = "gesture.minSwipeLength"
+    static let maxReturnRatioKey = "gesture.maxReturnRatio"
+    static let returnDisplacementStartKey = "gesture.returnDisplacementStart"
+    static let returnDisplacementEndKey = "gesture.returnDisplacementEnd"
+    static let minCircularityKey = "gesture.minCircularity"
+    static let minAngularSpanKey = "gesture.minAngularSpan"
+    static let minPathSeparationKey = "gesture.minPathSeparation"
 
     static let `default` = GestureClassificationThresholds(
-        minSwipeLength: 30,
-        maxReturnRatio: 0.5,
-        returnDisplacementRange: 0.2...0.8,
-        minCircularity: 0.3,  // Lower threshold to accommodate spirals (varying radii)
-        minAngularSpan: .pi * 1.5  // 270°
+        minSwipeLength: defaultMinSwipeLength,
+        maxReturnRatio: defaultMaxReturnRatio,
+        returnDisplacementRange: defaultReturnDisplacementStart...defaultReturnDisplacementEnd,
+        minCircularity: defaultMinCircularity,
+        minAngularSpan: defaultMinAngularSpan,
+        minPathSeparation: defaultMinPathSeparation
     )
+
+    /// Loads thresholds from SharedDefaults with fallback to defaults
+    static func fromUserDefaults() -> GestureClassificationThresholds {
+        let store = SharedDefaults.store
+        let start = store.object(forKey: returnDisplacementStartKey) as? CGFloat ?? defaultReturnDisplacementStart
+        let end = store.object(forKey: returnDisplacementEndKey) as? CGFloat ?? defaultReturnDisplacementEnd
+        return GestureClassificationThresholds(
+            minSwipeLength: store.object(forKey: minSwipeLengthKey) as? CGFloat ?? defaultMinSwipeLength,
+            maxReturnRatio: store.object(forKey: maxReturnRatioKey) as? CGFloat ?? defaultMaxReturnRatio,
+            returnDisplacementRange: start...end,
+            minCircularity: store.object(forKey: minCircularityKey) as? CGFloat ?? defaultMinCircularity,
+            minAngularSpan: store.object(forKey: minAngularSpanKey) as? CGFloat ?? defaultMinAngularSpan,
+            minPathSeparation: store.object(forKey: minPathSeparationKey) as? CGFloat ?? defaultMinPathSeparation
+        )
+    }
 }
 
 // MARK: - Gesture Features
@@ -330,7 +392,7 @@ struct GestureFeatures {
         return pathLength > t.minSwipeLength * 2 &&
                circularity > t.minCircularity &&
                abs(angularSpan) > t.minAngularSpan &&
-               pathSeparation > 0.5  // mirrored points must be far apart (not a return swipe)
+               pathSeparation > t.minPathSeparation
     }
 
     var isClockwise: Bool { angularSpan > 0 }

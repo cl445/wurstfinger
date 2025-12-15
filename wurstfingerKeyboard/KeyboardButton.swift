@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-/// Default preprocessor config (defined outside generic type)
-private let defaultPreprocessorConfig = GesturePreprocessorConfig.default
-
 /// Main keyboard button component with comprehensive gesture recognition
 struct KeyboardButton<Label: View, Overlay: View>: View {
     let height: CGFloat
@@ -83,9 +80,12 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
     // MARK: - Feature-Based Recognition
 
     private func handleFeatureBasedRecognition() {
-        // Create preprocessor with correct aspect ratio
-        let config = defaultPreprocessorConfig.with(aspectRatio: aspectRatio)
+        // Load config from UserDefaults (for Expert Settings) and apply aspect ratio
+        let config = GesturePreprocessorConfig.fromUserDefaults().with(aspectRatio: aspectRatio)
         let preprocessor = GesturePreprocessor(config: config)
+
+        // Load classification thresholds from UserDefaults
+        GestureFeatures.thresholds = GestureClassificationThresholds.fromUserDefaults()
 
         // Preprocess: jitter filter, outlier filter, aspect normalization, smoothing
         let processed = preprocessor.preprocess(positions)
