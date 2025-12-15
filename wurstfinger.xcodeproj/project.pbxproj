@@ -81,7 +81,10 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				ComposeEngine.swift,
+				CrossKeyGestureResolver.swift,
 				DeleteKeyButton.swift,
+				GesturePreprocessor.swift,
+				GestureRecognizer.swift,
 				KeyboardButton.swift,
 				KeyboardButtonComponents.swift,
 				KeyboardLayout.swift,

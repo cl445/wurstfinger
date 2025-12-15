@@ -52,7 +52,7 @@ struct AdvancedGestureRecognizer {
             minConfidence: 0.6,
             minSwipeLength: 30,
             temporalWeight: 0.3,
-            dtwBandWidth: 5,
+            dtwBandWidth: 32,  // Full flexibility - no band restriction
             jitterThreshold: 3
         )
     }
@@ -96,178 +96,107 @@ struct AdvancedGestureRecognizer {
             )
         }
 
-        // Classify gesture type
-        let gestureType = classifyGestureType(filtered)
-
         // Normalize for aspect ratio
-        let normalized = normalizeForAspectRatio(filtered, aspectRatio: aspectRatio)
+        let aspectNormalized = normalizeForAspectRatio(filtered, aspectRatio: aspectRatio)
+
+        // Normalize to unit size (max magnitude = 1.0) for fair template comparison
+        let unitNormalized = normalizeToUnitSize(aspectNormalized)
 
         // Resample to fixed number of points
-        let resampled = resample(normalized, count: config.resampleCount)
+        let resampled = resample(unitNormalized, count: config.resampleCount)
 
-        // Match against templates based on gesture type
-        switch gestureType {
-        case .circular:
-            return recognizeCircular(resampled, original: filtered)
-        case .swipeReturn:
-            return recognizeSwipeReturn(resampled)
-        case .swipe, .tap:
-            return recognizeSwipe(resampled)
-        }
+        // Pure DTW: match against ALL templates, best score wins
+        return recognizeWithDTW(resampled)
     }
 
-    // MARK: - Gesture Type Classification
+    // MARK: - Pure DTW Recognition
 
-    private func classifyGestureType(_ positions: [CGPoint]) -> GestureRecognitionResult.GestureType {
-        guard let first = positions.first, let last = positions.last else {
-            return .tap
-        }
-
-        let maxOffset = positions.max(by: { $0.magnitude() < $1.magnitude() }) ?? .zero
-        let maxMagnitude = maxOffset.magnitude()
-        let finalMagnitude = last.magnitude()
-
-        // Calculate enclosed area (for circular detection)
-        let signedArea = calculateSignedArea(positions)
-        let areaThreshold = config.minSwipeLength * config.minSwipeLength * 0.5
-
-        // Check for circular gesture
-        if abs(signedArea) > areaThreshold && maxMagnitude > config.minSwipeLength {
-            // Verify it's actually circular by checking if it closes
-            let distanceToStart = last.distance(to: first)
-            if distanceToStart < maxMagnitude * 0.5 {
-                return .circular
-            }
-        }
-
-        // Check for return swipe (finger returned close to start)
-        let returnThreshold = config.minSwipeLength * 0.7
-        if finalMagnitude < returnThreshold && maxMagnitude >= config.minSwipeLength {
-            return .swipeReturn
-        }
-
-        // Otherwise it's a regular swipe
-        if maxMagnitude >= config.minSwipeLength {
-            return .swipe
-        }
-
-        return .tap
-    }
-
-    // MARK: - Swipe Recognition
-
-    private func recognizeSwipe(_ positions: [CGPoint]) -> GestureRecognitionResult {
-        var bestDirection: KeyboardDirection = .center
+    /// Matches against all templates and returns the best match
+    private func recognizeWithDTW(_ resampled: [CGPoint]) -> GestureRecognitionResult {
+        var bestResult = GestureRecognitionResult(
+            gestureType: .tap,
+            direction: .center,
+            circularDirection: nil,
+            confidence: 0
+        )
         var bestScore: Double = .infinity
+        var bestType = ""
 
+        // Collect all scores for debugging
+        var allScores: [(String, Double)] = []
+
+        // Test all 8 swipe directions
         for direction in KeyboardDirection.allCases where direction != .center {
             let template = templates.swipeTemplate(for: direction)
-            let score = dtw(positions, template)
+            let score = dtw(resampled, template)
+            allScores.append(("S-\(direction)", score))
 
             if score < bestScore {
                 bestScore = score
-                bestDirection = direction
+                bestType = "swipe-\(direction)"
+                bestResult = GestureRecognitionResult(
+                    gestureType: .swipe,
+                    direction: direction,
+                    circularDirection: nil,
+                    confidence: scoreToConfidence(score)
+                )
             }
         }
 
-        // Also try dominant direction approach for comparison
-        let dominantDir = dominantDirection(positions)
-        let dominantTemplate = templates.swipeTemplate(for: dominantDir)
-        let dominantScore = dtw(positions, dominantTemplate)
-
-        // Use whichever is more confident
-        if dominantScore < bestScore * 0.9 {
-            bestDirection = dominantDir
-            bestScore = dominantScore
-        }
-
-        let confidence = scoreToConfidence(bestScore)
-
-        return GestureRecognitionResult(
-            gestureType: .swipe,
-            direction: bestDirection,
-            circularDirection: nil,
-            confidence: confidence
-        )
-    }
-
-    // MARK: - Swipe Return Recognition
-
-    private func recognizeSwipeReturn(_ positions: [CGPoint]) -> GestureRecognitionResult {
-        var bestDirection: KeyboardDirection = .center
-        var bestScore: Double = .infinity
-
+        // Test all 8 swipe-return directions
         for direction in KeyboardDirection.allCases where direction != .center {
             let template = templates.swipeReturnTemplate(for: direction)
-            let score = dtw(positions, template)
+            let score = dtw(resampled, template)
+            allScores.append(("R-\(direction)", score))
 
             if score < bestScore {
                 bestScore = score
-                bestDirection = direction
+                bestType = "return-\(direction)"
+                bestResult = GestureRecognitionResult(
+                    gestureType: .swipeReturn,
+                    direction: direction,
+                    circularDirection: nil,
+                    confidence: scoreToConfidence(score)
+                )
             }
         }
 
-        // Use peak direction as fallback validation
-        let peakDir = peakDirection(positions)
-        if peakDir != bestDirection {
-            // If DTW and peak disagree, trust peak more for return gestures
-            let peakTemplate = templates.swipeReturnTemplate(for: peakDir)
-            let peakScore = dtw(positions, peakTemplate)
-            if peakScore < bestScore * 1.2 {
-                bestDirection = peakDir
-                bestScore = peakScore
-            }
-        }
-
-        let confidence = scoreToConfidence(bestScore)
-
-        return GestureRecognitionResult(
-            gestureType: .swipeReturn,
-            direction: bestDirection,
-            circularDirection: nil,
-            confidence: confidence
-        )
-    }
-
-    // MARK: - Circular Recognition
-
-    private func recognizeCircular(_ positions: [CGPoint], original: [CGPoint]) -> GestureRecognitionResult {
-        // Use existing circular detection as it's already robust
-        if let circDir = KeyboardGestureRecognizer.circularDirection(
-            positions: original,
-            circleCompletionTolerance: KeyboardConstants.Gesture.circleCompletionTolerance,
-            minSwipeLength: config.minSwipeLength
-        ) {
-            return GestureRecognitionResult(
+        // Test circular (clockwise and counter-clockwise)
+        let cwTemplate = templates.circularTemplate(clockwise: true)
+        let cwScore = dtw(resampled, cwTemplate)
+        allScores.append(("CW", cwScore))
+        if cwScore < bestScore {
+            bestScore = cwScore
+            bestType = "circular-CW"
+            bestResult = GestureRecognitionResult(
                 gestureType: .circular,
                 direction: .center,
-                circularDirection: circDir,
-                confidence: 0.9
+                circularDirection: .clockwise,
+                confidence: scoreToConfidence(cwScore)
             )
         }
 
-        // DTW fallback for incomplete circles
-        let cwTemplate = templates.circularTemplate(clockwise: true)
         let ccwTemplate = templates.circularTemplate(clockwise: false)
-
-        let cwScore = dtw(positions, cwTemplate)
-        let ccwScore = dtw(positions, ccwTemplate)
-
-        let isClockwise = cwScore < ccwScore
-        let bestScore = min(cwScore, ccwScore)
-        let confidence = scoreToConfidence(bestScore)
-
-        // If confidence is too low, fall back to swipe
-        if confidence < config.minConfidence {
-            return recognizeSwipe(positions)
+        let ccwScore = dtw(resampled, ccwTemplate)
+        allScores.append(("CCW", ccwScore))
+        if ccwScore < bestScore {
+            bestScore = ccwScore
+            bestType = "circular-CCW"
+            bestResult = GestureRecognitionResult(
+                gestureType: .circular,
+                direction: .center,
+                circularDirection: .counterclockwise,
+                confidence: scoreToConfidence(ccwScore)
+            )
         }
 
-        return GestureRecognitionResult(
-            gestureType: .circular,
-            direction: .center,
-            circularDirection: isClockwise ? .clockwise : .counterclockwise,
-            confidence: confidence
-        )
+        // Log top 3 scores for debugging
+        let sorted = allScores.sorted { $0.1 < $1.1 }
+        let top3 = sorted.prefix(3).map { "\($0.0):\(String(format: "%.1f", $0.1))" }.joined(separator: " ")
+        GestureDebugLog.log("→ \(bestType) | \(top3)")
+        GestureDebugLog.savePath(resampled)
+
+        return bestResult
     }
 
     // MARK: - DTW Algorithm
@@ -326,6 +255,16 @@ struct AdvancedGestureRecognizer {
         }
     }
 
+    /// Normalizes points so max magnitude = 1.0 (for fair template comparison)
+    private func normalizeToUnitSize(_ positions: [CGPoint]) -> [CGPoint] {
+        let maxMag = positions.map { $0.magnitude() }.max() ?? 1.0
+        guard maxMag > 0 else { return positions }
+
+        return positions.map { point in
+            CGPoint(x: point.x / maxMag, y: point.y / maxMag)
+        }
+    }
+
     /// Resamples a path to a fixed number of equally-spaced points
     private func resample(_ positions: [CGPoint], count: Int) -> [CGPoint] {
         guard positions.count >= 2 else { return positions }
@@ -373,56 +312,6 @@ struct AdvancedGestureRecognizer {
         return length
     }
 
-    /// Calculates the signed area enclosed by a path (for circular detection)
-    private func calculateSignedArea(_ positions: [CGPoint]) -> CGFloat {
-        guard positions.count >= 3 else { return 0 }
-
-        var area: CGFloat = 0
-        for i in 0..<positions.count {
-            let j = (i + 1) % positions.count
-            area += positions[i].x * positions[j].y
-            area -= positions[j].x * positions[i].y
-        }
-        return area / 2
-    }
-
-    /// Determines the dominant direction using weighted segments
-    private func dominantDirection(_ positions: [CGPoint]) -> KeyboardDirection {
-        guard positions.count >= 2 else { return .center }
-
-        // Weight later points more heavily
-        var weightedX: CGFloat = 0
-        var weightedY: CGFloat = 0
-        var totalWeight: CGFloat = 0
-
-        for i in 1..<positions.count {
-            let weight = CGFloat(i) / CGFloat(positions.count)
-            let dx = positions[i].x - positions[i - 1].x
-            let dy = positions[i].y - positions[i - 1].y
-
-            weightedX += dx * weight
-            weightedY += dy * weight
-            totalWeight += weight
-        }
-
-        let avgX = weightedX / totalWeight
-        let avgY = weightedY / totalWeight
-
-        return KeyboardDirection.direction(
-            for: CGSize(width: avgX * CGFloat(positions.count), height: avgY * CGFloat(positions.count)),
-            tolerance: 0
-        )
-    }
-
-    /// Determines direction at peak displacement (for return gestures)
-    private func peakDirection(_ positions: [CGPoint]) -> KeyboardDirection {
-        let peak = positions.max(by: { $0.magnitude() < $1.magnitude() }) ?? .zero
-        return KeyboardDirection.direction(
-            for: CGSize(width: peak.x, height: peak.y),
-            tolerance: 0
-        )
-    }
-
     /// Converts DTW score to confidence value (0-1)
     private func scoreToConfidence(_ score: Double) -> Double {
         // Lower score = better match = higher confidence
@@ -434,7 +323,7 @@ struct AdvancedGestureRecognizer {
 
 // MARK: - Gesture Templates
 
-/// Pre-computed templates for gesture matching
+/// Pre-computed templates for gesture matching (all normalized to unit size)
 struct GestureTemplates {
     private let resampleCount: Int
 
@@ -442,52 +331,58 @@ struct GestureTemplates {
         self.resampleCount = resampleCount
     }
 
-    /// Generates a linear swipe template for a direction
+    /// Generates a linear swipe template for a direction (normalized: max magnitude = 1.0)
     func swipeTemplate(for direction: KeyboardDirection) -> [CGPoint] {
         let vector = unitVector(for: direction)
+        // Goes from (0,0) to direction vector (magnitude 1.0)
         return (0..<resampleCount).map { i in
             let t = CGFloat(i) / CGFloat(resampleCount - 1)
-            return CGPoint(x: vector.x * t * 50, y: vector.y * t * 50)
+            return CGPoint(x: vector.x * t, y: vector.y * t)
         }
     }
 
-    /// Generates a return swipe template (out and back)
+    /// Generates a return swipe template (out and back, normalized: max magnitude = 1.0)
     func swipeReturnTemplate(for direction: KeyboardDirection) -> [CGPoint] {
         let vector = unitVector(for: direction)
         let halfCount = resampleCount / 2
 
         var points: [CGPoint] = []
 
-        // Out phase
+        // Out phase: (0,0) to direction vector
         for i in 0..<halfCount {
             let t = CGFloat(i) / CGFloat(halfCount - 1)
-            points.append(CGPoint(x: vector.x * t * 50, y: vector.y * t * 50))
+            points.append(CGPoint(x: vector.x * t, y: vector.y * t))
         }
 
-        // Return phase
+        // Return phase: direction vector back to (0,0)
         for i in 0..<(resampleCount - halfCount) {
             let t = 1.0 - CGFloat(i) / CGFloat(resampleCount - halfCount - 1)
-            points.append(CGPoint(x: vector.x * t * 50, y: vector.y * t * 50))
+            points.append(CGPoint(x: vector.x * t, y: vector.y * t))
         }
 
         return points
     }
 
-    /// Generates a circular template
+    /// Generates a circular template (normalized: max magnitude = 1.0)
     func circularTemplate(clockwise: Bool) -> [CGPoint] {
-        let radius: CGFloat = 30
         let direction: CGFloat = clockwise ? 1 : -1
 
-        return (0..<resampleCount).map { i in
+        // Circle starting at origin, going in specified direction
+        // Max magnitude is 1.0 (at the far point of the circle)
+        let points = (0..<resampleCount).map { i -> CGPoint in
             let angle = direction * 2 * .pi * CGFloat(i) / CGFloat(resampleCount - 1)
             return CGPoint(
-                x: radius * sin(angle),
-                y: radius * (1 - cos(angle))
+                x: 0.5 * sin(angle),
+                y: 0.5 * (1 - cos(angle))
             )
         }
+
+        // Normalize to unit size
+        let maxMag = points.map { sqrt($0.x * $0.x + $0.y * $0.y) }.max() ?? 1.0
+        return points.map { CGPoint(x: $0.x / maxMag, y: $0.y / maxMag) }
     }
 
-    /// Returns unit vector for a direction
+    /// Returns unit vector for a direction (magnitude = 1.0)
     private func unitVector(for direction: KeyboardDirection) -> CGPoint {
         switch direction {
         case .center: return .zero

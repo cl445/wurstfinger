@@ -7,6 +7,21 @@
 
 import SwiftUI
 
+// MARK: - Key Index
+
+/// Identifies a key by its position in the grid
+struct KeyIndex: Hashable {
+    let row: Int
+    let column: Int
+
+    /// Special indices for utility keys
+    static func utility(row: Int) -> KeyIndex {
+        KeyIndex(row: row, column: -1)
+    }
+
+    var isUtility: Bool { column == -1 }
+}
+
 /// Configuration options for keyboard buttons
 struct KeyboardButtonConfig {
     let highlighted: Bool
@@ -33,12 +48,23 @@ struct KeyboardButtonConfig {
     }
 }
 
+/// Result of a gesture that should be redirected to another key
+struct CrossKeyGestureResult {
+    let targetKey: KeyIndex
+    let direction: KeyboardDirection
+    let isReturn: Bool
+    let isCircular: Bool
+    let circularDirection: KeyboardCircularDirection?
+}
+
 /// Callback closures for keyboard button interactions
 struct KeyboardButtonCallbacks {
     var onTap: (() -> Void)? = nil
     var onSwipe: ((KeyboardDirection) -> Void)? = nil
     var onSwipeReturn: ((KeyboardDirection) -> Void)? = nil
     var onCircular: ((KeyboardCircularDirection) -> Void)? = nil
+    /// Called when the gesture should be handled by a different key
+    var onCrossKeyGesture: ((CrossKeyGestureResult) -> Void)? = nil
 }
 
 /// Visual key cap component used as the base for all keyboard buttons

@@ -15,6 +15,9 @@ struct KeyboardRootView: View {
     var frameAlignment: Alignment = .bottom
     var overrideWidth: CGFloat? = nil
 
+    /// Registry for tracking key positions (for cross-key gesture resolution)
+    @StateObject private var keyPositionRegistry = KeyPositionRegistry()
+
     var body: some View {
         // At aspectRatio 1.5 (default), use original height of 54pt
         // Lower ratio = taller keys, higher ratio = shorter keys
@@ -86,6 +89,11 @@ struct KeyboardRootView: View {
             .scaleEffect(viewModel.keyboardScale, anchor: scaleAnchor)
             .offset(x: horizontalOffset)
         }
+        .onPreferenceChange(KeyPositionPreferenceKey.self) { positions in
+            for (keyIndex, frame) in positions {
+                keyPositionRegistry.register(key: keyIndex, frame: frame)
+            }
+        }
     }
 
     private func scaledMainLabelSize(for keyHeight: CGFloat) -> CGFloat {
@@ -136,9 +144,10 @@ struct KeyboardRootView: View {
     }
 
     @ViewBuilder
-    private func keyCells(forRow index: Int, keyHeight: CGFloat) -> some View {
-        if index < viewModel.rows.count {
-            ForEach(viewModel.rows[index]) { key in
+    private func keyCells(forRow rowIndex: Int, keyHeight: CGFloat) -> some View {
+        if rowIndex < viewModel.rows.count {
+            ForEach(Array(viewModel.rows[rowIndex].enumerated()), id: \.element.id) { columnIndex, key in
+                let keyIndex = KeyIndex(row: rowIndex, column: columnIndex)
                 KeyboardButton(
                     height: keyHeight,
                     aspectRatio: viewModel.keyAspectRatio,
@@ -148,12 +157,49 @@ struct KeyboardRootView: View {
                     callbacks: KeyboardButtonCallbacks(
                         onSwipe: { viewModel.handleKeySwipe(key, direction: $0) },
                         onSwipeReturn: { viewModel.handleKeySwipeReturn(key, direction: $0) },
-                        onCircular: { viewModel.handleCircularGesture(for: key, direction: $0) }
-                    )
+                        onCircular: { viewModel.handleCircularGesture(for: key, direction: $0) },
+                        onCrossKeyGesture: { result in
+                            handleCrossKeyGesture(result, fromKey: key)
+                        }
+                    ),
+                    keyIndex: keyIndex,
+                    positionRegistry: keyPositionRegistry
                 )
+                .trackKeyPosition(keyIndex, in: .global)
             }
         } else {
             EmptyView()
+        }
+    }
+
+    /// Handles a gesture that was redirected from another key
+    private func handleCrossKeyGesture(_ result: CrossKeyGestureResult, fromKey: MessagEaseKey) {
+        // Find the target key based on the resolved KeyIndex
+        guard result.targetKey.row >= 0,
+              result.targetKey.row < viewModel.rows.count,
+              result.targetKey.column >= 0,
+              result.targetKey.column < viewModel.rows[result.targetKey.row].count else {
+            // Invalid target, fall back to original key
+            GestureDebugLog.log("CROSS-KEY: Invalid target \(result.targetKey), using original")
+            if result.isCircular, let dir = result.circularDirection {
+                viewModel.handleCircularGesture(for: fromKey, direction: dir)
+            } else if result.isReturn {
+                viewModel.handleKeySwipeReturn(fromKey, direction: result.direction)
+            } else {
+                viewModel.handleKeySwipe(fromKey, direction: result.direction)
+            }
+            return
+        }
+
+        let targetKey = viewModel.rows[result.targetKey.row][result.targetKey.column]
+        GestureDebugLog.log("CROSS-KEY: Redirecting to \(targetKey.center)")
+
+        if result.isCircular, let dir = result.circularDirection {
+            viewModel.handleCircularGesture(for: targetKey, direction: dir)
+        } else if result.isReturn {
+            viewModel.handleKeySwipeReturn(targetKey, direction: result.direction)
+        } else {
+            viewModel.handleKeySwipe(targetKey, direction: result.direction)
         }
     }
 }
