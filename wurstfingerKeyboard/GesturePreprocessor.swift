@@ -2,12 +2,81 @@
 //  GesturePreprocessor.swift
 //  Wurstfinger
 //
-//  Preprocessing pipeline for gesture recognition:
-//  1. Jitter filtering
-//  2. Outlier removal
-//  3. Aspect ratio normalization
-//  4. Savitzky-Golay smoothing
-//  5. Feature extraction
+//  Gesture Recognition Pipeline
+//  ============================
+//
+//  This module implements gesture preprocessing and feature extraction for
+//  distinguishing between taps, swipes, return-swipes, and circular gestures.
+//
+//  ## Data Flow
+//
+//  ```
+//  Touch Events (KeyboardButton)
+//       │
+//       ▼
+//  Raw CGPoint[] ──► GesturePreprocessor.preprocess()
+//       │                    │
+//       │              ┌─────┴─────┐
+//       │              ▼           ▼
+//       │         filterJitter  filterOutliers
+//       │              │           │
+//       │              ▼           ▼
+//       │         normalizeAspectRatio
+//       │              │
+//       │              ▼
+//       │         smoothSavitzkyGolay
+//       │              │
+//       ▼              ▼
+//  Cleaned CGPoint[] ──► GestureFeatures.extract()
+//       │
+//       ▼
+//  GestureFeatures { pathLength, maxDisplacement, angularSpan, ... }
+//       │
+//       ▼
+//  Classification: isTap, isReturn, isCircular, direction
+//  ```
+//
+//  ## Preprocessing Steps
+//
+//  1. **Jitter Filter**: Removes points too close together (< jitterThreshold)
+//     - Prevents noise from finger micro-movements
+//
+//  2. **Outlier Filter**: Removes impossible jumps (> maxJumpDistance)
+//     - Handles touch glitches and multitouch interference
+//
+//  3. **Aspect Ratio Normalization**: Divides X by aspect ratio
+//     - Makes horizontal and vertical movements comparable on non-square keys
+//
+//  4. **Savitzky-Golay Smoothing**: Polynomial smoothing filter
+//     - Preserves gesture shape while reducing noise
+//     - Uses pre-computed coefficients for efficiency
+//
+//  ## Feature Extraction
+//
+//  Geometric features extracted from the cleaned path:
+//  - `pathLength`: Total distance traveled
+//  - `chordLength`: Direct distance from start to end
+//  - `maxDisplacement`: Furthest point from start
+//  - `maxDisplacementProgress`: Where in path (0-1) max occurred
+//  - `returnRatio`: chordLength / pathLength (low = returned to start)
+//  - `angularSpan`: Total angle swept around centroid (radians)
+//  - `circularity`: How uniform the radii are (0-1)
+//  - `pathSeparation`: Distance between mirrored points (early vs late)
+//
+//  ## Classification Logic
+//
+//  - **Tap**: maxDisplacement < minSwipeLength (~55% key height)
+//  - **Return-swipe**: returnRatio < 0.5 AND maxDisplacement in middle of path
+//  - **Circular**: angularSpan > 270° AND pathSeparation > 0.5 (spiral, not return)
+//  - **Swipe**: Everything else, direction from maxDisplacementAngle
+//
+//  Note: Default key height is 54pt, so minSwipeLength (30pt) ≈ 55% of key height.
+//
+//  ## Key Insight: Spiral vs Return-Swipe
+//
+//  Both can have high angularSpan, but:
+//  - Spiral: Early points (start) far from late points (end) → high pathSeparation
+//  - Return: Path comes back, early ≈ late points → low pathSeparation
 //
 
 import CoreGraphics
