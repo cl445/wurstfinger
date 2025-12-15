@@ -243,7 +243,7 @@ struct GestureFeaturesTests {
 
     // MARK: - Classification Tests
 
-    @Test func classifyTapForShortPath() async throws {
+    @Test func classifyTapForSmallDisplacement() async throws {
         let points: [CGPoint] = [
             CGPoint(x: 0, y: 0),
             CGPoint(x: 5, y: 3),
@@ -252,7 +252,7 @@ struct GestureFeaturesTests {
 
         let features = GestureFeatures.extract(from: points)
 
-        #expect(features.pathLength < 30)
+        #expect(features.maxDisplacement < 30)
         #expect(features.isTap)
         #expect(!features.isReturn)
         #expect(!features.isCircular)

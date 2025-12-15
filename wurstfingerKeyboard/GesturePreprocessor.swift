@@ -239,7 +239,7 @@ struct GestureFeatures {
     let circularity: CGFloat    // how circular (0-1, 1 = perfect circle)
 
     // Derived classifications (using configurable thresholds)
-    var isTap: Bool { pathLength < Self.thresholds.minSwipeLength }
+    var isTap: Bool { maxDisplacement < Self.thresholds.minSwipeLength }
 
     /// Return-swipe: maxDisplacement in the middle of the path (not at the end) AND finger returned to start
     var isReturn: Bool {
@@ -254,7 +254,10 @@ struct GestureFeatures {
 
     var isCircular: Bool {
         let t = Self.thresholds
-        return circularity > t.minCircularity && abs(angularSpan) > t.minAngularSpan
+        // Require minimum size (2x swipe length) to avoid small wiggles being detected as circles
+        return pathLength > t.minSwipeLength * 2 &&
+               circularity > t.minCircularity &&
+               abs(angularSpan) > t.minAngularSpan
     }
 
     var isClockwise: Bool { angularSpan > 0 }
