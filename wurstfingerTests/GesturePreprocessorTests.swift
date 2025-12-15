@@ -219,25 +219,24 @@ struct GestureFeaturesTests {
         #expect(features.maxDisplacementProgress < 0.7)
     }
 
-    @Test func extractFeaturesFromCircularPath() async throws {
-        // Approximate circle (8 points around a circle)
-        let radius: CGFloat = 30
-        let center = CGPoint(x: 30, y: 30)
+    @Test func extractFeaturesFromSpiralPath() async throws {
+        // Realistic spiral gesture: starts at origin and expands outward
+        // Use more points with larger angular coverage to ensure > 270° sweep
         var points: [CGPoint] = []
 
-        for i in 0..<16 {
-            let angle = CGFloat(i) * .pi / 8  // 0 to 2π
-            let x = center.x + radius * cos(angle)
-            let y = center.y + radius * sin(angle)
+        for i in 0..<30 {
+            let angle = CGFloat(i) * .pi / 6  // counter-clockwise, ~900° total
+            let radius = 5.0 + CGFloat(i) * 2.0  // expanding radius (5 to 63)
+            let x = radius * cos(angle)
+            let y = radius * sin(angle)
             points.append(CGPoint(x: x, y: y))
         }
-        // Close the circle
-        points.append(points[0])
 
         let features = GestureFeatures.extract(from: points)
 
-        #expect(features.circularity > 0.5)
+        #expect(features.circularity > 0.3)
         #expect(abs(features.angularSpan) > .pi * 1.5)  // > 270°
+        #expect(features.pathSeparation > 0.5)  // mirrored points far apart
         #expect(features.isCircular)
     }
 
@@ -356,46 +355,45 @@ struct GestureFeaturesTests {
 
     // MARK: - Clockwise Detection Tests
 
-    @Test func detectClockwiseCircle() async throws {
-        // Clockwise circle (in screen coordinates: right, down, left, up)
-        let radius: CGFloat = 30
-        let center = CGPoint(x: 30, y: 30)
+    @Test func detectClockwiseSpiral() async throws {
+        // Realistic spiral: starts and spirals outward clockwise
+        // Use more points with larger angular coverage
         var points: [CGPoint] = []
 
-        // Go clockwise: 0 → -2π (negative because clockwise in screen coords)
-        for i in 0..<16 {
-            let angle = -CGFloat(i) * .pi / 8
-            let x = center.x + radius * cos(angle)
-            let y = center.y + radius * sin(angle)
+        for i in 0..<30 {
+            let angle = -CGFloat(i) * .pi / 6  // clockwise (negative), ~900° total
+            let radius = 5.0 + CGFloat(i) * 2.0  // expanding radius (5 to 63)
+            let x = radius * cos(angle)
+            let y = radius * sin(angle)
             points.append(CGPoint(x: x, y: y))
         }
-        points.append(points[0])
 
         let features = GestureFeatures.extract(from: points)
 
+        // Spiral: early and late points are far apart (high pathSeparation)
+        #expect(features.pathSeparation > 0.5)
         #expect(features.isCircular)
-        // Note: isClockwise checks if angularSpan > 0
-        // In screen coordinates, clockwise gives negative angularSpan
         #expect(!features.isClockwise)  // clockwise in screen = negative angularSpan
     }
 
-    @Test func detectCounterclockwiseCircle() async throws {
-        // Counter-clockwise circle
-        let radius: CGFloat = 30
-        let center = CGPoint(x: 30, y: 30)
+    @Test func detectCounterclockwiseSpiral() async throws {
+        // Realistic spiral: starts and spirals outward counter-clockwise
+        // Use more points with larger angular coverage
         var points: [CGPoint] = []
 
-        for i in 0..<16 {
-            let angle = CGFloat(i) * .pi / 8  // positive = CCW in math, but in screen coords...
-            let x = center.x + radius * cos(angle)
-            let y = center.y + radius * sin(angle)
+        for i in 0..<30 {
+            let angle = CGFloat(i) * .pi / 6  // counter-clockwise (positive), ~900° total
+            let radius = 5.0 + CGFloat(i) * 2.0  // expanding radius (5 to 63)
+            let x = radius * cos(angle)
+            let y = radius * sin(angle)
             points.append(CGPoint(x: x, y: y))
         }
-        points.append(points[0])
 
         let features = GestureFeatures.extract(from: points)
 
+        // Spiral: early and late points are far apart (high pathSeparation)
+        #expect(features.pathSeparation > 0.5)
         #expect(features.isCircular)
-        #expect(features.isClockwise)  // CCW in math coords = positive angularSpan
+        #expect(features.isClockwise)  // CCW in math = positive angularSpan
     }
 }

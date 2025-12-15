@@ -206,7 +206,7 @@ struct GestureClassificationThresholds {
         minSwipeLength: 30,
         maxReturnRatio: 0.5,
         returnDisplacementRange: 0.2...0.8,
-        minCircularity: 0.5,
+        minCircularity: 0.3,  // Lower threshold to accommodate spirals (varying radii)
         minAngularSpan: .pi * 1.5  // 270°
     )
 }
@@ -237,6 +237,7 @@ struct GestureFeatures {
     // Circularity features
     let angularSpan: CGFloat    // total angle traversed (positive = CW, negative = CCW)
     let circularity: CGFloat    // how circular (0-1, 1 = perfect circle)
+    let pathSeparation: CGFloat // how separated are mirrored points (spiral > 0.5, return < 0.3)
 
     // Derived classifications (using configurable thresholds)
     var isTap: Bool { maxDisplacement < Self.thresholds.minSwipeLength }
@@ -255,9 +256,12 @@ struct GestureFeatures {
     var isCircular: Bool {
         let t = Self.thresholds
         // Require minimum size (2x swipe length) to avoid small wiggles being detected as circles
+        // Also require high path separation to distinguish from return swipes
+        // (spiral: mirrored points far apart, return: mirrored points close together)
         return pathLength > t.minSwipeLength * 2 &&
                circularity > t.minCircularity &&
-               abs(angularSpan) > t.minAngularSpan
+               abs(angularSpan) > t.minAngularSpan &&
+               pathSeparation > 0.5  // mirrored points must be far apart (not a return swipe)
     }
 
     var isClockwise: Bool { angularSpan > 0 }
@@ -341,6 +345,21 @@ struct GestureFeatures {
         let coefficientOfVariation = meanRadius > 0 ? stdDev / meanRadius : 1
         let circularity = max(0, min(1, 1 - coefficientOfVariation))
 
+        // Path separation: compare "mirrored" points (early vs late in sequence)
+        // Return swipe: early and late points are close (path comes back)
+        // Spiral: early and late points are far apart (path doesn't come back)
+        let comparisons = min(points.count / 2, 10)
+        var mirrorDistanceSum: CGFloat = 0
+        if comparisons > 0 {
+            for i in 0..<comparisons {
+                let earlyPoint = points[i]
+                let latePoint = points[points.count - 1 - i]
+                mirrorDistanceSum += earlyPoint.distance(to: latePoint)
+            }
+        }
+        let avgMirrorDistance = comparisons > 0 ? mirrorDistanceSum / CGFloat(comparisons) : 0
+        let pathSeparation = maxDisp > 0 ? avgMirrorDistance / maxDisp : 0
+
         // Ratios
         let returnRatio = pathLen > 0 ? chordLen / pathLen : 1
         let bboxAspect = bbox.height > 0 ? bbox.width / bbox.height : 1
@@ -358,7 +377,8 @@ struct GestureFeatures {
             dominantAngle: dominantAngle,
             maxDisplacementAngle: maxDispAngle,
             angularSpan: angularSpan,
-            circularity: circularity
+            circularity: circularity,
+            pathSeparation: pathSeparation
         )
     }
 
@@ -375,7 +395,8 @@ struct GestureFeatures {
         dominantAngle: 0,
         maxDisplacementAngle: 0,
         angularSpan: 0,
-        circularity: 0
+        circularity: 0,
+        pathSeparation: 0
     )
 }
 
@@ -391,6 +412,7 @@ extension GestureFeatures: CustomStringConvertible {
           returnRatio: \(String(format: "%.2f", returnRatio))
           angularSpan: \(String(format: "%.1f°", angularSpan * 180 / .pi))
           circularity: \(String(format: "%.2f", circularity))
+          pathSeparation: \(String(format: "%.2f", pathSeparation))
           isTap: \(isTap), isReturn: \(isReturn), isCircular: \(isCircular)
         """
     }
