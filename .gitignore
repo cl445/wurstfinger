@@ -30,3 +30,6 @@ fastlane/test_output/
 vendor/bundle/
 .bundle/
 Gemfile.lock
+
+# Claude Code
+.claude/

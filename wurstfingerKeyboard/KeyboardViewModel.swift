@@ -511,9 +511,20 @@ final class KeyboardViewModel: ObservableObject {
 
     private func insertText(_ value: String) {
         feedbackTap()
+        performTextInsertion(value)
+    }
+
+    /// For testing: simulates the text insertion flow without haptic feedback
+    func simulateTextInsertion(_ value: String) {
+        performTextInsertion(value)
+    }
+
+    private func performTextInsertion(_ value: String) {
+        // Capture layer state BEFORE the action handler (which may change it)
+        let wasUpper = activeLayer == .upper
         actionHandler?(.insert(resolvedText(value)))
-        // Only deactivate shift if it's temporary (not caps-lock)
-        if activeLayer == .upper && !isCapsLockActive {
+        // Only deactivate shift if it was already upper before insert and not caps-lock
+        if wasUpper && !isCapsLockActive {
             activeLayer = .lower
         }
     }
