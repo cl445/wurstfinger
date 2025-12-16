@@ -34,6 +34,9 @@ struct SettingsView: View {
     @AppStorage(KeyboardViewModel.numpadStyleKey, store: SharedDefaults.store)
     private var numpadStyleRaw = NumpadStyle.phone.rawValue
 
+    @AppStorage("autoCapitalizeEnabled", store: SharedDefaults.store)
+    private var autoCapitalizeEnabled = false
+
     private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!
 
     var body: some View {
@@ -58,6 +61,10 @@ struct SettingsView: View {
 
             Toggle(isOn: $utilityColumnLeading) {
                 SettingsRow(icon: "keyboard.badge.ellipsis", color: .indigo, title: "Utility Keys on Left", subtitle: "Places globe, symbols, delete and return on the left")
+            }
+
+            Toggle(isOn: $autoCapitalizeEnabled) {
+                SettingsRow(icon: "textformat.size.larger", color: .teal, title: "Auto-Capitalize", subtitle: "Capitalize after sentence-ending punctuation")
             }
         } header: {
             Text("General")

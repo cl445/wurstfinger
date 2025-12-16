@@ -47,6 +47,7 @@ final class KeyboardViewController: UIInputViewController {
         // Reload settings every time keyboard appears
         viewModel.reloadSettings()
         updateKeyboardHeight()
+        checkAutoCapitalization()
     }
 
     private func updateKeyboardHeight() {
@@ -97,14 +98,21 @@ final class KeyboardViewController: UIInputViewController {
         switch action {
         case .insert(let text):
             textDocumentProxy.insertText(text)
+            // Spanish sentence-opening punctuation triggers immediate capitalization
+            if AutoCapitalization.shouldCapitalizeImmediately(after: text) &&
+               SharedDefaults.store.bool(forKey: "autoCapitalizeEnabled") {
+                viewModel.setLayer(.upper)
+            }
         case .deleteBackward:
             textDocumentProxy.deleteBackward()
         case .advanceToNextInputMode:
             advanceToNextInputMode()
         case .space:
             textDocumentProxy.insertText(" ")
+            checkAutoCapitalization()
         case .newline:
             textDocumentProxy.insertText("\n")
+            checkAutoCapitalization()
         case .dismissKeyboard:
             dismissKeyboard()
         case .capitalizeWord(let style):
@@ -117,6 +125,15 @@ final class KeyboardViewController: UIInputViewController {
             handleCycleAccents()
         case .deleteWord:
             deleteWordBeforeCursor()
+        }
+    }
+
+    private func checkAutoCapitalization() {
+        // Check if auto-capitalize is enabled
+        guard SharedDefaults.store.bool(forKey: "autoCapitalizeEnabled") else { return }
+
+        if AutoCapitalization.shouldCapitalize(context: textDocumentProxy.documentContextBeforeInput) {
+            viewModel.setLayer(.upper)
         }
     }
 

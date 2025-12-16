@@ -80,6 +80,7 @@
 		42C0B35D2EB16D3400DF2D45 /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				AutoCapitalization.swift,
 				ComposeEngine.swift,
 				DeleteKeyButton.swift,
 				KeyboardButton.swift,
