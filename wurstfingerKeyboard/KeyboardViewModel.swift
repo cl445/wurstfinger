@@ -419,6 +419,18 @@ final class KeyboardViewModel: ObservableObject {
         actionHandler?(.dismissKeyboard)
     }
 
+    func handleGlobeSwipe(direction: KeyboardDirection) {
+        switch direction {
+        case .left:
+            handleAdvanceToNextInputMode()
+        case .down:
+            handleDismissKeyboard()
+        default:
+            // Center and other directions reserved for future use (e.g., emoji)
+            break
+        }
+    }
+
     func toggleShift() {
         switch activeLayer {
         case .lower:

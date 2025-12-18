@@ -155,3 +155,38 @@ struct KeyHintOverlay: View {
         }
     }
 }
+
+/// Overlay for globe key showing swipe hints (globe left, keyboard dismiss down)
+struct GlobeKeyHintOverlay: View {
+    let keyHeight: CGFloat
+
+    // SF Symbols need smaller size than text hints to appear proportional
+    private var symbolFontSize: CGFloat {
+        let scaledSize = KeyboardConstants.FontSizes.hintBaseSize * (keyHeight / KeyboardConstants.FontSizes.hintReferenceHeight)
+        let baseSize = min(max(scaledSize, KeyboardConstants.FontSizes.hintMinSize), KeyboardConstants.FontSizes.hintMaxSize)
+        return baseSize * 0.75  // SF Symbols are visually larger than text
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            let horizontalPadding: CGFloat = 4
+            let verticalPadding: CGFloat = 3
+
+            // Globe icon at left (swipe left for next keyboard)
+            Image(systemName: "globe")
+                .font(.system(size: symbolFontSize, weight: .medium))
+                .foregroundStyle(Color.primary.opacity(0.5))
+                .padding(.leading, horizontalPadding)
+                .frame(width: size.width, height: size.height, alignment: .leading)
+
+            // Keyboard dismiss icon at bottom (swipe down to dismiss)
+            Image(systemName: "keyboard.chevron.compact.down")
+                .font(.system(size: symbolFontSize, weight: .medium))
+                .foregroundStyle(Color.primary.opacity(0.5))
+                .padding(.bottom, verticalPadding)
+                .frame(width: size.width, height: size.height, alignment: .bottom)
+        }
+        .allowsHitTesting(false)
+    }
+}
