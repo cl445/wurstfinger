@@ -98,15 +98,15 @@ struct KeyboardRootView: View {
     @ViewBuilder
     private func utilityButton(forRow row: Int, keyHeight: CGFloat) -> some View {
         switch row {
-        case 0: // Globe button
+        case 0: // Globe button - swipe left: next keyboard, swipe down: dismiss, center: reserved for emoji
             KeyboardButton(
                 height: keyHeight,
                 aspectRatio: viewModel.keyAspectRatio,
-                label: Image(systemName: "globe"),
-                overlay: EmptyView(),
+                label: Text(""),
+                overlay: GlobeKeyHintOverlay(keyHeight: keyHeight),
                 config: KeyboardButtonConfig(),
                 callbacks: KeyboardButtonCallbacks(
-                    onTap: viewModel.handleAdvanceToNextInputMode,
+                    onSwipe: viewModel.handleGlobeSwipe,
                     onCircular: { viewModel.handleUtilityCircularGesture(.globe, direction: $0) }
                 )
             )
