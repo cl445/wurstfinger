@@ -110,14 +110,18 @@ struct KeyboardRootView: View {
                     onCircular: { viewModel.handleUtilityCircularGesture(.globe, direction: $0) }
                 )
             )
-        case 1: // Symbols toggle button
+        case 1: // Symbols toggle button with text editing swipes
             KeyboardButton(
                 height: keyHeight,
                 aspectRatio: viewModel.keyAspectRatio,
                 label: Text(viewModel.symbolToggleLabel),
-                overlay: EmptyView(),
+                overlay: SymbolsKeyHintOverlay(keyHeight: keyHeight),
                 config: KeyboardButtonConfig(highlighted: viewModel.isSymbolsToggleActive, accessibilityIdentifier: "symbols"),
-                callbacks: KeyboardButtonCallbacks(onTap: viewModel.toggleSymbols)
+                callbacks: KeyboardButtonCallbacks(
+                    onTap: viewModel.toggleSymbols,
+                    onSwipe: viewModel.handleSymbolsKeySwipe,
+                    onSwipeReturn: viewModel.handleSymbolsKeySwipe
+                )
             )
         case 2: // Delete button
             DeleteKeyButton(viewModel: viewModel, keyHeight: keyHeight, aspectRatio: viewModel.keyAspectRatio)

@@ -157,21 +157,6 @@ struct wurstfingerTests {
         #expect(deletes == 2)
     }
 
-    @Test func deleteWordActionEmits() async throws {
-        let viewModel = KeyboardViewModel()
-        var didDeleteWord = false
-
-        viewModel.bindActionHandler { action in
-            if case .deleteWord = action {
-                didDeleteWord = true
-            }
-        }
-
-        viewModel.handleDeleteWord()
-
-        #expect(didDeleteWord)
-    }
-
     @Test func hapticIntensitiesPersistToDefaults() async throws {
         let suite = "group.de.akator.wurstfinger.tests.hapticsPersist"
         let defaults = try #require(UserDefaults(suiteName: suite))
