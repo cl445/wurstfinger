@@ -13,6 +13,7 @@ import UIKit
 enum KeyboardAction {
     case insert(String)
     case deleteBackward
+    case deleteForward
     case space
     case newline
     case advanceToNextInputMode
@@ -21,7 +22,10 @@ enum KeyboardAction {
     case moveCursor(offset: Int)
     case compose(trigger: String)
     case cycleAccents
-    case deleteWord
+    // Text editing actions (clipboard)
+    case copy
+    case paste
+    case cut
 }
 
 enum CapitalizationStyle {
@@ -399,11 +403,6 @@ final class KeyboardViewModel: ObservableObject {
         actionHandler?(.deleteBackward)
     }
 
-    func handleDeleteWord() {
-        feedbackModifier()
-        actionHandler?(.deleteWord)
-    }
-
     func handleReturn() {
         feedbackModifier()
         actionHandler?(.newline)
@@ -449,6 +448,28 @@ final class KeyboardViewModel: ObservableObject {
             activeLayer = .numbers
         case .numbers, .symbols:
             activeLayer = .lower
+        }
+    }
+
+    /// Handle swipe gestures on the symbols toggle key (123/ABC)
+    /// - Up: Copy
+    /// - Up-Right: Cut
+    /// - Down: Paste
+    /// - Other directions: Toggle symbols
+    func handleSymbolsKeySwipe(_ direction: KeyboardDirection) {
+        switch direction {
+        case .up:
+            feedbackModifier()
+            actionHandler?(.copy)
+        case .upRight:
+            feedbackModifier()
+            actionHandler?(.cut)
+        case .down:
+            feedbackModifier()
+            actionHandler?(.paste)
+        default:
+            // All other directions toggle symbols
+            toggleSymbols()
         }
     }
 
@@ -641,14 +662,18 @@ final class KeyboardViewModel: ObservableObject {
 
         deleteDragResidual += deltaX
 
+        // Drag left = delete backward
         while deleteDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
             actionHandler?(.deleteBackward)
             feedbackDrag()
             deleteDragResidual += KeyboardConstants.SpaceGestures.dragStep
         }
 
-        if deleteDragResidual > 0 {
-            deleteDragResidual = min(deleteDragResidual, KeyboardConstants.SpaceGestures.dragStep)
+        // Drag right = delete forward
+        while deleteDragResidual >= KeyboardConstants.SpaceGestures.dragStep {
+            actionHandler?(.deleteForward)
+            feedbackDrag()
+            deleteDragResidual -= KeyboardConstants.SpaceGestures.dragStep
         }
     }
 
