@@ -83,6 +83,7 @@
 				AutoCapitalization.swift,
 				ComposeEngine.swift,
 				DeleteKeyButton.swift,
+				GesturePreprocessor.swift,
 				KeyboardButton.swift,
 				KeyboardButtonComponents.swift,
 				KeyboardLayout.swift,
@@ -92,6 +93,7 @@
 				KeyHintOverlay.swift,
 				LanguageConfig.swift,
 				LanguageSettings.swift,
+				RingBuffer.swift,
 				SpaceKeyButton.swift,
 				ViewExtensions.swift,
 			);

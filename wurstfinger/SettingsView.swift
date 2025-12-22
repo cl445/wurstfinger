@@ -39,12 +39,16 @@ struct SettingsView: View {
 
     private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!
 
+    @AppStorage("expertModeEnabled", store: SharedDefaults.store)
+    private var expertModeEnabled = false
+
     var body: some View {
         NavigationStack {
             Form {
                 generalSection
                 appearanceSection
                 feedbackSection
+                expertSection
                 aboutSection
             }
             .navigationTitle("Settings")
@@ -101,6 +105,21 @@ struct SettingsView: View {
             }
         } header: {
             Text("Feedback")
+        }
+    }
+
+    private var expertSection: some View {
+        Section {
+            NavigationLink(destination: ExpertSettingsView()) {
+                SettingsRow(
+                    icon: "slider.horizontal.3",
+                    color: .orange,
+                    title: "Expert",
+                    subtitle: expertModeEnabled ? "Gesture tuning enabled" : "Advanced gesture settings"
+                )
+            }
+        } header: {
+            Text("Advanced")
         }
     }
 
