@@ -93,6 +93,7 @@
 				KeyHintOverlay.swift,
 				LanguageConfig.swift,
 				LanguageSettings.swift,
+				RingBuffer.swift,
 				SpaceKeyButton.swift,
 				ViewExtensions.swift,
 			);

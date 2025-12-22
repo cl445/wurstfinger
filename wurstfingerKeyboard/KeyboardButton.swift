@@ -17,14 +17,7 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
     let callbacks: KeyboardButtonCallbacks
 
     @State private var isActive = false
-    @State private var positions: [CGPoint] = []
-
-    /// Extra touch area extension to cover margins between keys
-    private var touchPadding: CGFloat {
-        // Extend touch area by half the grid spacing on each side
-        // This ensures the entire margin area is covered by adjacent keys
-        KeyboardConstants.Layout.gridHorizontalSpacing / 2 + 2
-    }
+    @State private var positions = RingBuffer<CGPoint>(capacity: KeyboardConstants.Gesture.positionBufferSize)
 
     /// Extra touch area extension to cover margins between keys
     private var touchPadding: CGFloat {
@@ -57,16 +50,14 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
                     if positions.isEmpty {
-                        positions = [CGPoint.zero]
+                        // Reset if starting new gesture (though onEnded should handle this)
+                        positions.removeAll()
+                        positions.append(.zero)
                     }
 
                     let point = CGPoint(x: value.translation.width, y: value.translation.height)
                     positions.append(point)
-
-                    if positions.count > KeyboardConstants.Gesture.positionBufferSize {
-                        positions.removeFirst(positions.count - KeyboardConstants.Gesture.positionBufferSize)
-                    }
-
+                    
                     isActive = true
                 }
                 .onEnded { _ in
@@ -88,7 +79,8 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
         GestureFeatures.thresholds = GestureClassificationThresholds.fromUserDefaults()
 
         // Preprocess: jitter filter, outlier filter, aspect normalization, smoothing
-        let processed = preprocessor.preprocess(positions)
+        // Convert RingBuffer to Array for processing
+        let processed = preprocessor.preprocess(positions.elements)
 
         // Extract features
         let features = GestureFeatures.extract(from: processed)
@@ -169,7 +161,7 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
     }
 
     private func resetGestureState() {
-        positions.removeAll(keepingCapacity: false)
+        positions.removeAll()
         isActive = false
     }
 }

@@ -56,6 +56,14 @@ struct ExpertSettingsView: View {
                 tapDetectionSection
                 circularDetectionSection
                 returnSwipeDetectionSection
+                
+                Section {
+                    NavigationLink("Gesture Playground") {
+                        GesturePlaygroundView()
+                    }
+                } header: {
+                    Label("Tools", systemImage: "hammer.fill")
+                }
             }
         }
         .navigationTitle("Expert")
