@@ -168,6 +168,9 @@ struct wurstfingerTests {
         viewModel.hapticIntensityModifier = 0.2
         viewModel.hapticIntensityDrag = 1.1
 
+        // Ensure UserDefaults are flushed (can be delayed in CI environments)
+        defaults.synchronize()
+
         #expect(defaults.double(forKey: KeyboardViewModel.hapticTapIntensityKey) == 0.8)
         #expect(defaults.double(forKey: KeyboardViewModel.hapticModifierIntensityKey) == 0.2)
         let dragDefault = defaults.double(forKey: KeyboardViewModel.hapticDragIntensityKey)
