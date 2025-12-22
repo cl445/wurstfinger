@@ -43,8 +43,11 @@ struct ExpertSettingsView: View {
     @AppStorage(GestureClassificationThresholds.minAngularSpanKey, store: SharedDefaults.store)
     private var minAngularSpan = Double(GestureClassificationThresholds.defaultMinAngularSpan)
 
-    @AppStorage(GestureClassificationThresholds.minPathSeparationKey, store: SharedDefaults.store)
-    private var minPathSeparation = Double(GestureClassificationThresholds.defaultMinPathSeparation)
+    @AppStorage(GestureClassificationThresholds.minTurnConsistencyKey, store: SharedDefaults.store)
+    private var minTurnConsistency = Double(GestureClassificationThresholds.defaultMinTurnConsistency)
+
+    @AppStorage(GestureClassificationThresholds.minOrientedCompactnessKey, store: SharedDefaults.store)
+    private var minOrientedCompactness = Double(GestureClassificationThresholds.defaultMinOrientedCompactness)
 
     var body: some View {
         Form {
@@ -246,17 +249,26 @@ struct ExpertSettingsView: View {
             )
 
             parameterSlider(
-                title: "Min Path Separation",
-                value: $minPathSeparation,
-                range: 0.3...0.8,
+                title: "Min Turn Consistency",
+                value: $minTurnConsistency,
+                range: 0.5...1.0,
                 step: 0.05,
                 unit: "",
-                description: "Distance between start and end points. High = spiral, Low = return-swipe."
+                description: "How consistently the path turns in one direction. 1.0 = all turns same direction (circle), 0.5 = half each (return-swipe)."
+            )
+
+            parameterSlider(
+                title: "Min Oriented Compactness",
+                value: $minOrientedCompactness,
+                range: 0.2...0.8,
+                step: 0.05,
+                unit: "",
+                description: "Width/length ratio along principal axis. 1.0 = square, 0 = line. Filters out narrow arcs."
             )
         } header: {
             Label("Step 2: Circular Detection", systemImage: "arrow.trianglehead.2.clockwise.rotate.90")
         } footer: {
-            Text("Distinguishes spirals (for uppercase) from return-swipes. Path Separation is the key differentiator: spirals don't return to start, return-swipes do.")
+            Text("Distinguishes circles (for uppercase) from return-swipes. Turn Consistency detects direction reversals, Oriented Compactness filters narrow arcs.")
         }
     }
 
@@ -367,7 +379,8 @@ struct ExpertSettingsView: View {
         returnDisplacementEnd = Double(GestureClassificationThresholds.defaultReturnDisplacementEnd)
         minCircularity = Double(GestureClassificationThresholds.defaultMinCircularity)
         minAngularSpan = Double(GestureClassificationThresholds.defaultMinAngularSpan)
-        minPathSeparation = Double(GestureClassificationThresholds.defaultMinPathSeparation)
+        minTurnConsistency = Double(GestureClassificationThresholds.defaultMinTurnConsistency)
+        minOrientedCompactness = Double(GestureClassificationThresholds.defaultMinOrientedCompactness)
     }
 }
 

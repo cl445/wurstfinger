@@ -296,16 +296,22 @@ struct GestureClassificationThresholds {
     let minAngularSpan: CGFloat
     /// Minimum path separation to distinguish spiral from return-swipe
     let minPathSeparation: CGFloat
+    /// Minimum turn consistency to be considered circular (1.0 = all same direction)
+    let minTurnConsistency: CGFloat
+    /// Minimum oriented compactness (width/length) to be considered circular (1.0 = square, 0 = line)
+    let minOrientedCompactness: CGFloat
 
     // MARK: - Default Values
 
-    static let defaultMinSwipeLength: CGFloat = 30
+    static let defaultMinSwipeLength: CGFloat = 20
     static let defaultMaxReturnRatio: CGFloat = 0.5
     static let defaultReturnDisplacementStart: CGFloat = 0.2
     static let defaultReturnDisplacementEnd: CGFloat = 0.8
     static let defaultMinCircularity: CGFloat = 0.3
     static let defaultMinAngularSpan: CGFloat = .pi * 1.5  // 270°
     static let defaultMinPathSeparation: CGFloat = 0.5
+    static let defaultMinTurnConsistency: CGFloat = 0.8  // 80% turns in same direction
+    static let defaultMinOrientedCompactness: CGFloat = 0.4  // width must be at least 40% of length
 
     // MARK: - UserDefaults Keys
 
@@ -316,6 +322,8 @@ struct GestureClassificationThresholds {
     static let minCircularityKey = "gesture.minCircularity"
     static let minAngularSpanKey = "gesture.minAngularSpan"
     static let minPathSeparationKey = "gesture.minPathSeparation"
+    static let minTurnConsistencyKey = "gesture.minTurnConsistency"
+    static let minOrientedCompactnessKey = "gesture.minOrientedCompactness"
 
     static let `default` = GestureClassificationThresholds(
         minSwipeLength: defaultMinSwipeLength,
@@ -323,7 +331,9 @@ struct GestureClassificationThresholds {
         returnDisplacementRange: defaultReturnDisplacementStart...defaultReturnDisplacementEnd,
         minCircularity: defaultMinCircularity,
         minAngularSpan: defaultMinAngularSpan,
-        minPathSeparation: defaultMinPathSeparation
+        minPathSeparation: defaultMinPathSeparation,
+        minTurnConsistency: defaultMinTurnConsistency,
+        minOrientedCompactness: defaultMinOrientedCompactness
     )
 
     /// Loads thresholds from SharedDefaults with fallback to defaults
@@ -337,7 +347,9 @@ struct GestureClassificationThresholds {
             returnDisplacementRange: start...end,
             minCircularity: store.object(forKey: minCircularityKey) as? CGFloat ?? defaultMinCircularity,
             minAngularSpan: store.object(forKey: minAngularSpanKey) as? CGFloat ?? defaultMinAngularSpan,
-            minPathSeparation: store.object(forKey: minPathSeparationKey) as? CGFloat ?? defaultMinPathSeparation
+            minPathSeparation: store.object(forKey: minPathSeparationKey) as? CGFloat ?? defaultMinPathSeparation,
+            minTurnConsistency: store.object(forKey: minTurnConsistencyKey) as? CGFloat ?? defaultMinTurnConsistency,
+            minOrientedCompactness: store.object(forKey: minOrientedCompactnessKey) as? CGFloat ?? defaultMinOrientedCompactness
         )
     }
 }
@@ -369,6 +381,8 @@ struct GestureFeatures {
     let angularSpan: CGFloat    // total angle traversed (positive = CW, negative = CCW)
     let circularity: CGFloat    // how circular (0-1, 1 = perfect circle)
     let pathSeparation: CGFloat // how separated are mirrored points (spiral > 0.5, return < 0.3)
+    let turnConsistency: CGFloat // how consistent turn direction is (1.0 = all same direction, 0.5 = half each)
+    let orientedCompactness: CGFloat // width/length along principal axis (1.0 = square, 0 = line)
 
     // Derived classifications (using configurable thresholds)
     var isTap: Bool { maxDisplacement < Self.thresholds.minSwipeLength }
@@ -387,12 +401,13 @@ struct GestureFeatures {
     var isCircular: Bool {
         let t = Self.thresholds
         // Require minimum size (2x swipe length) to avoid small wiggles being detected as circles
-        // Also require high path separation to distinguish from return swipes
-        // (spiral: mirrored points far apart, return: mirrored points close together)
+        // Also require high turn consistency and compactness to distinguish from return swipes
+        // (circle: turns consistently one direction AND is not a narrow arc)
         return pathLength > t.minSwipeLength * 2 &&
                circularity > t.minCircularity &&
                abs(angularSpan) > t.minAngularSpan &&
-               pathSeparation > t.minPathSeparation
+               turnConsistency > t.minTurnConsistency &&
+               orientedCompactness > t.minOrientedCompactness
     }
 
     var isClockwise: Bool { angularSpan > 0 }
@@ -491,6 +506,52 @@ struct GestureFeatures {
         let avgMirrorDistance = comparisons > 0 ? mirrorDistanceSum / CGFloat(comparisons) : 0
         let pathSeparation = maxDisp > 0 ? avgMirrorDistance / maxDisp : 0
 
+        // Turn consistency: how consistently the path turns in one direction
+        // Circle: all turns same direction → 1.0
+        // Return-swipe: turns one way then other → ~0.5
+        var cwCount = 0
+        var ccwCount = 0
+        let turnThreshold: CGFloat = 0.5 // Minimum cross product to count as significant turn
+
+        for i in 1..<(points.count - 1) {
+            let v1 = CGPoint(x: points[i].x - points[i-1].x, y: points[i].y - points[i-1].y)
+            let v2 = CGPoint(x: points[i+1].x - points[i].x, y: points[i+1].y - points[i].y)
+            let cross = v1.x * v2.y - v1.y * v2.x
+
+            if cross > turnThreshold {
+                ccwCount += 1
+            } else if cross < -turnThreshold {
+                cwCount += 1
+            }
+        }
+
+        let totalTurns = cwCount + ccwCount
+        let turnConsistency: CGFloat = totalTurns > 0
+            ? CGFloat(max(cwCount, ccwCount)) / CGFloat(totalTurns)
+            : 1.0
+
+        // Oriented compactness: project points onto principal axis (maxDisplacementAngle)
+        // and measure width/length ratio. Circle ≈ 1.0, narrow arc ≈ 0.1
+        let cosA = cos(maxDispAngle)
+        let sinA = sin(maxDispAngle)
+        var minPara: CGFloat = 0, maxPara: CGFloat = 0
+        var minPerp: CGFloat = 0, maxPerp: CGFloat = 0
+
+        for p in points {
+            let dx = p.x - start.x
+            let dy = p.y - start.y
+            let para = dx * cosA + dy * sinA   // parallel to principal axis
+            let perp = -dx * sinA + dy * cosA  // perpendicular
+            minPara = min(minPara, para)
+            maxPara = max(maxPara, para)
+            minPerp = min(minPerp, perp)
+            maxPerp = max(maxPerp, perp)
+        }
+
+        let axisLength = maxPara - minPara
+        let axisWidth = maxPerp - minPerp
+        let orientedCompactness: CGFloat = axisLength > 0 ? axisWidth / axisLength : 0
+
         // Ratios
         let returnRatio = pathLen > 0 ? chordLen / pathLen : 1
         let bboxAspect = bbox.height > 0 ? bbox.width / bbox.height : 1
@@ -509,7 +570,9 @@ struct GestureFeatures {
             maxDisplacementAngle: maxDispAngle,
             angularSpan: angularSpan,
             circularity: circularity,
-            pathSeparation: pathSeparation
+            pathSeparation: pathSeparation,
+            turnConsistency: turnConsistency,
+            orientedCompactness: orientedCompactness
         )
     }
 
@@ -527,7 +590,9 @@ struct GestureFeatures {
         maxDisplacementAngle: 0,
         angularSpan: 0,
         circularity: 0,
-        pathSeparation: 0
+        pathSeparation: 0,
+        turnConsistency: 1,
+        orientedCompactness: 0
     )
 }
 
@@ -544,6 +609,8 @@ extension GestureFeatures: CustomStringConvertible {
           angularSpan: \(String(format: "%.1f°", angularSpan * 180 / .pi))
           circularity: \(String(format: "%.2f", circularity))
           pathSeparation: \(String(format: "%.2f", pathSeparation))
+          turnConsistency: \(String(format: "%.2f", turnConsistency))
+          orientedCompactness: \(String(format: "%.2f", orientedCompactness))
           isTap: \(isTap), isReturn: \(isReturn), isCircular: \(isCircular)
         """
     }
