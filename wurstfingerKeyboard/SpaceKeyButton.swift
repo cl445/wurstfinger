@@ -28,6 +28,7 @@ struct SpaceKeyButton: View {
         ) {
             Color.clear
         }
+        .contentShape(Rectangle())
         .accessibilityLabel(Text("Space"))
         .gesture(
             DragGesture(minimumDistance: 0)
