@@ -85,12 +85,16 @@ struct KeyCap<Content: View>: View {
     private var keyBackground: some View {
         if keyboardStyle == .liquidGlass, #available(iOS 26.0, *) {
             // Liquid Glass style on iOS 26+
+            // Use .bar material - adapts well to both light and dark mode
             RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
                 .fill(highlighted ? Color.accentColor.opacity(0.25) : .clear)
-                .glassEffect(.regular, in: .rect(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius))
+                .background(
+                    RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
+                        .fill(.bar)
+                )
                 .overlay(
                     RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
-                        .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
+                        .strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
                 )
         } else {
             // Classic style (or fallback for older iOS)
