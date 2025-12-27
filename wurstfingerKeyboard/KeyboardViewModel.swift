@@ -13,6 +13,7 @@ import UIKit
 enum KeyboardAction {
     case insert(String)
     case deleteBackward
+    case deleteForward
     case space
     case newline
     case advanceToNextInputMode
@@ -21,7 +22,10 @@ enum KeyboardAction {
     case moveCursor(offset: Int)
     case compose(trigger: String)
     case cycleAccents
-    case deleteWord
+    // Text editing actions (clipboard)
+    case copy
+    case paste
+    case cut
 }
 
 enum CapitalizationStyle {
@@ -399,11 +403,6 @@ final class KeyboardViewModel: ObservableObject {
         actionHandler?(.deleteBackward)
     }
 
-    func handleDeleteWord() {
-        feedbackModifier()
-        actionHandler?(.deleteWord)
-    }
-
     func handleReturn() {
         feedbackModifier()
         actionHandler?(.newline)
@@ -417,6 +416,18 @@ final class KeyboardViewModel: ObservableObject {
     func handleDismissKeyboard() {
         feedbackModifier()
         actionHandler?(.dismissKeyboard)
+    }
+
+    func handleGlobeSwipe(direction: KeyboardDirection) {
+        switch direction {
+        case .left:
+            handleAdvanceToNextInputMode()
+        case .down:
+            handleDismissKeyboard()
+        default:
+            // Center and other directions reserved for future use (e.g., emoji)
+            break
+        }
     }
 
     func toggleShift() {
@@ -437,6 +448,28 @@ final class KeyboardViewModel: ObservableObject {
             activeLayer = .numbers
         case .numbers, .symbols:
             activeLayer = .lower
+        }
+    }
+
+    /// Handle swipe gestures on the symbols toggle key (123/ABC)
+    /// - Up: Copy
+    /// - Up-Right: Cut
+    /// - Down: Paste
+    /// - Other directions: Toggle symbols
+    func handleSymbolsKeySwipe(_ direction: KeyboardDirection) {
+        switch direction {
+        case .up:
+            feedbackModifier()
+            actionHandler?(.copy)
+        case .upRight:
+            feedbackModifier()
+            actionHandler?(.cut)
+        case .down:
+            feedbackModifier()
+            actionHandler?(.paste)
+        default:
+            // All other directions toggle symbols
+            toggleSymbols()
         }
     }
 
@@ -511,9 +544,20 @@ final class KeyboardViewModel: ObservableObject {
 
     private func insertText(_ value: String) {
         feedbackTap()
+        performTextInsertion(value)
+    }
+
+    /// For testing: simulates the text insertion flow without haptic feedback
+    func simulateTextInsertion(_ value: String) {
+        performTextInsertion(value)
+    }
+
+    private func performTextInsertion(_ value: String) {
+        // Capture layer state BEFORE the action handler (which may change it)
+        let wasUpper = activeLayer == .upper
         actionHandler?(.insert(resolvedText(value)))
-        // Only deactivate shift if it's temporary (not caps-lock)
-        if activeLayer == .upper && !isCapsLockActive {
+        // Only deactivate shift if it was already upper before insert and not caps-lock
+        if wasUpper && !isCapsLockActive {
             activeLayer = .lower
         }
     }
@@ -618,14 +662,18 @@ final class KeyboardViewModel: ObservableObject {
 
         deleteDragResidual += deltaX
 
+        // Drag left = delete backward
         while deleteDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
             actionHandler?(.deleteBackward)
             feedbackDrag()
             deleteDragResidual += KeyboardConstants.SpaceGestures.dragStep
         }
 
-        if deleteDragResidual > 0 {
-            deleteDragResidual = min(deleteDragResidual, KeyboardConstants.SpaceGestures.dragStep)
+        // Drag right = delete forward
+        while deleteDragResidual >= KeyboardConstants.SpaceGestures.dragStep {
+            actionHandler?(.deleteForward)
+            feedbackDrag()
+            deleteDragResidual -= KeyboardConstants.SpaceGestures.dragStep
         }
     }
 

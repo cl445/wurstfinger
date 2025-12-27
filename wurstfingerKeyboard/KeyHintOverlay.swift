@@ -155,3 +155,127 @@ struct KeyHintOverlay: View {
         }
     }
 }
+
+/// Overlay for globe key showing swipe hints (globe left, keyboard dismiss down)
+struct GlobeKeyHintOverlay: View {
+    let keyHeight: CGFloat
+
+    // SF Symbols need smaller size than text hints to appear proportional
+    private var symbolFontSize: CGFloat {
+        let scaledSize = KeyboardConstants.FontSizes.hintBaseSize * (keyHeight / KeyboardConstants.FontSizes.hintReferenceHeight)
+        let baseSize = min(max(scaledSize, KeyboardConstants.FontSizes.hintMinSize), KeyboardConstants.FontSizes.hintMaxSize)
+        return baseSize * 0.75  // SF Symbols are visually larger than text
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            let horizontalPadding: CGFloat = 4
+            let verticalPadding: CGFloat = 3
+
+            // Globe icon at left (swipe left for next keyboard)
+            Image(systemName: "globe")
+                .font(.system(size: symbolFontSize, weight: .medium))
+                .foregroundStyle(Color.primary.opacity(0.5))
+                .padding(.leading, horizontalPadding)
+                .frame(width: size.width, height: size.height, alignment: .leading)
+
+            // Keyboard dismiss icon at bottom (swipe down to dismiss)
+            Image(systemName: "keyboard.chevron.compact.down")
+                .font(.system(size: symbolFontSize, weight: .medium))
+                .foregroundStyle(Color.primary.opacity(0.5))
+                .padding(.bottom, verticalPadding)
+                .frame(width: size.width, height: size.height, alignment: .bottom)
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+/// Displays text editing swipe hints on the symbols toggle key (123/ABC)
+/// - Up: Copy
+/// - Up-Right: Cut
+/// - Down: Paste
+struct SymbolsKeyHintOverlay: View {
+    let keyHeight: CGFloat
+
+    private var hintFontSize: CGFloat {
+        let scaledSize = KeyboardConstants.FontSizes.hintBaseSize * (keyHeight / KeyboardConstants.FontSizes.hintReferenceHeight)
+        return min(max(scaledSize, KeyboardConstants.FontSizes.hintMinSize), KeyboardConstants.FontSizes.hintMaxSize)
+    }
+
+    private struct HintConfig {
+        let direction: KeyboardDirection
+        let iconName: String
+    }
+
+    private let hints: [HintConfig] = [
+        HintConfig(direction: .up, iconName: "doc.on.doc"),           // Copy
+        HintConfig(direction: .upRight, iconName: "scissors"),        // Cut
+        HintConfig(direction: .down, iconName: "doc.on.clipboard"),   // Paste
+    ]
+
+    var body: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            let scaledHorizontalPadding = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * (hintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize)
+            let scaledVerticalPadding = KeyboardConstants.FontSizes.hintBaseVerticalPadding * (hintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize)
+
+            ForEach(hints, id: \.direction) { hint in
+                Image(systemName: hint.iconName)
+                    .font(.system(size: hintFontSize * 0.6, weight: .regular))
+                    .foregroundStyle(Color.secondary.opacity(0.45))
+                    .padding(edgePadding(for: hint.direction,
+                                        horizontal: scaledHorizontalPadding,
+                                        vertical: scaledVerticalPadding))
+                    .frame(width: size.width, height: size.height, alignment: alignment(for: hint.direction))
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func edgePadding(for direction: KeyboardDirection, horizontal: CGFloat, vertical: CGFloat) -> EdgeInsets {
+        switch direction {
+        case .up:
+            return EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
+        case .down:
+            return EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
+        case .left:
+            return EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
+        case .right:
+            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
+        case .upLeft:
+            return EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
+        case .upRight:
+            return EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
+        case .downLeft:
+            return EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
+        case .downRight:
+            return EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
+        case .center:
+            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        }
+    }
+
+    private func alignment(for direction: KeyboardDirection) -> Alignment {
+        switch direction {
+        case .up:
+            return .top
+        case .down:
+            return .bottom
+        case .left:
+            return .leading
+        case .right:
+            return .trailing
+        case .upLeft:
+            return .topLeading
+        case .upRight:
+            return .topTrailing
+        case .downLeft:
+            return .bottomLeading
+        case .downRight:
+            return .bottomTrailing
+        case .center:
+            return .center
+        }
+    }
+}

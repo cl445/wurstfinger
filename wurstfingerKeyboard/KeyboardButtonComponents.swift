@@ -50,6 +50,13 @@ struct KeyCap<Content: View>: View {
     let fontSize: CGFloat
     private let content: Content
 
+    @AppStorage("keyboardStyle", store: SharedDefaults.store)
+    private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
+
+    private var keyboardStyle: KeyboardStyle {
+        KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic
+    }
+
     init(
         height: CGFloat,
         aspectRatio: CGFloat? = nil,
@@ -71,9 +78,28 @@ struct KeyCap<Content: View>: View {
             .font(.system(size: fontSize, weight: .semibold, design: .rounded))
             .foregroundStyle(Color.primary)
             .frame(minWidth: KeyboardConstants.KeyDimensions.minWidth, maxWidth: aspectRatio.map { height * $0 } ?? .infinity, minHeight: height, maxHeight: height)
-            .background(
-                RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
-                    .fill(highlighted ? Color.accentColor.opacity(0.25) : background)
-            )
+            .background(keyBackground)
+    }
+
+    @ViewBuilder
+    private var keyBackground: some View {
+        if keyboardStyle == .liquidGlass, #available(iOS 26.0, *) {
+            // Liquid Glass style on iOS 26+
+            // Use .bar material - adapts well to both light and dark mode
+            RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
+                .fill(highlighted ? Color.accentColor.opacity(0.25) : .clear)
+                .background(
+                    RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
+                        .fill(.bar)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
+                        .strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
+                )
+        } else {
+            // Classic style (or fallback for older iOS)
+            RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
+                .fill(highlighted ? Color.accentColor.opacity(0.25) : background)
+        }
     }
 }

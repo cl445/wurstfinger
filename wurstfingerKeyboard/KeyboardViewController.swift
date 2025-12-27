@@ -47,6 +47,7 @@ final class KeyboardViewController: UIInputViewController {
         // Reload settings every time keyboard appears
         viewModel.reloadSettings()
         updateKeyboardHeight()
+        checkAutoCapitalization()
     }
 
     private func updateKeyboardHeight() {
@@ -97,14 +98,23 @@ final class KeyboardViewController: UIInputViewController {
         switch action {
         case .insert(let text):
             textDocumentProxy.insertText(text)
+            // Spanish sentence-opening punctuation triggers immediate capitalization
+            if AutoCapitalization.shouldCapitalizeImmediately(after: text) &&
+               SharedDefaults.store.bool(forKey: "autoCapitalizeEnabled") {
+                viewModel.setLayer(.upper)
+            }
         case .deleteBackward:
             textDocumentProxy.deleteBackward()
+        case .deleteForward:
+            deleteForward()
         case .advanceToNextInputMode:
             advanceToNextInputMode()
         case .space:
             textDocumentProxy.insertText(" ")
+            checkAutoCapitalization()
         case .newline:
             textDocumentProxy.insertText("\n")
+            checkAutoCapitalization()
         case .dismissKeyboard:
             dismissKeyboard()
         case .capitalizeWord(let style):
@@ -115,8 +125,55 @@ final class KeyboardViewController: UIInputViewController {
             handleCompose(trigger: trigger)
         case .cycleAccents:
             handleCycleAccents()
-        case .deleteWord:
-            deleteWordBeforeCursor()
+        case .copy:
+            handleCopy()
+        case .paste:
+            handlePaste()
+        case .cut:
+            handleCut()
+        }
+    }
+
+    /// Delete one character after cursor
+    private func deleteForward() {
+        // Only delete if there's text after the cursor
+        guard let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty else {
+            return
+        }
+        textDocumentProxy.adjustTextPosition(byCharacterOffset: 1)
+        textDocumentProxy.deleteBackward()
+    }
+
+    /// Copy selected text to clipboard
+    private func handleCopy() {
+        if let selectedText = textDocumentProxy.selectedText, !selectedText.isEmpty {
+            UIPasteboard.general.string = selectedText
+        }
+    }
+
+    /// Paste text from clipboard
+    private func handlePaste() {
+        if let text = UIPasteboard.general.string, !text.isEmpty {
+            textDocumentProxy.insertText(text)
+        }
+    }
+
+    /// Cut selected text (copy + delete)
+    private func handleCut() {
+        if let selectedText = textDocumentProxy.selectedText, !selectedText.isEmpty {
+            UIPasteboard.general.string = selectedText
+            for _ in selectedText {
+                textDocumentProxy.deleteBackward()
+            }
+        }
+    }
+
+    private func checkAutoCapitalization() {
+        // Check if auto-capitalize is enabled
+        guard SharedDefaults.store.bool(forKey: "autoCapitalizeEnabled") else { return }
+
+        if AutoCapitalization.shouldCapitalize(context: textDocumentProxy.documentContextBeforeInput) {
+            viewModel.setLayer(.upper)
         }
     }
 
@@ -172,50 +229,6 @@ final class KeyboardViewController: UIInputViewController {
         if let replacement = ComposeEngine.cycleAccent(for: String(previous)) {
             textDocumentProxy.deleteBackward()
             textDocumentProxy.insertText(replacement)
-        }
-    }
-
-    private func deleteWordBeforeCursor() {
-        guard let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty else {
-            textDocumentProxy.deleteBackward()
-            return
-        }
-
-        let characters = before
-        var deleteCount = 0
-        var index = characters.endIndex
-
-        // Remove trailing whitespace first
-        while index > characters.startIndex {
-            let previous = characters.index(before: index)
-            if characters[previous].isWhitespace {
-                deleteCount += 1
-                index = previous
-            } else {
-                break
-            }
-        }
-
-        // Remove word characters (letters/numbers/underscore)
-        let wordSet = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_'’"))
-        while index > characters.startIndex {
-            let previous = characters.index(before: index)
-            let charScalars = characters[previous].unicodeScalars
-            if charScalars.allSatisfy({ wordSet.contains($0) }) {
-                deleteCount += 1
-                index = previous
-            } else {
-                break
-            }
-        }
-
-        if deleteCount == 0 {
-            textDocumentProxy.deleteBackward()
-            return
-        }
-
-        for _ in 0..<deleteCount {
-            textDocumentProxy.deleteBackward()
         }
     }
 }

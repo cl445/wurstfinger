@@ -157,21 +157,6 @@ struct wurstfingerTests {
         #expect(deletes == 2)
     }
 
-    @Test func deleteWordActionEmits() async throws {
-        let viewModel = KeyboardViewModel()
-        var didDeleteWord = false
-
-        viewModel.bindActionHandler { action in
-            if case .deleteWord = action {
-                didDeleteWord = true
-            }
-        }
-
-        viewModel.handleDeleteWord()
-
-        #expect(didDeleteWord)
-    }
-
     @Test func hapticIntensitiesPersistToDefaults() async throws {
         let suite = "group.de.akator.wurstfinger.tests.hapticsPersist"
         let defaults = try #require(UserDefaults(suiteName: suite))
@@ -182,6 +167,9 @@ struct wurstfingerTests {
         viewModel.hapticIntensityTap = 0.8
         viewModel.hapticIntensityModifier = 0.2
         viewModel.hapticIntensityDrag = 1.1
+
+        // Ensure UserDefaults are flushed (can be delayed in CI environments)
+        defaults.synchronize()
 
         #expect(defaults.double(forKey: KeyboardViewModel.hapticTapIntensityKey) == 0.8)
         #expect(defaults.double(forKey: KeyboardViewModel.hapticModifierIntensityKey) == 0.2)

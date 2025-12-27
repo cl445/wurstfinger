@@ -76,16 +76,8 @@ struct DeleteKeyButton: View {
 
                     if isSliding {
                         viewModel.endDeleteDrag()
-                    } else {
-                        let translation = totalTranslation
-                        let isWordSwipe = translation.width <= -KeyboardConstants.DeleteGestures.wordSwipeThreshold &&
-                            abs(translation.height) <= KeyboardConstants.DeleteGestures.verticalTolerance
-
-                        if isWordSwipe {
-                            viewModel.handleDeleteWord()
-                        } else if !repeatTriggered && !hasDragged {
-                            viewModel.handleDelete()
-                        }
+                    } else if !repeatTriggered && !hasDragged {
+                        viewModel.handleDelete()
                     }
 
                     resetGestureState()

@@ -488,6 +488,7 @@ extension LanguageConfig {
             ["t", "e", "s"]
         ],
         specialCharacters: [
+            "0_0_up": "å",
             "0_0_down": "ä",
             "0_0_downRight": "v",
             "0_1_down": "l",

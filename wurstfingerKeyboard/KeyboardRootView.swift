@@ -15,6 +15,13 @@ struct KeyboardRootView: View {
     var frameAlignment: Alignment = .bottom
     var overrideWidth: CGFloat? = nil
 
+    @AppStorage("keyboardStyle", store: SharedDefaults.store)
+    private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
+
+    private var keyboardStyle: KeyboardStyle {
+        KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic
+    }
+
     var body: some View {
         // At aspectRatio 1.5 (default), use original height of 54pt
         // Lower ratio = taller keys, higher ratio = shorter keys
@@ -34,8 +41,7 @@ struct KeyboardRootView: View {
 
         ZStack {
             // Background layer that always fills the entire space
-            Color(.systemBackground)
-                .ignoresSafeArea()
+            keyboardBackground
 
             VStack(spacing: KeyboardConstants.Layout.gridVerticalSpacing) {
                 // Rows 0-2: Standard letter/number rows
@@ -98,26 +104,30 @@ struct KeyboardRootView: View {
     @ViewBuilder
     private func utilityButton(forRow row: Int, keyHeight: CGFloat) -> some View {
         switch row {
-        case 0: // Globe button
+        case 0: // Globe button - swipe left: next keyboard, swipe down: dismiss, center: reserved for emoji
             KeyboardButton(
                 height: keyHeight,
                 aspectRatio: viewModel.keyAspectRatio,
-                label: Image(systemName: "globe"),
-                overlay: EmptyView(),
+                label: Text(""),
+                overlay: GlobeKeyHintOverlay(keyHeight: keyHeight),
                 config: KeyboardButtonConfig(),
                 callbacks: KeyboardButtonCallbacks(
-                    onTap: viewModel.handleAdvanceToNextInputMode,
+                    onSwipe: viewModel.handleGlobeSwipe,
                     onCircular: { viewModel.handleUtilityCircularGesture(.globe, direction: $0) }
                 )
             )
-        case 1: // Symbols toggle button
+        case 1: // Symbols toggle button with text editing swipes
             KeyboardButton(
                 height: keyHeight,
                 aspectRatio: viewModel.keyAspectRatio,
                 label: Text(viewModel.symbolToggleLabel),
-                overlay: EmptyView(),
+                overlay: SymbolsKeyHintOverlay(keyHeight: keyHeight),
                 config: KeyboardButtonConfig(highlighted: viewModel.isSymbolsToggleActive, accessibilityIdentifier: "symbols"),
-                callbacks: KeyboardButtonCallbacks(onTap: viewModel.toggleSymbols)
+                callbacks: KeyboardButtonCallbacks(
+                    onTap: viewModel.toggleSymbols,
+                    onSwipe: viewModel.handleSymbolsKeySwipe,
+                    onSwipeReturn: viewModel.handleSymbolsKeySwipe
+                )
             )
         case 2: // Delete button
             DeleteKeyButton(viewModel: viewModel, keyHeight: keyHeight, aspectRatio: viewModel.keyAspectRatio)
@@ -154,6 +164,21 @@ struct KeyboardRootView: View {
             }
         } else {
             EmptyView()
+        }
+    }
+
+    // MARK: - Background
+
+    @ViewBuilder
+    private var keyboardBackground: some View {
+        if keyboardStyle == .liquidGlass, #available(iOS 26.0, *) {
+            // Liquid Glass style: Transparent to let system glass material show through
+            Color.clear
+                .ignoresSafeArea()
+        } else {
+            // Classic style (or fallback for older iOS)
+            Color(.systemBackground)
+                .ignoresSafeArea()
         }
     }
 }

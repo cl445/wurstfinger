@@ -34,7 +34,16 @@ struct SettingsView: View {
     @AppStorage(KeyboardViewModel.numpadStyleKey, store: SharedDefaults.store)
     private var numpadStyleRaw = NumpadStyle.phone.rawValue
 
+    @AppStorage("keyboardStyle", store: SharedDefaults.store)
+    private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
+
+    @AppStorage("autoCapitalizeEnabled", store: SharedDefaults.store)
+    private var autoCapitalizeEnabled = false
+
     private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!
+
+    @AppStorage("expertModeEnabled", store: SharedDefaults.store)
+    private var expertModeEnabled = false
 
     var body: some View {
         NavigationStack {
@@ -42,6 +51,7 @@ struct SettingsView: View {
                 generalSection
                 appearanceSection
                 feedbackSection
+                expertSection
                 aboutSection
             }
             .navigationTitle("Settings")
@@ -59,6 +69,10 @@ struct SettingsView: View {
             Toggle(isOn: $utilityColumnLeading) {
                 SettingsRow(icon: "keyboard.badge.ellipsis", color: .indigo, title: "Utility Keys on Left", subtitle: "Places globe, symbols, delete and return on the left")
             }
+
+            Toggle(isOn: $autoCapitalizeEnabled) {
+                SettingsRow(icon: "textformat.size.larger", color: .teal, title: "Auto-Capitalize", subtitle: "Capitalize after sentence-ending punctuation")
+            }
         } header: {
             Text("General")
         }
@@ -66,6 +80,10 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         Section {
+            NavigationLink(destination: StyleSettingsView()) {
+                SettingsRow(icon: "paintbrush", color: .cyan, title: "Style", subtitle: keyboardStyleDescription)
+            }
+
             NavigationLink(destination: AspectRatioSettingsView(aspectRatio: $keyAspectRatio)) {
                 SettingsRow(icon: "square.resize", color: .orange, title: "Key Aspect Ratio", subtitle: "Current: \(String(format: "%.2f", keyAspectRatio)):1")
             }
@@ -94,6 +112,21 @@ struct SettingsView: View {
             }
         } header: {
             Text("Feedback")
+        }
+    }
+
+    private var expertSection: some View {
+        Section {
+            NavigationLink(destination: ExpertSettingsView()) {
+                SettingsRow(
+                    icon: "slider.horizontal.3",
+                    color: .orange,
+                    title: "Expert",
+                    subtitle: expertModeEnabled ? "Gesture tuning enabled" : "Advanced gesture settings"
+                )
+            }
+        } header: {
+            Text("Advanced")
         }
     }
 
@@ -142,6 +175,11 @@ struct SettingsView: View {
     }
 
     // MARK: - Helpers
+
+    private var keyboardStyleDescription: String {
+        let style = KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic
+        return style.displayName
+    }
 
     private var numpadStyleDescription: String {
         let style = NumpadStyle(rawValue: numpadStyleRaw) ?? .phone
