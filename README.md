@@ -1,5 +1,9 @@
 # Wurstfinger
 
+[![App Store](https://img.shields.io/badge/App%20Store-Available-black?logo=apple&logoColor=white)](https://apps.apple.com/de/app/wurstfinger/id6754844184)
+[![TestFlight](https://img.shields.io/badge/TestFlight-Beta-blue?logo=apple&logoColor=white)](https://testflight.apple.com/join/trX4rBPf)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 *The keyboard for fat fingers.*
 
 The name “Wurstfinger” is a nod to the “fat finger” problem—thumb-heavy typing on small screens.
@@ -10,24 +14,11 @@ layout to Apple devices, including circular gestures for uppercase letters,
 return swipes for typographic punctuation, and compose rules to generate
 accented characters.
 
-## Join the Beta
+## Download
 
-Want to try Wurstfinger before the official release? Join our public TestFlight beta!
+[![Download on the App Store](https://img.shields.io/badge/App%20Store-Download-black?logo=apple&logoColor=white)](https://apps.apple.com/de/app/wurstfinger/id6754844184)
 
-[![Join TestFlight Beta](https://img.shields.io/badge/TestFlight-Join%20Beta-blue?logo=apple&logoColor=white)](https://testflight.apple.com/join/trX4rBPf)
-
-**Beta Features:**
-- Nightly builds with the latest features from the `develop` branch
-- Help shape the keyboard with your feedback
-- Early access to experimental features
-
-**Requirements:**
-- iOS 17.0 or later
-- TestFlight app ([free download from App Store](https://apps.apple.com/app/testflight/id899247664))
-
-**Note:** Beta builds are automatically generated every night at 2 AM UTC when there are new changes. The first build after joining may take 1-2 hours for Apple's beta review process.
-
-## Preview
+**Requirements:** iOS 17.0 or later
 
 <table>
   <tr>
@@ -52,6 +43,20 @@ Want to try Wurstfinger before the official release? Join our public TestFlight 
   </tr>
 </table>
 
+## Why Wurstfinger?
+
+Traditional QWERTY keyboards waste screen space and require precise tapping. Wurstfinger uses a 3×3 grid with swipe gestures, so your thumbs travel less and hit the right key more often—even on small screens. Once you get past the learning curve (a few days of practice), you'll type faster and with fewer errors.
+
+## Beta Testing
+
+Want to try the latest features before they hit the App Store? Join our public TestFlight beta!
+
+[![Join TestFlight Beta](https://img.shields.io/badge/TestFlight-Join%20Beta-blue?logo=apple&logoColor=white)](https://testflight.apple.com/join/trX4rBPf)
+
+- Nightly builds with the latest features from the `develop` branch
+- Help shape the keyboard with your feedback
+- Early access to experimental features
+
 ## Features
 
 - **Multi-language support**: 14 languages including English, German, Spanish, French, Portuguese, Italian, Dutch, Swedish, Norwegian, Danish, Finnish, Polish, Czech, and Vietnamese
@@ -62,7 +67,6 @@ Want to try Wurstfinger before the official release? Join our public TestFlight 
 - **Drag gestures** for cursor movement and progressive deletion
 - **Customizable settings**: Adjust haptic feedback intensity, keyboard scale, and key aspect ratio
 - **Onboarding flow** with interactive setup guide
-- Support for iOS 17+ (Swift 5, SwiftUI)
 
 ## Getting Started
 
@@ -127,6 +131,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-- [MessagEase](https://www.exideas.com/) for the original layout concepts
+- [MessagEase](https://www.exideas.com/ME/) for the original layout concepts
 - [Thumb-Key](https://github.com/dessalines/thumb-key) for inspiration and
   compose rules
