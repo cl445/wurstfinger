@@ -290,6 +290,7 @@ private extension KeyboardLayout {
                     center: centers[0][0],
                     locale: config.locale,
                     textMap: [
+                        .up: config.specialCharacters["0_0_up"] ?? "",
                         .right: "-",
                         .downRight: config.specialCharacters["0_0_downRight"] ?? "v",
                         .down: config.specialCharacters["0_0_down"] ?? "",
@@ -300,6 +301,7 @@ private extension KeyboardLayout {
                     ],
                     returnOverrides: [
                         .upLeft: .cycleAccents,
+                        .up: .text((config.specialCharacters["0_0_up"] ?? "").uppercased(with: config.locale)),
                         .right: .text("÷"),
                         .downRight: .text((config.specialCharacters["0_0_downRight"] ?? "v").uppercased(with: config.locale)),
                         .down: .text((config.specialCharacters["0_0_down"] ?? "").uppercased(with: config.locale)),
