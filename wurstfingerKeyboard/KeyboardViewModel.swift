@@ -246,19 +246,20 @@ final class KeyboardViewModel: ObservableObject {
             utilityColumnLeading = newUtilityValue
         }
 
-        let savedRatio = sharedDefaults.object(forKey: "keyAspectRatio") as? Double ?? 1.5
+        // Use same defaults as init() for consistency
+        let savedRatio = sharedDefaults.object(forKey: "keyAspectRatio") as? Double ?? DeviceLayoutUtils.defaultKeyAspectRatio
         let newAspectRatio = min(1.62, max(1.0, savedRatio))
         if keyAspectRatio != newAspectRatio {
             keyAspectRatio = newAspectRatio
         }
 
-        let savedScale = sharedDefaults.object(forKey: "keyboardScale") as? Double ?? 1.0
-        let newScale = min(1.0, max(0.3, savedScale))
+        let savedScale = sharedDefaults.object(forKey: "keyboardScale") as? Double ?? DeviceLayoutUtils.defaultKeyboardScale
+        let newScale = min(1.0, max(0.25, savedScale))
         if keyboardScale != newScale {
             keyboardScale = newScale
         }
 
-        let savedPosition = sharedDefaults.object(forKey: "keyboardHorizontalPosition") as? Double ?? 0.5
+        let savedPosition = sharedDefaults.object(forKey: "keyboardHorizontalPosition") as? Double ?? DeviceLayoutUtils.defaultKeyboardPosition
         let newPosition = min(1.0, max(0.0, savedPosition))
         if keyboardHorizontalPosition != newPosition {
             keyboardHorizontalPosition = newPosition
