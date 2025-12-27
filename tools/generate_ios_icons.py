@@ -5,40 +5,8 @@ import re
 import shutil
 import subprocess
 import tempfile
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Literal
-
-
-@dataclass(slots=True, kw_only=True, frozen=True)
-class IconSpec:
-    size_pt: float
-    scale: int
-    idiom: Literal["iphone", "ipad", "ios-marketing"]
-
-
-ICON_SPECS: Final[list[IconSpec]] = [
-    IconSpec(size_pt=20,   scale=2, idiom="iphone"),
-    IconSpec(size_pt=20,   scale=3, idiom="iphone"),
-    IconSpec(size_pt=29,   scale=2, idiom="iphone"),
-    IconSpec(size_pt=29,   scale=3, idiom="iphone"),
-    IconSpec(size_pt=40,   scale=2, idiom="iphone"),
-    IconSpec(size_pt=40,   scale=3, idiom="iphone"),
-    IconSpec(size_pt=60,   scale=2, idiom="iphone"),
-    IconSpec(size_pt=60,   scale=3, idiom="iphone"),
-
-    IconSpec(size_pt=20,   scale=1, idiom="ipad"),
-    IconSpec(size_pt=20,   scale=2, idiom="ipad"),
-    IconSpec(size_pt=29,   scale=1, idiom="ipad"),
-    IconSpec(size_pt=29,   scale=2, idiom="ipad"),
-    IconSpec(size_pt=40,   scale=1, idiom="ipad"),
-    IconSpec(size_pt=40,   scale=2, idiom="ipad"),
-    IconSpec(size_pt=76,   scale=1, idiom="ipad"),
-    IconSpec(size_pt=76,   scale=2, idiom="ipad"),
-    IconSpec(size_pt=83.5, scale=2, idiom="ipad"),
-
-    IconSpec(size_pt=1024, scale=1, idiom="ios-marketing"),
-]
 
 
 # Color definitions for light and dark modes
@@ -53,6 +21,9 @@ COLORS = {
         "background": "#252525",  # Slightly darker warm gray background
     },
 }
+
+# iOS 18+ uses single 1024x1024 icons that Xcode auto-scales
+ICON_SIZE: Final[int] = 1024
 
 
 class ConversionError(RuntimeError):
@@ -129,46 +100,45 @@ def render_svg_to_png(
     subprocess.run(cmd, check=True)
 
 
-def build_contents_json(specs: list[IconSpec], light_filenames: list[str], dark_filenames: list[str]) -> dict[str, object]:
+def build_contents_json() -> dict[str, object]:
     """
-    Build the Contents.json structure for an .appiconset with light and dark variants.
-    iOS 18+ supports automatic dark mode switching via appearances.
+    Build the Contents.json structure for iOS 18+ app icons.
+    Uses simplified universal format with automatic scaling.
     """
-    images: list[dict[str, object]] = []
-
-    for spec, light_filename, dark_filename in zip(specs, light_filenames, dark_filenames, strict=True):
-        # Light mode icon (default, no appearances specified)
-        images.append(
+    return {
+        "images": [
             {
-                "idiom": spec.idiom,
-                "size": f"{spec.size_pt}x{spec.size_pt}",
-                "scale": f"{spec.scale}x",
-                "filename": light_filename,
-            }
-        )
-
-        # Dark mode icon
-        images.append(
+                "filename": "AppIcon.png",
+                "idiom": "universal",
+                "platform": "ios",
+                "size": "1024x1024"
+            },
             {
                 "appearances": [
                     {"appearance": "luminosity", "value": "dark"}
                 ],
-                "idiom": spec.idiom,
-                "size": f"{spec.size_pt}x{spec.size_pt}",
-                "scale": f"{spec.scale}x",
-                "filename": dark_filename,
+                "filename": "AppIcon-Dark.png",
+                "idiom": "universal",
+                "platform": "ios",
+                "size": "1024x1024"
+            },
+            {
+                "appearances": [
+                    {"appearance": "luminosity", "value": "tinted"}
+                ],
+                "filename": "AppIcon-Tinted.png",
+                "idiom": "universal",
+                "platform": "ios",
+                "size": "1024x1024"
             }
-        )
-
-    return {
-        "images": images,
+        ],
         "info": {"version": 1, "author": "xcode"},
     }
 
 
 def generate_icons(svg_path: Path, appiconset_dir: Path) -> None:
     """
-    Generate all iOS icon PNGs (light and dark) and Contents.json from one SVG.
+    Generate iOS 18+ app icon PNGs (light, dark, tinted) and Contents.json.
     """
     renderer = find_renderer()
     appiconset_dir.mkdir(parents=True, exist_ok=True)
@@ -176,42 +146,49 @@ def generate_icons(svg_path: Path, appiconset_dir: Path) -> None:
     # Read original SVG
     svg_content = svg_path.read_text(encoding="utf-8")
 
-    light_filenames: list[str] = []
-    dark_filenames: list[str] = []
+    # Generate light icon (default/any appearance)
+    light_svg = modify_svg_colors(svg_content, COLORS["light"]["stroke"])
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".svg", delete=False, encoding="utf-8") as tmp:
+        tmp.write(light_svg)
+        tmp_path = Path(tmp.name)
+    try:
+        render_svg_to_png(
+            renderer=renderer,
+            svg_path=tmp_path,
+            size_px=ICON_SIZE,
+            out_path=appiconset_dir / "AppIcon.png",
+            background_color=COLORS["light"]["background"],
+        )
+    finally:
+        tmp_path.unlink()
 
-    for mode in ["light", "dark"]:
-        colors = COLORS[mode]
+    # Generate dark icon
+    dark_svg = modify_svg_colors(svg_content, COLORS["dark"]["stroke"])
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".svg", delete=False, encoding="utf-8") as tmp:
+        tmp.write(dark_svg)
+        tmp_path = Path(tmp.name)
+    try:
+        render_svg_to_png(
+            renderer=renderer,
+            svg_path=tmp_path,
+            size_px=ICON_SIZE,
+            out_path=appiconset_dir / "AppIcon-Dark.png",
+            background_color=COLORS["dark"]["background"],
+        )
+    finally:
+        tmp_path.unlink()
 
-        # Create modified SVG with new stroke color
-        modified_svg = modify_svg_colors(svg_content, colors["stroke"])
+    # Generate tinted icon (same as dark for now - monochrome works best)
+    render_svg_to_png(
+        renderer=renderer,
+        svg_path=appiconset_dir.parent.parent.parent / "Design" / "AppIcon.svg",
+        size_px=ICON_SIZE,
+        out_path=appiconset_dir / "AppIcon-Tinted.png",
+        background_color="#FFFFFF",
+    )
 
-        # Write to temporary file
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".svg", delete=False, encoding="utf-8") as tmp:
-            tmp.write(modified_svg)
-            tmp_svg_path = Path(tmp.name)
-
-        try:
-            for spec in ICON_SPECS:
-                size_px = int(round(spec.size_pt * spec.scale))
-                filename = f"icon_{mode}_{size_px}x{size_px}.png"
-                out_path = appiconset_dir / filename
-
-                render_svg_to_png(
-                    renderer=renderer,
-                    svg_path=tmp_svg_path,
-                    size_px=size_px,
-                    out_path=out_path,
-                    background_color=colors["background"],
-                )
-
-                if mode == "light":
-                    light_filenames.append(filename)
-                else:
-                    dark_filenames.append(filename)
-        finally:
-            tmp_svg_path.unlink()
-
-    contents = build_contents_json(ICON_SPECS, light_filenames, dark_filenames)
+    # Write Contents.json
+    contents = build_contents_json()
     (appiconset_dir / "Contents.json").write_text(
         json.dumps(contents, indent=2),
         encoding="utf-8",
@@ -223,8 +200,12 @@ def main() -> None:
     svg_path = project_root / "Design" / "AppIcon.svg"
     appiconset_dir = project_root / "wurstfinger" / "Assets.xcassets" / "AppIcon.appiconset"
 
+    # Clean old icons
+    for f in appiconset_dir.glob("icon_*.png"):
+        f.unlink()
+
     generate_icons(svg_path=svg_path, appiconset_dir=appiconset_dir)
-    print(f"✓ Generated light and dark icons in {appiconset_dir}")
+    print(f"✓ Generated iOS 18+ icons (light, dark, tinted) in {appiconset_dir}")
 
 
 if __name__ == "__main__":
