@@ -34,6 +34,9 @@ struct SettingsView: View {
     @AppStorage(KeyboardViewModel.numpadStyleKey, store: SharedDefaults.store)
     private var numpadStyleRaw = NumpadStyle.phone.rawValue
 
+    @AppStorage("keyboardStyle", store: SharedDefaults.store)
+    private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
+
     @AppStorage("autoCapitalizeEnabled", store: SharedDefaults.store)
     private var autoCapitalizeEnabled = false
 
@@ -77,6 +80,10 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         Section {
+            NavigationLink(destination: StyleSettingsView()) {
+                SettingsRow(icon: "paintbrush", color: .cyan, title: "Style", subtitle: keyboardStyleDescription)
+            }
+
             NavigationLink(destination: AspectRatioSettingsView(aspectRatio: $keyAspectRatio)) {
                 SettingsRow(icon: "square.resize", color: .orange, title: "Key Aspect Ratio", subtitle: "Current: \(String(format: "%.2f", keyAspectRatio)):1")
             }
@@ -168,6 +175,11 @@ struct SettingsView: View {
     }
 
     // MARK: - Helpers
+
+    private var keyboardStyleDescription: String {
+        let style = KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic
+        return style.displayName
+    }
 
     private var numpadStyleDescription: String {
         let style = NumpadStyle(rawValue: numpadStyleRaw) ?? .phone

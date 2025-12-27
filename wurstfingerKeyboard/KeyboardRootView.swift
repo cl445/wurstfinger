@@ -15,6 +15,13 @@ struct KeyboardRootView: View {
     var frameAlignment: Alignment = .bottom
     var overrideWidth: CGFloat? = nil
 
+    @AppStorage("keyboardStyle", store: SharedDefaults.store)
+    private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
+
+    private var keyboardStyle: KeyboardStyle {
+        KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic
+    }
+
     var body: some View {
         // At aspectRatio 1.5 (default), use original height of 54pt
         // Lower ratio = taller keys, higher ratio = shorter keys
@@ -34,8 +41,7 @@ struct KeyboardRootView: View {
 
         ZStack {
             // Background layer that always fills the entire space
-            Color(.systemBackground)
-                .ignoresSafeArea()
+            keyboardBackground
 
             VStack(spacing: KeyboardConstants.Layout.gridVerticalSpacing) {
                 // Rows 0-2: Standard letter/number rows
@@ -158,6 +164,21 @@ struct KeyboardRootView: View {
             }
         } else {
             EmptyView()
+        }
+    }
+
+    // MARK: - Background
+
+    @ViewBuilder
+    private var keyboardBackground: some View {
+        if keyboardStyle == .liquidGlass, #available(iOS 26.0, *) {
+            // Liquid Glass style: Transparent to let system glass material show through
+            Color.clear
+                .ignoresSafeArea()
+        } else {
+            // Classic style (or fallback for older iOS)
+            Color(.systemBackground)
+                .ignoresSafeArea()
         }
     }
 }

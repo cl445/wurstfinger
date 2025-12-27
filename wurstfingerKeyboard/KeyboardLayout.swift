@@ -20,6 +20,30 @@ enum NumpadStyle: String, CaseIterable {
     case classic  // 7-8-9 / 4-5-6 / 1-2-3 (like calculator)
 }
 
+/// Visual style for the keyboard appearance
+enum KeyboardStyle: String, CaseIterable {
+    case classic      // Traditional opaque key backgrounds
+    case liquidGlass  // iOS 26+ Liquid Glass effect (falls back to classic on older iOS)
+
+    var displayName: String {
+        switch self {
+        case .classic:
+            return "Classic"
+        case .liquidGlass:
+            return "Liquid Glass"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .classic:
+            return "Traditional opaque keys"
+        case .liquidGlass:
+            return "Transparent glass effect (iOS 26+)"
+        }
+    }
+}
+
 enum MessagEaseOutput {
     case text(String)
     case toggleShift(on: Bool)
