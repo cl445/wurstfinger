@@ -1,8 +1,25 @@
-Erste Veröffentlichung von Wurstfinger!
+Version 1.1
 
-• MessagEase-inspiriertes Gestenlayout
-• 14 Sprachlayouts
-• Anpassbare Tastaturgröße
-• Haptisches Feedback
-• Cursor-Steuerung über die Leertaste
-• Open Source
+Neue Features:
+• Clipboard-Aktionen: Copy, Cut & Paste via Swipe-Gesten
+• Bidirektionales Löschen (Swipe links/rechts auf Delete)
+• Automatische Großschreibung nach Satzzeichen
+• Globe-Taste: Tastatur minimieren per Swipe
+• iOS 18+ Dark Mode & Tinted App Icons
+• Liquid Glass Style für iOS 26+
+• Erweiterte Touch-Bereiche zwischen Tasten
+• Expert Settings für Gestenerkennung
+• Gesture Playground zum Testen
+
+Sprachunterstützung:
+• Schwedisch: Fehlendes å hinzugefügt
+
+Verbesserungen:
+• Bessere Erkennung von Kreisbewegungen
+• Optimierte Landscape-Unterstützung
+• Performance-Optimierungen
+
+Bugfixes:
+• Swipe-Richtung bei nicht-quadratischen Buttons
+• Keyboard-Hintergrund füllt gesamten Bereich
+• Haptic Feedback Einstellungen
