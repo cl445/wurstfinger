@@ -338,17 +338,19 @@ private extension KeyboardLayout {
                     center: centers[0][2],
                     locale: config.locale,
                     textMap: [
+                        .upLeft: config.specialCharacters["0_2_upLeft"] ?? "",
                         .upRight: "\n",
                         .downRight: "€",
                         .down: "=",
-                        .downLeft: "x",
+                        .downLeft: config.specialCharacters["0_2_downLeft"] ?? "x",
                         .left: "?"
                     ],
                     returnOverrides: [
+                        .upLeft: .text((config.specialCharacters["0_2_upLeft"] ?? "").uppercased(with: config.locale)),
                         .upRight: .text("\n"),
                         .downRight: .text("£"),
                         .down: .text("±"),
-                        .downLeft: .text("X"),
+                        .downLeft: .text((config.specialCharacters["0_2_downLeft"] ?? "X").uppercased(with: config.locale)),
                         .left: .text("¿")
                     ]
                 )
@@ -462,6 +464,7 @@ private extension KeyboardLayout {
                     textMap: [
                         .upLeft: "\"",
                         .up: config.specialCharacters["2_1_up"] ?? "w",
+                        .upRight: "'",
                         .right: config.specialCharacters["2_1_right"] ?? "z",
                         .downRight: ":",
                         .down: ".",
