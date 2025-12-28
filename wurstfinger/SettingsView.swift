@@ -140,7 +140,7 @@ struct SettingsView: View {
                         .foregroundColor(.gray)
                 }
                 Spacer()
-                Text("1.0.0")
+                Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")
                     .foregroundColor(.secondary)
             }
 
