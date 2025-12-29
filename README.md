@@ -68,6 +68,10 @@ Want to try the latest features before they hit the App Store? Join our public T
 - **Customizable settings**: Adjust haptic feedback intensity, keyboard scale, and key aspect ratio
 - **Onboarding flow** with interactive setup guide
 
+## FAQ
+
+Have questions about iOS limitations or keyboard behavior? Check out the [Frequently Asked Questions](docs/FAQ.md).
+
 ## Getting Started
 
 ### Prerequisites
