@@ -177,7 +177,8 @@ struct GesturePreprocessor {
         var filtered: [CGPoint] = [points[0]]
 
         for i in 1..<points.count {
-            let last = filtered.last!
+            // Safe: filtered always has at least one element (initialized with points[0])
+            guard let last = filtered.last else { continue }
             let current = points[i]
 
             if current.distance(to: last) >= config.jitterThreshold {
@@ -204,7 +205,8 @@ struct GesturePreprocessor {
         var filtered: [CGPoint] = [points[0]]
 
         for i in 1..<points.count {
-            let prev = filtered.last!
+            // Safe: filtered always has at least one element (initialized with points[0])
+            guard let prev = filtered.last else { continue }
             let current = points[i]
 
             let distance = current.distance(to: prev)
@@ -431,12 +433,15 @@ struct GestureFeatures {
         let chordLen = start.distance(to: end)
 
         // Bounding box
+        // Safe: points.count >= 2 is guaranteed by the guard above
         let xs = points.map { $0.x }
         let ys = points.map { $0.y }
-        let minX = xs.min()!
-        let maxX = xs.max()!
-        let minY = ys.min()!
-        let maxY = ys.max()!
+        guard let minX = xs.min(),
+              let maxX = xs.max(),
+              let minY = ys.min(),
+              let maxY = ys.max() else {
+            return GestureFeatures.empty
+        }
         let bbox = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
 
         // Max displacement from start (and where in the path it occurs)

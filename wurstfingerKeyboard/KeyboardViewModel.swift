@@ -69,89 +69,60 @@ struct DeviceLayoutUtils {
 }
 
 final class KeyboardViewModel: ObservableObject {
-    static let hapticTapIntensityKey = "hapticIntensityTap"
-    static let hapticModifierIntensityKey = "hapticIntensityModifier"
-    static let hapticDragIntensityKey = "hapticIntensityDrag"
-    static let numpadStyleKey = "numpadStyle"
-    static let defaultTapIntensity: CGFloat = 0.5
-    static let defaultModifierIntensity: CGFloat = 0.5
-    static let defaultDragIntensity: CGFloat = 0.5
+    // MARK: - Settings Keys (kept for backward compatibility)
+    static let hapticTapIntensityKey = SettingsKey.hapticIntensityTap.rawValue
+    static let hapticModifierIntensityKey = SettingsKey.hapticIntensityModifier.rawValue
+    static let hapticDragIntensityKey = SettingsKey.hapticIntensityDrag.rawValue
+    static let numpadStyleKey = SettingsKey.numpadStyle.rawValue
+    static let defaultTapIntensity: CGFloat = HapticSettings.defaultTapIntensity
+    static let defaultModifierIntensity: CGFloat = HapticSettings.defaultModifierIntensity
+    static let defaultDragIntensity: CGFloat = HapticSettings.defaultDragIntensity
 
+    // MARK: - State
     @Published private(set) var activeLayer: KeyboardLayer = .lower
     @Published private(set) var isCapsLockActive: Bool = false
     private var locale: Locale
-    @Published var hapticIntensityTap: CGFloat {
-        didSet {
-            let clamped = clampIntensity(hapticIntensityTap)
-            if clamped != hapticIntensityTap {
-                hapticIntensityTap = clamped
-                return
-            }
-            if shouldPersistSettings {
-                sharedDefaults.set(Double(clamped), forKey: Self.hapticTapIntensityKey)
-            }
-        }
+
+    // MARK: - Settings (delegated to extracted classes)
+    let hapticSettings: HapticSettings
+    let layoutSettings: LayoutSettings
+    private let hapticManager: HapticFeedbackManager
+
+    // MARK: - Computed Properties for Backward Compatibility
+    var hapticIntensityTap: CGFloat {
+        get { hapticSettings.tapIntensity }
+        set { hapticSettings.tapIntensity = newValue }
     }
-    @Published var hapticIntensityModifier: CGFloat {
-        didSet {
-            let clamped = clampIntensity(hapticIntensityModifier)
-            if clamped != hapticIntensityModifier {
-                hapticIntensityModifier = clamped
-                return
-            }
-            if shouldPersistSettings {
-                sharedDefaults.set(Double(clamped), forKey: Self.hapticModifierIntensityKey)
-            }
-        }
+    var hapticIntensityModifier: CGFloat {
+        get { hapticSettings.modifierIntensity }
+        set { hapticSettings.modifierIntensity = newValue }
     }
-    @Published var hapticIntensityDrag: CGFloat {
-        didSet {
-            let clamped = clampIntensity(hapticIntensityDrag)
-            if clamped != hapticIntensityDrag {
-                hapticIntensityDrag = clamped
-                return
-            }
-            if shouldPersistSettings {
-                sharedDefaults.set(Double(clamped), forKey: Self.hapticDragIntensityKey)
-            }
-        }
+    var hapticIntensityDrag: CGFloat {
+        get { hapticSettings.dragIntensity }
+        set { hapticSettings.dragIntensity = newValue }
     }
-    @Published var utilityColumnLeading: Bool {
-        didSet {
-            if shouldPersistSettings {
-                sharedDefaults.set(utilityColumnLeading, forKey: "utilityColumnLeading")
-            }
-        }
+    var hapticEnabled: Bool {
+        get { hapticSettings.enabled }
+        set { hapticSettings.enabled = newValue }
     }
-    @Published var keyAspectRatio: Double {
-        didSet {
-            if shouldPersistSettings {
-                sharedDefaults.set(keyAspectRatio, forKey: "keyAspectRatio")
-            }
-        }
+    var utilityColumnLeading: Bool {
+        get { layoutSettings.utilityColumnLeading }
+        set { layoutSettings.utilityColumnLeading = newValue }
     }
-    @Published var keyboardScale: Double {
-        didSet {
-            if shouldPersistSettings {
-                sharedDefaults.set(keyboardScale, forKey: "keyboardScale")
-            }
-        }
+    var keyAspectRatio: Double {
+        get { layoutSettings.keyAspectRatio }
+        set { layoutSettings.keyAspectRatio = newValue }
     }
-    @Published var keyboardHorizontalPosition: Double {
-        didSet {
-            if shouldPersistSettings {
-                sharedDefaults.set(keyboardHorizontalPosition, forKey: "keyboardHorizontalPosition")
-            }
-        }
+    var keyboardScale: Double {
+        get { layoutSettings.keyboardScale }
+        set { layoutSettings.keyboardScale = newValue }
     }
-    @Published var hapticEnabled: Bool {
-        didSet {
-            if shouldPersistSettings {
-                sharedDefaults.set(hapticEnabled, forKey: "hapticEnabled")
-            }
-        }
+    var keyboardHorizontalPosition: Double {
+        get { layoutSettings.keyboardHorizontalPosition }
+        set { layoutSettings.keyboardHorizontalPosition = newValue }
     }
 
+    // MARK: - Private State
     private var layout: KeyboardLayout
     private let sharedDefaults: UserDefaults
     private let shouldPersistSettings: Bool
@@ -161,6 +132,7 @@ final class KeyboardViewModel: ObservableObject {
     private var isDeleteDragging = false
     private var deleteDragResidual: CGFloat = 0
     private var userDefaultsObserver: NSObjectProtocol?
+    private var settingsCancellables = Set<AnyCancellable>()
 
     init(
         layout: KeyboardLayout? = nil,
@@ -170,6 +142,12 @@ final class KeyboardViewModel: ObservableObject {
         // Initialize UserDefaults once
         let defaults = userDefaults ?? SharedDefaults.store
         self.sharedDefaults = defaults
+        self.shouldPersistSettings = shouldPersistSettings
+
+        // Initialize extracted settings classes
+        self.hapticSettings = HapticSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
+        self.layoutSettings = LayoutSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
+        self.hapticManager = HapticFeedbackManager(settings: hapticSettings)
 
         // Load layout based on selected language or use provided layout
         if let providedLayout = layout {
@@ -186,42 +164,13 @@ final class KeyboardViewModel: ObservableObject {
             self.locale = selectedLanguage.locale
         }
 
-        self.shouldPersistSettings = shouldPersistSettings
-
-        let storedTap = defaults.object(forKey: Self.hapticTapIntensityKey) as? NSNumber
-        let storedModifier = defaults.object(forKey: Self.hapticModifierIntensityKey) as? NSNumber
-        let storedDrag = defaults.object(forKey: Self.hapticDragIntensityKey) as? NSNumber
-
-        let initialTap = storedTap.map { CGFloat(min(max($0.doubleValue, 0), 1)) } ?? Self.defaultTapIntensity
-        let initialModifier = storedModifier.map { CGFloat(min(max($0.doubleValue, 0), 1)) } ?? Self.defaultModifierIntensity
-        let initialDrag = storedDrag.map { CGFloat(min(max($0.doubleValue, 0), 1)) } ?? Self.defaultDragIntensity
-
-        if shouldPersistSettings {
-            sharedDefaults.register(defaults: [
-                Self.hapticTapIntensityKey: Double(initialTap),
-                Self.hapticModifierIntensityKey: Double(initialModifier),
-                Self.hapticDragIntensityKey: Double(initialDrag)
-            ])
-        }
-
-        self.hapticIntensityTap = initialTap
-        self.hapticIntensityModifier = initialModifier
-        self.hapticIntensityDrag = initialDrag
-
-        // Read settings with default values
-        self.utilityColumnLeading = defaults.object(forKey: "utilityColumnLeading") as? Bool ?? false
-        // Default 1.0 (Square)
-        let savedRatio = defaults.object(forKey: "keyAspectRatio") as? Double ?? DeviceLayoutUtils.defaultKeyAspectRatio
-        // Ensure aspect ratio is within valid range
-        self.keyAspectRatio = min(1.62, max(1.0, savedRatio))
-        // Default dynamic scale based on device width
-        let savedScale = defaults.object(forKey: "keyboardScale") as? Double ?? DeviceLayoutUtils.defaultKeyboardScale
-        self.keyboardScale = min(1.0, max(0.25, savedScale))
-        // Default 0.5 = centered
-        let savedPosition = defaults.object(forKey: "keyboardHorizontalPosition") as? Double ?? DeviceLayoutUtils.defaultKeyboardPosition
-        self.keyboardHorizontalPosition = min(1.0, max(0.0, savedPosition))
-        
-        self.hapticEnabled = defaults.object(forKey: "hapticEnabled") as? Bool ?? true
+        // Forward settings changes to trigger objectWillChange on this ViewModel
+        hapticSettings.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &settingsCancellables)
+        layoutSettings.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &settingsCancellables)
 
         // Observe UserDefaults changes for language updates (works both within
         // same process and across processes via App Group)
@@ -241,49 +190,9 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     func reloadSettings() {
-        let newUtilityValue = sharedDefaults.object(forKey: "utilityColumnLeading") as? Bool ?? false
-        if utilityColumnLeading != newUtilityValue {
-            utilityColumnLeading = newUtilityValue
-        }
-
-        // Use same defaults as init() for consistency
-        let savedRatio = sharedDefaults.object(forKey: "keyAspectRatio") as? Double ?? DeviceLayoutUtils.defaultKeyAspectRatio
-        let newAspectRatio = min(1.62, max(1.0, savedRatio))
-        if keyAspectRatio != newAspectRatio {
-            keyAspectRatio = newAspectRatio
-        }
-
-        let savedScale = sharedDefaults.object(forKey: "keyboardScale") as? Double ?? DeviceLayoutUtils.defaultKeyboardScale
-        let newScale = min(1.0, max(0.25, savedScale))
-        if keyboardScale != newScale {
-            keyboardScale = newScale
-        }
-
-        let savedPosition = sharedDefaults.object(forKey: "keyboardHorizontalPosition") as? Double ?? DeviceLayoutUtils.defaultKeyboardPosition
-        let newPosition = min(1.0, max(0.0, savedPosition))
-        if keyboardHorizontalPosition != newPosition {
-            keyboardHorizontalPosition = newPosition
-        }
-        
-        let newHapticEnabled = sharedDefaults.object(forKey: "hapticEnabled") as? Bool ?? true
-        if hapticEnabled != newHapticEnabled {
-            hapticEnabled = newHapticEnabled
-        }
-
-        let newTapIntensity = (sharedDefaults.object(forKey: Self.hapticTapIntensityKey) as? NSNumber).map { CGFloat(min(max($0.doubleValue, 0), 1)) } ?? Self.defaultTapIntensity
-        if abs(hapticIntensityTap - newTapIntensity) > 0.0001 {
-            hapticIntensityTap = newTapIntensity
-        }
-
-        let newModifierIntensity = (sharedDefaults.object(forKey: Self.hapticModifierIntensityKey) as? NSNumber).map { CGFloat(min(max($0.doubleValue, 0), 1)) } ?? Self.defaultModifierIntensity
-        if abs(hapticIntensityModifier - newModifierIntensity) > 0.0001 {
-            hapticIntensityModifier = newModifierIntensity
-        }
-
-        let newDragIntensity = (sharedDefaults.object(forKey: Self.hapticDragIntensityKey) as? NSNumber).map { CGFloat(min(max($0.doubleValue, 0), 1)) } ?? Self.defaultDragIntensity
-        if abs(hapticIntensityDrag - newDragIntensity) > 0.0001 {
-            hapticIntensityDrag = newDragIntensity
-        }
+        // Delegate to extracted settings classes - eliminates duplicate code
+        hapticSettings.reload()
+        layoutSettings.reload()
 
         // Reload language if it changed
         reloadLanguage()
@@ -511,36 +420,18 @@ final class KeyboardViewModel: ObservableObject {
         return locale
     }
 
-    private func triggerHapticFeedback(_ event: KeyboardHapticEvent = .tap) {
-        guard hapticEnabled else { return }
-        let resolvedIntensity = clampIntensity(intensity(for: event))
-        guard resolvedIntensity > 0 else { return }
-
-        let performFeedback = {
-            // Create a new generator for each event to ensure reliability
-            // This matches the behavior in HapticSettingsView which is confirmed to work
-            let generator = UIImpactFeedbackGenerator(style: .rigid)
-            generator.prepare()
-            generator.impactOccurred(intensity: resolvedIntensity)
-        }
-
-        if Thread.isMainThread {
-            performFeedback()
-        } else {
-            DispatchQueue.main.async(execute: performFeedback)
-        }
-    }
+    // MARK: - Haptic Feedback (delegated to HapticFeedbackManager)
 
     private func feedbackTap() {
-        triggerHapticFeedback(.tap)
+        hapticManager.tap()
     }
 
     private func feedbackModifier() {
-        triggerHapticFeedback(.modifier)
+        hapticManager.modifier()
     }
 
     private func feedbackDrag() {
-        triggerHapticFeedback(.drag)
+        hapticManager.drag()
     }
 
     private func insertText(_ value: String) {
@@ -563,30 +454,6 @@ final class KeyboardViewModel: ObservableObject {
         }
     }
 
-
-    private func intensity(for event: KeyboardHapticEvent) -> CGFloat {
-        let rawValue: CGFloat
-        switch event {
-        case .tap:
-            rawValue = hapticIntensityTap
-        case .modifier:
-            rawValue = hapticIntensityModifier
-        case .drag:
-            rawValue = hapticIntensityDrag
-        }
-        // Return raw value directly (linear)
-        return rawValue
-    }
-
-    private func feedbackStyle(for intensity: CGFloat) -> UIImpactFeedbackGenerator.FeedbackStyle {
-        // Use a constant style to avoid jarring jumps between styles (soft -> light -> medium)
-        // .rigid provides a crisp, responsive feel that scales well with intensity
-        return .rigid
-    }
-
-    private func clampIntensity(_ value: CGFloat) -> CGFloat {
-        min(max(value, 0), 1)
-    }
 
     private func perform(_ output: MessagEaseOutput) {
         switch output {
