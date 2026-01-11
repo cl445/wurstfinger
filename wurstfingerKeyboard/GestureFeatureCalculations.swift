@@ -225,13 +225,4 @@ enum GestureCalculations {
     }
 }
 
-// MARK: - CGPoint Distance Extension
-
-extension CGPoint {
-    /// Distance to another point
-    func distance(to other: CGPoint) -> CGFloat {
-        let dx = other.x - x
-        let dy = other.y - y
-        return sqrt(dx * dx + dy * dy)
-    }
-}
+// Note: CGPoint.distance(to:) is already defined in KeyboardLayout.swift

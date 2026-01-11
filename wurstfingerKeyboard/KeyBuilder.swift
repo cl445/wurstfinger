@@ -196,8 +196,8 @@ final class KeyBuilder {
 
         return MessagEaseKey(
             center: center,
-            outputs: outputs,
-            returningOutputs: finalReturnOverrides,
+            swipeOutputs: outputs,
+            swipeReturnOutputs: finalReturnOverrides,
             circularOutputs: circularOverrides
         )
     }
