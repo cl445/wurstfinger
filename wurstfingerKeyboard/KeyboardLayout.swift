@@ -261,15 +261,7 @@ struct KeyboardLayout {
     }()
 }
 
-extension CGPoint {
-    func magnitude() -> CGFloat {
-        sqrt(x * x + y * y)
-    }
-
-    func distance(to other: CGPoint) -> CGFloat {
-        CGPoint(x: other.x - x, y: other.y - y).magnitude()
-    }
-}
+// Note: CGPoint extensions (distance, magnitude) are now in GeometryUtils.swift
 
 private extension KeyboardLayout {
     private static let composeTriggers: Set<String> = [

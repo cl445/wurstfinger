@@ -225,4 +225,5 @@ enum GestureCalculations {
     }
 }
 
-// Note: CGPoint.distance(to:) is already defined in KeyboardLayout.swift
+// Note: CGPoint extensions (distance, magnitude, asVector) are defined in GeometryUtils.swift
+// Note: Vector2D type is defined in Vector2D.swift

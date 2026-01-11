@@ -156,19 +156,7 @@ extension Vector2D {
     }
 }
 
-// MARK: - CGPoint Extension
-
-extension CGPoint {
-    /// Creates a Vector2D from this point (relative to origin)
-    var asVector: Vector2D {
-        Vector2D(x: x, y: y)
-    }
-
-    /// Creates a vector from this point to another point
-    func vector(to other: CGPoint) -> Vector2D {
-        Vector2D(from: self, to: other)
-    }
-}
+// Note: CGPoint extensions (asVector, vector(to:)) are now in GeometryUtils.swift
 
 // MARK: - CustomStringConvertible
 
