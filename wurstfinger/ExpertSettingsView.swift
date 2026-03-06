@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct ExpertSettingsView: View {
-    @AppStorage("expertModeEnabled", store: SharedDefaults.store)
+    @AppStorage(SettingsKey.expertModeEnabled.rawValue, store: SharedDefaults.store)
     private var expertModeEnabled = false
 
     // MARK: - Preprocessing Settings

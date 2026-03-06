@@ -1,26 +1,26 @@
 import SwiftUI
 
 struct HapticSettingsView: View {
-    @AppStorage(KeyboardViewModel.hapticTapIntensityKey, store: SharedDefaults.store)
-    private var tapIntensity = Double(KeyboardViewModel.defaultTapIntensity)
+    @AppStorage(SettingsKey.hapticIntensityTap.rawValue, store: SharedDefaults.store)
+    private var tapIntensity = Double(HapticSettings.defaultTapIntensity)
 
-    @AppStorage(KeyboardViewModel.hapticModifierIntensityKey, store: SharedDefaults.store)
-    private var modifierIntensity = Double(KeyboardViewModel.defaultModifierIntensity)
+    @AppStorage(SettingsKey.hapticIntensityModifier.rawValue, store: SharedDefaults.store)
+    private var modifierIntensity = Double(HapticSettings.defaultModifierIntensity)
 
-    @AppStorage(KeyboardViewModel.hapticDragIntensityKey, store: SharedDefaults.store)
-    private var dragIntensity = Double(KeyboardViewModel.defaultDragIntensity)
+    @AppStorage(SettingsKey.hapticIntensityDrag.rawValue, store: SharedDefaults.store)
+    private var dragIntensity = Double(HapticSettings.defaultDragIntensity)
 
-    @AppStorage("hapticEnabled", store: SharedDefaults.store)
+    @AppStorage(SettingsKey.hapticEnabled.rawValue, store: SharedDefaults.store)
     private var hapticEnabled = true
 
-    @AppStorage("keyAspectRatio", store: SharedDefaults.store)
-    private var previewAspectRatio = 1.0
+    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
+    private var previewAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
-    @AppStorage("keyboardScale", store: SharedDefaults.store)
-    private var previewScale = 1.0
+    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
+    private var previewScale = DeviceLayoutUtils.defaultKeyboardScale
 
-    @AppStorage("keyboardHorizontalPosition", store: SharedDefaults.store)
-    private var previewPosition = 0.5
+    @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
+    private var previewPosition = DeviceLayoutUtils.defaultKeyboardPosition
 
     var body: some View {
         VStack(spacing: 20) {
@@ -71,9 +71,9 @@ struct HapticSettingsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Reset") {
-                    tapIntensity = Double(KeyboardViewModel.defaultTapIntensity)
-                    modifierIntensity = Double(KeyboardViewModel.defaultModifierIntensity)
-                    dragIntensity = Double(KeyboardViewModel.defaultDragIntensity)
+                    tapIntensity = Double(HapticSettings.defaultTapIntensity)
+                    modifierIntensity = Double(HapticSettings.defaultModifierIntensity)
+                    dragIntensity = Double(HapticSettings.defaultDragIntensity)
                     hapticEnabled = true
                 }
             }

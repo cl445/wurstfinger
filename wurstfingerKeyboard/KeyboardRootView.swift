@@ -15,7 +15,7 @@ struct KeyboardRootView: View {
     var frameAlignment: Alignment = .bottom
     var overrideWidth: CGFloat? = nil
 
-    @AppStorage("keyboardStyle", store: SharedDefaults.store)
+    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
 
     private var keyboardStyle: KeyboardStyle {

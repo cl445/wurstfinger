@@ -8,17 +8,17 @@
 import SwiftUI
 
 struct StyleSettingsView: View {
-    @AppStorage("keyboardStyle", store: SharedDefaults.store)
+    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
 
-    @AppStorage("keyAspectRatio", store: SharedDefaults.store)
-    private var previewAspectRatio = 1.0
+    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
+    private var previewAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
-    @AppStorage("keyboardScale", store: SharedDefaults.store)
-    private var previewScale = 1.0
+    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
+    private var previewScale = DeviceLayoutUtils.defaultKeyboardScale
 
-    @AppStorage("keyboardHorizontalPosition", store: SharedDefaults.store)
-    private var previewPosition = 0.5
+    @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
+    private var previewPosition = DeviceLayoutUtils.defaultKeyboardPosition
 
     private var keyboardStyle: KeyboardStyle {
         get { KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic }

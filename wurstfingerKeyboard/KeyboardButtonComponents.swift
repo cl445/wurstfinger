@@ -50,7 +50,7 @@ struct KeyCap<Content: View>: View {
     let fontSize: CGFloat
     private let content: Content
 
-    @AppStorage("keyboardStyle", store: SharedDefaults.store)
+    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
 
     private var keyboardStyle: KeyboardStyle {
