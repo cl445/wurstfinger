@@ -83,19 +83,19 @@ enum KeyboardDirection: CaseIterable {
         let angle = angleDir < 0 ? 360 + angleDir : angleDir
 
         switch angle {
-        case 22.5...67.5:
+        case 22.5..<67.5:
             return .downRight
-        case 67.5...112.5:
+        case 67.5..<112.5:
             return .right
-        case 112.5...157.5:
+        case 112.5..<157.5:
             return .upRight
-        case 157.5...202.5:
+        case 157.5..<202.5:
             return .up
-        case 202.5...247.5:
+        case 202.5..<247.5:
             return .upLeft
-        case 247.5...292.5:
+        case 247.5..<292.5:
             return .left
-        case 292.5...337.5:
+        case 292.5..<337.5:
             return .downLeft
         default:
             return .down
@@ -272,7 +272,8 @@ private extension KeyboardLayout {
     private static func createLetterRows(for config: LanguageConfig) -> [[MessagEaseKey]] {
         let centers = config.centerCharacters
         guard centers.count == 3 else {
-            fatalError("LanguageConfig must have exactly 3 rows")
+            assertionFailure("LanguageConfig must have exactly 3 rows")
+            return []
         }
 
         return [

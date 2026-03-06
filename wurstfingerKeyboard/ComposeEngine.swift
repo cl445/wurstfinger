@@ -121,8 +121,9 @@ struct ComposeEngine {
         var cycles: [String: [String]] = [:]
 
         // Build reverse mapping: character → all its accented variants
-        for (_, charMap) in composeMap {
-            for (base, accented) in charMap {
+        // Sort by key for deterministic iteration order across runs
+        for (_, charMap) in composeMap.sorted(by: { $0.key < $1.key }) {
+            for (base, accented) in charMap.sorted(by: { $0.key < $1.key }) {
                 // Skip self-mappings like " " → "\"" or composition mappings
                 if base == " " || base.count > 1 { continue }
 
