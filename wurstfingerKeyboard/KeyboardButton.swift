@@ -72,18 +72,18 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
 
     private func handleFeatureBasedRecognition() {
         // Load config from UserDefaults (for Expert Settings) and apply aspect ratio
-        let config = GesturePreprocessorConfig.fromUserDefaults().with(aspectRatio: aspectRatio)
-        let preprocessor = GesturePreprocessor(config: config)
+        let preprocessorConfig = GesturePreprocessorConfig.fromUserDefaults().with(aspectRatio: aspectRatio)
+        let preprocessor = GesturePreprocessor(config: preprocessorConfig)
 
         // Load classification thresholds from UserDefaults
-        GestureFeatures.thresholds = GestureClassificationThresholds.fromUserDefaults()
+        let thresholds = GestureClassificationThresholds.fromUserDefaults()
 
         // Preprocess: jitter filter, outlier filter, aspect normalization, smoothing
         // Convert RingBuffer to Array for processing
         let processed = preprocessor.preprocess(positions.elements)
 
-        // Extract features
-        let features = GestureFeatures.extract(from: processed)
+        // Extract features with thresholds
+        let features = GestureFeatures.extract(from: processed, thresholds: thresholds)
 
         // Determine swipe direction
         let direction = angleToDirection(features.maxDisplacementAngle)

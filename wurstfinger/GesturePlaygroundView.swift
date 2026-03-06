@@ -43,7 +43,7 @@ struct GesturePlaygroundView: View {
                 .stroke(Color.gray.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [5]))
 
                 // Sector lines (for swipe angles)
-                ForEach(0 ..< 8) { i in
+                ForEach(0..<8) { i in
                     Path { path in
                         let angle = Double(i) * 45.0 * .pi / 180.0
                         path.move(to: CGPoint(x: 150, y: 150))
@@ -91,7 +91,7 @@ struct GesturePlaygroundView: View {
                 .stroke(Color.green, lineWidth: 4)
 
                 // Key Points
-                if let features {
+                if let features = features {
                     // Start
                     Circle()
                         .fill(Color.blue)
@@ -172,7 +172,7 @@ struct GesturePlaygroundView: View {
                     .background(Color.blue.opacity(0.1))
                     .cornerRadius(8)
 
-                    if let features {
+                    if let features = features {
                         // Decision Tree Breakdown
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Decision Logic").font(.headline)
@@ -181,11 +181,7 @@ struct GesturePlaygroundView: View {
                                 "1. Tap?",
                                 passed: features.isTap
                             ) {
-                                criterion(
-                                    "maxDisp", val: features.maxDisplacement, op: "<",
-                                    limit: GestureFeatures.thresholds.minSwipeLength,
-                                    pass: features.maxDisplacement < GestureFeatures.thresholds.minSwipeLength
-                                )
+                                criterion("maxDisp", val: features.maxDisplacement, op: "<", limit: features.thresholds.minSwipeLength, pass: features.maxDisplacement < features.thresholds.minSwipeLength)
                             }
 
                             decisionRow(
@@ -193,26 +189,10 @@ struct GesturePlaygroundView: View {
                                 passed: features.isCircular
                             ) {
                                 VStack(alignment: .leading) {
-                                    criterion(
-                                        "circ", val: features.circularity, op: ">",
-                                        limit: GestureFeatures.thresholds.minCircularity,
-                                        pass: features.circularity > GestureFeatures.thresholds.minCircularity
-                                    )
-                                    criterion(
-                                        "angle", val: abs(features.angularSpan) * 180 / .pi, op: ">",
-                                        limit: GestureFeatures.thresholds.minAngularSpan * 180 / .pi, unit: "°",
-                                        pass: abs(features.angularSpan) > GestureFeatures.thresholds.minAngularSpan
-                                    )
-                                    criterion(
-                                        "turn", val: features.turnConsistency, op: ">",
-                                        limit: GestureFeatures.thresholds.minTurnConsistency,
-                                        pass: features.turnConsistency > GestureFeatures.thresholds.minTurnConsistency
-                                    )
-                                    criterion(
-                                        "compact", val: features.orientedCompactness, op: ">",
-                                        limit: GestureFeatures.thresholds.minOrientedCompactness,
-                                        pass: features.orientedCompactness > GestureFeatures.thresholds.minOrientedCompactness
-                                    )
+                                    criterion("circ", val: features.circularity, op: ">", limit: features.thresholds.minCircularity, pass: features.circularity > features.thresholds.minCircularity)
+                                    criterion("angle", val: abs(features.angularSpan) * 180 / .pi, op: ">", limit: features.thresholds.minAngularSpan * 180 / .pi, unit: "°", pass: abs(features.angularSpan) > features.thresholds.minAngularSpan)
+                                    criterion("turn", val: features.turnConsistency, op: ">", limit: features.thresholds.minTurnConsistency, pass: features.turnConsistency > features.thresholds.minTurnConsistency)
+                                    criterion("compact", val: features.orientedCompactness, op: ">", limit: features.thresholds.minOrientedCompactness, pass: features.orientedCompactness > features.thresholds.minOrientedCompactness)
                                 }
                             }
 
@@ -221,17 +201,8 @@ struct GesturePlaygroundView: View {
                                 passed: features.isReturn
                             ) {
                                 VStack(alignment: .leading) {
-                                    criterion(
-                                        "ratio", val: features.returnRatio, op: "<",
-                                        limit: GestureFeatures.thresholds.maxReturnRatio,
-                                        pass: features.returnRatio < GestureFeatures.thresholds.maxReturnRatio
-                                    )
-                                    // Simplified range display
-                                    criterion(
-                                        "progress", val: features.maxDisplacementProgress, op: "in",
-                                        limit: 0,
-                                        pass: features.maxDisplacementProgress > 0.2 && features.maxDisplacementProgress < 0.8
-                                    )
+                                    criterion("ratio", val: features.returnRatio, op: "<", limit: features.thresholds.maxReturnRatio, pass: features.returnRatio < features.thresholds.maxReturnRatio)
+                                    criterion("progress", val: features.maxDisplacementProgress, op: "in", limit: 0, pass: features.maxDisplacementProgress > 0.2 && features.maxDisplacementProgress < 0.8) // Simplified range display
                                 }
                             }
 
@@ -290,7 +261,7 @@ struct GesturePlaygroundView: View {
         String(format: "%.1f", value)
     }
 
-    private func decisionRow(_ label: String, passed: Bool, @ViewBuilder content: () -> some View) -> some View {
+    private func decisionRow<Content: View>(_ label: String, passed: Bool, @ViewBuilder content: () -> Content) -> some View {
         HStack(alignment: .top) {
             Image(systemName: passed ? "checkmark.circle.fill" : "circle")
                 .foregroundColor(passed ? .green : .gray)
@@ -339,9 +310,9 @@ struct GesturePlaygroundView: View {
         processedPoints = preprocessor.preprocess(rawPoints)
 
         // 3. Extract Features
-        GestureFeatures.thresholds = GestureClassificationThresholds.fromUserDefaults()
-        let feats = GestureFeatures.extract(from: processedPoints)
-        features = feats
+        let thresholds = GestureClassificationThresholds.fromUserDefaults()
+        let feats = GestureFeatures.extract(from: processedPoints, thresholds: thresholds)
+        self.features = feats
 
         // 4. Classify
         var result = ""
@@ -361,7 +332,7 @@ struct GesturePlaygroundView: View {
             detectedDirection = KeyboardDirection.direction(for: swipeSize, tolerance: 0)
         }
 
-        classificationResult = result
+        self.classificationResult = result
     }
 }
 
