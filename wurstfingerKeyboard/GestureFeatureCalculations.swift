@@ -14,6 +14,7 @@ import CoreGraphics
 /// These are pure functions that take input and return a result,
 /// making them easy to test in isolation.
 enum GestureCalculations {
+
     // MARK: - Path Metrics
 
     /// Calculates the total path length (sum of distances between consecutive points)
@@ -21,7 +22,7 @@ enum GestureCalculations {
         guard points.count >= 2 else { return 0 }
 
         var length: CGFloat = 0
-        for i in 1 ..< points.count {
+        for i in 1..<points.count {
             length += points[i - 1].distance(to: points[i])
         }
         return length
@@ -35,16 +36,16 @@ enum GestureCalculations {
 
     /// Finds the bounding box of a set of points
     static func boundingBox(of points: [CGPoint]) -> CGRect {
-        guard !points.isEmpty else { return .zero }
+        guard let first = points.first else { return .zero }
 
-        let xs = points.map(\.x)
-        let ys = points.map(\.y)
+        var minX = first.x, maxX = first.x
+        var minY = first.y, maxY = first.y
 
-        guard let minX = xs.min(),
-              let maxX = xs.max(),
-              let minY = ys.min(),
-              let maxY = ys.max() else {
-            return .zero
+        for point in points.dropFirst() {
+            if point.x < minX { minX = point.x }
+            else if point.x > maxX { maxX = point.x }
+            if point.y < minY { minY = point.y }
+            else if point.y > maxY { maxY = point.y }
         }
 
         return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
@@ -112,7 +113,7 @@ enum GestureCalculations {
 
         var totalAngle: CGFloat = 0
 
-        for i in 1 ..< points.count {
+        for i in 1..<points.count {
             let prev = Vector2D(point: points[i - 1], relativeTo: centroid)
             let curr = Vector2D(point: points[i], relativeTo: centroid)
             totalAngle += prev.angle(to: curr)
@@ -155,7 +156,7 @@ enum GestureCalculations {
         guard comparisons > 0 else { return 0 }
 
         var mirrorDistanceSum: CGFloat = 0
-        for i in 0 ..< comparisons {
+        for i in 0..<comparisons {
             let earlyPoint = points[i]
             let latePoint = points[points.count - 1 - i]
             mirrorDistanceSum += earlyPoint.distance(to: latePoint)
@@ -173,7 +174,7 @@ enum GestureCalculations {
         var cwCount = 0
         var ccwCount = 0
 
-        for i in 1 ..< (points.count - 1) {
+        for i in 1..<(points.count - 1) {
             let v1 = Vector2D(from: points[i - 1], to: points[i])
             let v2 = Vector2D(from: points[i], to: points[i + 1])
             let cross = v1.cross(v2)

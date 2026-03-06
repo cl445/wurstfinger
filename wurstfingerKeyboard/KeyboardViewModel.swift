@@ -47,11 +47,18 @@ enum KeyboardHapticEvent {
 }
 
 struct DeviceLayoutUtils {
+    /// Returns screen bounds for layout calculations.
+    /// UIScreen.main is deprecated in iOS 16+ but UIApplication.shared is unavailable in app extensions,
+    /// so UIScreen.main remains the pragmatic choice for keyboard extensions.
+    static var screenBounds: CGRect {
+        UIScreen.main.bounds
+    }
+
     /// Calculates the default keyboard scale to achieve a target width of ~270pt
     /// (which corresponds to ~67% of an iPhone 17 Pro width).
     static var defaultKeyboardScale: Double {
         let targetWidth: CGFloat = 270.0
-        let screenWidth = UIScreen.main.bounds.width
+        let screenWidth = screenBounds.width
 
         // Avoid division by zero
         guard screenWidth > 0 else { return 1.0 }
