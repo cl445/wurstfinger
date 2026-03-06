@@ -94,7 +94,6 @@
 				KeyboardSettings.swift,
 				KeyboardViewController.swift,
 				KeyboardViewModel.swift,
-				KeyBuilder.swift,
 				KeyHintOverlay.swift,
 				LanguageConfig.swift,
 				LanguageSettings.swift,

@@ -148,7 +148,8 @@ extension Vector2D {
     }
 
     static func / (lhs: Vector2D, rhs: CGFloat) -> Vector2D {
-        Vector2D(x: lhs.x / rhs, y: lhs.y / rhs)
+        guard rhs != 0 else { return .zero }
+        return Vector2D(x: lhs.x / rhs, y: lhs.y / rhs)
     }
 
     static prefix func - (vector: Vector2D) -> Vector2D {
