@@ -13,21 +13,37 @@ struct DeleteKeyButton: View {
     let keyHeight: CGFloat
     let aspectRatio: CGFloat
 
-    @State private var isActive = false
-    @State private var dragStarted = false
-    @State private var hasDragged = false
-    @State private var isSliding = false
-    @State private var lastTranslation: CGSize = .zero
-    @State private var totalTranslation: CGSize = .zero
-    @State private var isRepeating = false
+    /// Consolidated gesture state to reduce @State property count
+    private struct GestureState {
+        var isActive = false
+        var dragStarted = false
+        var hasDragged = false
+        var isSliding = false
+        var lastTranslation: CGSize = .zero
+        var totalTranslation: CGSize = .zero
+        var isRepeating = false
+        var repeatTriggered = false
+
+        mutating func reset() {
+            isActive = false
+            dragStarted = false
+            hasDragged = false
+            isSliding = false
+            lastTranslation = .zero
+            totalTranslation = .zero
+            repeatTriggered = false
+        }
+    }
+
+    @State private var gesture = GestureState()
+    /// Timer must be separate @State since it's a reference type not suitable for value-type struct
     @State private var repeatTimer: Timer?
-    @State private var repeatTriggered = false
 
     var body: some View {
         KeyCap(
             height: keyHeight,
             aspectRatio: aspectRatio,
-            background: isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
+            background: gesture.isActive ? Color(.tertiarySystemFill) : Color(.secondarySystemBackground),
             fontSize: KeyboardConstants.FontSizes.keyLabel
         ) {
             Image(systemName: "delete.left")
@@ -36,47 +52,43 @@ struct DeleteKeyButton: View {
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
-                    if isRepeating {
+                    if gesture.isRepeating {
                         stopRepeat()
                     }
 
-                    if !dragStarted {
-                        dragStarted = true
+                    if !gesture.dragStarted {
+                        gesture.dragStarted = true
                     }
 
-                    totalTranslation = value.translation
+                    gesture.totalTranslation = value.translation
 
-                    if !isSliding,
-                       abs(totalTranslation.width) >= KeyboardConstants.DeleteGestures.slideActivationThreshold,
-                       abs(totalTranslation.height) <= KeyboardConstants.DeleteGestures.verticalTolerance {
-                        isSliding = true
-                        hasDragged = true
+                    if !gesture.isSliding,
+                       abs(gesture.totalTranslation.width) >= KeyboardConstants.DeleteGestures.slideActivationThreshold,
+                       abs(gesture.totalTranslation.height) <= KeyboardConstants.DeleteGestures.verticalTolerance {
+                        gesture.isSliding = true
+                        gesture.hasDragged = true
                         viewModel.beginDeleteDrag()
-                        lastTranslation = totalTranslation
+                        gesture.lastTranslation = gesture.totalTranslation
                         return
                     }
 
-                    if isSliding {
-                        let deltaX = totalTranslation.width - lastTranslation.width
+                    if gesture.isSliding {
+                        let deltaX = gesture.totalTranslation.width - gesture.lastTranslation.width
                         viewModel.updateDeleteDrag(deltaX: deltaX)
-                        lastTranslation = totalTranslation
-                    } else {
-                        if abs(totalTranslation.width) >= KeyboardConstants.DeleteGestures.wordSwipeThreshold {
-                            hasDragged = true
-                        } else if abs(totalTranslation.width) >= KeyboardConstants.DeleteGestures.dragActivationThreshold {
-                            hasDragged = true
-                        }
+                        gesture.lastTranslation = gesture.totalTranslation
+                    } else if abs(gesture.totalTranslation.width) >= KeyboardConstants.DeleteGestures.dragActivationThreshold {
+                        gesture.hasDragged = true
                     }
 
-                    lastTranslation = value.translation
-                    isActive = true
+                    gesture.lastTranslation = value.translation
+                    gesture.isActive = true
                 }
                 .onEnded { _ in
                     stopRepeat()
 
-                    if isSliding {
+                    if gesture.isSliding {
                         viewModel.endDeleteDrag()
-                    } else if !repeatTriggered && !hasDragged {
+                    } else if !gesture.repeatTriggered && !gesture.hasDragged {
                         viewModel.handleDelete()
                     }
 
@@ -86,7 +98,7 @@ struct DeleteKeyButton: View {
         .simultaneousGesture(
             LongPressGesture(minimumDuration: KeyboardConstants.DeleteGestures.repeatDelay)
                 .onEnded { _ in
-                    if !isSliding {
+                    if !gesture.isSliding {
                         startRepeat()
                     }
                 }
@@ -96,35 +108,34 @@ struct DeleteKeyButton: View {
         }
     }
 
+    /// Starts repeating deletion on long press.
+    /// Note: Uses Timer.scheduledTimer which requires the main run loop. This is safe for a keyboard
+    /// extension since gestures always fire on the main thread, but the timer closure captures `self`
+    /// implicitly through `gesture` and `viewModel`. The timer is always invalidated in `stopRepeat()`
+    /// which is called from `onEnded`, `onDisappear`, and `resetGestureState`.
     private func startRepeat() {
-        guard !isRepeating else { return }
-        isRepeating = true
-        repeatTriggered = false
+        guard !gesture.isRepeating else { return }
+        gesture.isRepeating = true
+        gesture.repeatTriggered = false
         viewModel.handleDelete()
-        repeatTriggered = true
+        gesture.repeatTriggered = true
         repeatTimer?.invalidate()
         repeatTimer = Timer.scheduledTimer(withTimeInterval: KeyboardConstants.DeleteGestures.repeatInterval, repeats: true) { _ in
-            repeatTriggered = true
+            gesture.repeatTriggered = true
             viewModel.handleDelete()
         }
     }
 
     private func stopRepeat() {
-        if isRepeating {
+        if gesture.isRepeating {
             repeatTimer?.invalidate()
             repeatTimer = nil
         }
-        isRepeating = false
+        gesture.isRepeating = false
     }
 
     private func resetGestureState() {
         stopRepeat()
-        isActive = false
-        dragStarted = false
-        hasDragged = false
-        isSliding = false
-        lastTranslation = .zero
-        totalTranslation = .zero
-        repeatTriggered = false
+        gesture.reset()
     }
 }

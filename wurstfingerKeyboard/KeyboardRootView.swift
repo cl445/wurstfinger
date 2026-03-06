@@ -28,7 +28,7 @@ struct KeyboardRootView: View {
         let keyHeight = KeyboardConstants.Calculations.keyHeight(aspectRatio: viewModel.keyAspectRatio)
 
         // Calculate horizontal position offset
-        let screenBounds = UIScreen.main.bounds
+        let screenBounds = DeviceLayoutUtils.screenBounds
         let screenShortestSide = min(screenBounds.width, screenBounds.height)
         let currentWidth = overrideWidth ?? screenBounds.width
         
@@ -110,7 +110,7 @@ struct KeyboardRootView: View {
                 aspectRatio: viewModel.keyAspectRatio,
                 label: Text(""),
                 overlay: GlobeKeyHintOverlay(keyHeight: keyHeight),
-                config: KeyboardButtonConfig(),
+                config: KeyboardButtonConfig(accessibilityLabel: "Next keyboard"),
                 callbacks: KeyboardButtonCallbacks(
                     onSwipe: viewModel.handleGlobeSwipe,
                     onCircular: { viewModel.handleUtilityCircularGesture(.globe, direction: $0) }
@@ -137,7 +137,7 @@ struct KeyboardRootView: View {
                 aspectRatio: viewModel.keyAspectRatio,
                 label: Text("⏎"),
                 overlay: EmptyView(),
-                config: KeyboardButtonConfig(),
+                config: KeyboardButtonConfig(accessibilityLabel: "Return"),
                 callbacks: KeyboardButtonCallbacks(onTap: viewModel.handleReturn)
             )
         default:
@@ -153,7 +153,7 @@ struct KeyboardRootView: View {
                     height: keyHeight,
                     aspectRatio: viewModel.keyAspectRatio,
                     label: Text(viewModel.displayText(for: key)),
-                    overlay: KeyHintOverlay(key: key, viewModel: viewModel, keyHeight: keyHeight),
+                    overlay: KeyHintOverlay(key: key, activeLayer: viewModel.activeLayer, isCapsLockActive: viewModel.isCapsLockActive, keyHeight: keyHeight),
                     config: KeyboardButtonConfig(fontSize: scaledMainLabelSize(for: keyHeight)),
                     callbacks: KeyboardButtonCallbacks(
                         onSwipe: { viewModel.handleKeySwipe(key, direction: $0) },
