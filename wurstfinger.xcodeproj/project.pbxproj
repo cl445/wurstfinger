@@ -83,11 +83,15 @@
 				AutoCapitalization.swift,
 				ComposeEngine.swift,
 				DeleteKeyButton.swift,
+				GeometryUtils.swift,
+				GestureFeatureCalculations.swift,
 				GesturePreprocessor.swift,
+				HapticFeedbackManager.swift,
 				KeyboardButton.swift,
 				KeyboardButtonComponents.swift,
 				KeyboardLayout.swift,
 				KeyboardRootView.swift,
+				KeyboardSettings.swift,
 				KeyboardViewController.swift,
 				KeyboardViewModel.swift,
 				KeyHintOverlay.swift,
@@ -95,6 +99,7 @@
 				LanguageSettings.swift,
 				RingBuffer.swift,
 				SpaceKeyButton.swift,
+				Vector2D.swift,
 				ViewExtensions.swift,
 			);
 			target = 427511912EAAF62000C5635A /* WurstfingerApp */;

@@ -177,7 +177,8 @@ struct GesturePreprocessor {
         var filtered: [CGPoint] = [points[0]]
 
         for i in 1..<points.count {
-            let last = filtered.last!
+            // Safe: filtered always has at least one element (initialized with points[0])
+            guard let last = filtered.last else { continue }
             let current = points[i]
 
             if current.distance(to: last) >= config.jitterThreshold {
@@ -204,7 +205,8 @@ struct GesturePreprocessor {
         var filtered: [CGPoint] = [points[0]]
 
         for i in 1..<points.count {
-            let prev = filtered.last!
+            // Safe: filtered always has at least one element (initialized with points[0])
+            guard let prev = filtered.last else { continue }
             let current = points[i]
 
             let distance = current.distance(to: prev)
@@ -412,7 +414,8 @@ struct GestureFeatures {
 
     var isClockwise: Bool { angularSpan > 0 }
 
-    /// Extracts features from preprocessed points
+    /// Extracts features from preprocessed points.
+    /// Uses GestureCalculations helper functions for cleaner, testable code.
     static func extract(from points: [CGPoint]) -> GestureFeatures {
         guard points.count >= 2 else {
             return GestureFeatures.empty
@@ -421,138 +424,30 @@ struct GestureFeatures {
         let start = points[0]
         let end = points[points.count - 1]
 
-        // Path length
-        var pathLen: CGFloat = 0
-        for i in 1..<points.count {
-            pathLen += points[i - 1].distance(to: points[i])
-        }
+        // Use helper functions from GestureCalculations
+        let pathLen = GestureCalculations.pathLength(of: points)
+        let chordLen = GestureCalculations.chordLength(of: points)
+        let bbox = GestureCalculations.boundingBox(of: points)
+        let centroid = GestureCalculations.centroid(of: points)
 
-        // Chord length
-        let chordLen = start.distance(to: end)
+        // Max displacement analysis
+        let maxDispResult = GestureCalculations.maxDisplacement(in: points)
+        let maxDisp = maxDispResult.distance
+        let maxDispPoint = maxDispResult.point
+        let maxDispProgress = maxDispResult.progress
 
-        // Bounding box
-        let xs = points.map { $0.x }
-        let ys = points.map { $0.y }
-        let minX = xs.min()!
-        let maxX = xs.max()!
-        let minY = ys.min()!
-        let maxY = ys.max()!
-        let bbox = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
-
-        // Max displacement from start (and where in the path it occurs)
-        var maxDisp: CGFloat = 0
-        var maxDispPoint = start
-        var maxDispIndex = 0
-        for (index, point) in points.enumerated() {
-            let dist = start.distance(to: point)
-            if dist > maxDisp {
-                maxDisp = dist
-                maxDispPoint = point
-                maxDispIndex = index
-            }
-        }
-        // Progress: 0.0 = start, 1.0 = end
-        let maxDispProgress = points.count > 1 ? CGFloat(maxDispIndex) / CGFloat(points.count - 1) : 0
-
-        // Centroid
-        let sumX = points.reduce(0) { $0 + $1.x }
-        let sumY = points.reduce(0) { $0 + $1.y }
-        let centroid = CGPoint(x: sumX / CGFloat(points.count), y: sumY / CGFloat(points.count))
-
-        // Angles
+        // Angles (simple calculations, kept inline)
         let dominantAngle = atan2(end.y - start.y, end.x - start.x)
         let maxDispAngle = atan2(maxDispPoint.y - start.y, maxDispPoint.x - start.x)
 
-        // Angular span (sum of angle changes)
-        var angularSpan: CGFloat = 0
-        for i in 1..<points.count {
-            let prev = CGPoint(x: points[i-1].x - centroid.x, y: points[i-1].y - centroid.y)
-            let curr = CGPoint(x: points[i].x - centroid.x, y: points[i].y - centroid.y)
+        // Circularity features using helpers
+        let angularSpan = GestureCalculations.angularSpan(of: points, around: centroid)
+        let circularity = GestureCalculations.circularity(of: points, centroid: centroid)
+        let pathSeparation = GestureCalculations.pathSeparation(of: points, maxDisplacement: maxDisp)
+        let turnConsistency = GestureCalculations.turnConsistency(of: points)
+        let orientedCompactness = GestureCalculations.orientedCompactness(of: points, principalAngle: maxDispAngle)
 
-            let cross = prev.x * curr.y - prev.y * curr.x
-            let dot = prev.x * curr.x + prev.y * curr.y
-            angularSpan += atan2(cross, dot)
-        }
-
-        // Circularity: based on variance of radii from centroid
-        // Perfect circle = all points equidistant from center = low variance
-        let radii = points.map { $0.distance(to: centroid) }
-        let meanRadius = radii.reduce(0, +) / CGFloat(radii.count)
-
-        var varianceSum: CGFloat = 0
-        for r in radii {
-            let diff = r - meanRadius
-            varianceSum += diff * diff
-        }
-        let stdDev = sqrt(varianceSum / CGFloat(radii.count))
-
-        // Circularity: 1.0 = perfect circle, 0.0 = very non-circular
-        // Using coefficient of variation (stdDev / mean), inverted and clamped
-        let coefficientOfVariation = meanRadius > 0 ? stdDev / meanRadius : 1
-        let circularity = max(0, min(1, 1 - coefficientOfVariation))
-
-        // Path separation: compare "mirrored" points (early vs late in sequence)
-        // Return swipe: early and late points are close (path comes back)
-        // Spiral: early and late points are far apart (path doesn't come back)
-        let comparisons = min(points.count / 2, 10)
-        var mirrorDistanceSum: CGFloat = 0
-        if comparisons > 0 {
-            for i in 0..<comparisons {
-                let earlyPoint = points[i]
-                let latePoint = points[points.count - 1 - i]
-                mirrorDistanceSum += earlyPoint.distance(to: latePoint)
-            }
-        }
-        let avgMirrorDistance = comparisons > 0 ? mirrorDistanceSum / CGFloat(comparisons) : 0
-        let pathSeparation = maxDisp > 0 ? avgMirrorDistance / maxDisp : 0
-
-        // Turn consistency: how consistently the path turns in one direction
-        // Circle: all turns same direction → 1.0
-        // Return-swipe: turns one way then other → ~0.5
-        var cwCount = 0
-        var ccwCount = 0
-        let turnThreshold: CGFloat = 0.5 // Minimum cross product to count as significant turn
-
-        for i in 1..<(points.count - 1) {
-            let v1 = CGPoint(x: points[i].x - points[i-1].x, y: points[i].y - points[i-1].y)
-            let v2 = CGPoint(x: points[i+1].x - points[i].x, y: points[i+1].y - points[i].y)
-            let cross = v1.x * v2.y - v1.y * v2.x
-
-            if cross > turnThreshold {
-                ccwCount += 1
-            } else if cross < -turnThreshold {
-                cwCount += 1
-            }
-        }
-
-        let totalTurns = cwCount + ccwCount
-        let turnConsistency: CGFloat = totalTurns > 0
-            ? CGFloat(max(cwCount, ccwCount)) / CGFloat(totalTurns)
-            : 1.0
-
-        // Oriented compactness: project points onto principal axis (maxDisplacementAngle)
-        // and measure width/length ratio. Circle ≈ 1.0, narrow arc ≈ 0.1
-        let cosA = cos(maxDispAngle)
-        let sinA = sin(maxDispAngle)
-        var minPara: CGFloat = 0, maxPara: CGFloat = 0
-        var minPerp: CGFloat = 0, maxPerp: CGFloat = 0
-
-        for p in points {
-            let dx = p.x - start.x
-            let dy = p.y - start.y
-            let para = dx * cosA + dy * sinA   // parallel to principal axis
-            let perp = -dx * sinA + dy * cosA  // perpendicular
-            minPara = min(minPara, para)
-            maxPara = max(maxPara, para)
-            minPerp = min(minPerp, perp)
-            maxPerp = max(maxPerp, perp)
-        }
-
-        let axisLength = maxPara - minPara
-        let axisWidth = maxPerp - minPerp
-        let orientedCompactness: CGFloat = axisLength > 0 ? axisWidth / axisLength : 0
-
-        // Ratios
+        // Derived ratios
         let returnRatio = pathLen > 0 ? chordLen / pathLen : 1
         let bboxAspect = bbox.height > 0 ? bbox.width / bbox.height : 1
 
