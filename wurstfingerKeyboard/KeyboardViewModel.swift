@@ -176,7 +176,7 @@ final class KeyboardViewModel: ObservableObject {
         // same process and across processes via App Group)
         userDefaultsObserver = NotificationCenter.default.addObserver(
             forName: UserDefaults.didChangeNotification,
-            object: nil,
+            object: sharedDefaults,
             queue: .main
         ) { [weak self] _ in
             self?.reloadSettings()
