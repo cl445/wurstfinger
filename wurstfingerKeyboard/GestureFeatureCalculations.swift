@@ -36,16 +36,16 @@ enum GestureCalculations {
 
     /// Finds the bounding box of a set of points
     static func boundingBox(of points: [CGPoint]) -> CGRect {
-        guard !points.isEmpty else { return .zero }
+        guard let first = points.first else { return .zero }
 
-        let xs = points.map { $0.x }
-        let ys = points.map { $0.y }
+        var minX = first.x, maxX = first.x
+        var minY = first.y, maxY = first.y
 
-        guard let minX = xs.min(),
-              let maxX = xs.max(),
-              let minY = ys.min(),
-              let maxY = ys.max() else {
-            return .zero
+        for point in points.dropFirst() {
+            if point.x < minX { minX = point.x }
+            else if point.x > maxX { maxX = point.x }
+            if point.y < minY { minY = point.y }
+            else if point.y > maxY { maxY = point.y }
         }
 
         return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)

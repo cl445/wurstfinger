@@ -13,7 +13,7 @@ struct KeyboardButtonConfig {
     let fontSize: CGFloat
     let inactiveBackground: Color
     let activeBackground: Color
-    let accessibilityLabel: Text?
+    let accessibilityLabel: String?
     let accessibilityIdentifier: String?
 
     init(
@@ -21,7 +21,7 @@ struct KeyboardButtonConfig {
         fontSize: CGFloat = KeyboardConstants.FontSizes.utilityLabel,
         inactiveBackground: Color = Color(.secondarySystemBackground),
         activeBackground: Color = Color(.tertiarySystemFill),
-        accessibilityLabel: Text? = nil,
+        accessibilityLabel: String? = nil,
         accessibilityIdentifier: String? = nil
     ) {
         self.highlighted = highlighted
