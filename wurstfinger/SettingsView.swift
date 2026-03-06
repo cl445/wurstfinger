@@ -10,39 +10,39 @@ import SwiftUI
 struct SettingsView: View {
     @StateObject private var languageSettings = LanguageSettings.shared
 
-    @AppStorage("utilityColumnLeading", store: SharedDefaults.store)
+    @AppStorage(SettingsKey.utilityColumnLeading.rawValue, store: SharedDefaults.store)
     private var utilityColumnLeading = false
 
-    @AppStorage("keyAspectRatio", store: SharedDefaults.store)
-    private var keyAspectRatio = 1.0
+    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
+    private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
-    @AppStorage("keyboardScale", store: SharedDefaults.store)
-    private var keyboardScale = 1.0
+    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
+    private var keyboardScale = DeviceLayoutUtils.defaultKeyboardScale
 
-    @AppStorage("keyboardHorizontalPosition", store: SharedDefaults.store)
-    private var keyboardHorizontalPosition = 0.5
+    @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
+    private var keyboardHorizontalPosition = DeviceLayoutUtils.defaultKeyboardPosition
 
-    @AppStorage(KeyboardViewModel.hapticTapIntensityKey, store: SharedDefaults.store)
-    private var hapticTapIntensity = Double(KeyboardViewModel.defaultTapIntensity)
+    @AppStorage(SettingsKey.hapticIntensityTap.rawValue, store: SharedDefaults.store)
+    private var hapticTapIntensity = Double(HapticSettings.defaultTapIntensity)
 
-    @AppStorage(KeyboardViewModel.hapticModifierIntensityKey, store: SharedDefaults.store)
-    private var hapticModifierIntensity = Double(KeyboardViewModel.defaultModifierIntensity)
+    @AppStorage(SettingsKey.hapticIntensityModifier.rawValue, store: SharedDefaults.store)
+    private var hapticModifierIntensity = Double(HapticSettings.defaultModifierIntensity)
 
-    @AppStorage(KeyboardViewModel.hapticDragIntensityKey, store: SharedDefaults.store)
-    private var hapticDragIntensity = Double(KeyboardViewModel.defaultDragIntensity)
+    @AppStorage(SettingsKey.hapticIntensityDrag.rawValue, store: SharedDefaults.store)
+    private var hapticDragIntensity = Double(HapticSettings.defaultDragIntensity)
 
-    @AppStorage(KeyboardViewModel.numpadStyleKey, store: SharedDefaults.store)
+    @AppStorage(SettingsKey.numpadStyle.rawValue, store: SharedDefaults.store)
     private var numpadStyleRaw = NumpadStyle.phone.rawValue
 
-    @AppStorage("keyboardStyle", store: SharedDefaults.store)
+    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
 
-    @AppStorage("autoCapitalizeEnabled", store: SharedDefaults.store)
+    @AppStorage(SettingsKey.autoCapitalizeEnabled.rawValue, store: SharedDefaults.store)
     private var autoCapitalizeEnabled = false
 
     private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!
 
-    @AppStorage("expertModeEnabled", store: SharedDefaults.store)
+    @AppStorage(SettingsKey.expertModeEnabled.rawValue, store: SharedDefaults.store)
     private var expertModeEnabled = false
 
     var body: some View {
@@ -202,9 +202,9 @@ struct SettingsView: View {
     }
 
     private func hapticModeDescription() -> String {
-        let tap = formatIntensity(hapticTapIntensity)
-        let modifier = formatIntensity(hapticModifierIntensity)
-        let drag = formatIntensity(hapticDragIntensity)
+        let tap: String = formatIntensity(hapticTapIntensity)
+        let modifier: String = formatIntensity(hapticModifierIntensity)
+        let drag: String = formatIntensity(hapticDragIntensity)
         return "Tap: \(tap) • Modifiers: \(modifier) • Drags: \(drag)"
     }
 

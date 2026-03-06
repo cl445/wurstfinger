@@ -11,8 +11,8 @@ struct KeyboardSizePositionSettingsView: View {
     @Binding var scale: Double
     @Binding var position: Double
     
-    @AppStorage("keyAspectRatio", store: SharedDefaults.store)
-    private var keyAspectRatio = 1.0
+    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
+    private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
     var body: some View {
         VStack(spacing: 20) {

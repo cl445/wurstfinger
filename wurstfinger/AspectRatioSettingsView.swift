@@ -10,11 +10,11 @@ import SwiftUI
 struct AspectRatioSettingsView: View {
     @Binding var aspectRatio: Double
     
-    @AppStorage("keyboardScale", store: SharedDefaults.store)
-    private var keyboardScale = 1.0
+    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
+    private var keyboardScale = DeviceLayoutUtils.defaultKeyboardScale
 
-    @AppStorage("keyboardHorizontalPosition", store: SharedDefaults.store)
-    private var keyboardHorizontalPosition = 0.5
+    @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
+    private var keyboardHorizontalPosition = DeviceLayoutUtils.defaultKeyboardPosition
 
     var body: some View {
         VStack(spacing: 20) {

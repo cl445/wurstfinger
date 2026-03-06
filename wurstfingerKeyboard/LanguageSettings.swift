@@ -18,17 +18,10 @@ class LanguageSettings: ObservableObject {
     }
 
     private let userDefaults: UserDefaults
-    private let languageKey = "selectedLanguageId"
-    private let appGroupId = "group.de.akator.wurstfinger.shared"
+    private let languageKey = SettingsKey.selectedLanguageId.rawValue
 
-    init() {
-        // Use App Group for sharing between app and extension
-        if let groupDefaults = UserDefaults(suiteName: appGroupId) {
-            self.userDefaults = groupDefaults
-        } else {
-            self.userDefaults = UserDefaults.standard
-            print("Warning: Could not access App Group UserDefaults")
-        }
+    private init() {
+        self.userDefaults = SharedDefaults.store
 
         // Load saved language or detect from system
         self.selectedLanguageId = userDefaults.string(forKey: languageKey) ?? Self.detectSystemLanguage()
@@ -64,7 +57,7 @@ class LanguageSettings: ObservableObject {
     }
 
     var selectedLanguage: LanguageConfig {
-        LanguageConfig.language(withId: selectedLanguageId) ?? .german
+        LanguageConfig.language(withId: selectedLanguageId) ?? .english
     }
 
     func selectLanguage(_ language: LanguageConfig) {
@@ -73,6 +66,5 @@ class LanguageSettings: ObservableObject {
 
     private func save() {
         userDefaults.set(selectedLanguageId, forKey: languageKey)
-        userDefaults.synchronize()
     }
 }

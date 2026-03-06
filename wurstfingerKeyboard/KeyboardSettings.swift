@@ -25,6 +25,9 @@ enum SettingsKey: String {
     case keyboardHorizontalPosition
     case numpadStyle
     case selectedLanguageId
+    case autoCapitalizeEnabled
+    case expertModeEnabled
+    case keyboardStyle
 }
 
 // MARK: - Haptic Settings

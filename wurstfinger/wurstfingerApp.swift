@@ -19,9 +19,9 @@ struct wurstfingerApp: App {
 
     init() {
         let defaults: [String: Any] = [
-            "keyAspectRatio": DeviceLayoutUtils.defaultKeyAspectRatio,
-            "keyboardScale": DeviceLayoutUtils.defaultKeyboardScale,
-            "keyboardHorizontalPosition": DeviceLayoutUtils.defaultKeyboardPosition
+            SettingsKey.keyAspectRatio.rawValue: DeviceLayoutUtils.defaultKeyAspectRatio,
+            SettingsKey.keyboardScale.rawValue: DeviceLayoutUtils.defaultKeyboardScale,
+            SettingsKey.keyboardHorizontalPosition.rawValue: DeviceLayoutUtils.defaultKeyboardPosition
         ]
         SharedDefaults.store.register(defaults: defaults)
 
