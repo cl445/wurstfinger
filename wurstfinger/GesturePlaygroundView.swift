@@ -181,7 +181,7 @@ struct GesturePlaygroundView: View {
                                 "1. Tap?",
                                 passed: features.isTap
                             ) {
-                                criterion("maxDisp", val: features.maxDisplacement, op: "<", limit: GestureFeatures.thresholds.minSwipeLength, pass: features.maxDisplacement < GestureFeatures.thresholds.minSwipeLength)
+                                criterion("maxDisp", val: features.maxDisplacement, op: "<", limit: features.thresholds.minSwipeLength, pass: features.maxDisplacement < features.thresholds.minSwipeLength)
                             }
                             
                             decisionRow(
@@ -189,10 +189,10 @@ struct GesturePlaygroundView: View {
                                 passed: features.isCircular
                             ) {
                                 VStack(alignment: .leading) {
-                                    criterion("circ", val: features.circularity, op: ">", limit: GestureFeatures.thresholds.minCircularity, pass: features.circularity > GestureFeatures.thresholds.minCircularity)
-                                    criterion("angle", val: abs(features.angularSpan) * 180 / .pi, op: ">", limit: GestureFeatures.thresholds.minAngularSpan * 180 / .pi, unit: "°", pass: abs(features.angularSpan) > GestureFeatures.thresholds.minAngularSpan)
-                                    criterion("turn", val: features.turnConsistency, op: ">", limit: GestureFeatures.thresholds.minTurnConsistency, pass: features.turnConsistency > GestureFeatures.thresholds.minTurnConsistency)
-                                    criterion("compact", val: features.orientedCompactness, op: ">", limit: GestureFeatures.thresholds.minOrientedCompactness, pass: features.orientedCompactness > GestureFeatures.thresholds.minOrientedCompactness)
+                                    criterion("circ", val: features.circularity, op: ">", limit: features.thresholds.minCircularity, pass: features.circularity > features.thresholds.minCircularity)
+                                    criterion("angle", val: abs(features.angularSpan) * 180 / .pi, op: ">", limit: features.thresholds.minAngularSpan * 180 / .pi, unit: "°", pass: abs(features.angularSpan) > features.thresholds.minAngularSpan)
+                                    criterion("turn", val: features.turnConsistency, op: ">", limit: features.thresholds.minTurnConsistency, pass: features.turnConsistency > features.thresholds.minTurnConsistency)
+                                    criterion("compact", val: features.orientedCompactness, op: ">", limit: features.thresholds.minOrientedCompactness, pass: features.orientedCompactness > features.thresholds.minOrientedCompactness)
                                 }
                             }
                             
@@ -201,7 +201,7 @@ struct GesturePlaygroundView: View {
                                 passed: features.isReturn
                             ) {
                                 VStack(alignment: .leading) {
-                                    criterion("ratio", val: features.returnRatio, op: "<", limit: GestureFeatures.thresholds.maxReturnRatio, pass: features.returnRatio < GestureFeatures.thresholds.maxReturnRatio)
+                                    criterion("ratio", val: features.returnRatio, op: "<", limit: features.thresholds.maxReturnRatio, pass: features.returnRatio < features.thresholds.maxReturnRatio)
                                     criterion("progress", val: features.maxDisplacementProgress, op: "in", limit: 0, pass: features.maxDisplacementProgress > 0.2 && features.maxDisplacementProgress < 0.8) // Simplified range display
                                 }
                             }
@@ -310,8 +310,8 @@ struct GesturePlaygroundView: View {
         processedPoints = preprocessor.preprocess(rawPoints)
         
         // 3. Extract Features
-        GestureFeatures.thresholds = GestureClassificationThresholds.fromUserDefaults()
-        let feats = GestureFeatures.extract(from: processedPoints)
+        let thresholds = GestureClassificationThresholds.fromUserDefaults()
+        let feats = GestureFeatures.extract(from: processedPoints, thresholds: thresholds)
         self.features = feats
         
         // 4. Classify
