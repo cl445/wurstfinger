@@ -301,7 +301,7 @@ struct KeyboardLayout {
 
 extension KeyboardLayout {
     private static let composeTriggers: Set<String> = [
-        "¨", "'", "`", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
+        "¨", "`", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
     ]
 
     /// Creates the 3x3 letter grid rows using the language configuration
