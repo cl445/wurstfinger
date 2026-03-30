@@ -70,7 +70,7 @@ Want to try the latest features before they hit the App Store? Join our public T
 
 ## FAQ
 
-Have questions about iOS limitations or keyboard behavior? Check out the [Frequently Asked Questions](docs/FAQ.md).
+Wondering why something doesn't work as expected? Check out the [Frequently Asked Questions](docs/FAQ.md) for common issues and their solutions.
 
 ## Getting Started
 
