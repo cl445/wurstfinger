@@ -35,10 +35,10 @@ struct KeyboardButtonConfig {
 
 /// Callback closures for keyboard button interactions
 struct KeyboardButtonCallbacks {
-    var onTap: (() -> Void)? = nil
-    var onSwipe: ((KeyboardDirection) -> Void)? = nil
-    var onSwipeReturn: ((KeyboardDirection) -> Void)? = nil
-    var onCircular: ((KeyboardCircularDirection) -> Void)? = nil
+    var onTap: (() -> Void)?
+    var onSwipe: ((KeyboardDirection) -> Void)?
+    var onSwipeReturn: ((KeyboardDirection) -> Void)?
+    var onCircular: ((KeyboardCircularDirection) -> Void)?
 }
 
 /// Visual key cap component used as the base for all keyboard buttons
@@ -77,7 +77,12 @@ struct KeyCap<Content: View>: View {
         content
             .font(.system(size: fontSize, weight: .semibold, design: .rounded))
             .foregroundStyle(Color.primary)
-            .frame(minWidth: KeyboardConstants.KeyDimensions.minWidth, maxWidth: aspectRatio.map { height * $0 } ?? .infinity, minHeight: height, maxHeight: height)
+            .frame(
+                minWidth: KeyboardConstants.KeyDimensions.minWidth,
+                maxWidth: aspectRatio.map { height * $0 } ?? .infinity,
+                minHeight: height,
+                maxHeight: height
+            )
             .background(keyBackground)
     }
 

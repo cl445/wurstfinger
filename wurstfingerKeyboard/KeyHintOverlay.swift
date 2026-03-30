@@ -30,8 +30,9 @@ struct KeyHintOverlay: View {
         GeometryReader { proxy in
             let size = proxy.size
             // Scale padding proportionally with font size
-            let scaledHorizontalPadding = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * (hintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize)
-            let scaledVerticalPadding = KeyboardConstants.FontSizes.hintBaseVerticalPadding * (hintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize)
+            let fontRatio = hintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize
+            let scaledHorizontalPadding = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * fontRatio
+            let scaledVerticalPadding = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
 
             ForEach(directions, id: \.self) { direction in
                 if let label = key.primaryLabel(for: direction, isCapsLock: viewModel.isCapsLockActive) {
@@ -217,8 +218,9 @@ struct SymbolsKeyHintOverlay: View {
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
-            let scaledHorizontalPadding = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * (hintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize)
-            let scaledVerticalPadding = KeyboardConstants.FontSizes.hintBaseVerticalPadding * (hintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize)
+            let fontRatio = hintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize
+            let scaledHorizontalPadding = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * fontRatio
+            let scaledVerticalPadding = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
 
             ForEach(hints, id: \.direction) { hint in
                 Image(systemName: hint.iconName)

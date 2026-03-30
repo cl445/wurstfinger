@@ -57,7 +57,7 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
 
                     let point = CGPoint(x: value.translation.width, y: value.translation.height)
                     positions.append(point)
-                    
+
                     isActive = true
                 }
                 .onEnded { _ in

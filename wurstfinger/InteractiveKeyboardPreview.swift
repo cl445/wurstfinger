@@ -11,7 +11,7 @@ struct InteractiveKeyboardPreview: View {
     @Binding var aspectRatio: Double
     @Binding var scale: Double
     @Binding var position: Double
-    
+
     @StateObject private var previewViewModel = KeyboardViewModel(shouldPersistSettings: false)
     @State private var previewText = ""
 
@@ -27,7 +27,7 @@ struct InteractiveKeyboardPreview: View {
         // Calculate preview height based on aspect ratio and scale
         let baseHeight = KeyboardConstants.Calculations.baseHeight(aspectRatio: previewViewModel.keyAspectRatio)
         let scaledHeight = baseHeight * scale
-        
+
         // Determine height constraints based on usage
         // If scaling is involved (size settings), we clamp between min/max
         // If only aspect ratio changes (aspect settings), we allow it to grow naturally but cap it
@@ -85,20 +85,20 @@ struct InteractiveKeyboardPreview: View {
                         overrideWidth: geometry.size.width
                     )
 
-                    .onChange(of: aspectRatio) { oldValue, newValue in
+                    .onChange(of: aspectRatio) { _, newValue in
                         previewViewModel.keyAspectRatio = newValue
                     }
-                    .onChange(of: scale) { oldValue, newValue in
+                    .onChange(of: scale) { _, newValue in
                         previewViewModel.keyboardScale = newValue
                     }
-                    .onChange(of: position) { oldValue, newValue in
+                    .onChange(of: position) { _, newValue in
                         previewViewModel.keyboardHorizontalPosition = newValue
                     }
                     .onAppear {
                         previewViewModel.keyAspectRatio = aspectRatio
                         previewViewModel.keyboardScale = scale
                         previewViewModel.keyboardHorizontalPosition = position
-                        
+
                         previewViewModel.bindActionHandler { action in
                             switch action {
                             case .insert(let text):

@@ -1,0 +1,52 @@
+# SwiftLint Configuration for Wurstfinger
+
+included:
+  - wurstfinger
+  - wurstfingerKeyboard
+  - wurstfingerTests
+  - wurstfingerUITests
+
+# Rules tuned for a gesture-based keyboard with lots of geometry code
+identifier_name:
+  min_length:
+    warning: 1
+  excluded:
+    - id
+
+line_length:
+  warning: 150
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
+
+type_name:
+  excluded:
+    - wurstfingerApp
+    - wurstfingerUITests
+    - wurstfingerUITestsLaunchTests
+    - wurstfingerTests
+
+file_length:
+  warning: 1100
+  error: 1500
+
+type_body_length:
+  warning: 500
+  error: 800
+
+function_body_length:
+  warning: 250
+  error: 400
+
+large_tuple:
+  warning: 4
+
+function_parameter_count:
+  warning: 7
+
+cyclomatic_complexity:
+  warning: 15
+  error: 25
+
+disabled_rules:
+  - trailing_comma  # Trailing commas improve diffs

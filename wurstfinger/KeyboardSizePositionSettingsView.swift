@@ -10,7 +10,7 @@ import SwiftUI
 struct KeyboardSizePositionSettingsView: View {
     @Binding var scale: Double
     @Binding var position: Double
-    
+
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 

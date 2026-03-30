@@ -454,7 +454,6 @@ final class KeyboardViewModel: ObservableObject {
         }
     }
 
-
     private func perform(_ output: MessagEaseOutput) {
         switch output {
         case .text(let value):

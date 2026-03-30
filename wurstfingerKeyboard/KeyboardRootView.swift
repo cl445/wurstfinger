@@ -13,7 +13,7 @@ struct KeyboardRootView: View {
     @ObservedObject var viewModel: KeyboardViewModel
     var scaleAnchor: UnitPoint = .bottom
     var frameAlignment: Alignment = .bottom
-    var overrideWidth: CGFloat? = nil
+    var overrideWidth: CGFloat?
 
     @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
@@ -31,11 +31,11 @@ struct KeyboardRootView: View {
         let screenBounds = UIScreen.main.bounds
         let screenShortestSide = min(screenBounds.width, screenBounds.height)
         let currentWidth = overrideWidth ?? screenBounds.width
-        
+
         // Constrain the base width to the device's shortest side (portrait width)
         // This prevents the keyboard from stretching in landscape
         let baseWidth = min(currentWidth, screenShortestSide)
-        
+
         let availableSpace = currentWidth - (baseWidth * viewModel.keyboardScale)
         let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
 

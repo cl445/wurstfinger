@@ -745,7 +745,11 @@ private extension KeyboardLayout {
     }
 
     /// Helper to create a new key with swapped center and circular gestures, keeping swipe outputs at physical position
-    private static func swapCenterAndCircular(_ key: MessagEaseKey, newCenter: String, newCircular: [KeyboardCircularDirection: MessagEaseOutput]) -> MessagEaseKey {
+    private static func swapCenterAndCircular(
+        _ key: MessagEaseKey,
+        newCenter: String,
+        newCircular: [KeyboardCircularDirection: MessagEaseOutput]
+    ) -> MessagEaseKey {
         return MessagEaseKey(
             center: newCenter,
             swipeOutputs: key.swipeOutputs,
@@ -1021,4 +1025,3 @@ enum KeyboardConstants {
         }
     }
 }
-
