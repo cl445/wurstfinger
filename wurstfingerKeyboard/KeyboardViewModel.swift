@@ -200,7 +200,7 @@ final class KeyboardViewModel: ObservableObject {
 
     private func reloadLanguage() {
         // Read language ID directly from UserDefaults to catch changes from host app
-        let languageId = sharedDefaults.string(forKey: "selectedLanguageId") ?? LanguageSettings.detectSystemLanguage()
+        let languageId = sharedDefaults.string(forKey: SettingsKey.selectedLanguageId.rawValue) ?? LanguageSettings.detectSystemLanguage()
 
         if languageId != locale.identifier {
             // Notify SwiftUI that we're about to change the model
@@ -479,7 +479,7 @@ final class KeyboardViewModel: ObservableObject {
         feedbackModifier()
         utilityColumnLeading.toggle()
         if shouldPersistSettings {
-            sharedDefaults.set(utilityColumnLeading, forKey: "utilityColumnLeading")
+            sharedDefaults.set(utilityColumnLeading, forKey: SettingsKey.utilityColumnLeading.rawValue)
         }
     }
 

@@ -100,7 +100,7 @@ final class KeyboardViewController: UIInputViewController {
             textDocumentProxy.insertText(text)
             // Spanish sentence-opening punctuation triggers immediate capitalization
             if AutoCapitalization.shouldCapitalizeImmediately(after: text) &&
-               SharedDefaults.store.bool(forKey: "autoCapitalizeEnabled") {
+               SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) {
                 viewModel.setLayer(.upper)
             }
         case .deleteBackward:
@@ -170,7 +170,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private func checkAutoCapitalization() {
         // Check if auto-capitalize is enabled
-        guard SharedDefaults.store.bool(forKey: "autoCapitalizeEnabled") else { return }
+        guard SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) else { return }
 
         if AutoCapitalization.shouldCapitalize(context: textDocumentProxy.documentContextBeforeInput) {
             viewModel.setLayer(.upper)
