@@ -357,7 +357,7 @@ struct GestureClassificationThresholds {
         return GestureClassificationThresholds(
             minSwipeLength: loadCGFloat(from: store, key: minSwipeLengthKey, default: defaultMinSwipeLength),
             maxReturnRatio: loadCGFloat(from: store, key: maxReturnRatioKey, default: defaultMaxReturnRatio),
-            returnDisplacementRange: start...end,
+            returnDisplacementRange: min(start, end)...max(start, end),
             minCircularity: loadCGFloat(from: store, key: minCircularityKey, default: defaultMinCircularity),
             minAngularSpan: loadCGFloat(from: store, key: minAngularSpanKey, default: defaultMinAngularSpan),
             minPathSeparation: loadCGFloat(from: store, key: minPathSeparationKey, default: defaultMinPathSeparation),
@@ -429,7 +429,7 @@ struct GestureFeatures {
     /// Uses GestureCalculations helper functions for cleaner, testable code.
     static func extract(from points: [CGPoint], thresholds: GestureClassificationThresholds = .default) -> GestureFeatures {
         guard points.count >= 2 else {
-            return GestureFeatures.empty
+            return GestureFeatures.empty(thresholds: thresholds)
         }
 
         let start = points[0]
@@ -483,25 +483,27 @@ struct GestureFeatures {
         )
     }
 
-    static let empty = GestureFeatures(
-        thresholds: .default,
-        pathLength: 0,
-        chordLength: 0,
-        boundingBox: .zero,
-        maxDisplacement: 0,
-        maxDisplacementPoint: .zero,
-        maxDisplacementProgress: 0,
-        centroid: .zero,
-        returnRatio: 1,
-        aspectRatio: 1,
-        dominantAngle: 0,
-        maxDisplacementAngle: 0,
-        angularSpan: 0,
-        circularity: 0,
-        pathSeparation: 0,
-        turnConsistency: 1,
-        orientedCompactness: 0
-    )
+    static func empty(thresholds: GestureClassificationThresholds = .default) -> GestureFeatures {
+        GestureFeatures(
+            thresholds: thresholds,
+            pathLength: 0,
+            chordLength: 0,
+            boundingBox: .zero,
+            maxDisplacement: 0,
+            maxDisplacementPoint: .zero,
+            maxDisplacementProgress: 0,
+            centroid: .zero,
+            returnRatio: 1,
+            aspectRatio: 1,
+            dominantAngle: 0,
+            maxDisplacementAngle: 0,
+            angularSpan: 0,
+            circularity: 0,
+            pathSeparation: 0,
+            turnConsistency: 1,
+            orientedCompactness: 0
+        )
+    }
 }
 
 // MARK: - Debug Logging

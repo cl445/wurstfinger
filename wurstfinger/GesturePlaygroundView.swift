@@ -202,7 +202,7 @@ struct GesturePlaygroundView: View {
                             ) {
                                 VStack(alignment: .leading) {
                                     criterion("ratio", val: features.returnRatio, op: "<", limit: features.thresholds.maxReturnRatio, pass: features.returnRatio < features.thresholds.maxReturnRatio)
-                                    criterion("progress", val: features.maxDisplacementProgress, op: "in", limit: 0, pass: features.maxDisplacementProgress > 0.2 && features.maxDisplacementProgress < 0.8) // Simplified range display
+                                    criterion("progress", val: features.maxDisplacementProgress, op: "in", limit: 0, pass: features.thresholds.returnDisplacementRange.contains(features.maxDisplacementProgress))
                                 }
                             }
 
