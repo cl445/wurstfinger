@@ -52,18 +52,18 @@ struct DeviceLayoutUtils {
     static var defaultKeyboardScale: Double {
         let targetWidth: CGFloat = 270.0
         let screenWidth = UIScreen.main.bounds.width
-        
+
         // Avoid division by zero
         guard screenWidth > 0 else { return 1.0 }
-        
+
         // Calculate scale required to hit target width
         let calculatedScale = targetWidth / screenWidth
-        
+
         // Clamp between reasonable min/max (e.g., 0.26 to 1.0)
         // 0.26 is roughly iPad width (1024pt) -> 270/1024 = 0.26
         return min(1.0, max(0.25, calculatedScale))
     }
-    
+
     static let defaultKeyAspectRatio: Double = 1.0
     static let defaultKeyboardPosition: Double = 0.5
 }

@@ -751,6 +751,7 @@ private extension KeyboardLayout {
         newCircular: [KeyboardCircularDirection: MessagEaseOutput]
     ) -> MessagEaseKey {
         return MessagEaseKey(
+            id: key.id,
             center: newCenter,
             swipeOutputs: key.swipeOutputs,
             swipeReturnOutputs: key.swipeReturnOutputs,
