@@ -330,6 +330,7 @@ struct wurstfingerTests {
         let runs = (0..<5).map { _ in
             ComposeEngine.cycleAccent(for: "1")
         }
+        #expect(runs[0] != nil, "cycleAccent should return a value for '1'")
         for run in runs {
             #expect(run == runs[0], "Number cycle should be deterministic across calls")
         }
@@ -340,18 +341,21 @@ struct wurstfingerTests {
         var current = "a"
         var visited: [String] = [current]
 
-        for _ in 0..<20 {  // Safety limit
+        for _ in 0..<50 {  // Safety limit (generous for large compose tables)
             guard let next = ComposeEngine.cycleAccent(for: current) else { break }
             if next == "a" {
-                // Round-tripped back to base
+                // Successfully round-tripped
                 break
             }
+            #expect(!visited.contains(next), "Cycle should not revisit '\(next)' — would loop forever. Visited: \(visited)")
             current = next
             visited.append(current)
         }
 
-        // Should have cycled through variants and the last cycle should return to "a"
         #expect(visited.count > 1, "Should have at least one accent variant for 'a'")
+        // Verify the cycle actually returns to the base character
+        let lastStep = ComposeEngine.cycleAccent(for: current)
+        #expect(lastStep == "a", "Last variant '\(current)' should cycle back to 'a', got '\(lastStep ?? "nil")'. Full cycle: \(visited)")
     }
 
     // MARK: - GestureFeatures.empty Tests

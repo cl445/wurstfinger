@@ -110,8 +110,9 @@ final class KeyboardViewController: UIInputViewController {
             textDocumentProxy.deleteBackward()
             updateAutoCapitalization()
         case .deleteForward:
-            deleteForward()
-            updateAutoCapitalization()
+            if deleteForward() {
+                updateAutoCapitalization()
+            }
         case .advanceToNextInputMode:
             advanceToNextInputMode()
         case .space:
@@ -139,14 +140,15 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
-    /// Delete one character after cursor
-    private func deleteForward() {
-        // Only delete if there's text after the cursor
+    /// Delete one character after cursor. Returns `true` if a character was deleted.
+    @discardableResult
+    private func deleteForward() -> Bool {
         guard let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty else {
-            return
+            return false
         }
         textDocumentProxy.adjustTextPosition(byCharacterOffset: 1)
         textDocumentProxy.deleteBackward()
+        return true
     }
 
     /// Copy selected text to clipboard
