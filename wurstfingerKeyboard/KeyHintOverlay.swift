@@ -11,6 +11,7 @@ import SwiftUI
 struct KeyHintOverlay: View {
     let key: MessagEaseKey
     @ObservedObject var viewModel: KeyboardViewModel
+    let locale: Locale
     let keyHeight: CGFloat
 
     private let directions: [KeyboardDirection] = KeyboardDirection.allCases.filter { $0 != .center }
@@ -66,9 +67,9 @@ struct KeyHintOverlay: View {
 
         switch activeLayer {
         case .upper:
-            return label.uppercased()
+            return label.uppercased(with: locale)
         case .lower:
-            return label.lowercased()
+            return label.lowercased(with: locale)
         case .numbers, .symbols:
             return label
         }

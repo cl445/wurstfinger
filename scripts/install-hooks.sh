@@ -7,7 +7,7 @@ HOOKS_DIR="$REPO_ROOT/.git/hooks"
 
 # Handle worktrees: .git may be a file pointing to the actual git dir
 if [ -f "$REPO_ROOT/.git" ]; then
-    GIT_DIR=$(sed 's/gitdir: //' "$REPO_ROOT/.git" | tr -d '[:space:]')
+    GIT_DIR=$(sed -n 's/^gitdir: //p' "$REPO_ROOT/.git" | head -n 1 | tr -d '\r')
     # Handle both absolute and relative paths
     if [[ "$GIT_DIR" = /* ]]; then
         HOOKS_DIR="$GIT_DIR/hooks"

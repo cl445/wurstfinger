@@ -39,11 +39,8 @@ struct ImprintView: View {
                     Text("The provider assumes no liability for the accuracy, completeness and timeliness of the content provided.")
                         .font(.footnote)
 
-                    Text(
-                        "Liability claims against the provider relating to material or "
-                        + "immaterial damage caused by the use or non-use of the "
-                        + "information provided are excluded."
-                    )
+                    // swiftlint:disable:next line_length
+                    Text("Liability claims against the provider relating to material or immaterial damage caused by the use or non-use of the information provided are excluded.")
                         .font(.footnote)
                 }
                 .foregroundColor(.secondary)

@@ -18,6 +18,10 @@ echo "Running SwiftLint on staged files..."
 FAILED=0
 while IFS= read -r file; do
     if [ -f "$file" ]; then
+        # Warn about partially staged files (working tree differs from index)
+        if ! git diff --quiet -- "$file"; then
+            echo "warning: $file has unstaged changes — linting working tree version"
+        fi
         swiftlint lint --strict --quiet "$file"
         if [ $? -ne 0 ]; then
             FAILED=1

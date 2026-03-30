@@ -271,8 +271,8 @@ private extension KeyboardLayout {
     /// Creates the 3x3 letter grid rows using the language configuration
     private static func createLetterRows(for config: LanguageConfig) -> [[MessagEaseKey]] {
         let centers = config.centerCharacters
-        guard centers.count == 3 else {
-            assertionFailure("LanguageConfig must have exactly 3 rows")
+        guard centers.count == 3, centers.allSatisfy({ $0.count == 3 }) else {
+            assertionFailure("LanguageConfig must be a 3x3 grid")
             return []
         }
 

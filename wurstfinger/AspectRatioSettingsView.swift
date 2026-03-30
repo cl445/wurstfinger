@@ -65,11 +65,8 @@ struct AspectRatioSettingsView: View {
                     }
                 }
 
-                Text(
-                    "Adjust the width-to-height ratio of the keys. "
-                    + "1.0 creates square keys, 1.5 is the default appearance, "
-                    + "and 1.62 is the golden ratio (widest)."
-                )
+                // swiftlint:disable:next line_length
+                Text("Adjust the width-to-height ratio of the keys. 1.0 creates square keys, 1.5 is the default appearance, and 1.62 is the golden ratio (widest).")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
