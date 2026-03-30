@@ -14,13 +14,16 @@ final class KeyboardViewController: UIInputViewController {
     private lazy var viewModel = KeyboardViewModel()
     private var heightConstraint: NSLayoutConstraint?
 
-    /// Tells iOS which language this keyboard is typing in for spell-check and autocorrect
+    /// Reports the active keyboard language to iOS (shown in Settings > Keyboards).
+    /// Reads directly from SharedDefaults to pick up language changes made in the host app,
+    /// since the LanguageSettings singleton may hold a stale value from its init.
     override var primaryLanguage: String? {
         get {
-            return LanguageSettings.shared.selectedLanguageId
+            let languageId = SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
+            let config = languageId.flatMap { LanguageConfig.language(withId: $0) } ?? .english
+            return config.locale.identifier
         }
         set {
-            // iOS may try to set this, but we ignore it and use our settings
             super.primaryLanguage = newValue
         }
     }

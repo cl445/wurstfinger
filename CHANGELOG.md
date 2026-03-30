@@ -8,6 +8,7 @@
 - Fix non-deterministic accent cycle order
 - Replace `fatalError` with `assertionFailure` in layout creation to prevent production crashes
 - Fix hardcoded version "1.0.0" in settings — now reads from bundle
+- Set `PrimaryLanguage` to `mul` (multi-language) and read active language directly from SharedDefaults so iOS Settings shows the correct keyboard language (#96)
 
 ### Added
 
