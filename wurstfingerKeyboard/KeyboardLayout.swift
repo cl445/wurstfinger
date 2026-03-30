@@ -350,7 +350,7 @@ extension KeyboardLayout {
                     composeMap: [
                         .upLeft: (display: "`", trigger: "`"),
                         .up: (display: "^", trigger: "^"),
-                        .upRight: (display: "´", trigger: "'")
+                        .upRight: (display: "´", trigger: "´")
                     ],
                     returnOverrides: [
                         .upLeft: .text("'"),
@@ -572,7 +572,7 @@ extension KeyboardLayout {
                     composeMap: [
                         .upLeft: (display: "`", trigger: "`"),
                         .up: (display: "^", trigger: "^"),
-                        .upRight: (display: "´", trigger: "'")
+                        .upRight: (display: "´", trigger: "´")
                     ],
                     returnOverrides: [
                         .upLeft: .text("'"),

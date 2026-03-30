@@ -220,12 +220,12 @@ struct wurstfingerTests {
             }
         }
 
-        // N-key (row 0, col 1) has compose triggers: upLeft=`, up=^, upRight='
+        // N-key (row 0, col 1) has compose triggers: upLeft=`, up=^, upRight=´
         let firstRow = try #require(viewModel.rows.first)
         let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
         viewModel.handleKeySwipe(nKey, direction: .upRight)
 
-        #expect(captured == "'")
+        #expect(captured == "´")
     }
 
     @Test func composeEngineProducesReplacement() async throws {
@@ -384,21 +384,19 @@ struct wurstfingerTests {
 
     // MARK: - Apostrophe compose regression (#89)
 
-    @Test func apostropheIsNotAutoComposeTrigger() async throws {
-        // Verify no key in the layout has apostrophe as an auto-detected
-        // compose trigger. Only the explicit composeMap entry (N-key upRight,
-        // displayed as ´) should produce .compose with trigger "'".
+    @Test func apostropheIsNeverAComposeTrigger() async throws {
+        // Verify no key in the layout uses apostrophe (') as a compose trigger.
+        // Composition uses ´ (U+00B4 acute accent), not ' (U+0027 apostrophe).
         let viewModel = KeyboardViewModel()
 
         for (rowIndex, row) in viewModel.rows.enumerated() {
             for (colIndex, key) in row.enumerated() {
                 for direction in KeyboardDirection.allCases {
                     guard let output = key.output(for: direction) else { continue }
-                    if case let .compose(trigger, _) = output, trigger == "'" {
-                        // Only allowed on the N-key (row 0, col 1) upRight via composeMap
+                    if case let .compose(trigger, _) = output {
                         #expect(
-                            rowIndex == 0 && colIndex == 1 && direction == .upRight,
-                            "Unexpected apostrophe compose trigger at row \(rowIndex), col \(colIndex), direction \(direction)"
+                            trigger != "'",
+                            "Apostrophe must not be a compose trigger (found at row \(rowIndex), col \(colIndex), direction \(direction))"
                         )
                     }
                 }
@@ -433,15 +431,21 @@ struct wurstfingerTests {
         #expect(inserts.last == "'", "Return swipe should insert plain apostrophe")
     }
 
-    @Test func acuteComposeKeyStillProducesAccentedCharacters() async throws {
-        // The ´ compose key (N-key upRight via composeMap) must still work
-        // for producing accented characters like á, é, í, ó, ú
-        #expect(ComposeEngine.compose(previous: "a", trigger: "'") == "á")
-        #expect(ComposeEngine.compose(previous: "e", trigger: "'") == "é")
-        #expect(ComposeEngine.compose(previous: "i", trigger: "'") == "í")
-        #expect(ComposeEngine.compose(previous: "o", trigger: "'") == "ó")
-        #expect(ComposeEngine.compose(previous: "u", trigger: "'") == "ú")
-        #expect(ComposeEngine.compose(previous: "n", trigger: "'") == "ń")
+    @Test func acuteComposeKeyProducesAccentedCharacters() async throws {
+        // The ´ compose key uses ´ (U+00B4) as trigger, not ' (U+0027)
+        #expect(ComposeEngine.compose(previous: "a", trigger: "´") == "á")
+        #expect(ComposeEngine.compose(previous: "e", trigger: "´") == "é")
+        #expect(ComposeEngine.compose(previous: "i", trigger: "´") == "í")
+        #expect(ComposeEngine.compose(previous: "o", trigger: "´") == "ó")
+        #expect(ComposeEngine.compose(previous: "u", trigger: "´") == "ú")
+        #expect(ComposeEngine.compose(previous: "n", trigger: "´") == "ń")
+    }
+
+    @Test func apostropheDoesNotComposeAccentedCharacters() async throws {
+        // Apostrophe (') must NOT produce accented characters via ComposeEngine
+        #expect(ComposeEngine.compose(previous: "a", trigger: "'") == nil)
+        #expect(ComposeEngine.compose(previous: "e", trigger: "'") == nil)
+        #expect(ComposeEngine.compose(previous: "o", trigger: "'") == nil)
     }
 
     @Test func dollarSignRemainsAutoComposeTrigger() async throws {
