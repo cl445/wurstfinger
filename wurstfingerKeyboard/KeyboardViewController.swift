@@ -108,8 +108,10 @@ final class KeyboardViewController: UIInputViewController {
             }
         case .deleteBackward:
             textDocumentProxy.deleteBackward()
+            updateAutoCapitalization()
         case .deleteForward:
             deleteForward()
+            updateAutoCapitalization()
         case .advanceToNextInputMode:
             advanceToNextInputMode()
         case .space:
@@ -177,6 +179,19 @@ final class KeyboardViewController: UIInputViewController {
 
         if AutoCapitalization.shouldCapitalize(context: textDocumentProxy.documentContextBeforeInput) {
             viewModel.setLayer(.upper)
+        }
+    }
+
+    /// Re-evaluates auto-capitalization after text changes (e.g. delete).
+    /// Enables uppercase if at sentence start, disables it if no longer at sentence start.
+    private func updateAutoCapitalization() {
+        guard SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) else { return }
+
+        let shouldCapitalize = AutoCapitalization.shouldCapitalize(context: textDocumentProxy.documentContextBeforeInput)
+        if shouldCapitalize {
+            viewModel.setLayer(.upper)
+        } else if viewModel.activeLayer == .upper && !viewModel.isCapsLockActive {
+            viewModel.setLayer(.lower)
         }
     }
 
