@@ -11,8 +11,8 @@ private struct ScreenshotConfig {
     let layer: String
     let appearance: String
     let number: String
-    let sent: String
-    let received: String
+    var sent: String = ""
+    var received: String = ""
 }
 
 final class ScreenshotTests: XCTestCase {
@@ -149,11 +149,11 @@ final class ScreenshotTests: XCTestCase {
             .lowercased()
 
         // Keyboard layouts to capture
-        let configurations: [(layer: String, appearance: String, number: String)] = [
-            ("lower", "light", "06"),
-            ("lower", "dark", "07"),
-            ("numbers", "light", "08"),
-            ("symbols", "light", "09")
+        let configurations: [ScreenshotConfig] = [
+            .init(layer: "lower", appearance: "light", number: "06"),
+            .init(layer: "lower", appearance: "dark", number: "07"),
+            .init(layer: "numbers", appearance: "light", number: "08"),
+            .init(layer: "symbols", appearance: "light", number: "09")
         ]
 
         for config in configurations {

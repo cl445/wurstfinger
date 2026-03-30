@@ -18,5 +18,10 @@ fi
 
 mkdir -p "$HOOKS_DIR"
 
+if [ ! -f "$REPO_ROOT/scripts/pre-commit" ]; then
+    echo "error: scripts/pre-commit not found"
+    exit 1
+fi
+
 ln -sf "$REPO_ROOT/scripts/pre-commit" "$HOOKS_DIR/pre-commit"
 echo "Installed pre-commit hook to $HOOKS_DIR/pre-commit"

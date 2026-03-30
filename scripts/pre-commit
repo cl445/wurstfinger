@@ -22,8 +22,7 @@ while IFS= read -r file; do
         if ! git diff --quiet -- "$file"; then
             echo "warning: $file has unstaged changes — linting working tree version"
         fi
-        swiftlint lint --strict --quiet "$file"
-        if [ $? -ne 0 ]; then
+        if ! swiftlint lint --strict --quiet "$file"; then
             FAILED=1
         fi
     fi

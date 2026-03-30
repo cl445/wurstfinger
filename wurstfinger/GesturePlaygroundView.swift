@@ -352,16 +352,8 @@ struct GesturePlaygroundView: View {
             result = "Circular (\(feats.isClockwise ? "CW" : "CCW"))"
             detectedCircularDirection = feats.isClockwise ? .clockwise : .counterclockwise
             detectedDirection = .center
-        } else if feats.isReturn {
-            result = "Return Swipe"
-            // For return swipe, we still want the direction of the max displacement
-            let swipeSize = CGSize(
-                width: cos(feats.maxDisplacementAngle),
-                height: sin(feats.maxDisplacementAngle)
-            )
-            detectedDirection = KeyboardDirection.direction(for: swipeSize, tolerance: 0)
         } else {
-            result = "Swipe"
+            result = feats.isReturn ? "Return Swipe" : "Swipe"
             let swipeSize = CGSize(
                 width: cos(feats.maxDisplacementAngle),
                 height: sin(feats.maxDisplacementAngle)
