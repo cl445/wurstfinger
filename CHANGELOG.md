@@ -12,10 +12,10 @@
 - Auto-capitalization now re-evaluates after deleting characters (#88)
 - Fix UserDefaults `as? CGFloat` casting with `double(forKey:)` for reliable settings loading
 - Lower height constraint priority to `.defaultHigh` to prevent Auto Layout conflicts
-- Apostrophe no longer triggers compose/accent mode; dedicated ´ compose key remains for accented characters (#89)
+- Fix deprecated APIs and SwiftUI view anti-patterns
 
 ### Added
-
+- Accessibility labels for globe and return keys
 - 50+ new tests for settings, haptics, Vector2D, and gesture calculations (#90)
 - CodeRabbit configuration for automated PR reviews
 
@@ -33,6 +33,13 @@
 - Extract GestureCalculations helpers and centralize GeometryUtils (#90)
 - Convert `GestureFeatures.thresholds` from `static var` to instance `let`
 - Filter `UserDefaults.didChangeNotification` to shared defaults instance only
+- Deterministic MessagEaseKey IDs using center character
+- Config-based return overrides instead of hardcoded letters
+- Single-pass boundingBox calculation
+- Cached haptic feedback generator
+- Pass value types to KeyHintOverlay instead of ViewModel
+- Consolidate DeleteKeyButton @State into GestureState struct
+- Explicit LanguageConfig Equatable by id
 
 ## v1.1.1 — 2025-12-28
 
