@@ -116,15 +116,12 @@ struct GesturePreprocessorConfig {
         aspectRatio: 1.0
     )
 
-    /// Loads config from SharedDefaults with fallback to defaults
+    /// Loads config from SharedDefaults with fallback to defaults.
+    /// Non-finite values (NaN, Inf) are replaced with defaults.
     static func fromUserDefaults() -> GesturePreprocessorConfig {
         let store = SharedDefaults.store
-        let jitter: CGFloat = store.object(forKey: jitterThresholdKey) != nil
-            ? CGFloat(store.double(forKey: jitterThresholdKey))
-            : defaultJitterThreshold
-        let maxJump: CGFloat = store.object(forKey: maxJumpDistanceKey) != nil
-            ? CGFloat(store.double(forKey: maxJumpDistanceKey))
-            : defaultMaxJumpDistance
+        let jitter = finiteCGFloat(from: store, key: jitterThresholdKey, default: defaultJitterThreshold)
+        let maxJump = finiteCGFloat(from: store, key: maxJumpDistanceKey, default: defaultMaxJumpDistance)
         return GesturePreprocessorConfig(
             jitterThreshold: jitter,
             maxJumpDistance: maxJump,
@@ -132,6 +129,12 @@ struct GesturePreprocessorConfig {
             smoothingOrder: 2,
             aspectRatio: 1.0
         )
+    }
+
+    private static func finiteCGFloat(from store: UserDefaults, key: String, default defaultValue: CGFloat) -> CGFloat {
+        guard store.object(forKey: key) != nil else { return defaultValue }
+        let value = CGFloat(store.double(forKey: key))
+        return value.isFinite ? value : defaultValue
     }
 
     /// Creates a config with custom aspect ratio
@@ -344,9 +347,12 @@ struct GestureClassificationThresholds {
         minOrientedCompactness: defaultMinOrientedCompactness
     )
 
-    /// Loads a CGFloat from UserDefaults using double(forKey:) with a nil check
+    /// Loads a finite CGFloat from UserDefaults, falling back to the default
+    /// if the key is missing or the stored value is NaN/Inf.
     private static func loadCGFloat(from store: UserDefaults, key: String, default defaultValue: CGFloat) -> CGFloat {
-        store.object(forKey: key) != nil ? CGFloat(store.double(forKey: key)) : defaultValue
+        guard store.object(forKey: key) != nil else { return defaultValue }
+        let value = CGFloat(store.double(forKey: key))
+        return value.isFinite ? value : defaultValue
     }
 
     /// Loads thresholds from SharedDefaults with fallback to defaults

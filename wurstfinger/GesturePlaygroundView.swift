@@ -202,7 +202,7 @@ struct GesturePlaygroundView: View {
                             ) {
                                 VStack(alignment: .leading) {
                                     criterion("ratio", val: features.returnRatio, op: "<", limit: features.thresholds.maxReturnRatio, pass: features.returnRatio < features.thresholds.maxReturnRatio)
-                                    criterion("progress", val: features.maxDisplacementProgress, op: "in", limit: 0, pass: features.thresholds.returnDisplacementRange.contains(features.maxDisplacementProgress))
+                                    rangeCriterion("progress", val: features.maxDisplacementProgress, range: features.thresholds.returnDisplacementRange)
                                 }
                             }
 
@@ -280,6 +280,20 @@ struct GesturePlaygroundView: View {
                 .foregroundColor(pass ? .green : .red)
             Text(op)
             Text("\(f(limit))\(unit)")
+        }
+        .font(.caption)
+        .foregroundColor(.secondary)
+    }
+
+    private func rangeCriterion(_ name: String, val: CGFloat, range: ClosedRange<CGFloat>) -> some View {
+        let pass = range.contains(val)
+        return HStack(spacing: 4) {
+            Text(name)
+            Text(f(val))
+                .bold()
+                .foregroundColor(pass ? .green : .red)
+            Text("in")
+            Text("\(f(range.lowerBound))...\(f(range.upperBound))")
         }
         .font(.caption)
         .foregroundColor(.secondary)
