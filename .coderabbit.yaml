@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: true
+  changed_files_summary: true
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+  suggested_labels: false
+  suggested_reviewers: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: "wurstfingerKeyboard/**/*.swift"
+      instructions: |
+        This is a MessagEase-inspired iOS keyboard extension written in SwiftUI.
+        All text manipulation must go through textDocumentProxy methods.
+        Pay attention to gesture handling, compose rules, and return swipes.
+        Ensure locale-aware uppercasing (German: de_DE).
+    - path: "wurstfingerTests/**/*.swift"
+      instructions: |
+        Tests use Apple's Testing framework (@Test, #expect).
+        Verify test names follow testFeatureExpectation() format.
+    - path: "wurstfingerUITests/**/*.swift"
+      instructions: |
+        UI tests verify the keyboard in real text input scenarios.
+    - path: "CHANGELOG.md"
+      instructions: |
+        Verify that CHANGELOG.md is updated when code changes are made.
+        New entries should be added under the "## Unreleased" section.
+        Follow the existing format: "### Fixed", "### Added", "### Changed".
+  path_filters:
+    - "!**/*.xcodeproj/**"
+    - "!**/xcuserdata/**"
+    - "!**/xcshareddata/**"
+chat:
+  auto_reply: true
