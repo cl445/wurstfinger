@@ -10,7 +10,6 @@ import Testing
 @testable import WurstfingerApp
 
 struct Vector2DTests {
-
     // MARK: - Initialization Tests
 
     @Test func initWithXY() {
@@ -127,16 +126,16 @@ struct Vector2DTests {
 
     @Test func crossProductSignIndicatesRotation() {
         let v1 = Vector2D(x: 1, y: 0)
-        let v2ccw = Vector2D(x: 0, y: 1)  // counterclockwise from v1
-        let v2cw = Vector2D(x: 0, y: -1)  // clockwise from v1
+        let v2ccw = Vector2D(x: 0, y: 1) // counterclockwise from v1
+        let v2cw = Vector2D(x: 0, y: -1) // clockwise from v1
 
-        #expect(v1.cross(v2ccw) > 0)  // CCW = positive
-        #expect(v1.cross(v2cw) < 0)   // CW = negative
+        #expect(v1.cross(v2ccw) > 0) // CCW = positive
+        #expect(v1.cross(v2cw) < 0) // CW = negative
     }
 
     @Test func crossProductOfParallelVectorsIsZero() {
         let v1 = Vector2D(x: 2, y: 4)
-        let v2 = Vector2D(x: 4, y: 8)  // parallel (same direction)
+        let v2 = Vector2D(x: 4, y: 8) // parallel (same direction)
 
         #expect(abs(v1.cross(v2)) < 0.0001)
     }

@@ -10,7 +10,6 @@ import Testing
 @testable import WurstfingerApp
 
 struct GestureCalculationsTests {
-
     // MARK: - Path Length Tests
 
     @Test func pathLengthOfStraightLine() {
@@ -28,7 +27,7 @@ struct GestureCalculationsTests {
     @Test func pathLengthOfDiagonal() {
         let points: [CGPoint] = [
             CGPoint(x: 0, y: 0),
-            CGPoint(x: 3, y: 4)  // 3-4-5 triangle
+            CGPoint(x: 3, y: 4) // 3-4-5 triangle
         ]
 
         let length = GestureCalculations.pathLength(of: points)
@@ -50,20 +49,20 @@ struct GestureCalculationsTests {
     @Test func chordLengthIgnoresMiddlePoints() {
         let points: [CGPoint] = [
             CGPoint(x: 0, y: 0),
-            CGPoint(x: 100, y: 100),  // ignored
-            CGPoint(x: -50, y: -50),  // ignored
-            CGPoint(x: 30, y: 40)     // end point
+            CGPoint(x: 100, y: 100), // ignored
+            CGPoint(x: -50, y: -50), // ignored
+            CGPoint(x: 30, y: 40) // end point
         ]
 
         let chord = GestureCalculations.chordLength(of: points)
-        #expect(chord == 50)  // distance from (0,0) to (30,40)
+        #expect(chord == 50) // distance from (0,0) to (30,40)
     }
 
     @Test func chordLengthOfReturnPath() {
         let points: [CGPoint] = [
             CGPoint(x: 0, y: 0),
             CGPoint(x: 50, y: 0),
-            CGPoint(x: 5, y: 0)  // returned near start
+            CGPoint(x: 5, y: 0) // returned near start
         ]
 
         let chord = GestureCalculations.chordLength(of: points)
@@ -144,7 +143,7 @@ struct GestureCalculationsTests {
         let points: [CGPoint] = [
             CGPoint(x: 0, y: 0),
             CGPoint(x: 20, y: 0),
-            CGPoint(x: 50, y: 0),  // max displacement
+            CGPoint(x: 50, y: 0), // max displacement
             CGPoint(x: 30, y: 0),
             CGPoint(x: 10, y: 0)
         ]
@@ -178,7 +177,7 @@ struct GestureCalculationsTests {
         let center = CGPoint(x: 50, y: 50)
         let radius: CGFloat = 30
 
-        for i in 0..<20 {
+        for i in 0 ..< 20 {
             let angle = CGFloat(i) * .pi * 2 / 20
             let x = center.x + radius * cos(angle)
             let y = center.y + radius * sin(angle)
@@ -199,7 +198,7 @@ struct GestureCalculationsTests {
         let center = CGPoint(x: 0, y: 0)
         let radius: CGFloat = 50
 
-        for i in 0..<36 {
+        for i in 0 ..< 36 {
             let angle = CGFloat(i) * .pi * 2 / 36
             points.append(CGPoint(
                 x: center.x + radius * cos(angle),
@@ -250,7 +249,7 @@ struct GestureCalculationsTests {
     @Test func pathSeparationOfSpiral() {
         // Spiral: points expand outward
         var points: [CGPoint] = []
-        for i in 0..<20 {
+        for i in 0 ..< 20 {
             let angle = CGFloat(i) * .pi / 5
             let radius = 5.0 + CGFloat(i) * 3.0
             points.append(CGPoint(
@@ -273,7 +272,7 @@ struct GestureCalculationsTests {
         let center = CGPoint(x: 0, y: 0)
         let radius: CGFloat = 50
 
-        for i in 0..<20 {
+        for i in 0 ..< 20 {
             let angle = CGFloat(i) * .pi * 2 / 20
             points.append(CGPoint(
                 x: center.x + radius * cos(angle),

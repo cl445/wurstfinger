@@ -24,14 +24,14 @@ struct Vector2D: Equatable {
 
     /// Creates a vector from one point to another
     init(from start: CGPoint, to end: CGPoint) {
-        self.x = end.x - start.x
-        self.y = end.y - start.y
+        x = end.x - start.x
+        y = end.y - start.y
     }
 
     /// Creates a vector from a point relative to an origin (default: .zero)
     init(point: CGPoint, relativeTo origin: CGPoint = .zero) {
-        self.x = point.x - origin.x
-        self.y = point.y - origin.y
+        x = point.x - origin.x
+        y = point.y - origin.y
     }
 
     // MARK: - Static Vectors

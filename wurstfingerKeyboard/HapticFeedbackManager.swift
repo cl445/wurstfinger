@@ -11,7 +11,6 @@ import UIKit
 /// Manages haptic feedback generation for keyboard events.
 /// Uses UIImpactFeedbackGenerator with configurable intensity per event type.
 final class HapticFeedbackManager {
-
     private let settings: HapticSettings
 
     /// Feedback style used for all haptic events.

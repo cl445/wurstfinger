@@ -15,5 +15,5 @@ enum SharedDefaults {
 
     /// The shared UserDefaults instance
     /// Falls back to standard UserDefaults if app group is not available (should never happen in production)
-    static let store: UserDefaults = UserDefaults(suiteName: suiteName) ?? .standard
+    static let store: UserDefaults = .init(suiteName: suiteName) ?? .standard
 }

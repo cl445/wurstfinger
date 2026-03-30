@@ -70,6 +70,7 @@ struct DeviceLayoutUtils {
 
 final class KeyboardViewModel: ObservableObject {
     // MARK: - Settings Keys (kept for backward compatibility)
+
     static let hapticTapIntensityKey = SettingsKey.hapticIntensityTap.rawValue
     static let hapticModifierIntensityKey = SettingsKey.hapticIntensityModifier.rawValue
     static let hapticDragIntensityKey = SettingsKey.hapticIntensityDrag.rawValue
@@ -79,50 +80,61 @@ final class KeyboardViewModel: ObservableObject {
     static let defaultDragIntensity: CGFloat = HapticSettings.defaultDragIntensity
 
     // MARK: - State
+
     @Published private(set) var activeLayer: KeyboardLayer = .lower
     @Published private(set) var isCapsLockActive: Bool = false
     private var locale: Locale
 
     // MARK: - Settings (delegated to extracted classes)
+
     let hapticSettings: HapticSettings
     let layoutSettings: LayoutSettings
     private let hapticManager: HapticFeedbackManager
 
     // MARK: - Computed Properties for Backward Compatibility
+
     var hapticIntensityTap: CGFloat {
         get { hapticSettings.tapIntensity }
         set { hapticSettings.tapIntensity = newValue }
     }
+
     var hapticIntensityModifier: CGFloat {
         get { hapticSettings.modifierIntensity }
         set { hapticSettings.modifierIntensity = newValue }
     }
+
     var hapticIntensityDrag: CGFloat {
         get { hapticSettings.dragIntensity }
         set { hapticSettings.dragIntensity = newValue }
     }
+
     var hapticEnabled: Bool {
         get { hapticSettings.enabled }
         set { hapticSettings.enabled = newValue }
     }
+
     var utilityColumnLeading: Bool {
         get { layoutSettings.utilityColumnLeading }
         set { layoutSettings.utilityColumnLeading = newValue }
     }
+
     var keyAspectRatio: Double {
         get { layoutSettings.keyAspectRatio }
         set { layoutSettings.keyAspectRatio = newValue }
     }
+
     var keyboardScale: Double {
         get { layoutSettings.keyboardScale }
         set { layoutSettings.keyboardScale = newValue }
     }
+
     var keyboardHorizontalPosition: Double {
         get { layoutSettings.keyboardHorizontalPosition }
         set { layoutSettings.keyboardHorizontalPosition = newValue }
     }
 
     // MARK: - Private State
+
     private var layout: KeyboardLayout
     private let sharedDefaults: UserDefaults
     private let shouldPersistSettings: Bool
@@ -141,27 +153,27 @@ final class KeyboardViewModel: ObservableObject {
     ) {
         // Initialize UserDefaults once
         let defaults = userDefaults ?? SharedDefaults.store
-        self.sharedDefaults = defaults
+        sharedDefaults = defaults
         self.shouldPersistSettings = shouldPersistSettings
 
         // Initialize extracted settings classes
-        self.hapticSettings = HapticSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
-        self.layoutSettings = LayoutSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
-        self.hapticManager = HapticFeedbackManager(settings: hapticSettings)
+        hapticSettings = HapticSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
+        layoutSettings = LayoutSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
+        hapticManager = HapticFeedbackManager(settings: hapticSettings)
 
         // Load layout based on selected language or use provided layout
         if let providedLayout = layout {
             self.layout = providedLayout
             // If a specific layout is provided, use German locale as default
             // (This is mainly for testing)
-            self.locale = Locale(identifier: "de_DE")
+            locale = Locale(identifier: "de_DE")
         } else {
             let selectedLanguage = LanguageSettings.shared.selectedLanguage
             // Read numpad style from UserDefaults (default to phone style)
             let numpadStyleRaw = defaults.string(forKey: Self.numpadStyleKey) ?? NumpadStyle.phone.rawValue
             let numpadStyle = NumpadStyle(rawValue: numpadStyleRaw) ?? .phone
             self.layout = KeyboardLayout.layout(for: selectedLanguage, numpadStyle: numpadStyle)
-            self.locale = selectedLanguage.locale
+            locale = selectedLanguage.locale
         }
 
         // Forward settings changes to trigger objectWillChange on this ViewModel
@@ -226,18 +238,18 @@ final class KeyboardViewModel: ObservableObject {
     var symbolToggleLabel: String {
         switch activeLayer {
         case .lower, .upper:
-            return "123"
+            "123"
         case .numbers, .symbols:
-            return "ABC"
+            "ABC"
         }
     }
 
     var isSymbolsToggleActive: Bool {
         switch activeLayer {
         case .numbers, .symbols:
-            return true
+            true
         default:
-            return false
+            false
         }
     }
 
@@ -252,11 +264,11 @@ final class KeyboardViewModel: ObservableObject {
     func displayText(for key: MessagEaseKey) -> String {
         switch activeLayer {
         case .lower:
-            return key.center.lowercased()
+            key.center.lowercased()
         case .upper:
-            return key.center.uppercased()
+            key.center.uppercased()
         case .numbers, .symbols:
-            return key.center
+            key.center
         }
     }
 
@@ -409,15 +421,15 @@ final class KeyboardViewModel: ObservableObject {
     private func resolvedText(_ value: String) -> String {
         switch activeLayer {
         case .upper:
-            return value.uppercased(with: locale)
+            value.uppercased(with: locale)
         default:
-            return value
+            value
         }
     }
 
     /// Returns the locale for the current keyboard language
     func currentLocale() -> Locale {
-        return locale
+        locale
     }
 
     // MARK: - Haptic Feedback (delegated to HapticFeedbackManager)
@@ -456,16 +468,16 @@ final class KeyboardViewModel: ObservableObject {
 
     private func perform(_ output: MessagEaseOutput) {
         switch output {
-        case .text(let value):
+        case let .text(value):
             insertText(value)
-        case .toggleShift(let on):
+        case let .toggleShift(on):
             setShiftState(active: on)
         case .toggleSymbols:
             toggleSymbols()
-        case .capitalizeWord(let uppercased):
+        case let .capitalizeWord(uppercased):
             feedbackModifier()
             actionHandler?(.capitalizeWord(uppercased ? .uppercased : .lowercased))
-        case .compose(let trigger, _):
+        case let .compose(trigger, _):
             feedbackModifier()
             actionHandler?(.compose(trigger: trigger))
         case .cycleAccents:

@@ -99,11 +99,11 @@ final class KeyboardViewController: UIInputViewController {
 
     private func perform(action: KeyboardAction) {
         switch action {
-        case .insert(let text):
+        case let .insert(text):
             textDocumentProxy.insertText(text)
             // Spanish sentence-opening punctuation triggers immediate capitalization
             if AutoCapitalization.shouldCapitalizeImmediately(after: text) &&
-               SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) {
+                SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) {
                 viewModel.setLayer(.upper)
             }
         case .deleteBackward:
@@ -120,11 +120,11 @@ final class KeyboardViewController: UIInputViewController {
             checkAutoCapitalization()
         case .dismissKeyboard:
             dismissKeyboard()
-        case .capitalizeWord(let style):
+        case let .capitalizeWord(style):
             capitalizeCurrentWord(style: style)
-        case .moveCursor(let offset):
+        case let .moveCursor(offset):
             textDocumentProxy.adjustTextPosition(byCharacterOffset: offset)
-        case .compose(let trigger):
+        case let .compose(trigger):
             handleCompose(trigger: trigger)
         case .cycleAccents:
             handleCycleAccents()
@@ -196,15 +196,14 @@ final class KeyboardViewController: UIInputViewController {
 
         let word = String(characters.reversed())
         let locale = viewModel.currentLocale()
-        let transformed: String
-        switch style {
+        let transformed: String = switch style {
         case .uppercased:
-            transformed = word.uppercased(with: locale)
+            word.uppercased(with: locale)
         case .lowercased:
-            transformed = word.lowercased(with: locale)
+            word.lowercased(with: locale)
         }
 
-        for _ in 0..<word.count {
+        for _ in 0 ..< word.count {
             textDocumentProxy.deleteBackward()
         }
         textDocumentProxy.insertText(transformed)

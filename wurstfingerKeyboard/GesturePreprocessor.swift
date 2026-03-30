@@ -163,9 +163,7 @@ struct GesturePreprocessor {
         let normalized = normalizeAspectRatio(cleaned)
 
         // Step 4: Savitzky-Golay smoothing
-        let smoothed = smoothSavitzkyGolay(normalized)
-
-        return smoothed
+        return smoothSavitzkyGolay(normalized)
     }
 
     // MARK: - Step 1: Jitter Filter
@@ -176,7 +174,7 @@ struct GesturePreprocessor {
 
         var filtered: [CGPoint] = [points[0]]
 
-        for i in 1..<points.count {
+        for i in 1 ..< points.count {
             // Safe: filtered always has at least one element (initialized with points[0])
             guard let last = filtered.last else { continue }
             let current = points[i]
@@ -204,7 +202,7 @@ struct GesturePreprocessor {
 
         var filtered: [CGPoint] = [points[0]]
 
-        for i in 1..<points.count {
+        for i in 1 ..< points.count {
             // Safe: filtered always has at least one element (initialized with points[0])
             guard let prev = filtered.last else { continue }
             let current = points[i]
@@ -245,11 +243,11 @@ struct GesturePreprocessor {
         let halfWindow = config.smoothingWindow / 2
         var smoothed: [CGPoint] = []
 
-        for i in 0..<points.count {
+        for i in 0 ..< points.count {
             var sumX: CGFloat = 0
             var sumY: CGFloat = 0
 
-            for j in 0..<config.smoothingWindow {
+            for j in 0 ..< config.smoothingWindow {
                 let idx = i - halfWindow + j
                 let clampedIdx = max(0, min(points.count - 1, idx))
                 sumX += coefficients[j] * points[clampedIdx].x
@@ -310,10 +308,10 @@ struct GestureClassificationThresholds {
     static let defaultReturnDisplacementStart: CGFloat = 0.2
     static let defaultReturnDisplacementEnd: CGFloat = 0.8
     static let defaultMinCircularity: CGFloat = 0.3
-    static let defaultMinAngularSpan: CGFloat = .pi * 1.5  // 270°
+    static let defaultMinAngularSpan: CGFloat = .pi * 1.5 // 270°
     static let defaultMinPathSeparation: CGFloat = 0.5
-    static let defaultMinTurnConsistency: CGFloat = 0.8  // 80% turns in same direction
-    static let defaultMinOrientedCompactness: CGFloat = 0.4  // width must be at least 40% of length
+    static let defaultMinTurnConsistency: CGFloat = 0.8 // 80% turns in same direction
+    static let defaultMinOrientedCompactness: CGFloat = 0.4 // width must be at least 40% of length
 
     // MARK: - UserDefaults Keys
 
@@ -330,7 +328,7 @@ struct GestureClassificationThresholds {
     static let `default` = GestureClassificationThresholds(
         minSwipeLength: defaultMinSwipeLength,
         maxReturnRatio: defaultMaxReturnRatio,
-        returnDisplacementRange: defaultReturnDisplacementStart...defaultReturnDisplacementEnd,
+        returnDisplacementRange: defaultReturnDisplacementStart ... defaultReturnDisplacementEnd,
         minCircularity: defaultMinCircularity,
         minAngularSpan: defaultMinAngularSpan,
         minPathSeparation: defaultMinPathSeparation,
@@ -346,7 +344,7 @@ struct GestureClassificationThresholds {
         return GestureClassificationThresholds(
             minSwipeLength: store.object(forKey: minSwipeLengthKey) as? CGFloat ?? defaultMinSwipeLength,
             maxReturnRatio: store.object(forKey: maxReturnRatioKey) as? CGFloat ?? defaultMaxReturnRatio,
-            returnDisplacementRange: start...end,
+            returnDisplacementRange: start ... end,
             minCircularity: store.object(forKey: minCircularityKey) as? CGFloat ?? defaultMinCircularity,
             minAngularSpan: store.object(forKey: minAngularSpanKey) as? CGFloat ?? defaultMinAngularSpan,
             minPathSeparation: store.object(forKey: minPathSeparationKey) as? CGFloat ?? defaultMinPathSeparation,
@@ -368,26 +366,28 @@ struct GestureFeatures {
     let boundingBox: CGRect
     let maxDisplacement: CGFloat
     let maxDisplacementPoint: CGPoint
-    let maxDisplacementProgress: CGFloat  // 0.0-1.0: where in the path maxDisplacement occurs
+    let maxDisplacementProgress: CGFloat // 0.0-1.0: where in the path maxDisplacement occurs
     let centroid: CGPoint
 
     // Ratio features
-    let returnRatio: CGFloat  // chordLength / pathLength (low = returned to start)
-    let aspectRatio: CGFloat  // boundingBox width / height
+    let returnRatio: CGFloat // chordLength / pathLength (low = returned to start)
+    let aspectRatio: CGFloat // boundingBox width / height
 
     // Direction features
-    let dominantAngle: CGFloat      // angle from start to end
-    let maxDisplacementAngle: CGFloat  // angle from start to max displacement
+    let dominantAngle: CGFloat // angle from start to end
+    let maxDisplacementAngle: CGFloat // angle from start to max displacement
 
     // Circularity features
-    let angularSpan: CGFloat    // total angle traversed (positive = CW, negative = CCW)
-    let circularity: CGFloat    // how circular (0-1, 1 = perfect circle)
+    let angularSpan: CGFloat // total angle traversed (positive = CW, negative = CCW)
+    let circularity: CGFloat // how circular (0-1, 1 = perfect circle)
     let pathSeparation: CGFloat // how separated are mirrored points (spiral > 0.5, return < 0.3)
     let turnConsistency: CGFloat // how consistent turn direction is (1.0 = all same direction, 0.5 = half each)
     let orientedCompactness: CGFloat // width/length along principal axis (1.0 = square, 0 = line)
 
     // Derived classifications (using configurable thresholds)
-    var isTap: Bool { maxDisplacement < Self.thresholds.minSwipeLength }
+    var isTap: Bool {
+        maxDisplacement < Self.thresholds.minSwipeLength
+    }
 
     /// Return-swipe: maxDisplacement in the middle of the path (not at the end) AND finger returned to start
     var isReturn: Bool {
@@ -406,13 +406,15 @@ struct GestureFeatures {
         // Also require high turn consistency and compactness to distinguish from return swipes
         // (circle: turns consistently one direction AND is not a narrow arc)
         return pathLength > t.minSwipeLength * 2 &&
-               circularity > t.minCircularity &&
-               abs(angularSpan) > t.minAngularSpan &&
-               turnConsistency > t.minTurnConsistency &&
-               orientedCompactness > t.minOrientedCompactness
+            circularity > t.minCircularity &&
+            abs(angularSpan) > t.minAngularSpan &&
+            turnConsistency > t.minTurnConsistency &&
+            orientedCompactness > t.minOrientedCompactness
     }
 
-    var isClockwise: Bool { angularSpan > 0 }
+    var isClockwise: Bool {
+        angularSpan > 0
+    }
 
     /// Extracts features from preprocessed points.
     /// Uses GestureCalculations helper functions for cleaner, testable code.

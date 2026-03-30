@@ -24,7 +24,7 @@ struct KeyHintOverlay: View {
     }
 
     private var hintEmphasisSize: CGFloat {
-        return hintFontSize * KeyboardConstants.FontSizes.hintEmphasisMultiplier
+        hintFontSize * KeyboardConstants.FontSizes.hintEmphasisMultiplier
     }
 
     var body: some View {
@@ -42,9 +42,11 @@ struct KeyHintOverlay: View {
                         let displayLabel = transformLabel(label, activeLayer: viewModel.activeLayer)
                         hintText(displayLabel, isLetter: isLetter(displayLabel))
                             .fixedSize()
-                            .padding(edgePadding(for: direction,
-                                                horizontal: scaledHorizontalPadding,
-                                                vertical: scaledVerticalPadding))
+                            .padding(edgePadding(
+                                for: direction,
+                                horizontal: scaledHorizontalPadding,
+                                vertical: scaledVerticalPadding
+                            ))
                             .frame(width: size.width, height: size.height, alignment: alignment(for: direction))
                     }
                 }
@@ -114,46 +116,46 @@ struct KeyHintOverlay: View {
     private func edgePadding(for direction: KeyboardDirection, horizontal: CGFloat, vertical: CGFloat) -> EdgeInsets {
         switch direction {
         case .up:
-            return EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
         case .down:
-            return EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
         case .left:
-            return EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
+            EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
         case .right:
-            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
         case .upLeft:
-            return EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
+            EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
         case .upRight:
-            return EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
         case .downLeft:
-            return EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
+            EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
         case .downRight:
-            return EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
         case .center:
-            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         }
     }
 
     private func alignment(for direction: KeyboardDirection) -> Alignment {
         switch direction {
         case .up:
-            return .top
+            .top
         case .down:
-            return .bottom
+            .bottom
         case .left:
-            return .leading
+            .leading
         case .right:
-            return .trailing
+            .trailing
         case .upLeft:
-            return .topLeading
+            .topLeading
         case .upRight:
-            return .topTrailing
+            .topTrailing
         case .downLeft:
-            return .bottomLeading
+            .bottomLeading
         case .downRight:
-            return .bottomTrailing
+            .bottomTrailing
         case .center:
-            return .center
+            .center
         }
     }
 }
@@ -166,7 +168,7 @@ struct GlobeKeyHintOverlay: View {
     private var symbolFontSize: CGFloat {
         let scaledSize = KeyboardConstants.FontSizes.hintBaseSize * (keyHeight / KeyboardConstants.FontSizes.hintReferenceHeight)
         let baseSize = min(max(scaledSize, KeyboardConstants.FontSizes.hintMinSize), KeyboardConstants.FontSizes.hintMaxSize)
-        return baseSize * 0.75  // SF Symbols are visually larger than text
+        return baseSize * 0.75 // SF Symbols are visually larger than text
     }
 
     var body: some View {
@@ -211,9 +213,9 @@ struct SymbolsKeyHintOverlay: View {
     }
 
     private let hints: [HintConfig] = [
-        HintConfig(direction: .up, iconName: "doc.on.doc"),           // Copy
-        HintConfig(direction: .upRight, iconName: "scissors"),        // Cut
-        HintConfig(direction: .down, iconName: "doc.on.clipboard"),   // Paste
+        HintConfig(direction: .up, iconName: "doc.on.doc"), // Copy
+        HintConfig(direction: .upRight, iconName: "scissors"), // Cut
+        HintConfig(direction: .down, iconName: "doc.on.clipboard"), // Paste
     ]
 
     var body: some View {
@@ -227,9 +229,11 @@ struct SymbolsKeyHintOverlay: View {
                 Image(systemName: hint.iconName)
                     .font(.system(size: hintFontSize * 0.6, weight: .regular))
                     .foregroundStyle(Color.secondary.opacity(0.45))
-                    .padding(edgePadding(for: hint.direction,
-                                        horizontal: scaledHorizontalPadding,
-                                        vertical: scaledVerticalPadding))
+                    .padding(edgePadding(
+                        for: hint.direction,
+                        horizontal: scaledHorizontalPadding,
+                        vertical: scaledVerticalPadding
+                    ))
                     .frame(width: size.width, height: size.height, alignment: alignment(for: hint.direction))
             }
         }
@@ -239,46 +243,46 @@ struct SymbolsKeyHintOverlay: View {
     private func edgePadding(for direction: KeyboardDirection, horizontal: CGFloat, vertical: CGFloat) -> EdgeInsets {
         switch direction {
         case .up:
-            return EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
         case .down:
-            return EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
         case .left:
-            return EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
+            EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
         case .right:
-            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
         case .upLeft:
-            return EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
+            EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
         case .upRight:
-            return EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
         case .downLeft:
-            return EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
+            EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
         case .downRight:
-            return EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
         case .center:
-            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         }
     }
 
     private func alignment(for direction: KeyboardDirection) -> Alignment {
         switch direction {
         case .up:
-            return .top
+            .top
         case .down:
-            return .bottom
+            .bottom
         case .left:
-            return .leading
+            .leading
         case .right:
-            return .trailing
+            .trailing
         case .upLeft:
-            return .topLeading
+            .topLeading
         case .upRight:
-            return .topTrailing
+            .topTrailing
         case .downLeft:
-            return .bottomLeading
+            .bottomLeading
         case .downRight:
-            return .bottomTrailing
+            .bottomTrailing
         case .center:
-            return .center
+            .center
         }
     }
 }

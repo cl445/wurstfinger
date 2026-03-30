@@ -48,17 +48,23 @@ struct HapticSettingsView: View {
 
                         // Sliders
                         VStack(spacing: 24) {
-                            hapticControl(title: "Tap Feedback",
-                                          value: $tapIntensity,
-                                          description: "Applies when you press letters or utility buttons.")
+                            hapticControl(
+                                title: "Tap Feedback",
+                                value: $tapIntensity,
+                                description: "Applies when you press letters or utility buttons."
+                            )
 
-                            hapticControl(title: "Modifier Feedback",
-                                          value: $modifierIntensity,
-                                          description: "Applies when you press Shift, Symbols, or other modifier keys.")
+                            hapticControl(
+                                title: "Modifier Feedback",
+                                value: $modifierIntensity,
+                                description: "Applies when you press Shift, Symbols, or other modifier keys."
+                            )
 
-                            hapticControl(title: "Drag Feedback",
-                                          value: $dragIntensity,
-                                          description: "Applies when you drag the Space or Delete key to move the cursor or delete text.")
+                            hapticControl(
+                                title: "Drag Feedback",
+                                value: $dragIntensity,
+                                description: "Applies when you drag the Space or Delete key to move the cursor or delete text."
+                            )
                         }
                     }
                 }
@@ -80,13 +86,14 @@ struct HapticSettingsView: View {
         }
     }
 
-    private let sliderRange: ClosedRange<Double> = 0...1
+    private let sliderRange: ClosedRange<Double> = 0 ... 1
     private let sliderStep: Double = 0.05
 
-    @ViewBuilder
-    private func hapticControl(title: String,
-                               value: Binding<Double>,
-                               description: String) -> some View {
+    private func hapticControl(
+        title: String,
+        value: Binding<Double>,
+        description: String
+    ) -> some View {
         VStack(spacing: 16) {
             HStack {
                 Text(title)

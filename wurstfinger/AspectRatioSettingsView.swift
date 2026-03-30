@@ -36,7 +36,7 @@ struct AspectRatioSettingsView: View {
                 }
 
                 VStack(spacing: 8) {
-                    Slider(value: $aspectRatio, in: 1.0...1.62, step: 0.01)
+                    Slider(value: $aspectRatio, in: 1.0 ... 1.62, step: 0.01)
 
                     HStack {
                         Text("1.0")
@@ -63,13 +63,13 @@ struct AspectRatioSettingsView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                }
-
-                // swiftlint:disable:next line_length
-                Text("Adjust the width-to-height ratio of the keys. 1.0 creates square keys, 1.5 is the default appearance, and 1.62 is the golden ratio (widest).")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                } Text(
+                    // swiftlint:disable:next line_length
+                    "Adjust the width-to-height ratio of the keys. 1.0 creates square keys, 1.5 is the default appearance, and 1.62 is the golden ratio (widest)."
+                )
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 16)
 

@@ -131,21 +131,21 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
 
         // 8 sectors of 45° each, starting from right (0°)
         switch degrees {
-        case 337.5...360, 0..<22.5:
+        case 337.5 ... 360, 0 ..< 22.5:
             return .right
-        case 22.5..<67.5:
+        case 22.5 ..< 67.5:
             return .downRight
-        case 67.5..<112.5:
+        case 67.5 ..< 112.5:
             return .down
-        case 112.5..<157.5:
+        case 112.5 ..< 157.5:
             return .downLeft
-        case 157.5..<202.5:
+        case 157.5 ..< 202.5:
             return .left
-        case 202.5..<247.5:
+        case 202.5 ..< 247.5:
             return .upLeft
-        case 247.5..<292.5:
+        case 247.5 ..< 292.5:
             return .up
-        case 292.5..<337.5:
+        case 292.5 ..< 337.5:
             return .upRight
         default:
             return .center

@@ -10,7 +10,6 @@ import Testing
 @testable import WurstfingerApp
 
 struct LanguageSettingsTests {
-
     @Test("Detects German with exact match")
     func detectGermanExactMatch() {
         let result = LanguageSettings.detectSystemLanguage(preferredLanguages: ["de-DE"])
@@ -152,7 +151,6 @@ struct LanguageSettingsTests {
 /// Tests the logic that resolves a language ID from UserDefaults into a locale identifier,
 /// matching the primaryLanguage getter in KeyboardViewController.
 struct PrimaryLanguageResolutionTests {
-
     /// Helper that mirrors the primaryLanguage getter logic:
     /// read language ID from UserDefaults → resolve to LanguageConfig → return locale identifier
     private func resolvePrimaryLanguage(from defaults: UserDefaults) -> String {
@@ -232,8 +230,10 @@ struct PrimaryLanguageResolutionTests {
         for language in LanguageConfig.allLanguages {
             defaults.set(language.id, forKey: SettingsKey.selectedLanguageId.rawValue)
             let resolved = resolvePrimaryLanguage(from: defaults)
-            #expect(resolved == language.locale.identifier,
-                    "Language \(language.name) (\(language.id)) should resolve to \(language.locale.identifier), got \(resolved)")
+            #expect(
+                resolved == language.locale.identifier,
+                "Language \(language.name) (\(language.id)) should resolve to \(language.locale.identifier), got \(resolved)"
+            )
         }
     }
 }
@@ -241,7 +241,6 @@ struct PrimaryLanguageResolutionTests {
 // MARK: - Info.plist PrimaryLanguage Tests
 
 struct InfoPlistLanguageTests {
-
     @Test("Keyboard extension Info.plist has PrimaryLanguage set to mul")
     func primaryLanguageIsMul() throws {
         // Read the keyboard extension's Info.plist directly from the source tree
@@ -256,7 +255,9 @@ struct InfoPlistLanguageTests {
         let extensionDict = try #require(dict["NSExtension"] as? [String: Any])
         let attributes = try #require(extensionDict["NSExtensionAttributes"] as? [String: Any])
         let primaryLanguage = try #require(attributes["PrimaryLanguage"] as? String)
-        #expect(primaryLanguage == "mul",
-                "PrimaryLanguage should be 'mul' (multi-language), not a single language code")
+        #expect(
+            primaryLanguage == "mul",
+            "PrimaryLanguage should be 'mul' (multi-language), not a single language code"
+        )
     }
 }

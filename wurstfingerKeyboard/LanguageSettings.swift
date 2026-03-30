@@ -21,10 +21,10 @@ class LanguageSettings: ObservableObject {
     private let languageKey = SettingsKey.selectedLanguageId.rawValue
 
     private init() {
-        self.userDefaults = SharedDefaults.store
+        userDefaults = SharedDefaults.store
 
         // Load saved language or detect from system
-        self.selectedLanguageId = userDefaults.string(forKey: languageKey) ?? Self.detectSystemLanguage()
+        selectedLanguageId = userDefaults.string(forKey: languageKey) ?? Self.detectSystemLanguage()
     }
 
     /// Detects the system language and returns matching language ID, or English as fallback

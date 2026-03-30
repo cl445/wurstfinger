@@ -10,12 +10,11 @@ import Testing
 @testable import WurstfingerApp
 
 struct wurstfingerTests {
-
-    @Test func example() async throws {
+    @Test func example() {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
     }
 
-    @Test func circularGestureInsertsUppercaseForBothDirections() async throws {
+    @Test func circularGestureInsertsUppercaseForBothDirections() throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -33,7 +32,7 @@ struct wurstfingerTests {
         #expect(inserted == ["A", "A"])
     }
 
-    @Test func toggleSymbolsShowsNumericLayout() async throws {
+    @Test func toggleSymbolsShowsNumericLayout() throws {
         let viewModel = KeyboardViewModel()
         viewModel.toggleSymbols()
 
@@ -48,7 +47,7 @@ struct wurstfingerTests {
         #expect(zeroKey.center == "0")
     }
 
-    @Test func symbolsLayerFollowsNumericLayer() async throws {
+    @Test func symbolsLayerFollowsNumericLayer() throws {
         let viewModel = KeyboardViewModel()
 
         // First toggle: lower → numbers
@@ -64,7 +63,7 @@ struct wurstfingerTests {
         #expect(aKey.primaryLabel(for: .downLeft) == "$")
     }
 
-    @Test func circularGestureOnGlobeTogglesUtilityColumn() async throws {
+    @Test func circularGestureOnGlobeTogglesUtilityColumn() {
         let viewModel = KeyboardViewModel()
 
         #expect(!viewModel.utilityColumnLeading)
@@ -76,7 +75,7 @@ struct wurstfingerTests {
         #expect(!viewModel.utilityColumnLeading)
     }
 
-    @Test func numericLayerInsertsDigits() async throws {
+    @Test func numericLayerInsertsDigits() throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -99,7 +98,7 @@ struct wurstfingerTests {
         #expect(inserted == ["1", "0"])
     }
 
-    @Test func letterLayerProvidesAdditionalSymbols() async throws {
+    @Test func letterLayerProvidesAdditionalSymbols() throws {
         let viewModel = KeyboardViewModel()
         let firstRow = try #require(viewModel.rows.first)
         let aKey = try #require(firstRow.first)
@@ -120,7 +119,7 @@ struct wurstfingerTests {
         #expect(sKey.primaryLabel(for: .right) == ">")
     }
 
-    @Test func spaceDragEmitsCursorMovements() async throws {
+    @Test func spaceDragEmitsCursorMovements() {
         let viewModel = KeyboardViewModel()
         var moves: [Int] = []
 
@@ -139,7 +138,7 @@ struct wurstfingerTests {
         #expect(moves == [1, 1, -1, -1])
     }
 
-    @Test func deleteDragEmitsRepeatedDeletes() async throws {
+    @Test func deleteDragEmitsRepeatedDeletes() {
         let viewModel = KeyboardViewModel()
         var deletes = 0
 
@@ -157,7 +156,7 @@ struct wurstfingerTests {
         #expect(deletes == 2)
     }
 
-    @Test func hapticIntensitiesPersistToDefaults() async throws {
+    @Test func hapticIntensitiesPersistToDefaults() throws {
         let suite = "group.de.akator.wurstfinger.tests.hapticsPersist"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defaults.removePersistentDomain(forName: suite)
@@ -177,7 +176,7 @@ struct wurstfingerTests {
         #expect(abs(dragDefault - 1.0) < 0.0001)
     }
 
-    @Test func previewViewModelDoesNotPersist() async throws {
+    @Test func previewViewModelDoesNotPersist() throws {
         let suite = "group.de.akator.wurstfinger.tests.preview"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defaults.removePersistentDomain(forName: suite)
@@ -193,7 +192,7 @@ struct wurstfingerTests {
         #expect(abs(persistedTap - 0.3) < 0.0001)
     }
 
-    @Test func hapticIntensityClampsWithinBounds() async throws {
+    @Test func hapticIntensityClampsWithinBounds() throws {
         let suite = "group.de.akator.wurstfinger.tests.clamp"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defaults.removePersistentDomain(forName: suite)
@@ -210,7 +209,7 @@ struct wurstfingerTests {
         #expect(abs(storedDrag - 1.0) < 0.0001)
     }
 
-    @Test func composeSwipeEmitsComposeAction() async throws {
+    @Test func composeSwipeEmitsComposeAction() throws {
         let viewModel = KeyboardViewModel()
         var captured: String?
 
@@ -228,13 +227,13 @@ struct wurstfingerTests {
         #expect(captured == "'")
     }
 
-    @Test func composeEngineProducesReplacement() async throws {
+    @Test func composeEngineProducesReplacement() {
         #expect(ComposeEngine.compose(previous: "a", trigger: "¨") == "ä")
         #expect(ComposeEngine.compose(previous: "l", trigger: "!") == "ł")
         #expect(ComposeEngine.compose(previous: "x", trigger: "~") == nil)
     }
 
-    @Test func returnSwipeOnPlusProducesTimes() async throws {
+    @Test func returnSwipeOnPlusProducesTimes() throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -252,7 +251,7 @@ struct wurstfingerTests {
         #expect(inserted.last == "×")
     }
 
-    @Test func returnSwipesProduceTypographicVariants() async throws {
+    @Test func returnSwipesProduceTypographicVariants() throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -285,16 +284,16 @@ struct wurstfingerTests {
         try trigger(row: 1, column: 0, direction: .upRight, expected: "‰") // % → ‰
     }
 
-    @Test func directPunctuationSwipeDoesNotCompose() async throws {
+    @Test func directPunctuationSwipeDoesNotCompose() throws {
         let viewModel = KeyboardViewModel()
         var inserts: [String] = []
         var composed: [String] = []
 
         viewModel.bindActionHandler { action in
             switch action {
-            case .insert(let value):
+            case let .insert(value):
                 inserts.append(value)
-            case .compose(let trigger):
+            case let .compose(trigger):
                 composed.append(trigger)
             default:
                 break
@@ -311,5 +310,4 @@ struct wurstfingerTests {
         #expect(composed.isEmpty)
         #expect(inserts.suffix(2) == ["!", "?"])
     }
-
 }
