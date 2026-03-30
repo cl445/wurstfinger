@@ -25,7 +25,7 @@
 		<key>NSExtensionAttributes</key>
 		<dict>
 			<key>PrimaryLanguage</key>
-			<string>de</string>
+			<string>mul</string>
 			<key>RequestsOpenAccess</key>
 			<true/>
 		</dict>
