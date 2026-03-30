@@ -126,8 +126,8 @@ struct ComposeEngineTests {
     }
 
     @Test func accentCycleReturnsToBase() {
-        // Use "h" which has a simple cycle (h → ḧ → h) via dieresis only
-        // Unlike "a", "h" variants don't appear as bases in other compose maps
+        // Use "h", which has a short accent cycle and should wrap back to base.
+        // This verifies cycle completion behavior independent of exact variant count.
         var current = "h"
         var seen = Set<String>()
         seen.insert(current)

@@ -26,7 +26,11 @@ struct CircularGestureTests {
         span: CGFloat = 2 * .pi,
         pointCount: Int = 40
     ) -> [CGPoint] {
-        (0..<pointCount).map { i in
+        guard pointCount > 1 else {
+            return pointCount == 1 ? [CGPoint(x: center.x + radius * cos(startAngle),
+                                               y: center.y + radius * sin(startAngle))] : []
+        }
+        return (0..<pointCount).map { i in
             let t = CGFloat(i) / CGFloat(pointCount - 1)
             let angle = startAngle + span * t
             return CGPoint(

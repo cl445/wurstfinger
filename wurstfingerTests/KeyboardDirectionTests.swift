@@ -92,9 +92,8 @@ struct KeyboardDirectionTests {
 
     // MARK: - Boundary Values (half-open ranges)
 
-    @Test func boundaryAt22_5DegIsDown() {
-        // Angle exactly at 22.5° should be in .down (default case, not downRight)
-        // Actually: at exactly 22.5, the range 22.5..<67.5 includes 22.5, so it is downRight
+    @Test func boundaryAt22_5DegIsDownRight() {
+        // Angle exactly at 22.5° falls into the half-open range 22.5..<67.5, so it's .downRight
         let angle = 22.5 * .pi / 180
         let dx = sin(angle) * 50
         let dy = cos(angle) * 50
