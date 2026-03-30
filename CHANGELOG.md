@@ -10,6 +10,8 @@
 - Fix hardcoded version "1.0.0" in settings — now reads from bundle
 - Set `PrimaryLanguage` to `mul` (multi-language) and read active language directly from SharedDefaults so iOS Settings shows the correct keyboard language (#96)
 - Auto-capitalization now re-evaluates after deleting characters (#88)
+- Fix UserDefaults `as? CGFloat` casting with `double(forKey:)` for reliable settings loading
+- Lower height constraint priority to `.defaultHigh` to prevent Auto Layout conflicts
 
 ### Added
 
@@ -28,6 +30,8 @@
 - Create HapticFeedbackManager for centralized haptic feedback (#90)
 - Add Vector2D type with division-by-zero guard (#90)
 - Extract GestureCalculations helpers and centralize GeometryUtils (#90)
+- Convert `GestureFeatures.thresholds` from `static var` to instance `let`
+- Filter `UserDefaults.didChangeNotification` to shared defaults instance only
 
 ## v1.1.1 — 2025-12-28
 
