@@ -72,16 +72,26 @@ struct CircularGestureTests {
         #expect(!features.isCircular)
     }
 
-    @Test func threequarterCircleMayBeCircular() {
-        // 270° arc — exactly at boundary
-        let points = circlePoints(span: 1.5 * .pi, pointCount: 30)
+    @Test func arcBelowAngularSpanThreshold() {
+        // 200° arc — comfortably below the 270° minAngularSpan threshold
+        let span = 200.0 / 180.0 * .pi
+        let points = circlePoints(span: span, pointCount: 40)
         let features = GestureFeatures.extract(from: points)
 
-        // At exactly the threshold, this may or may not pass depending on
-        // floating-point precision and whether other criteria are met.
-        // The angular span threshold is 270° (1.5π), so this is right at the edge.
-        // We just verify it doesn't crash and produces valid features.
-        #expect(features.pathLength > 0)
+        let threshold = GestureClassificationThresholds.default.minAngularSpan
+        #expect(abs(features.angularSpan) < threshold,
+                "A 200° arc angular span (\(abs(features.angularSpan))) should be below the \(threshold) threshold")
+    }
+
+    @Test func arcAboveAngularSpanThreshold() {
+        // 330° arc — comfortably above the 270° minAngularSpan threshold
+        let span = 330.0 / 180.0 * .pi
+        let points = circlePoints(span: span, pointCount: 50)
+        let features = GestureFeatures.extract(from: points)
+
+        let threshold = GestureClassificationThresholds.default.minAngularSpan
+        #expect(abs(features.angularSpan) > threshold,
+                "A 330° arc angular span (\(abs(features.angularSpan))) should exceed the \(threshold) threshold")
     }
 
     // MARK: - Too Few Points

@@ -92,9 +92,23 @@ struct KeyboardDirectionTests {
 
     // MARK: - Boundary Values (half-open ranges)
 
-    @Test func boundaryAt22_5DegIsDownRight() {
-        // Angle exactly at 22.5° falls into the half-open range 22.5..<67.5, so it's .downRight
-        let angle = 22.5 * .pi / 180
+    @Test func justBelow22_5DegIsDown() {
+        // Just below the 22.5° boundary stays in the .down bucket (0..<22.5)
+        let epsilon: CGFloat = 1e-4
+        let angle = (22.5 - epsilon) * .pi / 180
+        let dx = sin(angle) * 50
+        let dy = cos(angle) * 50
+        let direction = KeyboardDirection.direction(
+            for: CGSize(width: dx, height: dy),
+            tolerance: 10
+        )
+        #expect(direction == .down)
+    }
+
+    @Test func justAbove22_5DegIsDownRight() {
+        // Just above the 22.5° boundary enters the .downRight bucket (22.5..<67.5)
+        let epsilon: CGFloat = 1e-4
+        let angle = (22.5 + epsilon) * .pi / 180
         let dx = sin(angle) * 50
         let dy = cos(angle) * 50
         let direction = KeyboardDirection.direction(
@@ -104,9 +118,23 @@ struct KeyboardDirectionTests {
         #expect(direction == .downRight)
     }
 
-    @Test func boundaryAt67_5DegIsRight() {
-        // Angle exactly at 67.5° should be .right (start of 67.5..<112.5)
-        let angle = 67.5 * .pi / 180
+    @Test func justBelow67_5DegIsDownRight() {
+        // Just below the 67.5° boundary stays in the .downRight bucket
+        let epsilon: CGFloat = 1e-4
+        let angle = (67.5 - epsilon) * .pi / 180
+        let dx = sin(angle) * 50
+        let dy = cos(angle) * 50
+        let direction = KeyboardDirection.direction(
+            for: CGSize(width: dx, height: dy),
+            tolerance: 10
+        )
+        #expect(direction == .downRight)
+    }
+
+    @Test func justAbove67_5DegIsRight() {
+        // Just above the 67.5° boundary enters the .right bucket (67.5..<112.5)
+        let epsilon: CGFloat = 1e-4
+        let angle = (67.5 + epsilon) * .pi / 180
         let dx = sin(angle) * 50
         let dy = cos(angle) * 50
         let direction = KeyboardDirection.direction(
