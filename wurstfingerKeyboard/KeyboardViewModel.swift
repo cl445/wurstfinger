@@ -184,8 +184,10 @@ final class KeyboardViewModel: ObservableObject {
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &settingsCancellables)
 
-        // Observe UserDefaults changes for language updates (works both within
-        // same process and across processes via App Group)
+        // Observe in-process UserDefaults changes (e.g. utility column toggle).
+        // Note: didChangeNotification only fires within the same process.
+        // Cross-process updates from the host app are handled by
+        // KeyboardViewController.viewWillAppear → reloadSettings().
         userDefaultsObserver = NotificationCenter.default.addObserver(
             forName: UserDefaults.didChangeNotification,
             object: sharedDefaults,
