@@ -10,7 +10,12 @@ import Testing
 @testable import WurstfingerApp
 
 struct wurstfingerTests {
-    @Test func circularGestureInsertsUppercaseForBothDirections() throws {
+
+    @Test func example() async throws {
+        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    }
+
+    @Test func circularGestureInsertsUppercaseForBothDirections() async throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -28,7 +33,7 @@ struct wurstfingerTests {
         #expect(inserted == ["A", "A"])
     }
 
-    @Test func toggleSymbolsShowsNumericLayout() throws {
+    @Test func toggleSymbolsShowsNumericLayout() async throws {
         let viewModel = KeyboardViewModel()
         viewModel.toggleSymbols()
 
@@ -43,7 +48,7 @@ struct wurstfingerTests {
         #expect(zeroKey.center == "0")
     }
 
-    @Test func symbolsLayerFollowsNumericLayer() throws {
+    @Test func symbolsLayerFollowsNumericLayer() async throws {
         let viewModel = KeyboardViewModel()
 
         // First toggle: lower → numbers
@@ -59,7 +64,7 @@ struct wurstfingerTests {
         #expect(aKey.primaryLabel(for: .downLeft) == "$")
     }
 
-    @Test func circularGestureOnGlobeTogglesUtilityColumn() {
+    @Test func circularGestureOnGlobeTogglesUtilityColumn() async throws {
         let viewModel = KeyboardViewModel()
 
         #expect(!viewModel.utilityColumnLeading)
@@ -71,7 +76,7 @@ struct wurstfingerTests {
         #expect(!viewModel.utilityColumnLeading)
     }
 
-    @Test func numericLayerInsertsDigits() throws {
+    @Test func numericLayerInsertsDigits() async throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -94,7 +99,7 @@ struct wurstfingerTests {
         #expect(inserted == ["1", "0"])
     }
 
-    @Test func letterLayerProvidesAdditionalSymbols() throws {
+    @Test func letterLayerProvidesAdditionalSymbols() async throws {
         let viewModel = KeyboardViewModel()
         let firstRow = try #require(viewModel.rows.first)
         let aKey = try #require(firstRow.first)
@@ -115,7 +120,7 @@ struct wurstfingerTests {
         #expect(sKey.primaryLabel(for: .right) == ">")
     }
 
-    @Test func spaceDragEmitsCursorMovements() {
+    @Test func spaceDragEmitsCursorMovements() async throws {
         let viewModel = KeyboardViewModel()
         var moves: [Int] = []
 
@@ -134,7 +139,7 @@ struct wurstfingerTests {
         #expect(moves == [1, 1, -1, -1])
     }
 
-    @Test func deleteDragEmitsRepeatedDeletes() {
+    @Test func deleteDragEmitsRepeatedDeletes() async throws {
         let viewModel = KeyboardViewModel()
         var deletes = 0
 
@@ -205,7 +210,7 @@ struct wurstfingerTests {
         #expect(abs(storedDrag - 1.0) < 0.0001)
     }
 
-    @Test func composeSwipeEmitsComposeAction() throws {
+    @Test func composeSwipeEmitsComposeAction() async throws {
         let viewModel = KeyboardViewModel()
         var captured: String?
 
@@ -223,13 +228,13 @@ struct wurstfingerTests {
         #expect(captured == "'")
     }
 
-    @Test func composeEngineProducesReplacement() {
+    @Test func composeEngineProducesReplacement() async throws {
         #expect(ComposeEngine.compose(previous: "a", trigger: "¨") == "ä")
         #expect(ComposeEngine.compose(previous: "l", trigger: "!") == "ł")
         #expect(ComposeEngine.compose(previous: "x", trigger: "~") == nil)
     }
 
-    @Test func returnSwipeOnPlusProducesTimes() throws {
+    @Test func returnSwipeOnPlusProducesTimes() async throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -247,7 +252,7 @@ struct wurstfingerTests {
         #expect(inserted.last == "×")
     }
 
-    @Test func returnSwipesProduceTypographicVariants() throws {
+    @Test func returnSwipesProduceTypographicVariants() async throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -280,16 +285,16 @@ struct wurstfingerTests {
         try trigger(row: 1, column: 0, direction: .upRight, expected: "‰") // % → ‰
     }
 
-    @Test func directPunctuationSwipeDoesNotCompose() throws {
+    @Test func directPunctuationSwipeDoesNotCompose() async throws {
         let viewModel = KeyboardViewModel()
         var inserts: [String] = []
         var composed: [String] = []
 
         viewModel.bindActionHandler { action in
             switch action {
-            case let .insert(value):
+            case .insert(let value):
                 inserts.append(value)
-            case let .compose(trigger):
+            case .compose(let trigger):
                 composed.append(trigger)
             default:
                 break
@@ -376,4 +381,87 @@ struct wurstfingerTests {
         #expect(single.pathLength == 0)
         #expect(single.isTap == true)
     }
+
+    // MARK: - Apostrophe compose regression (#89)
+
+    @Test func apostropheIsNotAutoComposeTrigger() async throws {
+        // Verify no key in the layout has apostrophe as an auto-detected
+        // compose trigger. Only the explicit composeMap entry (N-key upRight,
+        // displayed as ´) should produce .compose with trigger "'".
+        let viewModel = KeyboardViewModel()
+
+        for (rowIndex, row) in viewModel.rows.enumerated() {
+            for (colIndex, key) in row.enumerated() {
+                for direction in KeyboardDirection.allCases {
+                    guard let output = key.output(for: direction) else { continue }
+                    if case let .compose(trigger, _) = output, trigger == "'" {
+                        // Only allowed on the N-key (row 0, col 1) upRight via composeMap
+                        #expect(
+                            rowIndex == 0 && colIndex == 1 && direction == .upRight,
+                            "Unexpected apostrophe compose trigger at row \(rowIndex), col \(colIndex), direction \(direction)"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Test func apostropheReturnSwipeInsertsPlainText() async throws {
+        // Return swipe on N-key upRight should insert plain apostrophe,
+        // not trigger compose mode (returnOverride with .text("'"))
+        let viewModel = KeyboardViewModel()
+        var inserts: [String] = []
+        var composed: [String] = []
+
+        viewModel.bindActionHandler { action in
+            switch action {
+            case .insert(let value):
+                inserts.append(value)
+            case .compose(let trigger):
+                composed.append(trigger)
+            default:
+                break
+            }
+        }
+
+        let firstRow = try #require(viewModel.rows.first)
+        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
+
+        viewModel.handleKeySwipeReturn(nKey, direction: .upRight)
+
+        #expect(composed.isEmpty, "Return swipe should not trigger compose")
+        #expect(inserts.last == "'", "Return swipe should insert plain apostrophe")
+    }
+
+    @Test func acuteComposeKeyStillProducesAccentedCharacters() async throws {
+        // The ´ compose key (N-key upRight via composeMap) must still work
+        // for producing accented characters like á, é, í, ó, ú
+        #expect(ComposeEngine.compose(previous: "a", trigger: "'") == "á")
+        #expect(ComposeEngine.compose(previous: "e", trigger: "'") == "é")
+        #expect(ComposeEngine.compose(previous: "i", trigger: "'") == "í")
+        #expect(ComposeEngine.compose(previous: "o", trigger: "'") == "ó")
+        #expect(ComposeEngine.compose(previous: "u", trigger: "'") == "ú")
+        #expect(ComposeEngine.compose(previous: "n", trigger: "'") == "ń")
+    }
+
+    @Test func dollarSignRemainsAutoComposeTrigger() async throws {
+        // $ is in composeTriggers and appears in textMap for key (0,0) downLeft.
+        // Swiping there should emit .compose, confirming auto-detection still works.
+        let viewModel = KeyboardViewModel()
+        var composed: [String] = []
+
+        viewModel.bindActionHandler { action in
+            if case let .compose(trigger) = action {
+                composed.append(trigger)
+            }
+        }
+
+        let firstRow = try #require(viewModel.rows.first)
+        let firstKey = try #require(firstRow.first)
+
+        viewModel.handleKeySwipe(firstKey, direction: .downLeft)
+
+        #expect(composed.last == "$", "$ should still be auto-detected as compose trigger")
+    }
+
 }
