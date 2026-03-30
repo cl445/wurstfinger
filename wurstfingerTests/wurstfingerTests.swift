@@ -220,12 +220,16 @@ struct wurstfingerTests {
             }
         }
 
-        // N-key (row 0, col 1) has compose triggers: upLeft=`, up=^, upRight=´
+        // N-key (row 0, col 1) has compose triggers: upLeft=ˋ, up=^, upRight=´
         let firstRow = try #require(viewModel.rows.first)
         let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
-        viewModel.handleKeySwipe(nKey, direction: .upRight)
 
+        viewModel.handleKeySwipe(nKey, direction: .upRight)
         #expect(captured == "´")
+
+        captured = nil
+        viewModel.handleKeySwipe(nKey, direction: .upLeft)
+        #expect(captured == "ˋ")
     }
 
     @Test func composeEngineProducesReplacement() async throws {
@@ -441,11 +445,47 @@ struct wurstfingerTests {
         #expect(ComposeEngine.compose(previous: "n", trigger: "´") == "ń")
     }
 
+    @Test func graveComposeKeyProducesAccentedCharacters() async throws {
+        // The ` compose key uses ˋ (U+02CB) as trigger, not ` (U+0060)
+        #expect(ComposeEngine.compose(previous: "a", trigger: "ˋ") == "à")
+        #expect(ComposeEngine.compose(previous: "e", trigger: "ˋ") == "è")
+        #expect(ComposeEngine.compose(previous: "i", trigger: "ˋ") == "ì")
+        #expect(ComposeEngine.compose(previous: "o", trigger: "ˋ") == "ò")
+        #expect(ComposeEngine.compose(previous: "u", trigger: "ˋ") == "ù")
+    }
+
     @Test func apostropheDoesNotComposeAccentedCharacters() async throws {
         // Apostrophe (') must NOT produce accented characters via ComposeEngine
         #expect(ComposeEngine.compose(previous: "a", trigger: "'") == nil)
         #expect(ComposeEngine.compose(previous: "e", trigger: "'") == nil)
         #expect(ComposeEngine.compose(previous: "o", trigger: "'") == nil)
+    }
+
+    @Test func backtickDoesNotComposeAccentedCharacters() async throws {
+        // Backtick (`) must NOT produce accented characters via ComposeEngine
+        #expect(ComposeEngine.compose(previous: "a", trigger: "`") == nil)
+        #expect(ComposeEngine.compose(previous: "e", trigger: "`") == nil)
+        #expect(ComposeEngine.compose(previous: "o", trigger: "`") == nil)
+    }
+
+    @Test func backtickIsNeverAComposeTrigger() async throws {
+        // Verify no key in the layout uses backtick (`) as a compose trigger.
+        // Composition uses ˋ (U+02CB modifier letter grave accent), not ` (U+0060).
+        let viewModel = KeyboardViewModel()
+
+        for (rowIndex, row) in viewModel.rows.enumerated() {
+            for (colIndex, key) in row.enumerated() {
+                for direction in KeyboardDirection.allCases {
+                    guard let output = key.output(for: direction) else { continue }
+                    if case let .compose(trigger, _) = output {
+                        #expect(
+                            trigger != "`",
+                            "Backtick must not be a compose trigger (found at row \(rowIndex), col \(colIndex), direction \(direction))"
+                        )
+                    }
+                }
+            }
+        }
     }
 
     @Test func dollarSignRemainsAutoComposeTrigger() async throws {
