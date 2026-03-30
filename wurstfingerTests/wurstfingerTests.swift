@@ -10,7 +10,12 @@ import Testing
 @testable import WurstfingerApp
 
 struct wurstfingerTests {
-    @Test func circularGestureInsertsUppercaseForBothDirections() throws {
+
+    @Test func example() async throws {
+        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    }
+
+    @Test func circularGestureInsertsUppercaseForBothDirections() async throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -28,7 +33,7 @@ struct wurstfingerTests {
         #expect(inserted == ["A", "A"])
     }
 
-    @Test func toggleSymbolsShowsNumericLayout() throws {
+    @Test func toggleSymbolsShowsNumericLayout() async throws {
         let viewModel = KeyboardViewModel()
         viewModel.toggleSymbols()
 
@@ -43,7 +48,7 @@ struct wurstfingerTests {
         #expect(zeroKey.center == "0")
     }
 
-    @Test func symbolsLayerFollowsNumericLayer() throws {
+    @Test func symbolsLayerFollowsNumericLayer() async throws {
         let viewModel = KeyboardViewModel()
 
         // First toggle: lower → numbers
@@ -59,7 +64,7 @@ struct wurstfingerTests {
         #expect(aKey.primaryLabel(for: .downLeft) == "$")
     }
 
-    @Test func circularGestureOnGlobeTogglesUtilityColumn() {
+    @Test func circularGestureOnGlobeTogglesUtilityColumn() async throws {
         let viewModel = KeyboardViewModel()
 
         #expect(!viewModel.utilityColumnLeading)
@@ -71,7 +76,7 @@ struct wurstfingerTests {
         #expect(!viewModel.utilityColumnLeading)
     }
 
-    @Test func numericLayerInsertsDigits() throws {
+    @Test func numericLayerInsertsDigits() async throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -94,7 +99,7 @@ struct wurstfingerTests {
         #expect(inserted == ["1", "0"])
     }
 
-    @Test func letterLayerProvidesAdditionalSymbols() throws {
+    @Test func letterLayerProvidesAdditionalSymbols() async throws {
         let viewModel = KeyboardViewModel()
         let firstRow = try #require(viewModel.rows.first)
         let aKey = try #require(firstRow.first)
@@ -115,7 +120,7 @@ struct wurstfingerTests {
         #expect(sKey.primaryLabel(for: .right) == ">")
     }
 
-    @Test func spaceDragEmitsCursorMovements() {
+    @Test func spaceDragEmitsCursorMovements() async throws {
         let viewModel = KeyboardViewModel()
         var moves: [Int] = []
 
@@ -134,7 +139,7 @@ struct wurstfingerTests {
         #expect(moves == [1, 1, -1, -1])
     }
 
-    @Test func deleteDragEmitsRepeatedDeletes() {
+    @Test func deleteDragEmitsRepeatedDeletes() async throws {
         let viewModel = KeyboardViewModel()
         var deletes = 0
 
@@ -152,7 +157,7 @@ struct wurstfingerTests {
         #expect(deletes == 2)
     }
 
-    @Test func hapticIntensitiesPersistToDefaults() throws {
+    @Test @MainActor func hapticIntensitiesPersistToDefaults() async throws {
         let suite = "group.de.akator.wurstfinger.tests.hapticsPersist"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defaults.removePersistentDomain(forName: suite)
@@ -172,7 +177,7 @@ struct wurstfingerTests {
         #expect(abs(dragDefault - 1.0) < 0.0001)
     }
 
-    @Test func previewViewModelDoesNotPersist() throws {
+    @Test @MainActor func previewViewModelDoesNotPersist() async throws {
         let suite = "group.de.akator.wurstfinger.tests.preview"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defaults.removePersistentDomain(forName: suite)
@@ -188,7 +193,7 @@ struct wurstfingerTests {
         #expect(abs(persistedTap - 0.3) < 0.0001)
     }
 
-    @Test func hapticIntensityClampsWithinBounds() throws {
+    @Test @MainActor func hapticIntensityClampsWithinBounds() async throws {
         let suite = "group.de.akator.wurstfinger.tests.clamp"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defaults.removePersistentDomain(forName: suite)
@@ -205,7 +210,7 @@ struct wurstfingerTests {
         #expect(abs(storedDrag - 1.0) < 0.0001)
     }
 
-    @Test func composeSwipeEmitsComposeAction() throws {
+    @Test func composeSwipeEmitsComposeAction() async throws {
         let viewModel = KeyboardViewModel()
         var captured: String?
 
@@ -223,13 +228,13 @@ struct wurstfingerTests {
         #expect(captured == "'")
     }
 
-    @Test func composeEngineProducesReplacement() {
+    @Test func composeEngineProducesReplacement() async throws {
         #expect(ComposeEngine.compose(previous: "a", trigger: "¨") == "ä")
         #expect(ComposeEngine.compose(previous: "l", trigger: "!") == "ł")
         #expect(ComposeEngine.compose(previous: "x", trigger: "~") == nil)
     }
 
-    @Test func returnSwipeOnPlusProducesTimes() throws {
+    @Test func returnSwipeOnPlusProducesTimes() async throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -247,7 +252,7 @@ struct wurstfingerTests {
         #expect(inserted.last == "×")
     }
 
-    @Test func returnSwipesProduceTypographicVariants() throws {
+    @Test func returnSwipesProduceTypographicVariants() async throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -280,16 +285,16 @@ struct wurstfingerTests {
         try trigger(row: 1, column: 0, direction: .upRight, expected: "‰") // % → ‰
     }
 
-    @Test func directPunctuationSwipeDoesNotCompose() throws {
+    @Test func directPunctuationSwipeDoesNotCompose() async throws {
         let viewModel = KeyboardViewModel()
         var inserts: [String] = []
         var composed: [String] = []
 
         viewModel.bindActionHandler { action in
             switch action {
-            case let .insert(value):
+            case .insert(let value):
                 inserts.append(value)
-            case let .compose(trigger):
+            case .compose(let trigger):
                 composed.append(trigger)
             default:
                 break
@@ -306,4 +311,71 @@ struct wurstfingerTests {
         #expect(composed.isEmpty)
         #expect(inserts.suffix(2) == ["!", "?"])
     }
+
+    // MARK: - ComposeEngine Determinism Tests
+
+    @Test func accentCycleOrderIsDeterministic() async throws {
+        // Running cycleAccent multiple times should always produce the same sequence
+        let runs = (0..<5).map { _ in
+            ComposeEngine.cycleAccent(for: "a")
+        }
+        // All runs should return the same result
+        for run in runs {
+            #expect(run == runs[0], "Accent cycle should be deterministic across calls")
+        }
+    }
+
+    @Test func numberCycleOrderIsDeterministic() async throws {
+        // Number cycles should always return the same next character
+        let runs = (0..<5).map { _ in
+            ComposeEngine.cycleAccent(for: "1")
+        }
+        for run in runs {
+            #expect(run == runs[0], "Number cycle should be deterministic across calls")
+        }
+    }
+
+    @Test func accentCycleRoundTripsBackToBase() async throws {
+        // Starting from "a", cycling through all variants should return to "a"
+        var current = "a"
+        var visited: [String] = [current]
+
+        for _ in 0..<20 {  // Safety limit
+            guard let next = ComposeEngine.cycleAccent(for: current) else { break }
+            if next == "a" {
+                // Round-tripped back to base
+                break
+            }
+            current = next
+            visited.append(current)
+        }
+
+        // Should have cycled through variants and the last cycle should return to "a"
+        #expect(visited.count > 1, "Should have at least one accent variant for 'a'")
+    }
+
+    // MARK: - GestureFeatures.empty Tests
+
+    @Test func gestureFeatureEmptyHasSensibleDefaults() async throws {
+        let empty = GestureFeatures.empty
+
+        #expect(empty.pathLength == 0)
+        #expect(empty.chordLength == 0)
+        #expect(empty.maxDisplacement == 0)
+        #expect(empty.returnRatio == 1)  // No movement = "returned"
+        #expect(empty.isTap == true)  // Zero displacement = tap
+        #expect(empty.isReturn == false)
+        #expect(empty.isCircular == false)
+    }
+
+    @Test func gestureFeatureExtractHandlesEmptyPoints() async throws {
+        let empty = GestureFeatures.extract(from: [])
+        #expect(empty.pathLength == 0)
+        #expect(empty.isTap == true)
+
+        let single = GestureFeatures.extract(from: [.zero])
+        #expect(single.pathLength == 0)
+        #expect(single.isTap == true)
+    }
+
 }

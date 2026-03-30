@@ -157,7 +157,7 @@ struct ComposeEngine {
 
         // Build complete cycles: base → [base, variant1, variant2, ...]
         var completeCycles: [String: [String]] = [:]
-        for (base, variants) in cycles where variants.count > 0 {
+        for (base, variants) in cycles.sorted(by: { $0.key < $1.key }) where !variants.isEmpty {
             var cycle = [base] + variants
             completeCycles[base] = cycle
 
@@ -181,7 +181,7 @@ struct ComposeEngine {
             "9": ["9", "⁹"]
         ]
 
-        for (base, cycle) in numberCycles {
+        for (base, cycle) in numberCycles.sorted(by: { $0.key < $1.key }) {
             completeCycles[base] = cycle
             // Each variant also maps to the same cycle
             for variant in cycle where variant != base {

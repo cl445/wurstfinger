@@ -144,6 +144,32 @@ struct LanguageSettingsTests {
         let resultAR = LanguageSettings.detectSystemLanguage(preferredLanguages: ["es-AR"])
         #expect(resultAR == "es_ES")
     }
+
+    // MARK: - Language ID Normalization Tests
+
+    @Test("Unknown language ID resolves to English via LanguageConfig")
+    func unknownLanguageIdResolvesToEnglish() {
+        // If a stale or unknown language ID is stored, LanguageConfig.language(withId:) returns nil
+        let unknownId = "zz_ZZ"
+        let resolved = LanguageConfig.language(withId: unknownId)?.id ?? LanguageConfig.english.id
+        #expect(resolved == "en_US")
+    }
+
+    @Test("Valid language ID resolves to itself")
+    func validLanguageIdResolvesToItself() {
+        let validId = "de_DE"
+        let resolved = LanguageConfig.language(withId: validId)?.id ?? LanguageConfig.english.id
+        #expect(resolved == "de_DE")
+    }
+
+    @Test("All known language IDs resolve correctly")
+    func allKnownLanguageIdsResolve() {
+        for language in LanguageConfig.allLanguages {
+            let resolved = LanguageConfig.language(withId: language.id)
+            #expect(resolved != nil, "Language \(language.id) should resolve")
+            #expect(resolved?.id == language.id)
+        }
+    }
 }
 
 // MARK: - Primary Language Resolution Tests
