@@ -35,10 +35,10 @@ struct KeyboardButtonConfig {
 
 /// Callback closures for keyboard button interactions
 struct KeyboardButtonCallbacks {
-    var onTap: (() -> Void)?
-    var onSwipe: ((KeyboardDirection) -> Void)?
-    var onSwipeReturn: ((KeyboardDirection) -> Void)?
-    var onCircular: ((KeyboardCircularDirection) -> Void)?
+    var onTap: (() -> Void)? = nil
+    var onSwipe: ((KeyboardDirection) -> Void)? = nil
+    var onSwipeReturn: ((KeyboardDirection) -> Void)? = nil
+    var onCircular: ((KeyboardCircularDirection) -> Void)? = nil
 }
 
 /// Visual key cap component used as the base for all keyboard buttons

@@ -50,3 +50,4 @@ cyclomatic_complexity:
 
 disabled_rules:
   - trailing_comma  # Trailing commas improve diffs
+  - implicit_optional_initialization  # Removing = nil breaks memberwise initializers
