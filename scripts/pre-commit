@@ -24,7 +24,8 @@ if command -v swiftformat &> /dev/null; then
         fi
     done <<< "$STAGED_FILES"
 else
-    echo "warning: SwiftFormat not installed, skipping format (brew install swiftformat)"
+    echo "error: SwiftFormat not installed (brew install swiftformat)"
+    FAILED=1
 fi
 
 # SwiftLint: check staged files for violations
@@ -43,11 +44,12 @@ if command -v swiftlint &> /dev/null; then
         fi
     done <<< "$STAGED_FILES"
 else
-    echo "warning: SwiftLint not installed, skipping lint (brew install swiftlint)"
+    echo "error: SwiftLint not installed (brew install swiftlint)"
+    FAILED=1
 fi
 
 if [ $FAILED -ne 0 ]; then
     echo ""
-    echo "SwiftLint found violations. Fix them before committing, or use --no-verify to skip."
+    echo "Pre-commit checks failed. Fix the issues above, or use --no-verify to skip."
     exit 1
 fi

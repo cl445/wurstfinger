@@ -7,6 +7,7 @@
 
 import CoreGraphics
 import Foundation
+import SwiftUI
 
 enum KeyboardLayer: Equatable {
     case lower
