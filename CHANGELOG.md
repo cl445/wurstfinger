@@ -12,6 +12,7 @@
 - Auto-capitalization now re-evaluates after deleting characters (#88)
 - Fix UserDefaults `as? CGFloat` casting with `double(forKey:)` for reliable settings loading
 - Lower height constraint priority to `.defaultHigh` to prevent Auto Layout conflicts
+- Apostrophe no longer triggers compose/accent mode; dedicated ´ compose key remains for accented characters (#89)
 
 ### Added
 

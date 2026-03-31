@@ -215,12 +215,16 @@ struct wurstfingerTests {
             }
         }
 
-        // N-key (row 0, col 1) has compose triggers: upLeft=`, up=^, upRight='
+        // N-key (row 0, col 1) has compose triggers: upLeft=ˋ, up=^, upRight=´
         let firstRow = try #require(viewModel.rows.first)
         let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
-        viewModel.handleKeySwipe(nKey, direction: .upRight)
 
-        #expect(captured == "'")
+        viewModel.handleKeySwipe(nKey, direction: .upRight)
+        #expect(captured == "´")
+
+        captured = nil
+        viewModel.handleKeySwipe(nKey, direction: .upLeft)
+        #expect(captured == "ˋ")
     }
 
     @Test func composeEngineProducesReplacement() {
@@ -375,5 +379,127 @@ struct wurstfingerTests {
         let single = GestureFeatures.extract(from: [.zero])
         #expect(single.pathLength == 0)
         #expect(single.isTap == true)
+    }
+
+    // MARK: - Apostrophe compose regression (#89)
+
+    @Test func apostropheIsNeverAComposeTrigger() {
+        // Verify no key in the layout uses apostrophe (') as a compose trigger.
+        // Composition uses ´ (U+00B4 acute accent), not ' (U+0027 apostrophe).
+        let viewModel = KeyboardViewModel()
+
+        for (rowIndex, row) in viewModel.rows.enumerated() {
+            for (colIndex, key) in row.enumerated() {
+                for direction in KeyboardDirection.allCases {
+                    guard let output = key.output(for: direction) else { continue }
+                    if case let .compose(trigger, _) = output {
+                        #expect(
+                            trigger != "'",
+                            "Apostrophe must not be a compose trigger (found at row \(rowIndex), col \(colIndex), direction \(direction))"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Test func apostropheReturnSwipeInsertsPlainText() throws {
+        // Return swipe on N-key upRight should insert plain apostrophe,
+        // not trigger compose mode (returnOverride with .text("'"))
+        let viewModel = KeyboardViewModel()
+        var inserts: [String] = []
+        var composed: [String] = []
+
+        viewModel.bindActionHandler { action in
+            switch action {
+            case let .insert(value):
+                inserts.append(value)
+            case let .compose(trigger):
+                composed.append(trigger)
+            default:
+                break
+            }
+        }
+
+        let firstRow = try #require(viewModel.rows.first)
+        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
+
+        viewModel.handleKeySwipeReturn(nKey, direction: .upRight)
+
+        #expect(composed.isEmpty, "Return swipe should not trigger compose")
+        #expect(inserts.last == "'", "Return swipe should insert plain apostrophe")
+    }
+
+    @Test func acuteComposeKeyProducesAccentedCharacters() {
+        // The ´ compose key uses ´ (U+00B4) as trigger, not ' (U+0027)
+        #expect(ComposeEngine.compose(previous: "a", trigger: "´") == "á")
+        #expect(ComposeEngine.compose(previous: "e", trigger: "´") == "é")
+        #expect(ComposeEngine.compose(previous: "i", trigger: "´") == "í")
+        #expect(ComposeEngine.compose(previous: "o", trigger: "´") == "ó")
+        #expect(ComposeEngine.compose(previous: "u", trigger: "´") == "ú")
+        #expect(ComposeEngine.compose(previous: "n", trigger: "´") == "ń")
+    }
+
+    @Test func graveComposeKeyProducesAccentedCharacters() {
+        // The ` compose key uses ˋ (U+02CB) as trigger, not ` (U+0060)
+        #expect(ComposeEngine.compose(previous: "a", trigger: "ˋ") == "à")
+        #expect(ComposeEngine.compose(previous: "e", trigger: "ˋ") == "è")
+        #expect(ComposeEngine.compose(previous: "i", trigger: "ˋ") == "ì")
+        #expect(ComposeEngine.compose(previous: "o", trigger: "ˋ") == "ò")
+        #expect(ComposeEngine.compose(previous: "u", trigger: "ˋ") == "ù")
+    }
+
+    @Test func apostropheDoesNotComposeAccentedCharacters() {
+        // Apostrophe (') must NOT produce accented characters via ComposeEngine
+        #expect(ComposeEngine.compose(previous: "a", trigger: "'") == nil)
+        #expect(ComposeEngine.compose(previous: "e", trigger: "'") == nil)
+        #expect(ComposeEngine.compose(previous: "o", trigger: "'") == nil)
+    }
+
+    @Test func backtickDoesNotComposeAccentedCharacters() {
+        // Backtick (`) must NOT produce accented characters via ComposeEngine
+        #expect(ComposeEngine.compose(previous: "a", trigger: "`") == nil)
+        #expect(ComposeEngine.compose(previous: "e", trigger: "`") == nil)
+        #expect(ComposeEngine.compose(previous: "o", trigger: "`") == nil)
+    }
+
+    @Test func backtickIsNeverAComposeTrigger() {
+        // Verify no key in the layout uses backtick (`) as a compose trigger.
+        // Composition uses ˋ (U+02CB modifier letter grave accent), not ` (U+0060).
+        let viewModel = KeyboardViewModel()
+
+        for (rowIndex, row) in viewModel.rows.enumerated() {
+            for (colIndex, key) in row.enumerated() {
+                for direction in KeyboardDirection.allCases {
+                    guard let output = key.output(for: direction) else { continue }
+                    if case let .compose(trigger, _) = output {
+                        #expect(
+                            trigger != "`",
+                            "Backtick must not be a compose trigger (found at row \(rowIndex), col \(colIndex), direction \(direction))"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Test func dollarSignRemainsAutoComposeTrigger() throws {
+        // $ is in composeTriggers and appears in textMap for key (0,0) downLeft.
+        // Swiping there should emit .compose, confirming auto-detection still works.
+        let viewModel = KeyboardViewModel()
+        var composed: [String] = []
+
+        viewModel.bindActionHandler { action in
+            if case let .compose(trigger) = action {
+                composed.append(trigger)
+            }
+        }
+
+        let firstRow = try #require(viewModel.rows.first)
+        let firstKey = try #require(firstRow.first)
+
+        viewModel.handleKeySwipe(firstKey, direction: .downLeft)
+
+        #expect(composed.last == "$", "$ should still be auto-detected as compose trigger")
     }
 }

@@ -301,7 +301,7 @@ struct KeyboardLayout {
 
 extension KeyboardLayout {
     private static let composeTriggers: Set<String> = [
-        "¨", "'", "`", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
+        "¨", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
     ]
 
     /// Creates the 3x3 letter grid rows using the language configuration
@@ -348,9 +348,9 @@ extension KeyboardLayout {
                         .left: "+"
                     ],
                     composeMap: [
-                        .upLeft: (display: "`", trigger: "`"),
+                        .upLeft: (display: "`", trigger: "ˋ"),
                         .up: (display: "^", trigger: "^"),
-                        .upRight: (display: "´", trigger: "'")
+                        .upRight: (display: "´", trigger: "´")
                     ],
                     returnOverrides: [
                         .upLeft: .text("'"),
@@ -570,9 +570,9 @@ extension KeyboardLayout {
                         .left: "+"
                     ],
                     composeMap: [
-                        .upLeft: (display: "`", trigger: "`"),
+                        .upLeft: (display: "`", trigger: "ˋ"),
                         .up: (display: "^", trigger: "^"),
-                        .upRight: (display: "´", trigger: "'")
+                        .upRight: (display: "´", trigger: "´")
                     ],
                     returnOverrides: [
                         .upLeft: .text("'"),
