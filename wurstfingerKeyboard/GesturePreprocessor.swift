@@ -125,10 +125,17 @@ struct GesturePreprocessorConfig {
         return GesturePreprocessorConfig(
             jitterThreshold: jitter,
             maxJumpDistance: maxJump,
-            smoothingWindow: store.object(forKey: smoothingWindowKey) as? Int ?? defaultSmoothingWindow,
+            smoothingWindow: validSmoothingWindow(from: store),
             smoothingOrder: 2,
             aspectRatio: 1.0
         )
+    }
+
+    /// Reads smoothingWindow from defaults, ensuring it's a positive odd integer.
+    private static func validSmoothingWindow(from store: UserDefaults) -> Int {
+        let raw = store.object(forKey: smoothingWindowKey) as? Int ?? defaultSmoothingWindow
+        let clamped = max(3, raw)
+        return clamped.isMultiple(of: 2) ? clamped + 1 : clamped
     }
 
     private static func finiteCGFloat(from store: UserDefaults, key: String, default defaultValue: CGFloat) -> CGFloat {
