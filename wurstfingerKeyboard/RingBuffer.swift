@@ -15,6 +15,7 @@ struct RingBuffer<T> {
     let capacity: Int
 
     init(capacity: Int) {
+        precondition(capacity > 0, "RingBuffer capacity must be greater than 0")
         self.capacity = capacity
         array = Array(repeating: nil, count: capacity)
     }

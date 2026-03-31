@@ -101,6 +101,43 @@ enum KeyboardDirection: CaseIterable {
             return .down
         }
     }
+
+    func edgePadding(horizontal: CGFloat, vertical: CGFloat) -> EdgeInsets {
+        switch self {
+        case .up:
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
+        case .down:
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
+        case .left:
+            EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
+        case .right:
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
+        case .upLeft:
+            EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
+        case .upRight:
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
+        case .downLeft:
+            EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
+        case .downRight:
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
+        case .center:
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        }
+    }
+
+    var hintAlignment: Alignment {
+        switch self {
+        case .up: .top
+        case .down: .bottom
+        case .left: .leading
+        case .right: .trailing
+        case .upLeft: .topLeading
+        case .upRight: .topTrailing
+        case .downLeft: .bottomLeading
+        case .downRight: .bottomTrailing
+        case .center: .center
+        }
+    }
 }
 
 enum KeyboardCircularDirection {

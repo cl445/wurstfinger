@@ -15,8 +15,12 @@ if command -v swiftformat &> /dev/null; then
     echo "Running SwiftFormat on staged files..."
     while IFS= read -r file; do
         if [ -f "$file" ]; then
-            swiftformat "$file"
-            git add "$file"
+            if swiftformat "$file"; then
+                git add "$file"
+            else
+                echo "error: SwiftFormat failed for $file"
+                FAILED=1
+            fi
         fi
     done <<< "$STAGED_FILES"
 else

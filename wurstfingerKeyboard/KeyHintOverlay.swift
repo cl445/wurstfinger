@@ -42,12 +42,11 @@ struct KeyHintOverlay: View {
                         let displayLabel = transformLabel(label, activeLayer: viewModel.activeLayer)
                         hintText(displayLabel, isLetter: isLetter(displayLabel))
                             .fixedSize()
-                            .padding(edgePadding(
-                                for: direction,
+                            .padding(direction.edgePadding(
                                 horizontal: scaledHorizontalPadding,
                                 vertical: scaledVerticalPadding
                             ))
-                            .frame(width: size.width, height: size.height, alignment: alignment(for: direction))
+                            .frame(width: size.width, height: size.height, alignment: direction.hintAlignment)
                     }
                 }
             }
@@ -111,52 +110,6 @@ struct KeyHintOverlay: View {
             .minimumScaleFactor(0.6)
             .lineLimit(1)
             .allowsHitTesting(false)
-    }
-
-    private func edgePadding(for direction: KeyboardDirection, horizontal: CGFloat, vertical: CGFloat) -> EdgeInsets {
-        switch direction {
-        case .up:
-            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
-        case .down:
-            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
-        case .left:
-            EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
-        case .right:
-            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
-        case .upLeft:
-            EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
-        case .upRight:
-            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
-        case .downLeft:
-            EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
-        case .downRight:
-            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
-        case .center:
-            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        }
-    }
-
-    private func alignment(for direction: KeyboardDirection) -> Alignment {
-        switch direction {
-        case .up:
-            .top
-        case .down:
-            .bottom
-        case .left:
-            .leading
-        case .right:
-            .trailing
-        case .upLeft:
-            .topLeading
-        case .upRight:
-            .topTrailing
-        case .downLeft:
-            .bottomLeading
-        case .downRight:
-            .bottomTrailing
-        case .center:
-            .center
-        }
     }
 }
 
@@ -229,60 +182,13 @@ struct SymbolsKeyHintOverlay: View {
                 Image(systemName: hint.iconName)
                     .font(.system(size: hintFontSize * 0.6, weight: .regular))
                     .foregroundStyle(Color.secondary.opacity(0.45))
-                    .padding(edgePadding(
-                        for: hint.direction,
+                    .padding(hint.direction.edgePadding(
                         horizontal: scaledHorizontalPadding,
                         vertical: scaledVerticalPadding
                     ))
-                    .frame(width: size.width, height: size.height, alignment: alignment(for: hint.direction))
+                    .frame(width: size.width, height: size.height, alignment: hint.direction.hintAlignment)
             }
         }
         .allowsHitTesting(false)
-    }
-
-    private func edgePadding(for direction: KeyboardDirection, horizontal: CGFloat, vertical: CGFloat) -> EdgeInsets {
-        switch direction {
-        case .up:
-            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
-        case .down:
-            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
-        case .left:
-            EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
-        case .right:
-            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
-        case .upLeft:
-            EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
-        case .upRight:
-            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
-        case .downLeft:
-            EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
-        case .downRight:
-            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
-        case .center:
-            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        }
-    }
-
-    private func alignment(for direction: KeyboardDirection) -> Alignment {
-        switch direction {
-        case .up:
-            .top
-        case .down:
-            .bottom
-        case .left:
-            .leading
-        case .right:
-            .trailing
-        case .upLeft:
-            .topLeading
-        case .upRight:
-            .topTrailing
-        case .downLeft:
-            .bottomLeading
-        case .downRight:
-            .bottomTrailing
-        case .center:
-            .center
-        }
     }
 }
