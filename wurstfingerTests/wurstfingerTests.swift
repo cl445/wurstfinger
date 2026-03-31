@@ -10,10 +10,6 @@ import Testing
 @testable import WurstfingerApp
 
 struct wurstfingerTests {
-    @Test func example() {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-    }
-
     @Test func circularGestureInsertsUppercaseForBothDirections() throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
