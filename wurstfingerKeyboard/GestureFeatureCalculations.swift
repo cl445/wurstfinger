@@ -41,10 +41,8 @@ enum GestureCalculations {
         var minY = first.y, maxY = first.y
 
         for point in points.dropFirst() {
-            if point.x < minX { minX = point.x }
-            else if point.x > maxX { maxX = point.x }
-            if point.y < minY { minY = point.y }
-            else if point.y > maxY { maxY = point.y }
+            if point.x < minX { minX = point.x } else if point.x > maxX { maxX = point.x }
+            if point.y < minY { minY = point.y } else if point.y > maxY { maxY = point.y }
         }
 
         return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
