@@ -356,7 +356,7 @@ struct wurstfingerTests {
     // MARK: - GestureFeatures.empty Tests
 
     @Test func gestureFeatureEmptyHasSensibleDefaults() {
-        let empty = GestureFeatures.empty
+        let empty = GestureFeatures.empty()
 
         #expect(empty.pathLength == 0)
         #expect(empty.chordLength == 0)
