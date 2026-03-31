@@ -100,12 +100,7 @@ final class KeyboardViewController: UIInputViewController {
     private func perform(action: KeyboardAction) {
         switch action {
         case let .insert(text):
-            textDocumentProxy.insertText(text)
-            // Spanish sentence-opening punctuation triggers immediate capitalization
-            if AutoCapitalization.shouldCapitalizeImmediately(after: text) &&
-                SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) {
-                viewModel.setLayer(.upper)
-            }
+            insertText(text)
         case .deleteBackward:
             textDocumentProxy.deleteBackward()
             updateAutoCapitalization()
@@ -137,6 +132,15 @@ final class KeyboardViewController: UIInputViewController {
             handlePaste()
         case .cut:
             handleCut()
+        }
+    }
+
+    private func insertText(_ text: String) {
+        textDocumentProxy.insertText(text)
+        // Spanish sentence-opening punctuation triggers immediate capitalization
+        if AutoCapitalization.shouldCapitalizeImmediately(after: text),
+           SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) {
+            viewModel.setLayer(.upper)
         }
     }
 

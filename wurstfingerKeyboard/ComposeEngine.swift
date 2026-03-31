@@ -167,10 +167,8 @@ struct ComposeEngine {
             }
 
             // Each variant also maps to the same cycle (first assignment wins)
-            for variant in variants {
-                if completeCycles[variant] == nil {
-                    completeCycles[variant] = cycle
-                }
+            for variant in variants where completeCycles[variant] == nil {
+                completeCycles[variant] = cycle
             }
         }
 
