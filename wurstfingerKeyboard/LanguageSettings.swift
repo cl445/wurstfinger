@@ -21,12 +21,12 @@ class LanguageSettings: ObservableObject {
     private let languageKey = SettingsKey.selectedLanguageId.rawValue
 
     private init() {
-        self.userDefaults = SharedDefaults.store
+        userDefaults = SharedDefaults.store
 
         // Load saved language or detect from system, then normalize
         let storedLanguageId = userDefaults.string(forKey: languageKey) ?? Self.detectSystemLanguage()
         let resolvedLanguageId = LanguageConfig.language(withId: storedLanguageId)?.id ?? LanguageConfig.english.id
-        self.selectedLanguageId = resolvedLanguageId
+        selectedLanguageId = resolvedLanguageId
 
         // Persist the resolved ID so other readers (e.g. KeyboardViewModel.reloadLanguage)
         // see the same normalized value
