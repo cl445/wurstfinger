@@ -6,6 +6,12 @@ included:
   - wurstfingerTests
   - wurstfingerUITests
 
+excluded:
+  - DerivedData
+  - build
+  - .build
+  - Pods
+
 # Rules tuned for a gesture-based keyboard with lots of geometry code
 identifier_name:
   min_length:

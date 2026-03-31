@@ -12,7 +12,11 @@ if [ -f "$REPO_ROOT/.git" ]; then
     if [[ "$GIT_DIR" = /* ]]; then
         HOOKS_DIR="$GIT_DIR/hooks"
     else
-        HOOKS_DIR="$(cd "$REPO_ROOT/$GIT_DIR" && pwd)/hooks"
+        RESOLVED_GIT_DIR="$(cd "$REPO_ROOT/$GIT_DIR" 2>/dev/null && pwd)" || {
+            echo "error: cannot resolve gitdir path: $REPO_ROOT/$GIT_DIR"
+            exit 1
+        }
+        HOOKS_DIR="$RESOLVED_GIT_DIR/hooks"
     fi
 fi
 
@@ -21,6 +25,10 @@ mkdir -p "$HOOKS_DIR"
 if [ ! -f "$REPO_ROOT/scripts/pre-commit" ]; then
     echo "error: scripts/pre-commit not found"
     exit 1
+fi
+
+if [ -e "$HOOKS_DIR/pre-commit" ] && [ ! -L "$HOOKS_DIR/pre-commit" ]; then
+    echo "warning: overwriting existing pre-commit hook (was not a symlink)"
 fi
 
 ln -sf "$REPO_ROOT/scripts/pre-commit" "$HOOKS_DIR/pre-commit"
