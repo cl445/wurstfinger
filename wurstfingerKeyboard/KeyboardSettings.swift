@@ -35,7 +35,6 @@ enum SettingsKey: String {
 /// Encapsulates all haptic-related settings with built-in persistence.
 /// Eliminates duplicate didSet handlers by using a unified approach.
 final class HapticSettings: ObservableObject {
-
     /// Default intensity values (0.0 - 1.0)
     static let defaultTapIntensity: CGFloat = 0.5
     static let defaultModifierIntensity: CGFloat = 0.5
@@ -86,10 +85,10 @@ final class HapticSettings: ObservableObject {
         self.shouldPersist = shouldPersist
 
         // Load values with clamping
-        self.enabled = defaults.object(forKey: SettingsKey.hapticEnabled.rawValue) as? Bool ?? true
-        self.tapIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityTap, default: Self.defaultTapIntensity)
-        self.modifierIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityModifier, default: Self.defaultModifierIntensity)
-        self.dragIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityDrag, default: Self.defaultDragIntensity)
+        enabled = defaults.object(forKey: SettingsKey.hapticEnabled.rawValue) as? Bool ?? true
+        tapIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityTap, default: Self.defaultTapIntensity)
+        modifierIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityModifier, default: Self.defaultModifierIntensity)
+        dragIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityDrag, default: Self.defaultDragIntensity)
     }
 
     /// Reload settings from UserDefaults (e.g., after changes from host app)
@@ -110,9 +109,9 @@ final class HapticSettings: ObservableObject {
     /// Returns the intensity for a given haptic event type
     func intensity(for event: KeyboardHapticEvent) -> CGFloat {
         switch event {
-        case .tap: return tapIntensity
-        case .modifier: return modifierIntensity
-        case .drag: return dragIntensity
+        case .tap: tapIntensity
+        case .modifier: modifierIntensity
+        case .drag: dragIntensity
         }
     }
 
@@ -129,7 +128,7 @@ final class HapticSettings: ObservableObject {
         min(max(value, 0), 1)
     }
 
-    private func persistIfNeeded<T>(_ value: T, forKey key: SettingsKey) {
+    private func persistIfNeeded(_ value: some Any, forKey key: SettingsKey) {
         guard shouldPersist else { return }
         defaults.set(value, forKey: key.rawValue)
     }
@@ -139,7 +138,6 @@ final class HapticSettings: ObservableObject {
 
 /// Encapsulates keyboard layout settings (position, scale, aspect ratio).
 final class LayoutSettings: ObservableObject {
-
     private let defaults: UserDefaults
     private let shouldPersist: Bool
 
@@ -187,19 +185,19 @@ final class LayoutSettings: ObservableObject {
         self.defaults = defaults
         self.shouldPersist = shouldPersist
 
-        self.utilityColumnLeading = defaults.object(forKey: SettingsKey.utilityColumnLeading.rawValue) as? Bool ?? false
+        utilityColumnLeading = defaults.object(forKey: SettingsKey.utilityColumnLeading.rawValue) as? Bool ?? false
 
         let savedRatio = defaults.object(forKey: SettingsKey.keyAspectRatio.rawValue) as? Double
             ?? DeviceLayoutUtils.defaultKeyAspectRatio
-        self.keyAspectRatio = Self.clampAspectRatio(savedRatio)
+        keyAspectRatio = Self.clampAspectRatio(savedRatio)
 
         let savedScale = defaults.object(forKey: SettingsKey.keyboardScale.rawValue) as? Double
             ?? DeviceLayoutUtils.defaultKeyboardScale
-        self.keyboardScale = Self.clampScale(savedScale)
+        keyboardScale = Self.clampScale(savedScale)
 
         let savedPosition = defaults.object(forKey: SettingsKey.keyboardHorizontalPosition.rawValue) as? Double
             ?? DeviceLayoutUtils.defaultKeyboardPosition
-        self.keyboardHorizontalPosition = Self.clampPosition(savedPosition)
+        keyboardHorizontalPosition = Self.clampPosition(savedPosition)
     }
 
     /// Reload settings from UserDefaults
@@ -240,7 +238,7 @@ final class LayoutSettings: ObservableObject {
         min(1.0, max(0.0, value))
     }
 
-    private func persistIfNeeded<T>(_ value: T, forKey key: SettingsKey) {
+    private func persistIfNeeded(_ value: some Any, forKey key: SettingsKey) {
         guard shouldPersist else { return }
         defaults.set(value, forKey: key.rawValue)
     }

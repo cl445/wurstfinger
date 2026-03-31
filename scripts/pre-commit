@@ -1,10 +1,5 @@
 #!/bin/bash
-# Pre-commit hook: runs SwiftLint on staged Swift files
-
-if ! command -v swiftlint &> /dev/null; then
-    echo "warning: SwiftLint not installed, skipping lint (brew install swiftlint)"
-    exit 0
-fi
+# Pre-commit hook: runs SwiftFormat and SwiftLint on staged Swift files
 
 # Get staged Swift files (added, copied, modified, renamed)
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR -- '*.swift')
@@ -13,23 +8,48 @@ if [ -z "$STAGED_FILES" ]; then
     exit 0
 fi
 
-echo "Running SwiftLint on staged files..."
-
 FAILED=0
-while IFS= read -r file; do
-    if [ -f "$file" ]; then
-        # Warn about partially staged files (working tree differs from index)
-        if ! git diff --quiet -- "$file"; then
-            echo "warning: $file has unstaged changes — linting working tree version"
+
+# SwiftFormat: auto-format staged files and re-stage them
+if command -v swiftformat &> /dev/null; then
+    echo "Running SwiftFormat on staged files..."
+    while IFS= read -r file; do
+        if [ -f "$file" ]; then
+            if swiftformat "$file"; then
+                git add "$file"
+            else
+                echo "error: SwiftFormat failed for $file"
+                FAILED=1
+            fi
         fi
-        if ! swiftlint lint --strict --quiet "$file"; then
-            FAILED=1
+    done <<< "$STAGED_FILES"
+else
+    echo "error: SwiftFormat not installed (brew install swiftformat)"
+    FAILED=1
+fi
+
+# SwiftLint: check staged files for violations
+if command -v swiftlint &> /dev/null; then
+    echo "Running SwiftLint on staged files..."
+    while IFS= read -r file; do
+        if [ -f "$file" ]; then
+            # Warn about partially staged files (working tree differs from index)
+            if ! git diff --quiet -- "$file"; then
+                echo "warning: $file has unstaged changes — linting working tree version"
+            fi
+            swiftlint lint --strict --quiet "$file"
+            if [ $? -ne 0 ]; then
+                FAILED=1
+            fi
         fi
-    fi
-done <<< "$STAGED_FILES"
+    done <<< "$STAGED_FILES"
+else
+    echo "error: SwiftLint not installed (brew install swiftlint)"
+    FAILED=1
+fi
 
 if [ $FAILED -ne 0 ]; then
     echo ""
-    echo "SwiftLint found violations. Fix them before committing, or use --no-verify to skip."
+    echo "Pre-commit checks failed. Fix the issues above, or use --no-verify to skip."
     exit 1
 fi

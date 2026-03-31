@@ -61,7 +61,6 @@ struct StyleSettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    @ViewBuilder
     private func styleOption(_ style: KeyboardStyle) -> some View {
         Button {
             keyboardStyleRaw = style.rawValue

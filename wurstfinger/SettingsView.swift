@@ -210,11 +210,11 @@ struct SettingsView: View {
 
     private func positionLabel(for value: Double) -> String {
         if value < 0.25 {
-            return "Left"
+            "Left"
         } else if value > 0.75 {
-            return "Right"
+            "Right"
         } else {
-            return "Center"
+            "Center"
         }
     }
 
@@ -260,7 +260,7 @@ struct SettingsRow: View {
                     .font(.body)
                     .foregroundColor(.primary)
 
-                if let subtitle = subtitle {
+                if let subtitle {
                     Text(subtitle)
                         .font(.caption)
                         .foregroundColor(.secondary)

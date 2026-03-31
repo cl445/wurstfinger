@@ -10,7 +10,6 @@ import Testing
 @testable import WurstfingerApp
 
 struct CGPointExtensionTests {
-
     // MARK: - Distance Tests
 
     @Test func distanceToSamePoint() {
@@ -81,7 +80,6 @@ struct CGPointExtensionTests {
 }
 
 struct CGSizeExtensionTests {
-
     @Test func aspectRatioOfSquare() {
         let size = CGSize(width: 100, height: 100)
         #expect(size.aspectRatio == 1.0)
@@ -99,12 +97,11 @@ struct CGSizeExtensionTests {
 
     @Test func aspectRatioWithZeroHeight() {
         let size = CGSize(width: 100, height: 0)
-        #expect(size.aspectRatio == 1)  // Default when height is 0
+        #expect(size.aspectRatio == 1) // Default when height is 0
     }
 }
 
 struct CGRectExtensionTests {
-
     @Test func centerOfRect() {
         let rect = CGRect(x: 0, y: 0, width: 100, height: 100)
         let center = rect.center
@@ -117,7 +114,7 @@ struct CGRectExtensionTests {
         let rect = CGRect(x: 20, y: 30, width: 100, height: 200)
         let center = rect.center
 
-        #expect(center.x == 70)  // 20 + 100/2
+        #expect(center.x == 70) // 20 + 100/2
         #expect(center.y == 130) // 30 + 200/2
     }
 
@@ -133,6 +130,6 @@ struct CGRectExtensionTests {
 
     @Test func aspectRatioWithZeroHeight() {
         let rect = CGRect(x: 0, y: 0, width: 100, height: 0)
-        #expect(rect.aspectRatio == 1)  // Default when height is 0
+        #expect(rect.aspectRatio == 1) // Default when height is 0
     }
 }

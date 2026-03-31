@@ -43,7 +43,7 @@ struct GesturePlaygroundView: View {
                 .stroke(Color.gray.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [5]))
 
                 // Sector lines (for swipe angles)
-                ForEach(0..<8) { i in
+                ForEach(0 ..< 8) { i in
                     Path { path in
                         let angle = Double(i) * 45.0 * .pi / 180.0
                         path.move(to: CGPoint(x: 150, y: 150))
@@ -91,7 +91,7 @@ struct GesturePlaygroundView: View {
                 .stroke(Color.green, lineWidth: 4)
 
                 // Key Points
-                if let features = features {
+                if let features {
                     // Start
                     Circle()
                         .fill(Color.blue)
@@ -172,7 +172,7 @@ struct GesturePlaygroundView: View {
                     .background(Color.blue.opacity(0.1))
                     .cornerRadius(8)
 
-                    if let features = features {
+                    if let features {
                         // Decision Tree Breakdown
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Decision Logic").font(.headline)
@@ -290,7 +290,7 @@ struct GesturePlaygroundView: View {
         String(format: "%.1f", value)
     }
 
-    private func decisionRow<Content: View>(_ label: String, passed: Bool, @ViewBuilder content: () -> Content) -> some View {
+    private func decisionRow(_ label: String, passed: Bool, @ViewBuilder content: () -> some View) -> some View {
         HStack(alignment: .top) {
             Image(systemName: passed ? "checkmark.circle.fill" : "circle")
                 .foregroundColor(passed ? .green : .gray)
@@ -341,7 +341,7 @@ struct GesturePlaygroundView: View {
         // 3. Extract Features
         GestureFeatures.thresholds = GestureClassificationThresholds.fromUserDefaults()
         let feats = GestureFeatures.extract(from: processedPoints)
-        self.features = feats
+        features = feats
 
         // 4. Classify
         var result = ""
@@ -361,7 +361,7 @@ struct GesturePlaygroundView: View {
             detectedDirection = KeyboardDirection.direction(for: swipeSize, tolerance: 0)
         }
 
-        self.classificationResult = result
+        classificationResult = result
     }
 }
 

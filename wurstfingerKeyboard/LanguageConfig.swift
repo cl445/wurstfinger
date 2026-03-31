@@ -548,20 +548,20 @@ extension LanguageConfig {
     /// All available language configurations
     /// All supported languages sorted alphabetically by name
     static let allLanguages: [LanguageConfig] = [
-        .spanishCatalan,    // Català (Catalan)
-        .croatian,          // Hrvatski (Croatian)
-        .english,           // English
-        .estonianFinnish,   // Eesti-Suomi (Estonian-Finnish)
-        .finnish,           // Suomi (Finnish)
-        .french,            // Français (French)
-        .german,            // Deutsch (German)
-        .hebrew,            // עברית (Hebrew)
-        .italian,           // Italiano (Italian)
-        .polish,            // Polski (Polish)
-        .russian,           // Русский (Russian)
-        .spanish,           // Español (Spanish)
-        .swedish,           // Svenska (Swedish)
-        .tagalog            // Tagalog
+        .spanishCatalan, // Català (Catalan)
+        .croatian, // Hrvatski (Croatian)
+        .english, // English
+        .estonianFinnish, // Eesti-Suomi (Estonian-Finnish)
+        .finnish, // Suomi (Finnish)
+        .french, // Français (French)
+        .german, // Deutsch (German)
+        .hebrew, // עברית (Hebrew)
+        .italian, // Italiano (Italian)
+        .polish, // Polski (Polish)
+        .russian, // Русский (Russian)
+        .spanish, // Español (Spanish)
+        .swedish, // Svenska (Swedish)
+        .tagalog // Tagalog
     ].sorted { $0.name < $1.name }
 
     /// Get language config by ID

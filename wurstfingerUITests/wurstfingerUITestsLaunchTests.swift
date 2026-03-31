@@ -8,7 +8,6 @@
 import XCTest
 
 final class wurstfingerUITestsLaunchTests: XCTestCase {
-
     override static var runsForEachTargetApplicationUIConfiguration: Bool {
         true
     }
@@ -18,7 +17,7 @@ final class wurstfingerUITestsLaunchTests: XCTestCase {
     }
 
     @MainActor
-    func testLaunch() throws {
+    func testLaunch() {
         let app = XCUIApplication()
         app.launch()
 

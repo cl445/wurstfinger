@@ -15,8 +15,9 @@ struct RingBuffer<T> {
     let capacity: Int
 
     init(capacity: Int) {
+        precondition(capacity > 0, "RingBuffer capacity must be greater than 0")
         self.capacity = capacity
-        self.array = Array(repeating: nil, count: capacity)
+        array = Array(repeating: nil, count: capacity)
     }
 
     mutating func append(_ element: T) {
@@ -36,14 +37,14 @@ struct RingBuffer<T> {
     }
 
     var isEmpty: Bool {
-        return count == 0
+        count == 0
     }
 
     /// Returns the elements in order, from oldest to newest.
     /// This is O(N) where N is the number of elements.
     var elements: [T] {
         if count < capacity {
-            return Array(array[0..<count].compactMap { $0 })
+            return Array(array[0 ..< count].compactMap(\.self))
         } else {
             // Buffer is full, start from writeIndex (oldest)
             // Example: Cap 5, Write 2. [3, 4, 0, 1, 2]
@@ -51,7 +52,7 @@ struct RingBuffer<T> {
             var result = [T]()
             result.reserveCapacity(capacity)
 
-            for i in 0..<capacity {
+            for i in 0 ..< capacity {
                 let index = (writeIndex + i) % capacity
                 if let element = array[index] {
                     result.append(element)

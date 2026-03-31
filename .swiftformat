@@ -1,0 +1,41 @@
+# SwiftFormat Configuration for Wurstfinger
+
+--swiftversion 6.2
+
+# Exclude build artifacts
+--exclude .build,DerivedData
+
+# Indentation
+--indent 4
+--indentcase false
+
+# Wrapping
+--maxwidth 150
+--wraparguments before-first
+--wrapcollections before-first
+--wrapconditions preserve
+
+# Trailing commas (keep them — better diffs, consistent with SwiftLint config)
+--disable trailingCommas
+
+# Keep && in guard statements (more familiar than comma separation)
+--disable andOperator
+
+# Don't convert structs to enums for namespacing (preserve explicit intent)
+--disable enumNamespaces
+
+# Don't add/remove doc comment style (preserve existing comment style)
+--disable docComments
+
+# Don't rename existing test methods (project uses both XCTest and Swift Testing)
+--disable swiftTestingTestCaseNames
+
+# Keep opening braces on same line (consistent with SwiftLint opening_brace rule)
+--disable wrapMultilineStatementBraces
+
+# Self
+--self remove
+
+# Other
+--stripunusedargs closure-only
+--extensionacl on-declarations

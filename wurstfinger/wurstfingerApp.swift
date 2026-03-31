@@ -13,8 +13,8 @@ struct wurstfingerApp: App {
 
     private enum ScreenshotMode {
         case none
-        case keyboardOnly      // SCREENSHOT_MODE - keyboard showcase only
-        case appStore          // APPSTORE_SCREENSHOT_MODE - keyboard with chat UI
+        case keyboardOnly // SCREENSHOT_MODE - keyboard showcase only
+        case appStore // APPSTORE_SCREENSHOT_MODE - keyboard with chat UI
     }
 
     init() {

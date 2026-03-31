@@ -13,7 +13,7 @@ struct KeyboardRootView: View {
     @ObservedObject var viewModel: KeyboardViewModel
     var scaleAnchor: UnitPoint = .bottom
     var frameAlignment: Alignment = .bottom
-    var overrideWidth: CGFloat? = nil
+    var overrideWidth: CGFloat?
 
     @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
@@ -45,7 +45,7 @@ struct KeyboardRootView: View {
 
             VStack(spacing: KeyboardConstants.Layout.gridVerticalSpacing) {
                 // Rows 0-2: Standard letter/number rows
-                ForEach(0..<3, id: \.self) { rowIndex in
+                ForEach(0 ..< 3, id: \.self) { rowIndex in
                     HStack(spacing: KeyboardConstants.Layout.gridHorizontalSpacing) {
                         if viewModel.utilityColumnLeading {
                             utilityButton(forRow: rowIndex, keyHeight: keyHeight)
@@ -75,7 +75,7 @@ struct KeyboardRootView: View {
                     let keyWidth = keyHeight * viewModel.keyAspectRatio
                     let spaceColumnSpan = viewModel.activeLayer == .numbers ? 2 : 3
                     let spaceWidth = (keyWidth * CGFloat(spaceColumnSpan)) +
-                                     (KeyboardConstants.Layout.gridHorizontalSpacing * CGFloat(spaceColumnSpan - 1))
+                        (KeyboardConstants.Layout.gridHorizontalSpacing * CGFloat(spaceColumnSpan - 1))
 
                     SpaceKeyButton(viewModel: viewModel, keyHeight: keyHeight)
                         .frame(width: spaceWidth)

@@ -23,7 +23,7 @@ final class wurstfingerUITests: XCTestCase {
     // MARK: - Tab Navigation Tests
 
     @MainActor
-    func testAllTabsAreAccessible() throws {
+    func testAllTabsAreAccessible() {
         // Home tab should be visible by default
         XCTAssertTrue(app.tabBars.buttons["Home"].exists)
         XCTAssertTrue(app.tabBars.buttons["Setup"].exists)
@@ -47,7 +47,7 @@ final class wurstfingerUITests: XCTestCase {
     // MARK: - Onboarding Tests
 
     @MainActor
-    func testOnboardingViewShowsSetupSteps() throws {
+    func testOnboardingViewShowsSetupSteps() {
         app.tabBars.buttons["Setup"].tap()
 
         // Check that setup steps are visible
@@ -60,7 +60,7 @@ final class wurstfingerUITests: XCTestCase {
     }
 
     @MainActor
-    func testOnboardingCheckboxesAreToggleable() throws {
+    func testOnboardingCheckboxesAreToggleable() {
         app.tabBars.buttons["Setup"].tap()
 
         // Find toggles (switches) in the setup view
@@ -79,7 +79,7 @@ final class wurstfingerUITests: XCTestCase {
     // MARK: - Settings Tests
 
     @MainActor
-    func testSettingsViewShowsMainOptions() throws {
+    func testSettingsViewShowsMainOptions() {
         app.tabBars.buttons["Settings"].tap()
 
         // Check main settings rows exist
@@ -90,7 +90,7 @@ final class wurstfingerUITests: XCTestCase {
     }
 
     @MainActor
-    func testSettingsLanguageNavigation() throws {
+    func testSettingsLanguageNavigation() {
         app.tabBars.buttons["Settings"].tap()
 
         // Tap on Language row
@@ -105,7 +105,7 @@ final class wurstfingerUITests: XCTestCase {
     }
 
     @MainActor
-    func testSettingsHapticFeedbackNavigation() throws {
+    func testSettingsHapticFeedbackNavigation() {
         app.tabBars.buttons["Settings"].tap()
 
         // Tap on Haptic Feedback row
@@ -119,7 +119,7 @@ final class wurstfingerUITests: XCTestCase {
     }
 
     @MainActor
-    func testSettingsUtilityKeysToggle() throws {
+    func testSettingsUtilityKeysToggle() {
         app.tabBars.buttons["Settings"].tap()
 
         // Find the "Utility Keys on Left" toggle
@@ -135,7 +135,7 @@ final class wurstfingerUITests: XCTestCase {
     // MARK: - Test Area Tests
 
     @MainActor
-    func testTestAreaHasTextFieldAndKeyboard() throws {
+    func testTestAreaHasTextFieldAndKeyboard() {
         app.tabBars.buttons["Test"].tap()
 
         // Wait for test area to load
@@ -149,7 +149,7 @@ final class wurstfingerUITests: XCTestCase {
     // MARK: - Home View Tests
 
     @MainActor
-    func testHomeViewShowsAppInfo() throws {
+    func testHomeViewShowsAppInfo() {
         // Home should be the default tab
         XCTAssertTrue(app.navigationBars["Wurstfinger"].waitForExistence(timeout: 2))
 
@@ -161,7 +161,7 @@ final class wurstfingerUITests: XCTestCase {
     // MARK: - Performance Tests
 
     @MainActor
-    func testLaunchPerformance() throws {
+    func testLaunchPerformance() {
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }

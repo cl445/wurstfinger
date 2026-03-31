@@ -155,7 +155,7 @@ struct ExpertSettingsView: View {
             parameterSlider(
                 title: "Jitter Threshold",
                 value: $jitterThreshold,
-                range: 1...10,
+                range: 1 ... 10,
                 step: 0.5,
                 unit: "pt",
                 description: "Points closer than this are merged. Removes finger micro-movements."
@@ -164,13 +164,13 @@ struct ExpertSettingsView: View {
             parameterSlider(
                 title: "Max Jump Distance",
                 value: $maxJumpDistance,
-                range: 20...100,
+                range: 20 ... 100,
                 step: 5,
                 unit: "pt",
                 description: "Points further apart are removed as glitches."
             )
 
-            Stepper(value: $smoothingWindow, in: 3...11, step: 2) {
+            Stepper(value: $smoothingWindow, in: 3 ... 11, step: 2) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text("Smoothing Window")
@@ -197,7 +197,7 @@ struct ExpertSettingsView: View {
             parameterSlider(
                 title: "Min Swipe Length",
                 value: $minSwipeLength,
-                range: 10...60,
+                range: 10 ... 60,
                 step: 5,
                 unit: "pt",
                 description: "maxDisplacement below this = Tap. Above = continues to Step 2."
@@ -233,7 +233,7 @@ struct ExpertSettingsView: View {
             parameterSlider(
                 title: "Min Angular Span",
                 value: $minAngularSpan,
-                range: .pi...(.pi * 2),
+                range: .pi ... (.pi * 2),
                 step: .pi / 8,
                 unit: "°",
                 description: "Total angle traversed around centroid must exceed \(Int(minAngularSpan * 180 / .pi))°."
@@ -242,7 +242,7 @@ struct ExpertSettingsView: View {
             parameterSlider(
                 title: "Min Circularity",
                 value: $minCircularity,
-                range: 0.1...0.7,
+                range: 0.1 ... 0.7,
                 step: 0.05,
                 unit: "",
                 description: "How uniform the radii are (1.0 = perfect circle). Spirals have lower values."
@@ -251,7 +251,7 @@ struct ExpertSettingsView: View {
             parameterSlider(
                 title: "Min Turn Consistency",
                 value: $minTurnConsistency,
-                range: 0.5...1.0,
+                range: 0.5 ... 1.0,
                 step: 0.05,
                 unit: "",
                 description: "How consistently the path turns in one direction. "
@@ -261,16 +261,17 @@ struct ExpertSettingsView: View {
             parameterSlider(
                 title: "Min Oriented Compactness",
                 value: $minOrientedCompactness,
-                range: 0.2...0.8,
+                range: 0.2 ... 0.8,
                 step: 0.05,
                 unit: "",
                 description: "Width/length ratio along principal axis. 1.0 = square, 0 = line. Filters out narrow arcs."
             )
         } header: {
             Label("Step 2: Circular Detection", systemImage: "arrow.trianglehead.2.clockwise.rotate.90")
-        } footer: {
+        } footer: { Text(
             // swiftlint:disable:next line_length
-            Text("Distinguishes circles (for uppercase) from return-swipes. Turn Consistency detects direction reversals, Oriented Compactness filters narrow arcs.")
+            "Distinguishes circles (for uppercase) from return-swipes. Turn Consistency detects direction reversals, Oriented Compactness filters narrow arcs."
+        )
         }
     }
 
@@ -287,7 +288,7 @@ struct ExpertSettingsView: View {
             parameterSlider(
                 title: "Max Return Ratio",
                 value: $maxReturnRatio,
-                range: 0.2...0.8,
+                range: 0.2 ... 0.8,
                 step: 0.05,
                 unit: "",
                 description: "chord/path ratio must be below \(String(format: "%.0f%%", maxReturnRatio * 100)). Low ratio = finger returned to start."
@@ -301,7 +302,7 @@ struct ExpertSettingsView: View {
                     Text(String(format: "%.0f%%", returnDisplacementStart * 100))
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Slider(value: $returnDisplacementStart, in: 0.1...0.4, step: 0.05)
+                    Slider(value: $returnDisplacementStart, in: 0.1 ... 0.4, step: 0.05)
                     Text("Start")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -311,29 +312,30 @@ struct ExpertSettingsView: View {
                     Text(String(format: "%.0f%%", returnDisplacementEnd * 100))
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Slider(value: $returnDisplacementEnd, in: 0.6...0.9, step: 0.05)
+                    Slider(value: $returnDisplacementEnd, in: 0.6 ... 0.9, step: 0.05)
                     Text("End")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-
-                // swiftlint:disable:next line_length
-                Text("Max displacement must occur between \(Int(returnDisplacementStart * 100))% and \(Int(returnDisplacementEnd * 100))% of the path (not at the very end).")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Text(
+                    // swiftlint:disable:next line_length
+                    "Max displacement must occur between \(Int(returnDisplacementStart * 100))% and \(Int(returnDisplacementEnd * 100))% of the path (not at the very end)."
+                )
+                .font(.caption)
+                .foregroundColor(.secondary)
             }
             .padding(.vertical, 4)
         } header: {
             Label("Step 3: Return-Swipe Detection", systemImage: "arrow.uturn.backward")
-        } footer: {
+        } footer: { Text(
             // swiftlint:disable:next line_length
-            Text("If the finger went out and came back (low return ratio) with max displacement in the middle of the path, it's a return-swipe. Otherwise, it's a normal swipe.")
+            "If the finger went out and came back (low return ratio) with max displacement in the middle of the path, it's a return-swipe. Otherwise, it's a normal swipe."
+        )
         }
     }
 
     // MARK: - Helpers
 
-    @ViewBuilder
     private func parameterSlider(
         title: String,
         value: Binding<Double>,

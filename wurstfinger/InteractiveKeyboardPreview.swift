@@ -15,12 +15,14 @@ struct InteractiveKeyboardPreview: View {
     @StateObject private var previewViewModel = KeyboardViewModel(shouldPersistSettings: false)
     @State private var previewText = ""
 
-    init(aspectRatio: Binding<Double> = .constant(1.5),
-         scale: Binding<Double> = .constant(1.0),
-         position: Binding<Double> = .constant(0.5)) {
-        self._aspectRatio = aspectRatio
-        self._scale = scale
-        self._position = position
+    init(
+        aspectRatio: Binding<Double> = .constant(1.5),
+        scale: Binding<Double> = .constant(1.0),
+        position: Binding<Double> = .constant(0.5)
+    ) {
+        _aspectRatio = aspectRatio
+        _scale = scale
+        _position = position
     }
 
     private var previewHeight: CGFloat {
@@ -32,7 +34,7 @@ struct InteractiveKeyboardPreview: View {
         // If scaling is involved (size settings), we clamp between min/max
         // If only aspect ratio changes (aspect settings), we allow it to grow naturally but cap it
         if scale < 0.99 {
-             return min(KeyboardConstants.Preview.maxHeight, max(KeyboardConstants.Preview.minHeight, scaledHeight))
+            return min(KeyboardConstants.Preview.maxHeight, max(KeyboardConstants.Preview.minHeight, scaledHeight))
         } else {
             // For aspect ratio view, we want to show the full height relative to width
             let keyHeight = 54.0 * (1.5 / aspectRatio)
@@ -42,7 +44,6 @@ struct InteractiveKeyboardPreview: View {
     }
 
     var body: some View {
-
         VStack(spacing: 12) {
             HStack {
                 Text("Preview")
@@ -101,7 +102,7 @@ struct InteractiveKeyboardPreview: View {
 
                         previewViewModel.bindActionHandler { action in
                             switch action {
-                            case .insert(let text):
+                            case let .insert(text):
                                 previewText += text
                             case .deleteBackward:
                                 if !previewText.isEmpty {

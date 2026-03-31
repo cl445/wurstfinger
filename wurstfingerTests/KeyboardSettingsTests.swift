@@ -10,7 +10,6 @@ import Testing
 @testable import WurstfingerApp
 
 struct HapticSettingsTests {
-
     // Helper to create isolated UserDefaults for testing
     private func createTestDefaults() -> UserDefaults {
         let suiteName = "test.haptic.\(UUID().uuidString)"
@@ -52,13 +51,13 @@ struct HapticSettingsTests {
         let defaults = createTestDefaults()
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
-        settings.tapIntensity = 1.5  // above max
+        settings.tapIntensity = 1.5 // above max
         #expect(settings.tapIntensity == 1.0)
 
-        settings.tapIntensity = -0.5  // below min
+        settings.tapIntensity = -0.5 // below min
         #expect(settings.tapIntensity == 0.0)
 
-        settings.tapIntensity = 0.5  // valid
+        settings.tapIntensity = 0.5 // valid
         #expect(settings.tapIntensity == 0.5)
     }
 
@@ -121,7 +120,6 @@ struct HapticSettingsTests {
 }
 
 struct LayoutSettingsTests {
-
     private func createTestDefaults() -> UserDefaults {
         let suiteName = "test.layout.\(UUID().uuidString)"
         return UserDefaults(suiteName: suiteName)!
@@ -160,10 +158,10 @@ struct LayoutSettingsTests {
         let defaults = createTestDefaults()
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
-        settings.keyAspectRatio = 2.0  // above max (1.62)
+        settings.keyAspectRatio = 2.0 // above max (1.62)
         #expect(settings.keyAspectRatio == 1.62)
 
-        settings.keyAspectRatio = 0.5  // below min (1.0)
+        settings.keyAspectRatio = 0.5 // below min (1.0)
         #expect(settings.keyAspectRatio == 1.0)
     }
 
@@ -171,10 +169,10 @@ struct LayoutSettingsTests {
         let defaults = createTestDefaults()
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
-        settings.keyboardScale = 1.5  // above max (1.0)
+        settings.keyboardScale = 1.5 // above max (1.0)
         #expect(settings.keyboardScale == 1.0)
 
-        settings.keyboardScale = 0.1  // below min (0.25)
+        settings.keyboardScale = 0.1 // below min (0.25)
         #expect(settings.keyboardScale == 0.25)
     }
 
@@ -182,10 +180,10 @@ struct LayoutSettingsTests {
         let defaults = createTestDefaults()
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
-        settings.keyboardHorizontalPosition = 1.5  // above max (1.0)
+        settings.keyboardHorizontalPosition = 1.5 // above max (1.0)
         #expect(settings.keyboardHorizontalPosition == 1.0)
 
-        settings.keyboardHorizontalPosition = -0.5  // below min (0.0)
+        settings.keyboardHorizontalPosition = -0.5 // below min (0.0)
         #expect(settings.keyboardHorizontalPosition == 0.0)
     }
 
@@ -224,7 +222,6 @@ struct LayoutSettingsTests {
 // MARK: - SettingsKey Tests
 
 struct SettingsKeyTests {
-
     @Test func settingsKeysHaveCorrectRawValues() {
         #expect(SettingsKey.hapticIntensityTap.rawValue == "hapticIntensityTap")
         #expect(SettingsKey.hapticEnabled.rawValue == "hapticEnabled")

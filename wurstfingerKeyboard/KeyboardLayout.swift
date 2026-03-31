@@ -7,6 +7,7 @@
 
 import CoreGraphics
 import Foundation
+import SwiftUI
 
 enum KeyboardLayer: Equatable {
     case lower
@@ -16,30 +17,30 @@ enum KeyboardLayer: Equatable {
 }
 
 enum NumpadStyle: String, CaseIterable {
-    case phone  // 1-2-3 / 4-5-6 / 7-8-9 (default, like phone keypad)
-    case classic  // 7-8-9 / 4-5-6 / 1-2-3 (like calculator)
+    case phone // 1-2-3 / 4-5-6 / 7-8-9 (default, like phone keypad)
+    case classic // 7-8-9 / 4-5-6 / 1-2-3 (like calculator)
 }
 
 /// Visual style for the keyboard appearance
 enum KeyboardStyle: String, CaseIterable {
-    case classic      // Traditional opaque key backgrounds
-    case liquidGlass  // iOS 26+ Liquid Glass effect (falls back to classic on older iOS)
+    case classic // Traditional opaque key backgrounds
+    case liquidGlass // iOS 26+ Liquid Glass effect (falls back to classic on older iOS)
 
     var displayName: String {
         switch self {
         case .classic:
-            return "Classic"
+            "Classic"
         case .liquidGlass:
-            return "Liquid Glass"
+            "Liquid Glass"
         }
     }
 
     var description: String {
         switch self {
         case .classic:
-            return "Traditional opaque keys"
+            "Traditional opaque keys"
         case .liquidGlass:
-            return "Transparent glass effect (iOS 26+)"
+            "Transparent glass effect (iOS 26+)"
         }
     }
 }
@@ -83,22 +84,59 @@ enum KeyboardDirection: CaseIterable {
         let angle = angleDir < 0 ? 360 + angleDir : angleDir
 
         switch angle {
-        case 22.5..<67.5:
+        case 22.5 ..< 67.5:
             return .downRight
-        case 67.5..<112.5:
+        case 67.5 ..< 112.5:
             return .right
-        case 112.5..<157.5:
+        case 112.5 ..< 157.5:
             return .upRight
-        case 157.5..<202.5:
+        case 157.5 ..< 202.5:
             return .up
-        case 202.5..<247.5:
+        case 202.5 ..< 247.5:
             return .upLeft
-        case 247.5..<292.5:
+        case 247.5 ..< 292.5:
             return .left
-        case 292.5..<337.5:
+        case 292.5 ..< 337.5:
             return .downLeft
         default:
             return .down
+        }
+    }
+
+    func edgePadding(horizontal: CGFloat, vertical: CGFloat) -> EdgeInsets {
+        switch self {
+        case .up:
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
+        case .down:
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
+        case .left:
+            EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
+        case .right:
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
+        case .upLeft:
+            EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
+        case .upRight:
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
+        case .downLeft:
+            EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
+        case .downRight:
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
+        case .center:
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        }
+    }
+
+    var hintAlignment: Alignment {
+        switch self {
+        case .up: .top
+        case .down: .bottom
+        case .left: .leading
+        case .right: .trailing
+        case .upLeft: .topLeading
+        case .upRight: .topTrailing
+        case .downLeft: .bottomLeading
+        case .downRight: .bottomTrailing
+        case .center: .center
         }
     }
 }
@@ -152,7 +190,7 @@ struct KeyboardGestureRecognizer {
         let vectors = filtered.map { CGPoint(x: $0.x - center.x, y: $0.y - center.y) }
         var spannedAngle: CGFloat = 0
 
-        for index in 1..<vectors.count {
+        for index in 1 ..< vectors.count {
             let a = vectors[index - 1]
             let b = vectors[index]
             let cross = a.x * b.y - a.y * b.x
@@ -256,14 +294,12 @@ struct KeyboardLayout {
         )
     }
 
-    static let germanDefault: KeyboardLayout = {
-        layout(for: .german)
-    }()
+    static let germanDefault: KeyboardLayout = layout(for: .german)
 }
 
 // Note: CGPoint extensions (distance, magnitude) are now in GeometryUtils.swift
 
-private extension KeyboardLayout {
+extension KeyboardLayout {
     private static let composeTriggers: Set<String> = [
         "¨", "'", "`", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
     ]
@@ -717,9 +753,11 @@ private extension KeyboardLayout {
         // For phone layout, swap center numbers and circular gestures while keeping swipe gestures in their physical positions
         if numpadStyle == .phone {
             // Map from classic center to phone center at each position
-            // Position (0,0): 7 → 1 (with circular from 1), Position (0,1): 8 → 2 (with circular from 2), Position (0,2): 9 → 3 (with circular from 3)
+            // Position (0,0): 7 → 1 (with circular from 1), Position (0,1): 8 → 2 (with circular from 2), Position (0,2): 9 → 3 (with circular from
+            // 3)
             // Position (1,0): 4 → 4, Position (1,1): 5 → 5, Position (1,2): 6 → 6 (unchanged)
-            // Position (2,0): 1 → 7 (with circular from 7), Position (2,1): 2 → 8 (with circular from 8), Position (2,2): 3 → 9 (with circular from 9)
+            // Position (2,0): 1 → 7 (with circular from 7), Position (2,1): 2 → 8 (with circular from 8), Position (2,2): 3 → 9 (with circular from
+            // 9)
             return [
                 // Row 0: swap 7→1, 8→2, 9→3 (with circular gestures from row 2)
                 [
@@ -750,7 +788,7 @@ private extension KeyboardLayout {
         newCenter: String,
         newCircular: [KeyboardCircularDirection: MessagEaseOutput]
     ) -> MessagEaseKey {
-        return MessagEaseKey(
+        MessagEaseKey(
             id: key.id,
             center: newCenter,
             swipeOutputs: key.swipeOutputs,
@@ -812,8 +850,8 @@ private extension KeyboardLayout {
     }
 }
 
-private extension String {
-    var containsLetter: Bool {
+extension String {
+    fileprivate var containsLetter: Bool {
         rangeOfCharacter(from: .letters) != nil
     }
 }
@@ -830,22 +868,22 @@ extension MessagEaseKey {
     private func label(for direction: KeyboardDirection, returning: Bool, isCapsLock: Bool) -> String? {
         guard let output = output(for: direction, returning: returning) else { return nil }
         switch output {
-        case .text(let value):
+        case let .text(value):
             // Special labels for whitespace characters
             if value == "\t" {
                 return "⇥"
             }
             return value
-        case .toggleShift(let on):
+        case let .toggleShift(on):
             if on && isCapsLock {
-                return "⇪"  // Caps-lock icon
+                return "⇪" // Caps-lock icon
             }
             return on ? "⇧" : "⇩"
         case .toggleSymbols:
             return "123"
-        case .capitalizeWord(let uppercased):
+        case let .capitalizeWord(uppercased):
             return uppercased ? "W↑" : "W↓"
-        case .compose(let trigger, let display):
+        case let .compose(trigger, display):
             return display ?? trigger
         case .cycleAccents:
             return "\u{1F152}"
@@ -854,12 +892,14 @@ extension MessagEaseKey {
 }
 
 // MARK: - Keyboard Constants
+
 //
 // This enum centralizes all magic numbers used throughout the keyboard.
 // Each constant is documented to explain its purpose and derivation.
 
 enum KeyboardConstants {
     // MARK: - Key Dimensions
+
     enum KeyDimensions {
         /// Standard key height in points.
         /// Derived from iOS standard keyboard key height (~54pt) for comfortable touch targets.
@@ -883,6 +923,7 @@ enum KeyboardConstants {
     }
 
     // MARK: - Font Sizes
+
     enum FontSizes {
         /// Main key label size (center character).
         static let keyLabel: CGFloat = 22
@@ -931,6 +972,7 @@ enum KeyboardConstants {
     }
 
     // MARK: - Layout Spacing
+
     enum Layout {
         /// Horizontal gap between keys in the grid.
         static let gridHorizontalSpacing: CGFloat = 5
@@ -949,6 +991,7 @@ enum KeyboardConstants {
     }
 
     // MARK: - Gesture Recognition
+
     enum Gesture {
         /// Minimum swipe distance to register as a swipe (not a tap).
         /// ~55% of key height (54pt × 0.55 ≈ 30pt) to avoid accidental swipes.
@@ -968,6 +1011,7 @@ enum KeyboardConstants {
     }
 
     // MARK: - Space Key Gestures
+
     enum SpaceGestures {
         /// Minimum drag distance to activate cursor movement mode.
         static let dragActivationThreshold: CGFloat = 8
@@ -981,6 +1025,7 @@ enum KeyboardConstants {
     }
 
     // MARK: - Delete Key Gestures
+
     enum DeleteGestures {
         /// Minimum drag distance to activate delete-drag mode.
         static let dragActivationThreshold: CGFloat = 8
@@ -1003,6 +1048,7 @@ enum KeyboardConstants {
     }
 
     // MARK: - Preview Settings
+
     enum Preview {
         /// Minimum height for keyboard preview in settings.
         static let minHeight: CGFloat = 100
@@ -1011,6 +1057,7 @@ enum KeyboardConstants {
     }
 
     // MARK: - Keyboard Calculations
+
     enum Calculations {
         /// Calculates the adjusted key height based on aspect ratio
         static func keyHeight(aspectRatio: CGFloat) -> CGFloat {
@@ -1021,8 +1068,8 @@ enum KeyboardConstants {
         static func baseHeight(aspectRatio: CGFloat) -> CGFloat {
             let keyHeight = keyHeight(aspectRatio: aspectRatio)
             return (keyHeight * CGFloat(KeyDimensions.totalRows)) +
-                   (Layout.gridVerticalSpacing * CGFloat(KeyDimensions.totalRows - 1)) +
-                   Layout.verticalPaddingTop + Layout.verticalPaddingBottom
+                (Layout.gridVerticalSpacing * CGFloat(KeyDimensions.totalRows - 1)) +
+                Layout.verticalPaddingTop + Layout.verticalPaddingBottom
         }
     }
 }

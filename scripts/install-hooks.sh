@@ -31,5 +31,6 @@ if [ -e "$HOOKS_DIR/pre-commit" ] && [ ! -L "$HOOKS_DIR/pre-commit" ]; then
     echo "warning: overwriting existing pre-commit hook (was not a symlink)"
 fi
 
+
 ln -sf "$REPO_ROOT/scripts/pre-commit" "$HOOKS_DIR/pre-commit"
 echo "Installed pre-commit hook to $HOOKS_DIR/pre-commit"

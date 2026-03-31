@@ -10,7 +10,6 @@ import Testing
 @testable import WurstfingerApp
 
 struct AutoCapitalizationTests {
-
     // MARK: - shouldCapitalize tests
 
     @Test func capitalizeAtStartOfTextField() {
@@ -121,7 +120,7 @@ struct AutoCapitalizationTests {
 
         // Simulate what KeyboardViewController does: set layer to upper after ¿
         viewModel.bindActionHandler { action in
-            if case .insert(let text) = action {
+            if case let .insert(text) = action {
                 if AutoCapitalization.shouldCapitalizeImmediately(after: text) {
                     viewModel.setLayer(.upper)
                 }
@@ -144,7 +143,7 @@ struct AutoCapitalizationTests {
         let viewModel = KeyboardViewModel()
 
         viewModel.bindActionHandler { action in
-            if case .insert(let text) = action {
+            if case let .insert(text) = action {
                 if AutoCapitalization.shouldCapitalizeImmediately(after: text) {
                     viewModel.setLayer(.upper)
                 }

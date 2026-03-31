@@ -35,7 +35,7 @@ struct KeyboardSizePositionSettingsView: View {
                 }
 
                 VStack(spacing: 8) {
-                    Slider(value: $scale, in: 0.3...1.0, step: 0.01)
+                    Slider(value: $scale, in: 0.3 ... 1.0, step: 0.01)
                         .onChange(of: scale) { oldValue, newValue in
                             // Reset position to center when scale reaches 100%
                             if newValue >= 1.0 && oldValue < 1.0 {
@@ -85,7 +85,7 @@ struct KeyboardSizePositionSettingsView: View {
                 }
 
                 VStack(spacing: 8) {
-                    Slider(value: $position, in: 0.0...1.0, step: 0.01)
+                    Slider(value: $position, in: 0.0 ... 1.0, step: 0.01)
                         .disabled(scale >= 1.0)
 
                     HStack {
