@@ -44,9 +44,7 @@ struct StyleSettingsView: View {
                         }
 
                         if keyboardStyleRaw == KeyboardStyle.liquidGlass.rawValue {
-                            if #available(iOS 26.0, *) {
-                                // iOS 26+ available
-                            } else {
+                            if #unavailable(iOS 26.0) {
                                 Text("Liquid Glass requires iOS 26 or later. The classic style will be used on this device.")
                                     .font(.caption)
                                     .foregroundColor(.orange)

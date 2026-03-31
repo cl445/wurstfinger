@@ -72,7 +72,7 @@ struct TestAreaView: View {
                     }
 
                     // Quick Actions
-                    Button(action: { testText = "" }) {
+                    Button(action: { testText = "" }, label: {
                         HStack {
                             Image(systemName: "trash")
                             Text("Clear")
@@ -82,7 +82,7 @@ struct TestAreaView: View {
                         .background(Color(.systemGray5))
                         .foregroundColor(.primary)
                         .cornerRadius(12)
-                    }
+                    })
                     .padding(.horizontal)
 
                     Spacer()

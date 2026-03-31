@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AspectRatioSettingsView: View {
     @Binding var aspectRatio: Double
-    
+
     @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
     private var keyboardScale = DeviceLayoutUtils.defaultKeyboardScale
 
@@ -65,6 +65,7 @@ struct AspectRatioSettingsView: View {
                     }
                 }
 
+                // swiftlint:disable:next line_length
                 Text("Adjust the width-to-height ratio of the keys. 1.0 creates square keys, 1.5 is the default appearance, and 1.62 is the golden ratio (widest).")
                     .font(.caption)
                     .foregroundColor(.secondary)

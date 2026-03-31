@@ -59,7 +59,7 @@ struct ExpertSettingsView: View {
                 tapDetectionSection
                 circularDetectionSection
                 returnSwipeDetectionSection
-                
+
                 Section {
                     NavigationLink("Gesture Playground") {
                         GesturePlaygroundView()
@@ -254,7 +254,8 @@ struct ExpertSettingsView: View {
                 range: 0.5...1.0,
                 step: 0.05,
                 unit: "",
-                description: "How consistently the path turns in one direction. 1.0 = all turns same direction (circle), 0.5 = half each (return-swipe)."
+                description: "How consistently the path turns in one direction. "
+                    + "1.0 = all turns same direction (circle), 0.5 = half each (return-swipe)."
             )
 
             parameterSlider(
@@ -268,6 +269,7 @@ struct ExpertSettingsView: View {
         } header: {
             Label("Step 2: Circular Detection", systemImage: "arrow.trianglehead.2.clockwise.rotate.90")
         } footer: {
+            // swiftlint:disable:next line_length
             Text("Distinguishes circles (for uppercase) from return-swipes. Turn Consistency detects direction reversals, Oriented Compactness filters narrow arcs.")
         }
     }
@@ -315,6 +317,7 @@ struct ExpertSettingsView: View {
                         .foregroundColor(.secondary)
                 }
 
+                // swiftlint:disable:next line_length
                 Text("Max displacement must occur between \(Int(returnDisplacementStart * 100))% and \(Int(returnDisplacementEnd * 100))% of the path (not at the very end).")
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -323,6 +326,7 @@ struct ExpertSettingsView: View {
         } header: {
             Label("Step 3: Return-Swipe Detection", systemImage: "arrow.uturn.backward")
         } footer: {
+            // swiftlint:disable:next line_length
             Text("If the finger went out and came back (low return ratio) with max displacement in the middle of the path, it's a return-swipe. Otherwise, it's a normal swipe.")
         }
     }

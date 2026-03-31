@@ -77,7 +77,12 @@ struct KeyCap<Content: View>: View {
         content
             .font(.system(size: fontSize, weight: .semibold, design: .rounded))
             .foregroundStyle(Color.primary)
-            .frame(minWidth: KeyboardConstants.KeyDimensions.minWidth, maxWidth: aspectRatio.map { height * $0 } ?? .infinity, minHeight: height, maxHeight: height)
+            .frame(
+                minWidth: KeyboardConstants.KeyDimensions.minWidth,
+                maxWidth: aspectRatio.map { height * $0 } ?? .infinity,
+                minHeight: height,
+                maxHeight: height
+            )
             .background(keyBackground)
     }
 

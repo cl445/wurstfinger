@@ -7,12 +7,23 @@
 
 import SwiftUI
 
-/// Helper extension for conditional view modifiers
+/// Helper extensions for conditional view modifiers
 extension View {
+    /// Conditionally applies a modifier based on a boolean condition.
     @ViewBuilder
     func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
         if condition {
             transform(self)
+        } else {
+            self
+        }
+    }
+
+    /// Conditionally applies a modifier only when the optional value is non-nil.
+    @ViewBuilder
+    func ifLet<T, ModifiedView: View>(_ value: T?, transform: (Self, T) -> ModifiedView) -> some View {
+        if let value {
+            transform(self, value)
         } else {
             self
         }

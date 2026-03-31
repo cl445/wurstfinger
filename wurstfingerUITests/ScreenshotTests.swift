@@ -7,6 +7,14 @@
 
 import XCTest
 
+private struct ScreenshotConfig {
+    let layer: String
+    let appearance: String
+    let number: String
+    var sent: String = ""
+    var received: String = ""
+}
+
 final class ScreenshotTests: XCTestCase {
     var app: XCUIApplication!
 
@@ -141,11 +149,11 @@ final class ScreenshotTests: XCTestCase {
             .lowercased()
 
         // Keyboard layouts to capture
-        let configurations: [(layer: String, appearance: String, number: String)] = [
-            ("lower", "light", "06"),
-            ("lower", "dark", "07"),
-            ("numbers", "light", "08"),
-            ("symbols", "light", "09")
+        let configurations: [ScreenshotConfig] = [
+            .init(layer: "lower", appearance: "light", number: "06"),
+            .init(layer: "lower", appearance: "dark", number: "07"),
+            .init(layer: "numbers", appearance: "light", number: "08"),
+            .init(layer: "symbols", appearance: "light", number: "09")
         ]
 
         for config in configurations {
@@ -179,12 +187,15 @@ final class ScreenshotTests: XCTestCase {
             .replacingOccurrences(of: " ", with: "-")
             .lowercased()
 
-        // Configurations: layer, appearance, screenshot number, sent text, received text
-        let configurations: [(layer: String, appearance: String, number: String, sent: String, received: String)] = [
-            ("lower", "light", "01", "So fast and precise! 🎯", "How do you like the new keyboard?"),
-            ("lower", "dark", "02", "Works great in dark mode too!", "Can you try it at night?"),
-            ("numbers", "light", "03", "Here: 555-0123", "What's your number?"),
-            ("numbers", "dark", "04", "Meeting at 7:30pm", "What time works for you?")
+        let configurations: [ScreenshotConfig] = [
+            .init(layer: "lower", appearance: "light", number: "01",
+                  sent: "So fast and precise! 🎯", received: "How do you like the new keyboard?"),
+            .init(layer: "lower", appearance: "dark", number: "02",
+                  sent: "Works great in dark mode too!", received: "Can you try it at night?"),
+            .init(layer: "numbers", appearance: "light", number: "03",
+                  sent: "Here: 555-0123", received: "What's your number?"),
+            .init(layer: "numbers", appearance: "dark", number: "04",
+                  sent: "Meeting at 7:30pm", received: "What time works for you?")
         ]
 
         for config in configurations {

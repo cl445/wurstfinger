@@ -31,11 +31,11 @@ struct KeyboardRootView: View {
         let screenBounds = UIScreen.main.bounds
         let screenShortestSide = min(screenBounds.width, screenBounds.height)
         let currentWidth = overrideWidth ?? screenBounds.width
-        
+
         // Constrain the base width to the device's shortest side (portrait width)
         // This prevents the keyboard from stretching in landscape
         let baseWidth = min(currentWidth, screenShortestSide)
-        
+
         let availableSpace = currentWidth - (baseWidth * viewModel.keyboardScale)
         let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
 
@@ -153,7 +153,10 @@ struct KeyboardRootView: View {
                     height: keyHeight,
                     aspectRatio: viewModel.keyAspectRatio,
                     label: Text(viewModel.displayText(for: key)),
-                    overlay: KeyHintOverlay(key: key, viewModel: viewModel, keyHeight: keyHeight),
+                    overlay: KeyHintOverlay(
+                        key: key, viewModel: viewModel,
+                        locale: viewModel.currentLocale(), keyHeight: keyHeight
+                    ),
                     config: KeyboardButtonConfig(fontSize: scaledMainLabelSize(for: keyHeight)),
                     callbacks: KeyboardButtonCallbacks(
                         onSwipe: { viewModel.handleKeySwipe(key, direction: $0) },

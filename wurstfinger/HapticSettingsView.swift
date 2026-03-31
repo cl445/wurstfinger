@@ -34,7 +34,7 @@ struct HapticSettingsView: View {
                     VStack(spacing: 8) {
                         Toggle("Haptic Feedback", isOn: $hapticEnabled)
                             .font(.headline)
-                        
+
                         Text("Enable or disable all haptic feedback vibrations.")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -108,7 +108,7 @@ struct HapticSettingsView: View {
                         generator.impactOccurred(intensity: value.wrappedValue)
                     }
                 }
-                
+
                 HStack {
                     Text("Off")
                         .font(.caption)
@@ -119,7 +119,7 @@ struct HapticSettingsView: View {
                         .foregroundColor(.secondary)
                 }
             }
-            
+
             Text(description)
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -128,5 +128,3 @@ struct HapticSettingsView: View {
         .padding(.horizontal, 16)
     }
 }
-
-

@@ -271,8 +271,8 @@ private extension KeyboardLayout {
     /// Creates the 3x3 letter grid rows using the language configuration
     private static func createLetterRows(for config: LanguageConfig) -> [[MessagEaseKey]] {
         let centers = config.centerCharacters
-        guard centers.count == 3 else {
-            assertionFailure("LanguageConfig must have exactly 3 rows")
+        guard centers.count == 3, centers.allSatisfy({ $0.count == 3 }) else {
+            assertionFailure("LanguageConfig must be a 3x3 grid")
             return []
         }
 
@@ -745,8 +745,13 @@ private extension KeyboardLayout {
     }
 
     /// Helper to create a new key with swapped center and circular gestures, keeping swipe outputs at physical position
-    private static func swapCenterAndCircular(_ key: MessagEaseKey, newCenter: String, newCircular: [KeyboardCircularDirection: MessagEaseOutput]) -> MessagEaseKey {
+    private static func swapCenterAndCircular(
+        _ key: MessagEaseKey,
+        newCenter: String,
+        newCircular: [KeyboardCircularDirection: MessagEaseOutput]
+    ) -> MessagEaseKey {
         return MessagEaseKey(
+            id: key.id,
             center: newCenter,
             swipeOutputs: key.swipeOutputs,
             swipeReturnOutputs: key.swipeReturnOutputs,
@@ -1021,4 +1026,3 @@ enum KeyboardConstants {
         }
     }
 }
-

@@ -67,11 +67,19 @@ struct SettingsView: View {
             }
 
             Toggle(isOn: $utilityColumnLeading) {
-                SettingsRow(icon: "keyboard.badge.ellipsis", color: .indigo, title: "Utility Keys on Left", subtitle: "Places globe, symbols, delete and return on the left")
+                SettingsRow(
+                    icon: "keyboard.badge.ellipsis", color: .indigo,
+                    title: "Utility Keys on Left",
+                    subtitle: "Places globe, symbols, delete and return on the left"
+                )
             }
 
             Toggle(isOn: $autoCapitalizeEnabled) {
-                SettingsRow(icon: "textformat.size.larger", color: .teal, title: "Auto-Capitalize", subtitle: "Capitalize after sentence-ending punctuation")
+                SettingsRow(
+                    icon: "textformat.size.larger", color: .teal,
+                    title: "Auto-Capitalize",
+                    subtitle: "Capitalize after sentence-ending punctuation"
+                )
             }
         } header: {
             Text("General")
@@ -85,11 +93,20 @@ struct SettingsView: View {
             }
 
             NavigationLink(destination: AspectRatioSettingsView(aspectRatio: $keyAspectRatio)) {
-                SettingsRow(icon: "square.resize", color: .orange, title: "Key Aspect Ratio", subtitle: "Current: \(String(format: "%.2f", keyAspectRatio)):1")
+                SettingsRow(
+                    icon: "square.resize", color: .orange,
+                    title: "Key Aspect Ratio",
+                    subtitle: "Current: \(String(format: "%.2f", keyAspectRatio)):1"
+                )
             }
 
             NavigationLink(destination: KeyboardSizePositionSettingsView(scale: $keyboardScale, position: $keyboardHorizontalPosition)) {
-                SettingsRow(icon: "arrow.up.left.and.arrow.down.right", color: .green, title: "Size & Position", subtitle: "Scale: \(Int(keyboardScale * 100))%, Position: \(positionLabel(for: keyboardHorizontalPosition))")
+                SettingsRow(
+                    icon: "arrow.up.left.and.arrow.down.right",
+                    color: .green,
+                    title: "Size & Position",
+                    subtitle: "Scale: \(Int(keyboardScale * 100))%, Position: \(positionLabel(for: keyboardHorizontalPosition))"
+                )
             }
 
             Picker(selection: $numpadStyleRaw) {
