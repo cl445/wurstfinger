@@ -10,12 +10,11 @@ import Testing
 @testable import WurstfingerApp
 
 struct wurstfingerTests {
-
-    @Test func example() async throws {
+    @Test func example() {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
     }
 
-    @Test func circularGestureInsertsUppercaseForBothDirections() async throws {
+    @Test func circularGestureInsertsUppercaseForBothDirections() throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -33,7 +32,7 @@ struct wurstfingerTests {
         #expect(inserted == ["A", "A"])
     }
 
-    @Test func toggleSymbolsShowsNumericLayout() async throws {
+    @Test func toggleSymbolsShowsNumericLayout() throws {
         let viewModel = KeyboardViewModel()
         viewModel.toggleSymbols()
 
@@ -48,7 +47,7 @@ struct wurstfingerTests {
         #expect(zeroKey.center == "0")
     }
 
-    @Test func symbolsLayerFollowsNumericLayer() async throws {
+    @Test func symbolsLayerFollowsNumericLayer() throws {
         let viewModel = KeyboardViewModel()
 
         // First toggle: lower → numbers
@@ -64,7 +63,7 @@ struct wurstfingerTests {
         #expect(aKey.primaryLabel(for: .downLeft) == "$")
     }
 
-    @Test func circularGestureOnGlobeTogglesUtilityColumn() async throws {
+    @Test func circularGestureOnGlobeTogglesUtilityColumn() {
         let viewModel = KeyboardViewModel()
 
         #expect(!viewModel.utilityColumnLeading)
@@ -76,7 +75,7 @@ struct wurstfingerTests {
         #expect(!viewModel.utilityColumnLeading)
     }
 
-    @Test func numericLayerInsertsDigits() async throws {
+    @Test func numericLayerInsertsDigits() throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -99,7 +98,7 @@ struct wurstfingerTests {
         #expect(inserted == ["1", "0"])
     }
 
-    @Test func letterLayerProvidesAdditionalSymbols() async throws {
+    @Test func letterLayerProvidesAdditionalSymbols() throws {
         let viewModel = KeyboardViewModel()
         let firstRow = try #require(viewModel.rows.first)
         let aKey = try #require(firstRow.first)
@@ -120,7 +119,7 @@ struct wurstfingerTests {
         #expect(sKey.primaryLabel(for: .right) == ">")
     }
 
-    @Test func spaceDragEmitsCursorMovements() async throws {
+    @Test func spaceDragEmitsCursorMovements() {
         let viewModel = KeyboardViewModel()
         var moves: [Int] = []
 
@@ -139,7 +138,7 @@ struct wurstfingerTests {
         #expect(moves == [1, 1, -1, -1])
     }
 
-    @Test func deleteDragEmitsRepeatedDeletes() async throws {
+    @Test func deleteDragEmitsRepeatedDeletes() {
         let viewModel = KeyboardViewModel()
         var deletes = 0
 
@@ -210,7 +209,7 @@ struct wurstfingerTests {
         #expect(abs(storedDrag - 1.0) < 0.0001)
     }
 
-    @Test func composeSwipeEmitsComposeAction() async throws {
+    @Test func composeSwipeEmitsComposeAction() throws {
         let viewModel = KeyboardViewModel()
         var captured: String?
 
@@ -232,13 +231,13 @@ struct wurstfingerTests {
         #expect(captured == "ˋ")
     }
 
-    @Test func composeEngineProducesReplacement() async throws {
+    @Test func composeEngineProducesReplacement() {
         #expect(ComposeEngine.compose(previous: "a", trigger: "¨") == "ä")
         #expect(ComposeEngine.compose(previous: "l", trigger: "!") == "ł")
         #expect(ComposeEngine.compose(previous: "x", trigger: "~") == nil)
     }
 
-    @Test func returnSwipeOnPlusProducesTimes() async throws {
+    @Test func returnSwipeOnPlusProducesTimes() throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -256,7 +255,7 @@ struct wurstfingerTests {
         #expect(inserted.last == "×")
     }
 
-    @Test func returnSwipesProduceTypographicVariants() async throws {
+    @Test func returnSwipesProduceTypographicVariants() throws {
         let viewModel = KeyboardViewModel()
         var inserted: [String] = []
 
@@ -289,16 +288,16 @@ struct wurstfingerTests {
         try trigger(row: 1, column: 0, direction: .upRight, expected: "‰") // % → ‰
     }
 
-    @Test func directPunctuationSwipeDoesNotCompose() async throws {
+    @Test func directPunctuationSwipeDoesNotCompose() throws {
         let viewModel = KeyboardViewModel()
         var inserts: [String] = []
         var composed: [String] = []
 
         viewModel.bindActionHandler { action in
             switch action {
-            case .insert(let value):
+            case let .insert(value):
                 inserts.append(value)
-            case .compose(let trigger):
+            case let .compose(trigger):
                 composed.append(trigger)
             default:
                 break
@@ -388,7 +387,7 @@ struct wurstfingerTests {
 
     // MARK: - Apostrophe compose regression (#89)
 
-    @Test func apostropheIsNeverAComposeTrigger() async throws {
+    @Test func apostropheIsNeverAComposeTrigger() {
         // Verify no key in the layout uses apostrophe (') as a compose trigger.
         // Composition uses ´ (U+00B4 acute accent), not ' (U+0027 apostrophe).
         let viewModel = KeyboardViewModel()
@@ -408,7 +407,7 @@ struct wurstfingerTests {
         }
     }
 
-    @Test func apostropheReturnSwipeInsertsPlainText() async throws {
+    @Test func apostropheReturnSwipeInsertsPlainText() throws {
         // Return swipe on N-key upRight should insert plain apostrophe,
         // not trigger compose mode (returnOverride with .text("'"))
         let viewModel = KeyboardViewModel()
@@ -417,9 +416,9 @@ struct wurstfingerTests {
 
         viewModel.bindActionHandler { action in
             switch action {
-            case .insert(let value):
+            case let .insert(value):
                 inserts.append(value)
-            case .compose(let trigger):
+            case let .compose(trigger):
                 composed.append(trigger)
             default:
                 break
@@ -435,7 +434,7 @@ struct wurstfingerTests {
         #expect(inserts.last == "'", "Return swipe should insert plain apostrophe")
     }
 
-    @Test func acuteComposeKeyProducesAccentedCharacters() async throws {
+    @Test func acuteComposeKeyProducesAccentedCharacters() {
         // The ´ compose key uses ´ (U+00B4) as trigger, not ' (U+0027)
         #expect(ComposeEngine.compose(previous: "a", trigger: "´") == "á")
         #expect(ComposeEngine.compose(previous: "e", trigger: "´") == "é")
@@ -445,7 +444,7 @@ struct wurstfingerTests {
         #expect(ComposeEngine.compose(previous: "n", trigger: "´") == "ń")
     }
 
-    @Test func graveComposeKeyProducesAccentedCharacters() async throws {
+    @Test func graveComposeKeyProducesAccentedCharacters() {
         // The ` compose key uses ˋ (U+02CB) as trigger, not ` (U+0060)
         #expect(ComposeEngine.compose(previous: "a", trigger: "ˋ") == "à")
         #expect(ComposeEngine.compose(previous: "e", trigger: "ˋ") == "è")
@@ -454,21 +453,21 @@ struct wurstfingerTests {
         #expect(ComposeEngine.compose(previous: "u", trigger: "ˋ") == "ù")
     }
 
-    @Test func apostropheDoesNotComposeAccentedCharacters() async throws {
+    @Test func apostropheDoesNotComposeAccentedCharacters() {
         // Apostrophe (') must NOT produce accented characters via ComposeEngine
         #expect(ComposeEngine.compose(previous: "a", trigger: "'") == nil)
         #expect(ComposeEngine.compose(previous: "e", trigger: "'") == nil)
         #expect(ComposeEngine.compose(previous: "o", trigger: "'") == nil)
     }
 
-    @Test func backtickDoesNotComposeAccentedCharacters() async throws {
+    @Test func backtickDoesNotComposeAccentedCharacters() {
         // Backtick (`) must NOT produce accented characters via ComposeEngine
         #expect(ComposeEngine.compose(previous: "a", trigger: "`") == nil)
         #expect(ComposeEngine.compose(previous: "e", trigger: "`") == nil)
         #expect(ComposeEngine.compose(previous: "o", trigger: "`") == nil)
     }
 
-    @Test func backtickIsNeverAComposeTrigger() async throws {
+    @Test func backtickIsNeverAComposeTrigger() {
         // Verify no key in the layout uses backtick (`) as a compose trigger.
         // Composition uses ˋ (U+02CB modifier letter grave accent), not ` (U+0060).
         let viewModel = KeyboardViewModel()
@@ -488,7 +487,7 @@ struct wurstfingerTests {
         }
     }
 
-    @Test func dollarSignRemainsAutoComposeTrigger() async throws {
+    @Test func dollarSignRemainsAutoComposeTrigger() throws {
         // $ is in composeTriggers and appears in textMap for key (0,0) downLeft.
         // Swiping there should emit .compose, confirming auto-detection still works.
         let viewModel = KeyboardViewModel()
@@ -507,5 +506,4 @@ struct wurstfingerTests {
 
         #expect(composed.last == "$", "$ should still be auto-detected as compose trigger")
     }
-
 }
