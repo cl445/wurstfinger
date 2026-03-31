@@ -182,9 +182,11 @@ struct GesturePlaygroundView: View {
                                 passed: features.isTap
                             ) {
                                 criterion(
-                                    "maxDisp", val: features.maxDisplacement, op: "<",
-                                    limit: GestureFeatures.thresholds.minSwipeLength,
-                                    pass: features.maxDisplacement < GestureFeatures.thresholds.minSwipeLength
+                                    "maxDisp",
+                                    val: features.maxDisplacement,
+                                    op: "<",
+                                    limit: features.thresholds.minSwipeLength,
+                                    pass: features.maxDisplacement < features.thresholds.minSwipeLength
                                 )
                             }
 
@@ -194,24 +196,33 @@ struct GesturePlaygroundView: View {
                             ) {
                                 VStack(alignment: .leading) {
                                     criterion(
-                                        "circ", val: features.circularity, op: ">",
-                                        limit: GestureFeatures.thresholds.minCircularity,
-                                        pass: features.circularity > GestureFeatures.thresholds.minCircularity
+                                        "circ",
+                                        val: features.circularity,
+                                        op: ">",
+                                        limit: features.thresholds.minCircularity,
+                                        pass: features.circularity > features.thresholds.minCircularity
                                     )
                                     criterion(
-                                        "angle", val: abs(features.angularSpan) * 180 / .pi, op: ">",
-                                        limit: GestureFeatures.thresholds.minAngularSpan * 180 / .pi, unit: "°",
-                                        pass: abs(features.angularSpan) > GestureFeatures.thresholds.minAngularSpan
+                                        "angle",
+                                        val: abs(features.angularSpan) * 180 / .pi,
+                                        op: ">",
+                                        limit: features.thresholds.minAngularSpan * 180 / .pi,
+                                        unit: "°",
+                                        pass: abs(features.angularSpan) > features.thresholds.minAngularSpan
                                     )
                                     criterion(
-                                        "turn", val: features.turnConsistency, op: ">",
-                                        limit: GestureFeatures.thresholds.minTurnConsistency,
-                                        pass: features.turnConsistency > GestureFeatures.thresholds.minTurnConsistency
+                                        "turn",
+                                        val: features.turnConsistency,
+                                        op: ">",
+                                        limit: features.thresholds.minTurnConsistency,
+                                        pass: features.turnConsistency > features.thresholds.minTurnConsistency
                                     )
                                     criterion(
-                                        "compact", val: features.orientedCompactness, op: ">",
-                                        limit: GestureFeatures.thresholds.minOrientedCompactness,
-                                        pass: features.orientedCompactness > GestureFeatures.thresholds.minOrientedCompactness
+                                        "compact",
+                                        val: features.orientedCompactness,
+                                        op: ">",
+                                        limit: features.thresholds.minOrientedCompactness,
+                                        pass: features.orientedCompactness > features.thresholds.minOrientedCompactness
                                     )
                                 }
                             }
@@ -222,15 +233,16 @@ struct GesturePlaygroundView: View {
                             ) {
                                 VStack(alignment: .leading) {
                                     criterion(
-                                        "ratio", val: features.returnRatio, op: "<",
-                                        limit: GestureFeatures.thresholds.maxReturnRatio,
-                                        pass: features.returnRatio < GestureFeatures.thresholds.maxReturnRatio
+                                        "ratio",
+                                        val: features.returnRatio,
+                                        op: "<",
+                                        limit: features.thresholds.maxReturnRatio,
+                                        pass: features.returnRatio < features.thresholds.maxReturnRatio
                                     )
-                                    // Simplified range display
-                                    criterion(
-                                        "progress", val: features.maxDisplacementProgress, op: "in",
-                                        limit: 0,
-                                        pass: features.maxDisplacementProgress > 0.2 && features.maxDisplacementProgress < 0.8
+                                    rangeCriterion(
+                                        "progress",
+                                        val: features.maxDisplacementProgress,
+                                        range: features.thresholds.returnDisplacementRange
                                     )
                                 }
                             }
@@ -314,6 +326,20 @@ struct GesturePlaygroundView: View {
         .foregroundColor(.secondary)
     }
 
+    private func rangeCriterion(_ name: String, val: CGFloat, range: ClosedRange<CGFloat>) -> some View {
+        let pass = range.contains(val)
+        return HStack(spacing: 4) {
+            Text(name)
+            Text(f(val))
+                .bold()
+                .foregroundColor(pass ? .green : .red)
+            Text("in")
+            Text("\(f(range.lowerBound))...\(f(range.upperBound))")
+        }
+        .font(.caption)
+        .foregroundColor(.secondary)
+    }
+
     private func angleToSector(_ angle: CGFloat) -> String {
         let dir = KeyboardDirection.direction(for: CGSize(width: cos(angle), height: sin(angle)), tolerance: 0)
         return String(describing: dir).capitalized
@@ -339,8 +365,8 @@ struct GesturePlaygroundView: View {
         processedPoints = preprocessor.preprocess(rawPoints)
 
         // 3. Extract Features
-        GestureFeatures.thresholds = GestureClassificationThresholds.fromUserDefaults()
-        let feats = GestureFeatures.extract(from: processedPoints)
+        let thresholds = GestureClassificationThresholds.fromUserDefaults()
+        let feats = GestureFeatures.extract(from: processedPoints, thresholds: thresholds)
         features = feats
 
         // 4. Classify

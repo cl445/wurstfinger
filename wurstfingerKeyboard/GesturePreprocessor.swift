@@ -116,16 +116,32 @@ struct GesturePreprocessorConfig {
         aspectRatio: 1.0
     )
 
-    /// Loads config from SharedDefaults with fallback to defaults
+    /// Loads config from SharedDefaults with fallback to defaults.
+    /// Non-finite values (NaN, Inf) are replaced with defaults.
     static func fromUserDefaults() -> GesturePreprocessorConfig {
         let store = SharedDefaults.store
+        let jitter = finiteCGFloat(from: store, key: jitterThresholdKey, default: defaultJitterThreshold)
+        let maxJump = finiteCGFloat(from: store, key: maxJumpDistanceKey, default: defaultMaxJumpDistance)
         return GesturePreprocessorConfig(
-            jitterThreshold: store.object(forKey: jitterThresholdKey) as? CGFloat ?? defaultJitterThreshold,
-            maxJumpDistance: store.object(forKey: maxJumpDistanceKey) as? CGFloat ?? defaultMaxJumpDistance,
-            smoothingWindow: store.object(forKey: smoothingWindowKey) as? Int ?? defaultSmoothingWindow,
+            jitterThreshold: jitter,
+            maxJumpDistance: maxJump,
+            smoothingWindow: validSmoothingWindow(from: store),
             smoothingOrder: 2,
             aspectRatio: 1.0
         )
+    }
+
+    /// Reads smoothingWindow from defaults, ensuring it's a positive odd integer.
+    private static func validSmoothingWindow(from store: UserDefaults) -> Int {
+        let raw = store.object(forKey: smoothingWindowKey) as? Int ?? defaultSmoothingWindow
+        let clamped = max(3, raw)
+        return clamped.isMultiple(of: 2) ? clamped + 1 : clamped
+    }
+
+    private static func finiteCGFloat(from store: UserDefaults, key: String, default defaultValue: CGFloat) -> CGFloat {
+        guard store.object(forKey: key) != nil else { return defaultValue }
+        let value = CGFloat(store.double(forKey: key))
+        return value.isFinite ? value : defaultValue
     }
 
     /// Creates a config with custom aspect ratio
@@ -336,20 +352,28 @@ struct GestureClassificationThresholds {
         minOrientedCompactness: defaultMinOrientedCompactness
     )
 
+    /// Loads a finite CGFloat from UserDefaults, falling back to the default
+    /// if the key is missing or the stored value is NaN/Inf.
+    private static func loadCGFloat(from store: UserDefaults, key: String, default defaultValue: CGFloat) -> CGFloat {
+        guard store.object(forKey: key) != nil else { return defaultValue }
+        let value = CGFloat(store.double(forKey: key))
+        return value.isFinite ? value : defaultValue
+    }
+
     /// Loads thresholds from SharedDefaults with fallback to defaults
     static func fromUserDefaults() -> GestureClassificationThresholds {
         let store = SharedDefaults.store
-        let start = store.object(forKey: returnDisplacementStartKey) as? CGFloat ?? defaultReturnDisplacementStart
-        let end = store.object(forKey: returnDisplacementEndKey) as? CGFloat ?? defaultReturnDisplacementEnd
+        let start = loadCGFloat(from: store, key: returnDisplacementStartKey, default: defaultReturnDisplacementStart)
+        let end = loadCGFloat(from: store, key: returnDisplacementEndKey, default: defaultReturnDisplacementEnd)
         return GestureClassificationThresholds(
-            minSwipeLength: store.object(forKey: minSwipeLengthKey) as? CGFloat ?? defaultMinSwipeLength,
-            maxReturnRatio: store.object(forKey: maxReturnRatioKey) as? CGFloat ?? defaultMaxReturnRatio,
-            returnDisplacementRange: start ... end,
-            minCircularity: store.object(forKey: minCircularityKey) as? CGFloat ?? defaultMinCircularity,
-            minAngularSpan: store.object(forKey: minAngularSpanKey) as? CGFloat ?? defaultMinAngularSpan,
-            minPathSeparation: store.object(forKey: minPathSeparationKey) as? CGFloat ?? defaultMinPathSeparation,
-            minTurnConsistency: store.object(forKey: minTurnConsistencyKey) as? CGFloat ?? defaultMinTurnConsistency,
-            minOrientedCompactness: store.object(forKey: minOrientedCompactnessKey) as? CGFloat ?? defaultMinOrientedCompactness
+            minSwipeLength: loadCGFloat(from: store, key: minSwipeLengthKey, default: defaultMinSwipeLength),
+            maxReturnRatio: loadCGFloat(from: store, key: maxReturnRatioKey, default: defaultMaxReturnRatio),
+            returnDisplacementRange: min(start, end) ... max(start, end),
+            minCircularity: loadCGFloat(from: store, key: minCircularityKey, default: defaultMinCircularity),
+            minAngularSpan: loadCGFloat(from: store, key: minAngularSpanKey, default: defaultMinAngularSpan),
+            minPathSeparation: loadCGFloat(from: store, key: minPathSeparationKey, default: defaultMinPathSeparation),
+            minTurnConsistency: loadCGFloat(from: store, key: minTurnConsistencyKey, default: defaultMinTurnConsistency),
+            minOrientedCompactness: loadCGFloat(from: store, key: minOrientedCompactnessKey, default: defaultMinOrientedCompactness)
         )
     }
 }
@@ -358,7 +382,7 @@ struct GestureClassificationThresholds {
 
 struct GestureFeatures {
     /// Thresholds used for classification
-    static var thresholds = GestureClassificationThresholds.default
+    let thresholds: GestureClassificationThresholds
 
     // Geometric features
     let pathLength: CGFloat
@@ -386,12 +410,12 @@ struct GestureFeatures {
 
     // Derived classifications (using configurable thresholds)
     var isTap: Bool {
-        maxDisplacement < Self.thresholds.minSwipeLength
+        maxDisplacement < thresholds.minSwipeLength
     }
 
     /// Return-swipe: maxDisplacement in the middle of the path (not at the end) AND finger returned to start
     var isReturn: Bool {
-        let t = Self.thresholds
+        let t = thresholds
         // Must have significant movement
         guard maxDisplacement > t.minSwipeLength else { return false }
         // Must have returned close to start (low chord/path ratio)
@@ -401,7 +425,7 @@ struct GestureFeatures {
     }
 
     var isCircular: Bool {
-        let t = Self.thresholds
+        let t = thresholds
         // Require minimum size (2x swipe length) to avoid small wiggles being detected as circles
         // Also require high turn consistency and compactness to distinguish from return swipes
         // (circle: turns consistently one direction AND is not a narrow arc)
@@ -418,9 +442,9 @@ struct GestureFeatures {
 
     /// Extracts features from preprocessed points.
     /// Uses GestureCalculations helper functions for cleaner, testable code.
-    static func extract(from points: [CGPoint]) -> GestureFeatures {
+    static func extract(from points: [CGPoint], thresholds: GestureClassificationThresholds = .default) -> GestureFeatures {
         guard points.count >= 2 else {
-            return GestureFeatures.empty
+            return GestureFeatures.empty(thresholds: thresholds)
         }
 
         let start = points[0]
@@ -454,6 +478,7 @@ struct GestureFeatures {
         let bboxAspect = bbox.height > 0 ? bbox.width / bbox.height : 1
 
         return GestureFeatures(
+            thresholds: thresholds,
             pathLength: pathLen,
             chordLength: chordLen,
             boundingBox: bbox,
@@ -473,24 +498,27 @@ struct GestureFeatures {
         )
     }
 
-    static let empty = GestureFeatures(
-        pathLength: 0,
-        chordLength: 0,
-        boundingBox: .zero,
-        maxDisplacement: 0,
-        maxDisplacementPoint: .zero,
-        maxDisplacementProgress: 0,
-        centroid: .zero,
-        returnRatio: 1,
-        aspectRatio: 1,
-        dominantAngle: 0,
-        maxDisplacementAngle: 0,
-        angularSpan: 0,
-        circularity: 0,
-        pathSeparation: 0,
-        turnConsistency: 1,
-        orientedCompactness: 0
-    )
+    static func empty(thresholds: GestureClassificationThresholds = .default) -> GestureFeatures {
+        GestureFeatures(
+            thresholds: thresholds,
+            pathLength: 0,
+            chordLength: 0,
+            boundingBox: .zero,
+            maxDisplacement: 0,
+            maxDisplacementPoint: .zero,
+            maxDisplacementProgress: 0,
+            centroid: .zero,
+            returnRatio: 1,
+            aspectRatio: 1,
+            dominantAngle: 0,
+            maxDisplacementAngle: 0,
+            angularSpan: 0,
+            circularity: 0,
+            pathSeparation: 0,
+            turnConsistency: 1,
+            orientedCompactness: 0
+        )
+    }
 }
 
 // MARK: - Debug Logging
