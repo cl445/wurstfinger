@@ -21,6 +21,19 @@ jobs:
       - name: Run SwiftLint
         run: swiftlint lint --strict --reporter github-actions-logging
 
+  dead-code:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Periphery
+        run: brew install peripheryapp/periphery/periphery
+
+      - name: Scan for Dead Code
+        run: periphery scan --disable-update-check
+
   test:
     runs-on: macos-latest
 
