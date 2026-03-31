@@ -316,7 +316,8 @@ struct ExpertSettingsView: View {
                     Text("End")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                } Text(
+                }
+                Text(
                     // swiftlint:disable:next line_length
                     "Max displacement must occur between \(Int(returnDisplacementStart * 100))% and \(Int(returnDisplacementEnd * 100))% of the path (not at the very end)."
                 )
