@@ -14,7 +14,6 @@ import CoreGraphics
 /// These are pure functions that take input and return a result,
 /// making them easy to test in isolation.
 enum GestureCalculations {
-
     // MARK: - Path Metrics
 
     /// Calculates the total path length (sum of distances between consecutive points)
@@ -22,7 +21,7 @@ enum GestureCalculations {
         guard points.count >= 2 else { return 0 }
 
         var length: CGFloat = 0
-        for i in 1..<points.count {
+        for i in 1 ..< points.count {
             length += points[i - 1].distance(to: points[i])
         }
         return length
@@ -113,7 +112,7 @@ enum GestureCalculations {
 
         var totalAngle: CGFloat = 0
 
-        for i in 1..<points.count {
+        for i in 1 ..< points.count {
             let prev = Vector2D(point: points[i - 1], relativeTo: centroid)
             let curr = Vector2D(point: points[i], relativeTo: centroid)
             totalAngle += prev.angle(to: curr)
@@ -156,7 +155,7 @@ enum GestureCalculations {
         guard comparisons > 0 else { return 0 }
 
         var mirrorDistanceSum: CGFloat = 0
-        for i in 0..<comparisons {
+        for i in 0 ..< comparisons {
             let earlyPoint = points[i]
             let latePoint = points[points.count - 1 - i]
             mirrorDistanceSum += earlyPoint.distance(to: latePoint)
@@ -174,7 +173,7 @@ enum GestureCalculations {
         var cwCount = 0
         var ccwCount = 0
 
-        for i in 1..<(points.count - 1) {
+        for i in 1 ..< (points.count - 1) {
             let v1 = Vector2D(from: points[i - 1], to: points[i])
             let v2 = Vector2D(from: points[i], to: points[i + 1])
             let cross = v1.cross(v2)

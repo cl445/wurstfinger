@@ -153,7 +153,13 @@ struct KeyboardRootView: View {
                     height: keyHeight,
                     aspectRatio: viewModel.keyAspectRatio,
                     label: Text(viewModel.displayText(for: key)),
-                    overlay: KeyHintOverlay(key: key, activeLayer: viewModel.activeLayer, isCapsLockActive: viewModel.isCapsLockActive, locale: viewModel.currentLocale(), keyHeight: keyHeight),
+                    overlay: KeyHintOverlay(
+                        key: key,
+                        activeLayer: viewModel.activeLayer,
+                        isCapsLockActive: viewModel.isCapsLockActive,
+                        locale: viewModel.currentLocale(),
+                        keyHeight: keyHeight
+                    ),
                     config: KeyboardButtonConfig(fontSize: scaledMainLabelSize(for: keyHeight)),
                     callbacks: KeyboardButtonCallbacks(
                         onSwipe: { viewModel.handleKeySwipe(key, direction: $0) },

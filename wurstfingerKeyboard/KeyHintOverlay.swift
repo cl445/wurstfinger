@@ -13,37 +13,37 @@ extension KeyboardDirection {
     func edgePadding(horizontal: CGFloat, vertical: CGFloat) -> EdgeInsets {
         switch self {
         case .up:
-            return EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
         case .down:
-            return EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
         case .left:
-            return EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
+            EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
         case .right:
-            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
         case .upLeft:
-            return EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
+            EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
         case .upRight:
-            return EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
         case .downLeft:
-            return EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
+            EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
         case .downRight:
-            return EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
         case .center:
-            return EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         }
     }
 
     var alignment: Alignment {
         switch self {
-        case .up: return .top
-        case .down: return .bottom
-        case .left: return .leading
-        case .right: return .trailing
-        case .upLeft: return .topLeading
-        case .upRight: return .topTrailing
-        case .downLeft: return .bottomLeading
-        case .downRight: return .bottomTrailing
-        case .center: return .center
+        case .up: .top
+        case .down: .bottom
+        case .left: .leading
+        case .right: .trailing
+        case .upLeft: .topLeading
+        case .upRight: .topTrailing
+        case .downLeft: .bottomLeading
+        case .downRight: .bottomTrailing
+        case .center: .center
         }
     }
 }
@@ -66,7 +66,7 @@ struct KeyHintOverlay: View {
     }
 
     private var hintEmphasisSize: CGFloat {
-        return hintFontSize * KeyboardConstants.FontSizes.hintEmphasisMultiplier
+        hintFontSize * KeyboardConstants.FontSizes.hintEmphasisMultiplier
     }
 
     var body: some View {
@@ -86,7 +86,8 @@ struct KeyHintOverlay: View {
                             .fixedSize()
                             .padding(direction.edgePadding(
                                 horizontal: scaledHorizontalPadding,
-                                vertical: scaledVerticalPadding))
+                                vertical: scaledVerticalPadding
+                            ))
                             .frame(width: size.width, height: size.height, alignment: direction.alignment)
                     }
                 }
@@ -162,7 +163,7 @@ struct GlobeKeyHintOverlay: View {
     private var symbolFontSize: CGFloat {
         let scaledSize = KeyboardConstants.FontSizes.hintBaseSize * (keyHeight / KeyboardConstants.FontSizes.hintReferenceHeight)
         let baseSize = min(max(scaledSize, KeyboardConstants.FontSizes.hintMinSize), KeyboardConstants.FontSizes.hintMaxSize)
-        return baseSize * 0.75  // SF Symbols are visually larger than text
+        return baseSize * 0.75 // SF Symbols are visually larger than text
     }
 
     var body: some View {
@@ -207,9 +208,9 @@ struct SymbolsKeyHintOverlay: View {
     }
 
     private let hints: [HintConfig] = [
-        HintConfig(direction: .up, iconName: "doc.on.doc"),           // Copy
-        HintConfig(direction: .upRight, iconName: "scissors"),        // Cut
-        HintConfig(direction: .down, iconName: "doc.on.clipboard"),   // Paste
+        HintConfig(direction: .up, iconName: "doc.on.doc"), // Copy
+        HintConfig(direction: .upRight, iconName: "scissors"), // Cut
+        HintConfig(direction: .down, iconName: "doc.on.clipboard"), // Paste
     ]
 
     var body: some View {
@@ -225,7 +226,8 @@ struct SymbolsKeyHintOverlay: View {
                     .foregroundStyle(Color.secondary.opacity(0.45))
                     .padding(hint.direction.edgePadding(
                         horizontal: scaledHorizontalPadding,
-                        vertical: scaledVerticalPadding))
+                        vertical: scaledVerticalPadding
+                    ))
                     .frame(width: size.width, height: size.height, alignment: hint.direction.alignment)
             }
         }
