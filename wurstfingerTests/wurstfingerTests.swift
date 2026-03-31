@@ -152,7 +152,7 @@ struct wurstfingerTests {
         #expect(deletes == 2)
     }
 
-    @Test func hapticIntensitiesPersistToDefaults() throws {
+    @Test @MainActor func hapticIntensitiesPersistToDefaults() throws {
         let suite = "group.de.akator.wurstfinger.tests.hapticsPersist"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defaults.removePersistentDomain(forName: suite)
@@ -172,7 +172,7 @@ struct wurstfingerTests {
         #expect(abs(dragDefault - 1.0) < 0.0001)
     }
 
-    @Test func previewViewModelDoesNotPersist() throws {
+    @Test @MainActor func previewViewModelDoesNotPersist() throws {
         let suite = "group.de.akator.wurstfinger.tests.preview"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defaults.removePersistentDomain(forName: suite)
@@ -188,7 +188,7 @@ struct wurstfingerTests {
         #expect(abs(persistedTap - 0.3) < 0.0001)
     }
 
-    @Test func hapticIntensityClampsWithinBounds() throws {
+    @Test @MainActor func hapticIntensityClampsWithinBounds() throws {
         let suite = "group.de.akator.wurstfinger.tests.clamp"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defaults.removePersistentDomain(forName: suite)
@@ -305,5 +305,75 @@ struct wurstfingerTests {
 
         #expect(composed.isEmpty)
         #expect(inserts.suffix(2) == ["!", "?"])
+    }
+
+    // MARK: - ComposeEngine Determinism Tests
+
+    @Test func accentCycleOrderIsDeterministic() {
+        // Running cycleAccent multiple times should always produce the same sequence
+        let runs = (0 ..< 5).map { _ in
+            ComposeEngine.cycleAccent(for: "a")
+        }
+        // All runs should return the same result
+        for run in runs {
+            #expect(run == runs[0], "Accent cycle should be deterministic across calls")
+        }
+    }
+
+    @Test func numberCycleOrderIsDeterministic() {
+        // Number cycles should always return the same next character
+        let runs = (0 ..< 5).map { _ in
+            ComposeEngine.cycleAccent(for: "1")
+        }
+        #expect(runs[0] != nil, "cycleAccent should return a value for '1'")
+        for run in runs {
+            #expect(run == runs[0], "Number cycle should be deterministic across calls")
+        }
+    }
+
+    @Test func accentCycleRoundTripsBackToBase() {
+        // Starting from "a", cycling through all variants should return to "a"
+        var current = "a"
+        var visited: [String] = [current]
+
+        for _ in 0 ..< 50 { // Safety limit (generous for large compose tables)
+            guard let next = ComposeEngine.cycleAccent(for: current) else { break }
+            if next == "a" {
+                // Successfully round-tripped
+                break
+            }
+            #expect(!visited.contains(next), "Cycle should not revisit '\(next)' — would loop forever. Visited: \(visited)")
+            current = next
+            visited.append(current)
+        }
+
+        #expect(visited.count > 1, "Should have at least one accent variant for 'a'")
+        // Verify the cycle actually returns to the base character
+        let lastStep = ComposeEngine.cycleAccent(for: current)
+        #expect(lastStep == "a", "Last variant '\(current)' should cycle back to 'a', got '\(lastStep ?? "nil")'. Full cycle: \(visited)")
+    }
+
+    // MARK: - GestureFeatures.empty Tests
+
+    @Test func gestureFeatureEmptyHasSensibleDefaults() {
+        let empty = GestureFeatures.empty
+
+        #expect(empty.pathLength == 0)
+        #expect(empty.chordLength == 0)
+        #expect(empty.maxDisplacement == 0)
+        #expect(empty.returnRatio == 1) // No movement = "returned"
+        #expect(empty.isTap == true) // Zero displacement = tap
+        #expect(empty.isReturn == false)
+        #expect(empty.isCircular == false)
+    }
+
+    @Test func gestureFeatureExtractHandlesEmptyPoints() {
+        let empty = GestureFeatures.extract(from: [])
+        #expect(empty.pathLength == 0)
+        #expect(empty.isTap == true)
+
+        let single = GestureFeatures.extract(from: [.zero])
+        #expect(single.pathLength == 0)
+        #expect(single.isTap == true)
     }
 }

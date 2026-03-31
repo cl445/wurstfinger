@@ -100,16 +100,14 @@ final class KeyboardViewController: UIInputViewController {
     private func perform(action: KeyboardAction) {
         switch action {
         case let .insert(text):
-            textDocumentProxy.insertText(text)
-            // Spanish sentence-opening punctuation triggers immediate capitalization
-            if AutoCapitalization.shouldCapitalizeImmediately(after: text) &&
-                SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) {
-                viewModel.setLayer(.upper)
-            }
+            insertText(text)
         case .deleteBackward:
             textDocumentProxy.deleteBackward()
+            updateAutoCapitalization()
         case .deleteForward:
-            deleteForward()
+            if deleteForward() {
+                updateAutoCapitalization()
+            }
         case .advanceToNextInputMode:
             advanceToNextInputMode()
         case .space:
@@ -137,14 +135,24 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
-    /// Delete one character after cursor
-    private func deleteForward() {
-        // Only delete if there's text after the cursor
+    private func insertText(_ text: String) {
+        textDocumentProxy.insertText(text)
+        // Spanish sentence-opening punctuation triggers immediate capitalization
+        if AutoCapitalization.shouldCapitalizeImmediately(after: text),
+           SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) {
+            viewModel.setLayer(.upper)
+        }
+    }
+
+    /// Delete one character after cursor. Returns `true` if a character was deleted.
+    @discardableResult
+    private func deleteForward() -> Bool {
         guard let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty else {
-            return
+            return false
         }
         textDocumentProxy.adjustTextPosition(byCharacterOffset: 1)
         textDocumentProxy.deleteBackward()
+        return true
     }
 
     /// Copy selected text to clipboard
@@ -177,6 +185,19 @@ final class KeyboardViewController: UIInputViewController {
 
         if AutoCapitalization.shouldCapitalize(context: textDocumentProxy.documentContextBeforeInput) {
             viewModel.setLayer(.upper)
+        }
+    }
+
+    /// Re-evaluates auto-capitalization after text changes (e.g. delete).
+    /// Enables uppercase if at sentence start, disables it if no longer at sentence start.
+    private func updateAutoCapitalization() {
+        guard SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) else { return }
+
+        let shouldCapitalize = AutoCapitalization.shouldCapitalize(context: textDocumentProxy.documentContextBeforeInput)
+        if shouldCapitalize {
+            viewModel.setLayer(.upper)
+        } else if viewModel.activeLayer == .upper && !viewModel.isCapsLockActive {
+            viewModel.setLayer(.lower)
         }
     }
 

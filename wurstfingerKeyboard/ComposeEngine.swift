@@ -156,13 +156,18 @@ struct ComposeEngine {
         }
 
         // Build complete cycles: base → [base, variant1, variant2, ...]
+        // Characters like "â" can be both a variant of "a" and a base for
+        // Vietnamese sub-variants. The first assignment wins so that cycling
+        // from "a" through its variants always round-trips back to "a".
         var completeCycles: [String: [String]] = [:]
-        for (base, variants) in cycles where variants.count > 0 {
-            var cycle = [base] + variants
-            completeCycles[base] = cycle
+        for (base, variants) in cycles.sorted(by: { $0.key < $1.key }) where !variants.isEmpty {
+            let cycle = [base] + variants
+            if completeCycles[base] == nil {
+                completeCycles[base] = cycle
+            }
 
-            // Each variant also maps to the same cycle
-            for variant in variants {
+            // Each variant also maps to the same cycle (first assignment wins)
+            for variant in variants where completeCycles[variant] == nil {
                 completeCycles[variant] = cycle
             }
         }
@@ -181,11 +186,14 @@ struct ComposeEngine {
             "9": ["9", "⁹"]
         ]
 
-        for (base, cycle) in numberCycles {
-            completeCycles[base] = cycle
-            // Each variant also maps to the same cycle
+        for (base, cycle) in numberCycles.sorted(by: { $0.key < $1.key }) {
+            if completeCycles[base] == nil {
+                completeCycles[base] = cycle
+            }
             for variant in cycle where variant != base {
-                completeCycles[variant] = cycle
+                if completeCycles[variant] == nil {
+                    completeCycles[variant] = cycle
+                }
             }
         }
 
