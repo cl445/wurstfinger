@@ -132,7 +132,7 @@ struct ComposeEngineTests {
         var seen = Set<String>()
         seen.insert(current)
 
-        for _ in 0..<100 { // Safety limit
+        for _ in 0 ..< 100 { // Safety limit
             guard let next = ComposeEngine.cycleAccent(for: current) else { break }
             if seen.contains(next) {
                 // We've completed the cycle — should return to "h"

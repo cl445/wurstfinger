@@ -27,10 +27,12 @@ struct CircularGestureTests {
         pointCount: Int = 40
     ) -> [CGPoint] {
         guard pointCount > 1 else {
-            return pointCount == 1 ? [CGPoint(x: center.x + radius * cos(startAngle),
-                                               y: center.y + radius * sin(startAngle))] : []
+            return pointCount == 1 ? [CGPoint(
+                x: center.x + radius * cos(startAngle),
+                y: center.y + radius * sin(startAngle)
+            )] : []
         }
-        return (0..<pointCount).map { i in
+        return (0 ..< pointCount).map { i in
             let t = CGFloat(i) / CGFloat(pointCount - 1)
             let angle = startAngle + span * t
             return CGPoint(
@@ -79,8 +81,10 @@ struct CircularGestureTests {
         let features = GestureFeatures.extract(from: points)
 
         let threshold = GestureClassificationThresholds.default.minAngularSpan
-        #expect(abs(features.angularSpan) < threshold,
-                "A 200° arc angular span (\(abs(features.angularSpan))) should be below the \(threshold) threshold")
+        #expect(
+            abs(features.angularSpan) < threshold,
+            "A 200° arc angular span (\(abs(features.angularSpan))) should be below the \(threshold) threshold"
+        )
     }
 
     @Test func arcAboveAngularSpanThreshold() {
@@ -90,8 +94,10 @@ struct CircularGestureTests {
         let features = GestureFeatures.extract(from: points)
 
         let threshold = GestureClassificationThresholds.default.minAngularSpan
-        #expect(abs(features.angularSpan) > threshold,
-                "A 330° arc angular span (\(abs(features.angularSpan))) should exceed the \(threshold) threshold")
+        #expect(
+            abs(features.angularSpan) > threshold,
+            "A 330° arc angular span (\(abs(features.angularSpan))) should exceed the \(threshold) threshold"
+        )
     }
 
     // MARK: - Too Few Points
@@ -125,7 +131,7 @@ struct CircularGestureTests {
     // MARK: - Straight Line is Not Circular
 
     @Test func straightLineIsNotCircular() {
-        let points = (0..<20).map { i in
+        let points = (0 ..< 20).map { i in
             CGPoint(x: CGFloat(i) * 3, y: 0)
         }
         let features = GestureFeatures.extract(from: points)

@@ -46,7 +46,7 @@ struct RingBufferTests {
 
     @Test func appendWellOverCapacity() {
         var buffer = RingBuffer<Int>(capacity: 3)
-        for i in 1...10 {
+        for i in 1 ... 10 {
             buffer.append(i)
         }
         // Should contain the last 3 elements: 8, 9, 10
