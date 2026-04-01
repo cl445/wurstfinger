@@ -199,7 +199,7 @@ final class KeyboardViewController: UIInputViewController {
         let shouldCapitalize = AutoCapitalization.shouldCapitalize(context: textDocumentProxy.documentContextBeforeInput)
         if shouldCapitalize {
             viewModel.setLayer(.upper)
-        } else if viewModel.activeLayer == .upper && !viewModel.isCapsLockActive {
+        } else if viewModel.activeLayer == .upper && !viewModel.isCapsLockActive && !viewModel.isManualShift {
             viewModel.setLayer(.lower)
         }
     }
