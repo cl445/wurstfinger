@@ -245,7 +245,7 @@ struct wurstfingerTests {
         viewModel.handleKeySwipe(nKey, direction: .upRight)
 
         // Compose triggers should work regardless of layer
-        #expect(captured == "'")
+        #expect(captured == "´")
     }
 
     @Test func composeEngineProducesReplacement() {

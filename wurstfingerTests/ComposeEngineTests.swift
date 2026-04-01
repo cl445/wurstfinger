@@ -20,15 +20,15 @@ struct ComposeEngineTests {
     }
 
     @Test func acuteCompose() {
-        #expect(ComposeEngine.compose(previous: "a", trigger: "'") == "á")
-        #expect(ComposeEngine.compose(previous: "e", trigger: "'") == "é")
-        #expect(ComposeEngine.compose(previous: "n", trigger: "'") == "ń")
+        #expect(ComposeEngine.compose(previous: "a", trigger: "´") == "á")
+        #expect(ComposeEngine.compose(previous: "e", trigger: "´") == "é")
+        #expect(ComposeEngine.compose(previous: "n", trigger: "´") == "ń")
     }
 
     @Test func graveCompose() {
-        #expect(ComposeEngine.compose(previous: "a", trigger: "`") == "à")
-        #expect(ComposeEngine.compose(previous: "e", trigger: "`") == "è")
-        #expect(ComposeEngine.compose(previous: "u", trigger: "`") == "ù")
+        #expect(ComposeEngine.compose(previous: "a", trigger: "ˋ") == "à")
+        #expect(ComposeEngine.compose(previous: "e", trigger: "ˋ") == "è")
+        #expect(ComposeEngine.compose(previous: "u", trigger: "ˋ") == "ù")
     }
 
     @Test func circumflexCompose() {
@@ -91,8 +91,8 @@ struct ComposeEngineTests {
 
     @Test func spaceComposeReturnsTriggerCharacter() {
         #expect(ComposeEngine.compose(previous: " ", trigger: "¨") == "¨")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "'") == "'")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "`") == "`")
+        #expect(ComposeEngine.compose(previous: " ", trigger: "´") == "'")
+        #expect(ComposeEngine.compose(previous: " ", trigger: "ˋ") == "`")
         #expect(ComposeEngine.compose(previous: " ", trigger: "^") == "^")
         #expect(ComposeEngine.compose(previous: " ", trigger: "~") == "~")
         #expect(ComposeEngine.compose(previous: " ", trigger: "°") == "°")
