@@ -176,9 +176,7 @@ final class KeyboardViewController: UIInputViewController {
         guard hasFullAccess else { return }
         if let selectedText = textDocumentProxy.selectedText, !selectedText.isEmpty {
             UIPasteboard.general.string = selectedText
-            for _ in selectedText {
-                textDocumentProxy.deleteBackward()
-            }
+            textDocumentProxy.deleteBackward()
         }
     }
 

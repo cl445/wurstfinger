@@ -84,11 +84,7 @@ struct DeleteKeyButton: View {
                     gesture.isActive = true
                 }
                 .onEnded { _ in
-                    stopRepeat()
-
-                    if gesture.isSliding {
-                        viewModel.endDeleteDrag()
-                    } else if !gesture.repeatTriggered && !gesture.hasDragged {
+                    if !gesture.isSliding && !gesture.repeatTriggered && !gesture.hasDragged {
                         viewModel.handleDelete()
                     }
 
@@ -104,7 +100,7 @@ struct DeleteKeyButton: View {
                 }
         )
         .onDisappear {
-            stopRepeat()
+            resetGestureState()
         }
     }
 
@@ -136,6 +132,9 @@ struct DeleteKeyButton: View {
 
     private func resetGestureState() {
         stopRepeat()
+        if gesture.isSliding {
+            viewModel.endDeleteDrag()
+        }
         gesture.reset()
     }
 }
