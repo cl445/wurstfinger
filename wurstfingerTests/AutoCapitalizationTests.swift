@@ -220,6 +220,32 @@ struct AutoCapitalizationTests {
         #expect(viewModel.isManualShift == false, "isManualShift should clear when shift is toggled off")
     }
 
+    @Test func testReloadLanguageResetsShiftState() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        viewModel.bindActionHandler { _ in }
+
+        // Activate manual shift
+        viewModel.toggleShift()
+        #expect(viewModel.isManualShift == true)
+        #expect(viewModel.activeLayer == .upper)
+
+        // Change language ID in shared defaults so reloadLanguage detects a change
+        let store = SharedDefaults.store
+        let currentId = viewModel.currentLocale().identifier
+        let newId = (currentId == "en_US") ? "de_DE" : "en_US"
+        store.set(newId, forKey: SettingsKey.selectedLanguageId.rawValue)
+
+        // Call reloadSettings directly (in production, triggered by notification)
+        viewModel.reloadSettings()
+
+        #expect(viewModel.activeLayer == .lower, "reloadLanguage should reset to lower")
+        #expect(viewModel.isCapsLockActive == false, "reloadLanguage should clear caps-lock")
+        #expect(viewModel.isManualShift == false, "reloadLanguage should clear isManualShift")
+
+        // Restore original language
+        store.set(currentId, forKey: SettingsKey.selectedLanguageId.rawValue)
+    }
+
     @Test func testCapsLockDoesNotSetManualShift() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         viewModel.bindActionHandler { _ in }
