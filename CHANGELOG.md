@@ -18,6 +18,7 @@
 
 - Accessibility labels for globe and return keys
 - 50+ new tests for settings, haptics, Vector2D, and gesture calculations (#90)
+- Tests for KeyboardDirection, RingBuffer, circular gestures, layout validation, and ComposeEngine (723 lines)
 - CodeRabbit configuration for automated PR reviews
 
 ### Changed

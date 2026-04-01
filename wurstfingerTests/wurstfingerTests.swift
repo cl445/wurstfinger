@@ -227,6 +227,27 @@ struct wurstfingerTests {
         #expect(captured == "ˋ")
     }
 
+    @Test func composeSwipeWorksInUpperLayer() throws {
+        let viewModel = KeyboardViewModel()
+        var captured: String?
+
+        viewModel.bindActionHandler { action in
+            if case let .compose(trigger) = action {
+                captured = trigger
+            }
+        }
+
+        // Switch to upper layer
+        viewModel.setLayer(.upper)
+
+        let firstRow = try #require(viewModel.rows.first)
+        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
+        viewModel.handleKeySwipe(nKey, direction: .upRight)
+
+        // Compose triggers should work regardless of layer
+        #expect(captured == "´")
+    }
+
     @Test func composeEngineProducesReplacement() {
         #expect(ComposeEngine.compose(previous: "a", trigger: "¨") == "ä")
         #expect(ComposeEngine.compose(previous: "l", trigger: "!") == "ł")
