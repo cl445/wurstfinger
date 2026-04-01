@@ -304,6 +304,20 @@ extension KeyboardLayout {
         "¨", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
     ]
 
+    /// Returns the uppercased special character for use in return overrides
+    private static func upperChar(_ config: LanguageConfig, key: String, fallback: String) -> MessagEaseOutput {
+        .text((config.specialCharacters[key] ?? fallback).uppercased(with: config.locale))
+    }
+
+    #if DEBUG
+    private static func assertUniqueIDs(_ rows: [[MessagEaseKey]]) {
+        for (rowIndex, row) in rows.enumerated() {
+            let ids = row.map(\.id)
+            assert(Set(ids).count == ids.count, "Duplicate MessagEaseKey ids in row \(rowIndex): \(ids)")
+        }
+    }
+    #endif
+
     /// Creates the 3x3 letter grid rows using the language configuration
     private static func createLetterRows(for config: LanguageConfig) -> [[MessagEaseKey]] {
         let centers = config.centerCharacters
@@ -312,7 +326,7 @@ extension KeyboardLayout {
             return []
         }
 
-        return [
+        let rows: [[MessagEaseKey]] = [
             // Row 0
             [
                 Self.makeKey(
@@ -330,10 +344,10 @@ extension KeyboardLayout {
                     ],
                     returnOverrides: [
                         .upLeft: .cycleAccents,
-                        .up: .text((config.specialCharacters["0_0_up"] ?? "").uppercased(with: config.locale)),
+                        .up: upperChar(config, key: "0_0_up", fallback: ""),
                         .right: .text("÷"),
-                        .downRight: .text((config.specialCharacters["0_0_downRight"] ?? "v").uppercased(with: config.locale)),
-                        .down: .text((config.specialCharacters["0_0_down"] ?? "").uppercased(with: config.locale)),
+                        .downRight: upperChar(config, key: "0_0_downRight", fallback: "v"),
+                        .down: upperChar(config, key: "0_0_down", fallback: ""),
                         .downLeft: .text("¥")
                     ]
                 ),
@@ -358,7 +372,7 @@ extension KeyboardLayout {
                         .upRight: .text("'"),
                         .right: .text("¡"),
                         .downRight: .text("—"),
-                        .down: .text((config.specialCharacters["0_1_down"] ?? "l").uppercased(with: config.locale)),
+                        .down: upperChar(config, key: "0_1_down", fallback: "l"),
                         .downLeft: .text("–"),
                         .left: .text("×")
                     ]
@@ -375,11 +389,11 @@ extension KeyboardLayout {
                         .left: "?"
                     ],
                     returnOverrides: [
-                        .upLeft: .text((config.specialCharacters["0_2_upLeft"] ?? "").uppercased(with: config.locale)),
+                        .upLeft: upperChar(config, key: "0_2_upLeft", fallback: ""),
                         .upRight: .text("\n"),
                         .downRight: .text("£"),
                         .down: .text("±"),
-                        .downLeft: .text((config.specialCharacters["0_2_downLeft"] ?? "X").uppercased(with: config.locale)),
+                        .downLeft: upperChar(config, key: "0_2_downLeft", fallback: "x"),
                         .left: .text("¿")
                     ]
                 )
@@ -401,11 +415,11 @@ extension KeyboardLayout {
                     ],
                     returnOverrides: [
                         .upLeft: .text("}"),
-                        .up: .text((config.specialCharacters["1_0_up"] ?? "u").uppercased(with: config.locale)),
+                        .up: upperChar(config, key: "1_0_up", fallback: "u"),
                         .upRight: .text("‰"),
-                        .right: .text((config.specialCharacters["1_0_right"] ?? "k").uppercased(with: config.locale)),
+                        .right: upperChar(config, key: "1_0_right", fallback: "k"),
                         .downRight: .text("¬"),
-                        .down: .text((config.specialCharacters["1_0_down"] ?? "o").uppercased(with: config.locale)),
+                        .down: upperChar(config, key: "1_0_down", fallback: "o"),
                         .downLeft: .text("]"),
                         .left: .text(")")
                     ]
@@ -424,14 +438,14 @@ extension KeyboardLayout {
                         .left: config.specialCharacters["1_1_left"] ?? "c"
                     ],
                     returnOverrides: [
-                        .upLeft: .text((config.specialCharacters["1_1_upLeft"] ?? "q").uppercased(with: config.locale)),
-                        .up: .text((config.specialCharacters["1_1_up"] ?? "u").uppercased(with: config.locale)),
-                        .upRight: .text((config.specialCharacters["1_1_upRight"] ?? "p").uppercased(with: config.locale)),
-                        .right: .text((config.specialCharacters["1_1_right"] ?? "b").uppercased(with: config.locale)),
-                        .downRight: .text((config.specialCharacters["1_1_downRight"] ?? "j").uppercased(with: config.locale)),
-                        .down: .text((config.specialCharacters["1_1_down"] ?? "d").uppercased(with: config.locale)),
-                        .downLeft: .text((config.specialCharacters["1_1_downLeft"] ?? "g").uppercased(with: config.locale)),
-                        .left: .text((config.specialCharacters["1_1_left"] ?? "c").uppercased(with: config.locale))
+                        .upLeft: upperChar(config, key: "1_1_upLeft", fallback: "q"),
+                        .up: upperChar(config, key: "1_1_up", fallback: "u"),
+                        .upRight: upperChar(config, key: "1_1_upRight", fallback: "p"),
+                        .right: upperChar(config, key: "1_1_right", fallback: "b"),
+                        .downRight: upperChar(config, key: "1_1_downRight", fallback: "j"),
+                        .down: upperChar(config, key: "1_1_down", fallback: "d"),
+                        .downLeft: upperChar(config, key: "1_1_downLeft", fallback: "g"),
+                        .left: upperChar(config, key: "1_1_left", fallback: "c")
                     ]
                 ),
                 Self.makeKey(
@@ -456,7 +470,7 @@ extension KeyboardLayout {
                         .right: .text("("),
                         .downRight: .text("["),
                         .downLeft: .text("ª"),
-                        .left: .text((config.specialCharacters["1_2_left"] ?? "m").uppercased(with: config.locale))
+                        .left: upperChar(config, key: "1_2_left", fallback: "m")
                     ]
                 )
             ],
@@ -480,10 +494,10 @@ extension KeyboardLayout {
                     returnOverrides: [
                         .upLeft: .text("˜"),
                         .up: .text("˝"),
-                        .upRight: .text((config.specialCharacters["2_0_upRight"] ?? "y").uppercased(with: config.locale)),
+                        .upRight: upperChar(config, key: "2_0_upRight", fallback: "y"),
                         .right: .text("†"),
                         .downRight: .text("\t"),
-                        .down: .text((config.specialCharacters["2_0_down"] ?? "").uppercased(with: config.locale)),
+                        .down: upperChar(config, key: "2_0_down", fallback: ""),
                         .left: .text("‹")
                     ]
                 ),
@@ -501,9 +515,9 @@ extension KeyboardLayout {
                     ],
                     returnOverrides: [
                         .upLeft: .text("\u{201C}"),
-                        .up: .text((config.specialCharacters["2_1_up"] ?? "w").uppercased(with: config.locale)),
+                        .up: upperChar(config, key: "2_1_up", fallback: "w"),
                         .upRight: .text("\u{201D}"),
-                        .right: .text((config.specialCharacters["2_1_right"] ?? "z").uppercased(with: config.locale)),
+                        .right: upperChar(config, key: "2_1_right", fallback: "z"),
                         .downRight: .text("„"),
                         .down: .text("…"),
                         .downLeft: .text(",")
@@ -522,7 +536,7 @@ extension KeyboardLayout {
                         .left: "#"
                     ],
                     returnOverrides: [
-                        .upLeft: .text((config.specialCharacters["2_2_upLeft"] ?? "f").uppercased(with: config.locale)),
+                        .upLeft: upperChar(config, key: "2_2_upLeft", fallback: "f"),
                         .up: .text("§"),
                         .upRight: .text("º"),
                         .right: .text("›"),
@@ -533,6 +547,10 @@ extension KeyboardLayout {
                 )
             ]
         ]
+        #if DEBUG
+        assertUniqueIDs(rows)
+        #endif
+        return rows
     }
 
     /// Creates the number layer rows using the language configuration
@@ -751,6 +769,7 @@ extension KeyboardLayout {
         ]
 
         // For phone layout, swap center numbers and circular gestures while keeping swipe gestures in their physical positions
+        let rows: [[MessagEaseKey]]
         if numpadStyle == .phone {
             // Map from classic center to phone center at each position
             // Position (0,0): 7 → 1 (with circular from 1), Position (0,1): 8 → 2 (with circular from 2), Position (0,2): 9 → 3 (with circular from
@@ -758,7 +777,7 @@ extension KeyboardLayout {
             // Position (1,0): 4 → 4, Position (1,1): 5 → 5, Position (1,2): 6 → 6 (unchanged)
             // Position (2,0): 1 → 7 (with circular from 7), Position (2,1): 2 → 8 (with circular from 8), Position (2,2): 3 → 9 (with circular from
             // 9)
-            return [
+            rows = [
                 // Row 0: swap 7→1, 8→2, 9→3 (with circular gestures from row 2)
                 [
                     Self.swapCenterAndCircular(classicRows[0][0], newCenter: "1", newCircular: classicRows[2][0].circularOutputs),
@@ -778,8 +797,13 @@ extension KeyboardLayout {
             ]
         } else {
             // Classic calculator layout: 7-8-9 / 4-5-6 / 1-2-3 / 0
-            return classicRows
+            rows = classicRows
         }
+
+        #if DEBUG
+        assertUniqueIDs(rows)
+        #endif
+        return rows
     }
 
     /// Helper to create a new key with swapped center and circular gestures, keeping swipe outputs at physical position
