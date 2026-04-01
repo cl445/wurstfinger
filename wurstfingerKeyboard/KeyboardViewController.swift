@@ -168,6 +168,7 @@ final class KeyboardViewController: UIInputViewController {
         guard hasFullAccess else { return }
         if let text = UIPasteboard.general.string, !text.isEmpty {
             textDocumentProxy.insertText(text)
+            updateAutoCapitalization()
         }
     }
 
@@ -177,6 +178,7 @@ final class KeyboardViewController: UIInputViewController {
         if let selectedText = textDocumentProxy.selectedText, !selectedText.isEmpty {
             UIPasteboard.general.string = selectedText
             textDocumentProxy.deleteBackward()
+            updateAutoCapitalization()
         }
     }
 

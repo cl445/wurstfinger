@@ -15,6 +15,7 @@
 - Fix deprecated APIs and SwiftUI view anti-patterns
 
 ### Added
+
 - Accessibility labels for globe and return keys
 - 50+ new tests for settings, haptics, Vector2D, and gesture calculations (#90)
 - CodeRabbit configuration for automated PR reviews

@@ -69,6 +69,7 @@ struct DeleteKeyButton: View {
                         gesture.hasDragged = true
                         viewModel.beginDeleteDrag()
                         gesture.lastTranslation = gesture.totalTranslation
+                        gesture.isActive = true
                         return
                     }
 
