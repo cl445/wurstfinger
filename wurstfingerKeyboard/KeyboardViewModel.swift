@@ -370,7 +370,7 @@ final class KeyboardViewModel: ObservableObject {
         case .upper:
             setShiftState(active: false)
         case .numbers, .symbols:
-            activeLayer = .lower
+            setLayer(.lower)
         }
     }
 
@@ -378,9 +378,9 @@ final class KeyboardViewModel: ObservableObject {
         feedbackModifier()
         switch activeLayer {
         case .lower, .upper:
-            activeLayer = .numbers
+            setLayer(.numbers)
         case .numbers, .symbols:
-            activeLayer = .lower
+            setLayer(.lower)
         }
     }
 

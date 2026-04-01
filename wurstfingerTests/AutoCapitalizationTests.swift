@@ -174,7 +174,7 @@ struct AutoCapitalizationTests {
 
     // MARK: - Bug #113: Manual shift should survive auto-capitalization reset
 
-    @Test func manualShiftIsTracked() {
+    @Test func testManualShiftIsTracked() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         viewModel.bindActionHandler { _ in }
 
@@ -184,7 +184,7 @@ struct AutoCapitalizationTests {
         #expect(viewModel.isManualShift == true, "toggleShift should set isManualShift")
     }
 
-    @Test func autoCapShiftIsNotManual() {
+    @Test func testAutoCapShiftIsNotManual() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         viewModel.bindActionHandler { _ in }
 
@@ -194,7 +194,7 @@ struct AutoCapitalizationTests {
         #expect(viewModel.isManualShift == false, "setLayer should not set isManualShift")
     }
 
-    @Test func manualShiftClearsAfterInsertion() {
+    @Test func testManualShiftClearsAfterInsertion() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         viewModel.bindActionHandler { _ in }
 
@@ -207,7 +207,7 @@ struct AutoCapitalizationTests {
         #expect(viewModel.isManualShift == false, "isManualShift should clear after insertion")
     }
 
-    @Test func manualShiftClearsWhenDeactivated() {
+    @Test func testManualShiftClearsWhenDeactivated() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         viewModel.bindActionHandler { _ in }
 
@@ -220,7 +220,7 @@ struct AutoCapitalizationTests {
         #expect(viewModel.isManualShift == false, "isManualShift should clear when shift is toggled off")
     }
 
-    @Test func capsLockDoesNotSetManualShift() {
+    @Test func testCapsLockDoesNotSetManualShift() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         viewModel.bindActionHandler { _ in }
 
