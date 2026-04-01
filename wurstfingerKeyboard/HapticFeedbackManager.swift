@@ -17,6 +17,9 @@ final class HapticFeedbackManager {
     /// Using .rigid provides a crisp, responsive feel that scales well with intensity.
     private let feedbackStyle: UIImpactFeedbackGenerator.FeedbackStyle = .rigid
 
+    /// Cached generator to avoid per-event allocation overhead
+    private lazy var generator = UIImpactFeedbackGenerator(style: feedbackStyle)
+
     init(settings: HapticSettings) {
         self.settings = settings
     }
@@ -45,10 +48,7 @@ final class HapticFeedbackManager {
         let intensity = settings.intensity(for: event)
         guard intensity > 0 else { return }
 
-        let performFeedback = { [feedbackStyle] in
-            // Create a new generator for each event to ensure reliability.
-            // This matches the behavior in HapticSettingsView which is confirmed to work.
-            let generator = UIImpactFeedbackGenerator(style: feedbackStyle)
+        let performFeedback = { [self] in
             generator.prepare()
             generator.impactOccurred(intensity: intensity)
         }

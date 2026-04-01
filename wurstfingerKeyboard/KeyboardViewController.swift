@@ -155,27 +155,30 @@ final class KeyboardViewController: UIInputViewController {
         return true
     }
 
-    /// Copy selected text to clipboard
+    /// Copy selected text to clipboard (requires Full Access)
     private func handleCopy() {
+        guard hasFullAccess else { return }
         if let selectedText = textDocumentProxy.selectedText, !selectedText.isEmpty {
             UIPasteboard.general.string = selectedText
         }
     }
 
-    /// Paste text from clipboard
+    /// Paste text from clipboard (requires Full Access)
     private func handlePaste() {
+        guard hasFullAccess else { return }
         if let text = UIPasteboard.general.string, !text.isEmpty {
             textDocumentProxy.insertText(text)
+            updateAutoCapitalization()
         }
     }
 
-    /// Cut selected text (copy + delete)
+    /// Cut selected text (copy + delete, requires Full Access)
     private func handleCut() {
+        guard hasFullAccess else { return }
         if let selectedText = textDocumentProxy.selectedText, !selectedText.isEmpty {
             UIPasteboard.general.string = selectedText
-            for _ in selectedText {
-                textDocumentProxy.deleteBackward()
-            }
+            textDocumentProxy.deleteBackward()
+            updateAutoCapitalization()
         }
     }
 

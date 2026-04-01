@@ -10,7 +10,8 @@ import SwiftUI
 /// Displays directional swipe hints as overlays on keyboard keys
 struct KeyHintOverlay: View {
     let key: MessagEaseKey
-    @ObservedObject var viewModel: KeyboardViewModel
+    let activeLayer: KeyboardLayer
+    let isCapsLockActive: Bool
     let locale: Locale
     let keyHeight: CGFloat
 
@@ -36,10 +37,10 @@ struct KeyHintOverlay: View {
             let scaledVerticalPadding = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
 
             ForEach(directions, id: \.self) { direction in
-                if let label = key.primaryLabel(for: direction, isCapsLock: viewModel.isCapsLockActive) {
+                if let label = key.primaryLabel(for: direction, isCapsLock: isCapsLockActive) {
                     // Hide down icon on r-key when not in caps mode
                     if shouldShowLabel(for: direction) {
-                        let displayLabel = transformLabel(label, activeLayer: viewModel.activeLayer)
+                        let displayLabel = transformLabel(label, activeLayer: activeLayer)
                         hintText(displayLabel, isLetter: isLetter(displayLabel))
                             .fixedSize()
                             .padding(direction.edgePadding(
@@ -57,7 +58,7 @@ struct KeyHintOverlay: View {
     private func shouldShowLabel(for direction: KeyboardDirection) -> Bool {
         // Only show down arrow on r-key when caps is active (upper layer)
         if key.center.lowercased() == "r" && direction == .down {
-            return viewModel.activeLayer == .upper
+            return activeLayer == .upper
         }
         return true
     }
