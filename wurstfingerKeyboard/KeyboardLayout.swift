@@ -310,12 +310,12 @@ extension KeyboardLayout {
     }
 
     #if DEBUG
-    private static func assertUniqueIDs(_ rows: [[MessagEaseKey]]) {
-        for (rowIndex, row) in rows.enumerated() {
-            let ids = row.map(\.id)
-            assert(Set(ids).count == ids.count, "Duplicate MessagEaseKey ids in row \(rowIndex): \(ids)")
+        private static func assertUniqueIDs(_ rows: [[MessagEaseKey]]) {
+            for (rowIndex, row) in rows.enumerated() {
+                let ids = row.map(\.id)
+                assert(Set(ids).count == ids.count, "Duplicate MessagEaseKey ids in row \(rowIndex): \(ids)")
+            }
         }
-    }
     #endif
 
     /// Creates the 3x3 letter grid rows using the language configuration
@@ -548,7 +548,7 @@ extension KeyboardLayout {
             ]
         ]
         #if DEBUG
-        assertUniqueIDs(rows)
+            assertUniqueIDs(rows)
         #endif
         return rows
     }
@@ -769,15 +769,14 @@ extension KeyboardLayout {
         ]
 
         // For phone layout, swap center numbers and circular gestures while keeping swipe gestures in their physical positions
-        let rows: [[MessagEaseKey]]
-        if numpadStyle == .phone {
+        let rows: [[MessagEaseKey]] = if numpadStyle == .phone {
             // Map from classic center to phone center at each position
             // Position (0,0): 7 → 1 (with circular from 1), Position (0,1): 8 → 2 (with circular from 2), Position (0,2): 9 → 3 (with circular from
             // 3)
             // Position (1,0): 4 → 4, Position (1,1): 5 → 5, Position (1,2): 6 → 6 (unchanged)
             // Position (2,0): 1 → 7 (with circular from 7), Position (2,1): 2 → 8 (with circular from 8), Position (2,2): 3 → 9 (with circular from
             // 9)
-            rows = [
+            [
                 // Row 0: swap 7→1, 8→2, 9→3 (with circular gestures from row 2)
                 [
                     Self.swapCenterAndCircular(classicRows[0][0], newCenter: "1", newCircular: classicRows[2][0].circularOutputs),
@@ -797,11 +796,11 @@ extension KeyboardLayout {
             ]
         } else {
             // Classic calculator layout: 7-8-9 / 4-5-6 / 1-2-3 / 0
-            rows = classicRows
+            classicRows
         }
 
         #if DEBUG
-        assertUniqueIDs(rows)
+            assertUniqueIDs(rows)
         #endif
         return rows
     }
