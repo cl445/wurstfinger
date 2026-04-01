@@ -27,8 +27,10 @@ struct ReturnSwipeLanguageTests {
         let centerKey = try #require(viewModel.rows[1][1])
         viewModel.handleKeySwipeReturn(centerKey, direction: .up)
 
-        #expect(inserted.last == "H",
-                "French return swipe up on center key should produce H, got \(inserted.last ?? "nil")")
+        #expect(
+            inserted.last == "H",
+            "French return swipe up on center key should produce H, got \(inserted.last ?? "nil")"
+        )
     }
 
     /// Regression guard: for every language, the center key's return swipe overrides
@@ -50,8 +52,10 @@ struct ReturnSwipeLanguageTests {
                 guard swipeText.first?.isLetter == true else { continue }
 
                 let expected = swipeText.uppercased(with: config.locale)
-                #expect(returnText == expected,
-                        "[\(config.id)] center key return swipe \(direction): expected '\(expected)', got '\(returnText)'")
+                #expect(
+                    returnText == expected,
+                    "[\(config.id)] center key return swipe \(direction): expected '\(expected)', got '\(returnText)'"
+                )
             }
         }
     }
