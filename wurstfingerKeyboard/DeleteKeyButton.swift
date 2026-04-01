@@ -98,7 +98,7 @@ struct DeleteKeyButton: View {
         .simultaneousGesture(
             LongPressGesture(minimumDuration: KeyboardConstants.DeleteGestures.repeatDelay)
                 .onEnded { _ in
-                    if !gesture.isSliding {
+                    if !gesture.hasDragged {
                         startRepeat()
                     }
                 }
