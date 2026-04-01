@@ -5,6 +5,7 @@
 ### Fixed
 
 - Fix French layout return swipe on center key producing U instead of H; all center key return overrides are now config-driven (#94)
+- Fix auto-capitalization after delete canceling manual temporary shift (#113)
 - Fix angle boundary overlap in swipe direction detection (half-open ranges)
 - Fix non-deterministic accent cycle order
 - Replace `fatalError` with `assertionFailure` in layout creation to prevent production crashes
