@@ -474,14 +474,13 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     private func performTextInsertion(_ value: String) {
-        // Capture layer state BEFORE the action handler (which may change it)
-        let wasUpper = activeLayer == .upper
-        actionHandler?(.insert(resolvedText(value)))
-        // Only deactivate shift if it was already upper before insert and not caps-lock
-        if wasUpper && !isCapsLockActive {
-            activeLayer = .lower
-            isManualShift = false
+        let resolvedValue = resolvedText(value)
+        // Deactivate one-shot shift BEFORE the handler, so auto-cap reactivation
+        // by the handler (e.g. after ¿/¡) is not stomped
+        if activeLayer == .upper && !isCapsLockActive {
+            setLayer(.lower)
         }
+        actionHandler?(.insert(resolvedValue))
     }
 
     private func perform(_ output: MessagEaseOutput) {
