@@ -90,6 +90,7 @@ final class KeyboardViewModel: ObservableObject {
 
     @Published private(set) var activeLayer: KeyboardLayer = .lower
     @Published private(set) var isCapsLockActive: Bool = false
+    @Published private(set) var isManualShift: Bool = false
     private var locale: Locale
 
     // MARK: - Settings (delegated to extracted classes)
@@ -236,6 +237,7 @@ final class KeyboardViewModel: ObservableObject {
                 // Reset to lower layer when language changes
                 activeLayer = .lower
                 isCapsLockActive = false
+                isManualShift = false
             }
         }
     }
@@ -406,6 +408,9 @@ final class KeyboardViewModel: ObservableObject {
 
     func setLayer(_ layer: KeyboardLayer) {
         activeLayer = layer
+        if layer != .upper {
+            isManualShift = false
+        }
     }
 
     private func setShiftState(active: Bool) {
@@ -415,14 +420,17 @@ final class KeyboardViewModel: ObservableObject {
             // If shift is already active, activate caps-lock
             if activeLayer == .upper && !isCapsLockActive {
                 isCapsLockActive = true
+                isManualShift = false
             } else {
                 // First activation - temporary shift
                 isCapsLockActive = false
                 activeLayer = .upper
+                isManualShift = true
             }
         } else {
             // Deactivate shift/caps-lock
             isCapsLockActive = false
+            isManualShift = false
             activeLayer = .lower
         }
     }
@@ -472,6 +480,7 @@ final class KeyboardViewModel: ObservableObject {
         // Only deactivate shift if it was already upper before insert and not caps-lock
         if wasUpper && !isCapsLockActive {
             activeLayer = .lower
+            isManualShift = false
         }
     }
 

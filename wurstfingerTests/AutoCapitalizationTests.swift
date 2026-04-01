@@ -171,4 +171,70 @@ struct AutoCapitalizationTests {
         // After inserting a regular character, should reset to lower
         #expect(viewModel.activeLayer == .lower, "Layer should reset to lower after regular character")
     }
+
+    // MARK: - Bug #113: Manual shift should survive auto-capitalization reset
+
+    @Test func manualShiftIsTracked() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        viewModel.bindActionHandler { _ in }
+
+        // User manually activates shift via toggleShift
+        viewModel.toggleShift()
+        #expect(viewModel.activeLayer == .upper)
+        #expect(viewModel.isManualShift == true, "toggleShift should set isManualShift")
+    }
+
+    @Test func autoCapShiftIsNotManual() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        viewModel.bindActionHandler { _ in }
+
+        // Auto-capitalization sets layer via setLayer (not toggleShift)
+        viewModel.setLayer(.upper)
+        #expect(viewModel.activeLayer == .upper)
+        #expect(viewModel.isManualShift == false, "setLayer should not set isManualShift")
+    }
+
+    @Test func manualShiftClearsAfterInsertion() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        viewModel.bindActionHandler { _ in }
+
+        // User manually shifts, then types a character
+        viewModel.toggleShift()
+        #expect(viewModel.isManualShift == true)
+
+        viewModel.simulateTextInsertion("a")
+        #expect(viewModel.activeLayer == .lower, "Temporary shift should reset after insertion")
+        #expect(viewModel.isManualShift == false, "isManualShift should clear after insertion")
+    }
+
+    @Test func manualShiftClearsWhenDeactivated() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        viewModel.bindActionHandler { _ in }
+
+        viewModel.toggleShift()
+        #expect(viewModel.isManualShift == true)
+
+        // Deactivate shift
+        viewModel.toggleShift()
+        #expect(viewModel.activeLayer == .lower)
+        #expect(viewModel.isManualShift == false, "isManualShift should clear when shift is toggled off")
+    }
+
+    @Test func capsLockDoesNotSetManualShift() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        viewModel.bindActionHandler { _ in }
+
+        // First shift activation: temporary shift
+        viewModel.toggleShift()
+        #expect(viewModel.activeLayer == .upper)
+        #expect(viewModel.isManualShift == true)
+
+        // Simulate second shift-up swipe while already upper → caps-lock
+        // (In the real keyboard, this is a swipe-up on the shift key,
+        // which calls setShiftState(active: true) via .toggleShift(on: true))
+        let shiftKey = viewModel.rows[1][2]
+        viewModel.handleKeySwipe(shiftKey, direction: .up)
+        #expect(viewModel.isCapsLockActive == true)
+        #expect(viewModel.isManualShift == false, "Caps-lock should clear isManualShift")
+    }
 }
