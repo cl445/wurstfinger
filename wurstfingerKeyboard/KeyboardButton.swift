@@ -37,8 +37,12 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
             label
         }
         .overlay(overlay)
-        .accessibilityLabel(config.accessibilityLabel ?? "")
-        .accessibilityIdentifier(config.accessibilityIdentifier ?? "")
+        .ifLet(config.accessibilityLabel) { view, label in
+            view.accessibilityLabel(label)
+        }
+        .ifLet(config.accessibilityIdentifier) { view, id in
+            view.accessibilityIdentifier(id)
+        }
         .accessibilityAddTraits(.isButton)
         // Extend the touch area beyond the visual bounds to cover margins
         .contentShape(Rectangle().inset(by: -touchPadding))

@@ -110,7 +110,7 @@ struct KeyboardRootView: View {
                 aspectRatio: viewModel.keyAspectRatio,
                 label: Text(""),
                 overlay: GlobeKeyHintOverlay(keyHeight: keyHeight),
-                config: KeyboardButtonConfig(accessibilityLabel: "Next keyboard"),
+                config: KeyboardButtonConfig(accessibilityLabel: NSLocalizedString("Next keyboard", comment: "Globe key accessibility label")),
                 callbacks: KeyboardButtonCallbacks(
                     onSwipe: viewModel.handleGlobeSwipe,
                     onCircular: { viewModel.handleUtilityCircularGesture(.globe, direction: $0) }
@@ -137,7 +137,7 @@ struct KeyboardRootView: View {
                 aspectRatio: viewModel.keyAspectRatio,
                 label: Text("⏎"),
                 overlay: EmptyView(),
-                config: KeyboardButtonConfig(accessibilityLabel: "Return"),
+                config: KeyboardButtonConfig(accessibilityLabel: NSLocalizedString("Return", comment: "Return key accessibility label")),
                 callbacks: KeyboardButtonCallbacks(onTap: viewModel.handleReturn)
             )
         default:
