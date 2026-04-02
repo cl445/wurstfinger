@@ -27,8 +27,10 @@ reviews:
         Ensure locale-aware uppercasing (German: de_DE).
     - path: "wurstfingerTests/**/*.swift"
       instructions: |
-        Tests use Apple's Testing framework (@Test, #expect).
-        Verify test names follow testFeatureExpectation() format.
+        Tests use Apple's Swift Testing framework (@Test, #expect, #require).
+        Do NOT enforce a "test" prefix on method names — Swift Testing discovers
+        tests via the @Test attribute, not by naming convention.
+        The "testFeatureExpectation()" naming style is optional, not required.
     - path: "wurstfingerUITests/**/*.swift"
       instructions: |
         UI tests verify the keyboard in real text input scenarios.
