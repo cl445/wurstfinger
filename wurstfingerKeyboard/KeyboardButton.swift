@@ -21,7 +21,7 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
 
     /// Extra touch area extension to cover all gaps between and around keys
     private var touchPadding: CGFloat {
-        KeyboardConstants.Layout.touchPadding
+        KeyboardTouchArea.padding
     }
 
     var body: some View {

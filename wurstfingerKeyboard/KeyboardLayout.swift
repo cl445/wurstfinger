@@ -1011,16 +1011,6 @@ enum KeyboardConstants {
         static let hintMargin: CGFloat = 10
         /// Larger margin for "returning" hint labels (swipe-and-return gestures).
         static let hintMarginReturning: CGFloat = 22
-
-        /// Touch area extension beyond each key's visual bounds.
-        /// Must be at least as large as the biggest padding/spacing gap so that
-        /// every pixel on the keyboard surface is covered by at least one key.
-        static let touchPadding: CGFloat = max(
-            horizontalPadding,
-            verticalPaddingBottom,
-            gridHorizontalSpacing / 2 + 1,
-            gridVerticalSpacing / 2 + 1
-        )
     }
 
     // MARK: - Gesture Recognition

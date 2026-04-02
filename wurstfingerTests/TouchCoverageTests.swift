@@ -16,7 +16,7 @@ struct TouchCoverageTests {
     @Test("touchPadding covers horizontal padding")
     func touchPaddingCoversHorizontalPadding() {
         #expect(
-            KeyboardConstants.Layout.touchPadding >= KeyboardConstants.Layout.horizontalPadding,
+            KeyboardTouchArea.padding >= KeyboardConstants.Layout.horizontalPadding,
             "touchPadding must reach the keyboard edge through horizontal padding"
         )
     }
@@ -24,7 +24,7 @@ struct TouchCoverageTests {
     @Test("touchPadding covers bottom padding")
     func touchPaddingCoversBottomPadding() {
         #expect(
-            KeyboardConstants.Layout.touchPadding >= KeyboardConstants.Layout.verticalPaddingBottom,
+            KeyboardTouchArea.padding >= KeyboardConstants.Layout.verticalPaddingBottom,
             "touchPadding must reach the keyboard edge through bottom padding"
         )
     }
@@ -32,7 +32,7 @@ struct TouchCoverageTests {
     @Test("touchPadding covers top padding")
     func touchPaddingCoversTopPadding() {
         #expect(
-            KeyboardConstants.Layout.touchPadding >= KeyboardConstants.Layout.verticalPaddingTop,
+            KeyboardTouchArea.padding >= KeyboardConstants.Layout.verticalPaddingTop,
             "touchPadding must reach the keyboard edge through top padding"
         )
     }
@@ -40,7 +40,7 @@ struct TouchCoverageTests {
     @Test("touchPadding covers horizontal grid spacing")
     func touchPaddingCoversHorizontalSpacing() {
         #expect(
-            KeyboardConstants.Layout.touchPadding >= KeyboardConstants.Layout.gridHorizontalSpacing / 2,
+            KeyboardTouchArea.padding >= KeyboardConstants.Layout.gridHorizontalSpacing / 2,
             "touchPadding must cover at least half the horizontal grid spacing"
         )
     }
@@ -48,7 +48,7 @@ struct TouchCoverageTests {
     @Test("touchPadding covers vertical grid spacing")
     func touchPaddingCoversVerticalSpacing() {
         #expect(
-            KeyboardConstants.Layout.touchPadding >= KeyboardConstants.Layout.gridVerticalSpacing / 2,
+            KeyboardTouchArea.padding >= KeyboardConstants.Layout.gridVerticalSpacing / 2,
             "touchPadding must cover at least half the vertical grid spacing"
         )
     }
@@ -64,7 +64,7 @@ struct TouchCoverageTests {
         let keyWidth = keyHeight * aspectRatio
         let spacing = KeyboardConstants.Layout.gridHorizontalSpacing
         let padding = KeyboardConstants.Layout.horizontalPadding
-        let touchPad = KeyboardConstants.Layout.touchPadding
+        let touchPad = KeyboardTouchArea.padding
 
         // 4 keys per row (3 grid + 1 utility)
         let keyCount = 4
@@ -112,7 +112,7 @@ struct TouchCoverageTests {
         let spacing = KeyboardConstants.Layout.gridVerticalSpacing
         let paddingTop = KeyboardConstants.Layout.verticalPaddingTop
         let paddingBottom = KeyboardConstants.Layout.verticalPaddingBottom
-        let touchPad = KeyboardConstants.Layout.touchPadding
+        let touchPad = KeyboardTouchArea.padding
 
         let rowCount = KeyboardConstants.KeyDimensions.totalRows
         let totalHeight = CGFloat(rowCount) * keyHeight +
