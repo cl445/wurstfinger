@@ -45,6 +45,7 @@ jobs:
         run: gem install xcpretty
 
       - name: Boot Simulator
+        id: sim
         run: |
           SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | grep -oE '\([A-F0-9-]+\)' | tr -d '()')
           if [ -z "$SIMULATOR_ID" ]; then
@@ -52,6 +53,7 @@ jobs:
             SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 15" | grep -v "Plus\|Pro" | head -1 | grep -oE '\([A-F0-9-]+\)' | tr -d '()')
           fi
           echo "Using simulator: $SIMULATOR_ID"
+          echo "simulator_id=$SIMULATOR_ID" >> "$GITHUB_OUTPUT"
           xcrun simctl boot "$SIMULATOR_ID" || true
           xcrun simctl bootstatus "$SIMULATOR_ID"
 
@@ -61,7 +63,7 @@ jobs:
           set -o pipefail && xcodebuild test \
             -scheme Wurstfinger \
             -project Wurstfinger.xcodeproj \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'platform=iOS Simulator,id=${{ steps.sim.outputs.simulator_id }}' \
             -only-testing:WurstfingerTests \
             -resultBundlePath TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO \
