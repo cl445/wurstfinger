@@ -60,14 +60,15 @@ struct TouchCoverageTests {
     @Test("Key touch areas cover full row width")
     func keyTouchAreasCoverFullRowWidth() throws {
         let aspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
-        let keyHeight: CGFloat = 54
+        let keyHeight = KeyboardConstants.KeyDimensions.height
         let keyWidth = keyHeight * aspectRatio
         let spacing = KeyboardConstants.Layout.gridHorizontalSpacing
         let padding = KeyboardConstants.Layout.horizontalPadding
         let touchPad = KeyboardTouchArea.padding
 
-        // 4 keys per row (3 grid + 1 utility)
-        let keyCount = 4
+        // 3 grid keys + 1 utility key per row
+        let gridColumns = 3
+        let keyCount = gridColumns + 1
         let contentWidth = CGFloat(keyCount) * keyWidth + CGFloat(keyCount - 1) * spacing
         let totalRowWidth = contentWidth + 2 * padding
 
@@ -108,7 +109,7 @@ struct TouchCoverageTests {
     /// Verifies that 4 rows of keys with touchPadding cover the full keyboard height.
     @Test("Key touch areas cover full keyboard height")
     func keyTouchAreasCoverFullKeyboardHeight() throws {
-        let keyHeight: CGFloat = 54
+        let keyHeight = KeyboardConstants.KeyDimensions.height
         let spacing = KeyboardConstants.Layout.gridVerticalSpacing
         let paddingTop = KeyboardConstants.Layout.verticalPaddingTop
         let paddingBottom = KeyboardConstants.Layout.verticalPaddingBottom
