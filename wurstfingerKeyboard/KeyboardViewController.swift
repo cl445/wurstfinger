@@ -39,10 +39,12 @@ final class KeyboardViewController: UIInputViewController {
             self?.perform(action: action)
         }
 
-        // Configure UI on next run loop to allow faster initial display
-        DispatchQueue.main.async { [weak self] in
-            self?.configureHosting()
-        }
+        // Configure hosting synchronously so the SwiftUI view exists
+        // before viewWillAppear sets the height constraint. Deferring via
+        // DispatchQueue.main.async caused a race in WebView-based apps where
+        // viewWillAppear ran before configureHosting, leaving the extension
+        // with a height constraint but no content.
+        configureHosting()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -72,6 +74,9 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         view.backgroundColor = .clear
+        // Update viewModel with current width so SwiftUI re-renders after
+        // orientation changes that happen while the keyboard is backgrounded (Bug #92).
+        viewModel.updateViewWidth(view.bounds.width)
     }
 
     override var needsInputModeSwitchKey: Bool {
@@ -88,6 +93,7 @@ final class KeyboardViewController: UIInputViewController {
         view.addSubview(controller.view)
 
         NSLayoutConstraint.activate([
+            controller.view.topAnchor.constraint(equalTo: view.topAnchor),
             controller.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             controller.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             controller.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)

@@ -91,6 +91,10 @@ final class KeyboardViewModel: ObservableObject {
     @Published private(set) var activeLayer: KeyboardLayer = .lower
     @Published private(set) var isCapsLockActive: Bool = false
     @Published private(set) var isManualShift: Bool = false
+    /// Current width of the keyboard's containing view.
+    /// Updated by the controller in `viewWillLayoutSubviews()` so that
+    /// SwiftUI re-evaluates layout after orientation changes (Bug #92).
+    @Published private(set) var viewWidth: CGFloat = UIScreen.main.bounds.width
     private var locale: Locale
 
     // MARK: - Settings (delegated to extracted classes)
@@ -209,6 +213,13 @@ final class KeyboardViewModel: ObservableObject {
         if let observer = userDefaultsObserver {
             NotificationCenter.default.removeObserver(observer)
         }
+    }
+
+    /// Updates the tracked view width. Called by the controller in
+    /// `viewWillLayoutSubviews()` so SwiftUI re-renders after orientation changes.
+    func updateViewWidth(_ width: CGFloat) {
+        guard width != viewWidth else { return }
+        viewWidth = width
     }
 
     func reloadSettings() {
