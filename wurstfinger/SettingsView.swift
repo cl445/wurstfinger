@@ -25,9 +25,6 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.hapticIntensityTap.rawValue, store: SharedDefaults.store)
     private var hapticTapIntensity = Double(HapticSettings.defaultTapIntensity)
 
-    @AppStorage(SettingsKey.hapticIntensityModifier.rawValue, store: SharedDefaults.store)
-    private var hapticModifierIntensity = Double(HapticSettings.defaultModifierIntensity)
-
     @AppStorage(SettingsKey.hapticIntensityDrag.rawValue, store: SharedDefaults.store)
     private var hapticDragIntensity = Double(HapticSettings.defaultDragIntensity)
 
@@ -220,9 +217,8 @@ struct SettingsView: View {
 
     private func hapticModeDescription() -> String {
         let tap: String = formatIntensity(hapticTapIntensity)
-        let modifier: String = formatIntensity(hapticModifierIntensity)
         let drag: String = formatIntensity(hapticDragIntensity)
-        return "Tap: \(tap) • Modifiers: \(modifier) • Drags: \(drag)"
+        return "Tap: \(tap) • Drag: \(drag)"
     }
 
     private func formatIntensity(_ value: Double) -> String {

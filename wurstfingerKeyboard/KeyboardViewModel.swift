@@ -42,7 +42,6 @@ enum UtilityKey {
 
 enum KeyboardHapticEvent {
     case tap
-    case modifier
     case drag
 }
 
@@ -79,11 +78,9 @@ final class KeyboardViewModel: ObservableObject {
     // MARK: - Settings Keys (kept for backward compatibility)
 
     static let hapticTapIntensityKey = SettingsKey.hapticIntensityTap.rawValue
-    static let hapticModifierIntensityKey = SettingsKey.hapticIntensityModifier.rawValue
     static let hapticDragIntensityKey = SettingsKey.hapticIntensityDrag.rawValue
     static let numpadStyleKey = SettingsKey.numpadStyle.rawValue
     static let defaultTapIntensity: CGFloat = HapticSettings.defaultTapIntensity
-    static let defaultModifierIntensity: CGFloat = HapticSettings.defaultModifierIntensity
     static let defaultDragIntensity: CGFloat = HapticSettings.defaultDragIntensity
 
     // MARK: - State
@@ -108,11 +105,6 @@ final class KeyboardViewModel: ObservableObject {
     var hapticIntensityTap: CGFloat {
         get { hapticSettings.tapIntensity }
         set { hapticSettings.tapIntensity = newValue }
-    }
-
-    var hapticIntensityModifier: CGFloat {
-        get { hapticSettings.modifierIntensity }
-        set { hapticSettings.modifierIntensity = newValue }
     }
 
     var hapticIntensityDrag: CGFloat {
@@ -338,27 +330,22 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     func handleSpace() {
-        feedbackTap()
         actionHandler?(.space)
     }
 
     func handleDelete() {
-        feedbackTap()
         actionHandler?(.deleteBackward)
     }
 
     func handleReturn() {
-        feedbackModifier()
         actionHandler?(.newline)
     }
 
     func handleAdvanceToNextInputMode() {
-        feedbackModifier()
         actionHandler?(.advanceToNextInputMode)
     }
 
     func handleDismissKeyboard() {
-        feedbackModifier()
         actionHandler?(.dismissKeyboard)
     }
 
@@ -386,7 +373,6 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     func toggleSymbols() {
-        feedbackModifier()
         switch activeLayer {
         case .lower, .upper:
             setLayer(.numbers)
@@ -403,16 +389,12 @@ final class KeyboardViewModel: ObservableObject {
     func handleSymbolsKeySwipe(_ direction: KeyboardDirection) {
         switch direction {
         case .up:
-            feedbackModifier()
             actionHandler?(.copy)
         case .upRight:
-            feedbackModifier()
             actionHandler?(.cut)
         case .down:
-            feedbackModifier()
             actionHandler?(.paste)
         default:
-            // All other directions toggle symbols
             toggleSymbols()
         }
     }
@@ -425,8 +407,6 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     private func setShiftState(active: Bool) {
-        feedbackModifier()
-
         if active {
             // If shift is already active, activate caps-lock
             if activeLayer == .upper && !isCapsLockActive {
@@ -462,12 +442,9 @@ final class KeyboardViewModel: ObservableObject {
 
     // MARK: - Haptic Feedback (delegated to HapticFeedbackManager)
 
-    private func feedbackTap() {
+    /// Haptic feedback for key touch-down — called by button views on first contact
+    func feedbackTap() {
         hapticManager.tap()
-    }
-
-    private func feedbackModifier() {
-        hapticManager.modifier()
     }
 
     private func feedbackDrag() {
@@ -475,7 +452,6 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     private func insertText(_ value: String) {
-        feedbackTap()
         performTextInsertion(value)
     }
 
@@ -503,19 +479,15 @@ final class KeyboardViewModel: ObservableObject {
         case .toggleSymbols:
             toggleSymbols()
         case let .capitalizeWord(uppercased):
-            feedbackModifier()
             actionHandler?(.capitalizeWord(uppercased ? .uppercased : .lowercased))
         case let .compose(trigger, _):
-            feedbackModifier()
             actionHandler?(.compose(trigger: trigger))
         case .cycleAccents:
-            feedbackModifier()
             actionHandler?(.cycleAccents)
         }
     }
 
     func toggleUtilityColumnPosition() {
-        feedbackModifier()
         utilityColumnLeading.toggle()
         if shouldPersistSettings {
             sharedDefaults.set(utilityColumnLeading, forKey: SettingsKey.utilityColumnLeading.rawValue)

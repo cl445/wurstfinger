@@ -58,6 +58,7 @@ struct DeleteKeyButton: View {
 
                     if !gesture.dragStarted {
                         gesture.dragStarted = true
+                        viewModel.feedbackTap()
                     }
 
                     gesture.totalTranslation = value.translation

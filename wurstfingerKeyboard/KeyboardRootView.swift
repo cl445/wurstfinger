@@ -115,7 +115,8 @@ struct KeyboardRootView: View {
                 config: KeyboardButtonConfig(accessibilityLabel: NSLocalizedString("Next keyboard", comment: "Globe key accessibility label")),
                 callbacks: KeyboardButtonCallbacks(
                     onSwipe: viewModel.handleGlobeSwipe,
-                    onCircular: { viewModel.handleUtilityCircularGesture(.globe, direction: $0) }
+                    onCircular: { viewModel.handleUtilityCircularGesture(.globe, direction: $0) },
+                    onTouchDown: viewModel.feedbackTap
                 )
             )
         case 1: // Symbols toggle button with text editing swipes
@@ -128,7 +129,8 @@ struct KeyboardRootView: View {
                 callbacks: KeyboardButtonCallbacks(
                     onTap: viewModel.toggleSymbols,
                     onSwipe: viewModel.handleSymbolsKeySwipe,
-                    onSwipeReturn: viewModel.handleSymbolsKeySwipe
+                    onSwipeReturn: viewModel.handleSymbolsKeySwipe,
+                    onTouchDown: viewModel.feedbackTap
                 )
             )
         case 2: // Delete button
@@ -140,7 +142,7 @@ struct KeyboardRootView: View {
                 label: Text("⏎"),
                 overlay: EmptyView(),
                 config: KeyboardButtonConfig(accessibilityLabel: NSLocalizedString("Return", comment: "Return key accessibility label")),
-                callbacks: KeyboardButtonCallbacks(onTap: viewModel.handleReturn)
+                callbacks: KeyboardButtonCallbacks(onTap: viewModel.handleReturn, onTouchDown: viewModel.feedbackTap)
             )
         default:
             EmptyView()
@@ -166,7 +168,8 @@ struct KeyboardRootView: View {
                     callbacks: KeyboardButtonCallbacks(
                         onSwipe: { viewModel.handleKeySwipe(key, direction: $0) },
                         onSwipeReturn: { viewModel.handleKeySwipeReturn(key, direction: $0) },
-                        onCircular: { viewModel.handleCircularGesture(for: key, direction: $0) }
+                        onCircular: { viewModel.handleCircularGesture(for: key, direction: $0) },
+                        onTouchDown: viewModel.feedbackTap
                     )
                 )
             }

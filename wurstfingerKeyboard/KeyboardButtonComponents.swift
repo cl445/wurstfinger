@@ -39,6 +39,7 @@ struct KeyboardButtonCallbacks {
     var onSwipe: ((KeyboardDirection) -> Void)?
     var onSwipeReturn: ((KeyboardDirection) -> Void)?
     var onCircular: ((KeyboardCircularDirection) -> Void)?
+    var onTouchDown: (() -> Void)?
 }
 
 /// Visual key cap component used as the base for all keyboard buttons
