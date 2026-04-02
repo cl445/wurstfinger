@@ -87,8 +87,11 @@ final class wurstfingerUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Key Aspect Ratio"].exists, "Key Aspect Ratio row missing")
         XCTAssertTrue(app.staticTexts["Haptic Feedback"].exists, "Haptic Feedback row missing")
 
-        // Version is in the About section at the bottom — scroll to reveal it
-        app.swipeUp()
+        // Version is in the About section at the bottom — scroll until visible
+        for _ in 0 ..< 5 {
+            if app.staticTexts["Version"].exists { break }
+            app.swipeUp()
+        }
         XCTAssertTrue(app.staticTexts["Version"].waitForExistence(timeout: 2), "Version row missing")
     }
 
