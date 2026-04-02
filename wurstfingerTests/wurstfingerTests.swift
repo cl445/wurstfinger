@@ -11,7 +11,7 @@ import Testing
 
 struct wurstfingerTests {
     @Test func circularGestureInsertsUppercaseForBothDirections() throws {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var inserted: [String] = []
 
         viewModel.bindActionHandler { action in
@@ -29,7 +29,7 @@ struct wurstfingerTests {
     }
 
     @Test func toggleSymbolsShowsNumericLayout() throws {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         viewModel.toggleSymbols()
 
         #expect(viewModel.activeLayer == .numbers)
@@ -44,7 +44,7 @@ struct wurstfingerTests {
     }
 
     @Test func symbolsLayerFollowsNumericLayer() throws {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
 
         // First toggle: lower → numbers
         viewModel.toggleSymbols()
@@ -60,7 +60,7 @@ struct wurstfingerTests {
     }
 
     @Test func circularGestureOnGlobeTogglesUtilityColumn() {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
 
         #expect(!viewModel.utilityColumnLeading)
 
@@ -72,7 +72,7 @@ struct wurstfingerTests {
     }
 
     @Test func numericLayerInsertsDigits() throws {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var inserted: [String] = []
 
         viewModel.bindActionHandler { action in
@@ -95,7 +95,7 @@ struct wurstfingerTests {
     }
 
     @Test func letterLayerProvidesAdditionalSymbols() throws {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         let firstRow = try #require(viewModel.rows.first)
         let aKey = try #require(firstRow.first)
         let nKey = try #require(firstRow.dropFirst().first)
@@ -116,7 +116,7 @@ struct wurstfingerTests {
     }
 
     @Test func spaceDragEmitsCursorMovements() {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var moves: [Int] = []
 
         viewModel.bindActionHandler { action in
@@ -135,7 +135,7 @@ struct wurstfingerTests {
     }
 
     @Test func deleteDragEmitsRepeatedDeletes() {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var deletes = 0
 
         viewModel.bindActionHandler { action in
@@ -204,7 +204,7 @@ struct wurstfingerTests {
     }
 
     @Test func composeSwipeEmitsComposeAction() throws {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var captured: String?
 
         viewModel.bindActionHandler { action in
@@ -226,7 +226,7 @@ struct wurstfingerTests {
     }
 
     @Test func composeSwipeWorksInUpperLayer() throws {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var captured: String?
 
         viewModel.bindActionHandler { action in
@@ -253,7 +253,7 @@ struct wurstfingerTests {
     }
 
     @Test func returnSwipeOnPlusProducesTimes() throws {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var inserted: [String] = []
 
         viewModel.bindActionHandler { action in
@@ -271,7 +271,7 @@ struct wurstfingerTests {
     }
 
     @Test func returnSwipesProduceTypographicVariants() throws {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var inserted: [String] = []
 
         viewModel.bindActionHandler { action in
@@ -304,7 +304,7 @@ struct wurstfingerTests {
     }
 
     @Test func directPunctuationSwipeDoesNotCompose() throws {
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var inserts: [String] = []
         var composed: [String] = []
 
@@ -405,7 +405,7 @@ struct wurstfingerTests {
     @Test func apostropheIsNeverAComposeTrigger() {
         // Verify no key in the layout uses apostrophe (') as a compose trigger.
         // Composition uses ´ (U+00B4 acute accent), not ' (U+0027 apostrophe).
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
 
         for (rowIndex, row) in viewModel.rows.enumerated() {
             for (colIndex, key) in row.enumerated() {
@@ -425,7 +425,7 @@ struct wurstfingerTests {
     @Test func apostropheReturnSwipeInsertsPlainText() throws {
         // Return swipe on N-key upRight should insert plain apostrophe,
         // not trigger compose mode (returnOverride with .text("'"))
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var inserts: [String] = []
         var composed: [String] = []
 
@@ -485,7 +485,7 @@ struct wurstfingerTests {
     @Test func backtickIsNeverAComposeTrigger() {
         // Verify no key in the layout uses backtick (`) as a compose trigger.
         // Composition uses ˋ (U+02CB modifier letter grave accent), not ` (U+0060).
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
 
         for (rowIndex, row) in viewModel.rows.enumerated() {
             for (colIndex, key) in row.enumerated() {
@@ -505,7 +505,7 @@ struct wurstfingerTests {
     @Test func dollarSignRemainsAutoComposeTrigger() throws {
         // $ is in composeTriggers and appears in textMap for key (0,0) downLeft.
         // Swiping there should emit .compose, confirming auto-detection still works.
-        let viewModel = KeyboardViewModel()
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
         var composed: [String] = []
 
         viewModel.bindActionHandler { action in
