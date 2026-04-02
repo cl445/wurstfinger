@@ -58,7 +58,7 @@ struct TouchCoverageTests {
     /// Verifies that for a standard row (3 grid keys + 1 utility key),
     /// the union of all touch areas covers the entire row width with no gaps.
     @Test("Key touch areas cover full row width")
-    func keyTouchAreasCoverFullRowWidth() {
+    func keyTouchAreasCoverFullRowWidth() throws {
         let aspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
         let keyHeight: CGFloat = 54
         let keyWidth = keyHeight * aspectRatio
@@ -86,8 +86,13 @@ struct TouchCoverageTests {
         let sorted = touchIntervals.sorted { $0.min < $1.min }
 
         // Verify coverage from 0 to totalRowWidth
-        #expect(sorted[0].min <= 0, "First key touch area must reach left edge (got \(sorted[0].min))")
-        #expect(sorted.last!.max >= totalRowWidth, "Last key touch area must reach right edge (got \(sorted.last!.max) vs \(totalRowWidth))")
+        let firstInterval = try #require(sorted.first)
+        let lastInterval = try #require(sorted.last)
+        #expect(firstInterval.min <= 0, "First key touch area must reach left edge")
+        #expect(
+            lastInterval.max >= totalRowWidth,
+            "Last key touch area must reach right edge"
+        )
 
         // Verify no gaps between adjacent intervals
         for i in 1 ..< sorted.count {
@@ -102,7 +107,7 @@ struct TouchCoverageTests {
 
     /// Verifies that 4 rows of keys with touchPadding cover the full keyboard height.
     @Test("Key touch areas cover full keyboard height")
-    func keyTouchAreasCoverFullKeyboardHeight() {
+    func keyTouchAreasCoverFullKeyboardHeight() throws {
         let keyHeight: CGFloat = 54
         let spacing = KeyboardConstants.Layout.gridVerticalSpacing
         let paddingTop = KeyboardConstants.Layout.verticalPaddingTop
@@ -124,8 +129,13 @@ struct TouchCoverageTests {
 
         let sorted = touchIntervals.sorted { $0.min < $1.min }
 
-        #expect(sorted[0].min <= 0, "Top row touch area must reach keyboard top edge")
-        #expect(sorted.last!.max >= totalHeight, "Bottom row touch area must reach keyboard bottom edge")
+        let firstInterval = try #require(sorted.first)
+        let lastInterval = try #require(sorted.last)
+        #expect(firstInterval.min <= 0, "Top row touch area must reach keyboard top edge")
+        #expect(
+            lastInterval.max >= totalHeight,
+            "Bottom row touch area must reach keyboard bottom edge"
+        )
 
         for i in 1 ..< sorted.count {
             #expect(
