@@ -83,8 +83,12 @@ struct HapticSettingsView: View {
                                 .disabled(true)
 
                             Label {
-                                Text("Haptic feedback requires Full Access. Enable it in **Settings \u{203A} Wurstfinger \u{203A} Keyboards \u{203A} Wurstfinger \u{203A} Allow Full Access**.")
-                                    .font(.caption)
+                                Text(
+                                    "Haptic feedback requires Full Access. Enable it in " +
+                                        "**Settings \u{203A} Wurstfinger \u{203A} Keyboards " +
+                                        "\u{203A} Wurstfinger \u{203A} Allow Full Access**."
+                                )
+                                .font(.caption)
                             } icon: {
                                 Image(systemName: "exclamationmark.triangle.fill")
                                     .foregroundColor(.orange)
