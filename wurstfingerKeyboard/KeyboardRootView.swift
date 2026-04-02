@@ -25,7 +25,12 @@ struct KeyboardRootView: View {
     var body: some View {
         // At aspectRatio 1.5 (default), use original height of 54pt
         // Lower ratio = taller keys, higher ratio = shorter keys
-        let keyHeight = KeyboardConstants.Calculations.keyHeight(aspectRatio: viewModel.keyAspectRatio)
+        let unscaledKeyHeight = KeyboardConstants.Calculations.keyHeight(aspectRatio: viewModel.keyAspectRatio)
+
+        // Apply keyboard scale directly to key dimensions instead of using scaleEffect.
+        // This ensures layout height matches visual height, preventing gaps from
+        // iOS allocating more space than the height constraint requests.
+        let keyHeight = unscaledKeyHeight * viewModel.keyboardScale
 
         // Calculate horizontal position offset
         // Use viewModel.viewWidth (updated by the controller on layout changes)
@@ -38,10 +43,11 @@ struct KeyboardRootView: View {
         // This prevents the keyboard from stretching in landscape
         let baseWidth = min(currentWidth, screenShortestSide)
 
-        let availableSpace = currentWidth - (baseWidth * viewModel.keyboardScale)
+        let scaledWidth = baseWidth * viewModel.keyboardScale
+        let availableSpace = currentWidth - scaledWidth
         let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
 
-        ZStack {
+        ZStack(alignment: .top) {
             // Background layer that always fills the entire space
             keyboardBackground
 
@@ -90,8 +96,7 @@ struct KeyboardRootView: View {
             .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
             .padding(.top, KeyboardConstants.Layout.verticalPaddingTop)
             .padding(.bottom, KeyboardConstants.Layout.verticalPaddingBottom)
-            .frame(width: baseWidth, alignment: frameAlignment)
-            .scaleEffect(viewModel.keyboardScale, anchor: scaleAnchor)
+            .frame(width: scaledWidth, alignment: frameAlignment)
             .offset(x: horizontalOffset)
         }
     }
