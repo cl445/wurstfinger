@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: List available simulators
         run: |
@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload screenshots artifact
         if: ${{ inputs.upload_artifact }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: appstore-screenshots
           path: appstore-screenshots/
