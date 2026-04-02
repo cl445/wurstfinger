@@ -13,6 +13,12 @@ struct HapticSettingsView: View {
     @AppStorage(SettingsKey.keyboardFullAccess.rawValue, store: SharedDefaults.store)
     private var hasFullAccess = false
 
+    /// Whether the keyboard extension has synced its Full Access status at least once.
+    /// Prevents treating "unset" as "denied" on fresh installs.
+    private var hasSyncedFullAccess: Bool {
+        SharedDefaults.store.object(forKey: SettingsKey.keyboardFullAccess.rawValue) != nil
+    }
+
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var previewAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
@@ -30,8 +36,8 @@ struct HapticSettingsView: View {
 
             ScrollView {
                 VStack(spacing: 24) {
-                    if hasFullAccess {
-                        // Global Toggle
+                    if !hasSyncedFullAccess || hasFullAccess {
+                        // Full Access granted or not yet synced — show full UI
                         VStack(spacing: 8) {
                             Toggle("Haptic Feedback", isOn: $hapticEnabled)
                                 .font(.headline)
@@ -40,6 +46,13 @@ struct HapticSettingsView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
+
+                            if !hasSyncedFullAccess {
+                                Text("Open the keyboard once to sync Full Access status.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
                         }
                         .padding(.horizontal, 16)
 
@@ -63,7 +76,7 @@ struct HapticSettingsView: View {
                             }
                         }
                     } else {
-                        // Full Access not granted
+                        // Full Access explicitly denied
                         VStack(spacing: 12) {
                             Toggle("Haptic Feedback", isOn: .constant(false))
                                 .font(.headline)
@@ -88,7 +101,7 @@ struct HapticSettingsView: View {
         .navigationTitle("Haptics")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if hasFullAccess {
+            if !hasSyncedFullAccess || hasFullAccess {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Reset") {
                         tapIntensity = Double(HapticSettings.defaultTapIntensity)

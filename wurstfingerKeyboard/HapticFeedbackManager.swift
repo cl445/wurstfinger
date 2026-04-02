@@ -56,8 +56,7 @@ final class HapticFeedbackManager {
         let style = Self.style(for: intensity)
 
         let performFeedback = { [self] in
-            let generator = generators[style] ?? generators[.medium]!
-            generator.prepare()
+            guard let generator = generators[style] ?? generators[.medium] else { return }
             generator.impactOccurred()
         }
 

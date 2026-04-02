@@ -52,7 +52,6 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
                     if positions.isEmpty {
                         // First contact — fire haptic immediately
                         callbacks.onTouchDown?()
-                        positions.removeAll()
                         positions.append(.zero)
                     }
 
