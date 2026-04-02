@@ -47,6 +47,8 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        // Persist Full Access status so the host app can show/hide haptic settings
+        SharedDefaults.store.set(hasFullAccess, forKey: SettingsKey.keyboardFullAccess.rawValue)
         // Reload settings every time keyboard appears
         viewModel.reloadSettings()
         updateKeyboardHeight()

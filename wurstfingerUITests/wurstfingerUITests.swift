@@ -114,8 +114,10 @@ final class wurstfingerUITests: XCTestCase {
         // Should navigate to haptic settings (title is "Haptics")
         XCTAssertTrue(app.navigationBars["Haptics"].waitForExistence(timeout: 2))
 
-        // Check that sliders exist
-        XCTAssertTrue(app.sliders.count >= 1, "Should have haptic intensity sliders")
+        // Without Full Access: shows a disabled toggle and warning text
+        // With Full Access: shows sliders for intensity control
+        // Either way, the Haptic Feedback toggle should be visible
+        XCTAssertTrue(app.switches["Haptic Feedback"].exists, "Should show the haptic feedback toggle")
     }
 
     @MainActor

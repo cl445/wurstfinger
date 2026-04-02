@@ -50,7 +50,8 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
                     if positions.isEmpty {
-                        // Reset if starting new gesture (though onEnded should handle this)
+                        // First contact — fire haptic immediately
+                        callbacks.onTouchDown?()
                         positions.removeAll()
                         positions.append(.zero)
                     }

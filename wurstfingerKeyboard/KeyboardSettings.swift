@@ -16,7 +16,6 @@ import Foundation
 /// Using an enum prevents typos and makes refactoring easier.
 enum SettingsKey: String {
     case hapticIntensityTap
-    case hapticIntensityModifier
     case hapticIntensityDrag
     case hapticEnabled
     case utilityColumnLeading
@@ -28,6 +27,7 @@ enum SettingsKey: String {
     case autoCapitalizeEnabled
     case expertModeEnabled
     case keyboardStyle
+    case keyboardFullAccess
 }
 
 // MARK: - Haptic Settings
@@ -37,7 +37,6 @@ enum SettingsKey: String {
 final class HapticSettings: ObservableObject {
     /// Default intensity values (0.0 - 1.0)
     static let defaultTapIntensity: CGFloat = 0.5
-    static let defaultModifierIntensity: CGFloat = 0.5
     static let defaultDragIntensity: CGFloat = 0.5
 
     private let defaults: UserDefaults
@@ -55,17 +54,6 @@ final class HapticSettings: ObservableObject {
                 return
             }
             persistIfNeeded(Double(clamped), forKey: .hapticIntensityTap)
-        }
-    }
-
-    @Published var modifierIntensity: CGFloat {
-        didSet {
-            let clamped = Self.clamp(modifierIntensity)
-            if clamped != modifierIntensity {
-                modifierIntensity = clamped
-                return
-            }
-            persistIfNeeded(Double(clamped), forKey: .hapticIntensityModifier)
         }
     }
 
@@ -87,7 +75,6 @@ final class HapticSettings: ObservableObject {
         // Load values with clamping
         enabled = defaults.object(forKey: SettingsKey.hapticEnabled.rawValue) as? Bool ?? true
         tapIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityTap, default: Self.defaultTapIntensity)
-        modifierIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityModifier, default: Self.defaultModifierIntensity)
         dragIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityDrag, default: Self.defaultDragIntensity)
     }
 
@@ -99,9 +86,6 @@ final class HapticSettings: ObservableObject {
         let newTap = Self.loadIntensity(from: defaults, key: .hapticIntensityTap, default: Self.defaultTapIntensity)
         if abs(tapIntensity - newTap) > 0.0001 { tapIntensity = newTap }
 
-        let newModifier = Self.loadIntensity(from: defaults, key: .hapticIntensityModifier, default: Self.defaultModifierIntensity)
-        if abs(modifierIntensity - newModifier) > 0.0001 { modifierIntensity = newModifier }
-
         let newDrag = Self.loadIntensity(from: defaults, key: .hapticIntensityDrag, default: Self.defaultDragIntensity)
         if abs(dragIntensity - newDrag) > 0.0001 { dragIntensity = newDrag }
     }
@@ -110,7 +94,6 @@ final class HapticSettings: ObservableObject {
     func intensity(for event: KeyboardHapticEvent) -> CGFloat {
         switch event {
         case .tap: tapIntensity
-        case .modifier: modifierIntensity
         case .drag: dragIntensity
         }
     }

@@ -35,6 +35,7 @@ struct SpaceKeyButton: View {
                 .onChanged { value in
                     if !dragStarted {
                         dragStarted = true
+                        viewModel.feedbackTap()
                         viewModel.beginSpaceDrag()
                     }
 

@@ -24,7 +24,6 @@ struct HapticSettingsTests {
 
         #expect(settings.enabled == true)
         #expect(settings.tapIntensity == HapticSettings.defaultTapIntensity)
-        #expect(settings.modifierIntensity == HapticSettings.defaultModifierIntensity)
         #expect(settings.dragIntensity == HapticSettings.defaultDragIntensity)
     }
 
@@ -34,14 +33,12 @@ struct HapticSettingsTests {
         // Pre-populate UserDefaults
         defaults.set(false, forKey: SettingsKey.hapticEnabled.rawValue)
         defaults.set(0.3, forKey: SettingsKey.hapticIntensityTap.rawValue)
-        defaults.set(0.6, forKey: SettingsKey.hapticIntensityModifier.rawValue)
         defaults.set(0.9, forKey: SettingsKey.hapticIntensityDrag.rawValue)
 
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
         #expect(settings.enabled == false)
         #expect(abs(settings.tapIntensity - 0.3) < 0.01)
-        #expect(abs(settings.modifierIntensity - 0.6) < 0.01)
         #expect(abs(settings.dragIntensity - 0.9) < 0.01)
     }
 
@@ -110,14 +107,11 @@ struct HapticSettingsTests {
 
         // Store non-numeric values that could corrupt settings
         defaults.set("not_a_number", forKey: SettingsKey.hapticIntensityTap.rawValue)
-        defaults.set(true, forKey: SettingsKey.hapticIntensityModifier.rawValue)
 
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
         // Should fall back to defaults, not use 0.0
         #expect(settings.tapIntensity == HapticSettings.defaultTapIntensity)
-        // Boolean stored as NSNumber: true -> 1.0, clamped to 1.0
-        #expect(settings.modifierIntensity == 1.0)
     }
 
     @Test func missingDefaultsFallBackCorrectly() {
@@ -126,7 +120,6 @@ struct HapticSettingsTests {
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
         #expect(settings.tapIntensity == HapticSettings.defaultTapIntensity)
-        #expect(settings.modifierIntensity == HapticSettings.defaultModifierIntensity)
         #expect(settings.dragIntensity == HapticSettings.defaultDragIntensity)
         #expect(settings.enabled == true)
     }
@@ -138,11 +131,9 @@ struct HapticSettingsTests {
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
         settings.tapIntensity = 0.3
-        settings.modifierIntensity = 0.6
         settings.dragIntensity = 0.9
 
         #expect(settings.intensity(for: .tap) == 0.3)
-        #expect(settings.intensity(for: .modifier) == 0.6)
         #expect(settings.intensity(for: .drag) == 0.9)
     }
 }
