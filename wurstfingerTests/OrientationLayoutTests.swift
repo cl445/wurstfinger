@@ -19,24 +19,36 @@ struct OrientationLayoutTests {
     ///
     /// The viewModel must have a @Published viewWidth that the controller updates
     /// in viewWillLayoutSubviews(), so SwiftUI re-evaluates the layout.
-    @Test("viewModel has published viewWidth for orientation change handling")
-    func viewModelHasPublishedViewWidth() {
+    @Test("viewWidth publishes changes for orientation handling")
+    func viewWidthPublishesChanges() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        let mirror = Mirror(reflecting: viewModel)
 
-        // @Published properties are stored with an underscore prefix in Mirror.
-        let hasViewWidth = mirror.children.contains { label, _ in
-            label == "_viewWidth"
-        }
+        var observedWidths: [CGFloat] = []
+        let cancellable = viewModel.$viewWidth
+            .dropFirst()
+            .sink { observedWidths.append($0) }
 
-        #expect(
-            hasViewWidth,
-            """
-            KeyboardViewModel must have @Published viewWidth so the controller \
-            can signal width changes in viewWillLayoutSubviews(). Without it, \
-            orientation changes while the keyboard is backgrounded leave the \
-            layout stale because SwiftUI has no observable trigger to re-render.
-            """
-        )
+        viewModel.updateViewWidth(400)
+        viewModel.updateViewWidth(800)
+
+        #expect(observedWidths == [400, 800])
+        #expect(viewModel.viewWidth == 800)
+        _ = cancellable
+    }
+
+    @Test("Same viewWidth does not trigger redundant publish")
+    func sameViewWidthNoRedundantPublish() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+
+        var publishCount = 0
+        let cancellable = viewModel.$viewWidth
+            .dropFirst()
+            .sink { _ in publishCount += 1 }
+
+        viewModel.updateViewWidth(400)
+        viewModel.updateViewWidth(400)
+
+        #expect(publishCount == 1, "Same width should not publish again")
+        _ = cancellable
     }
 }
