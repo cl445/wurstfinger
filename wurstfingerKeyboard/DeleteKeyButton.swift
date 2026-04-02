@@ -49,6 +49,7 @@ struct DeleteKeyButton: View {
             Image(systemName: "delete.left")
         }
         .accessibilityLabel(Text("Delete"))
+        .contentShape(Rectangle().inset(by: -KeyboardConstants.Layout.touchPadding))
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in

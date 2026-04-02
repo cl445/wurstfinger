@@ -19,11 +19,9 @@ struct KeyboardButton<Label: View, Overlay: View>: View {
     @State private var isActive = false
     @State private var positions = RingBuffer<CGPoint>(capacity: KeyboardConstants.Gesture.positionBufferSize)
 
-    /// Extra touch area extension to cover margins between keys
+    /// Extra touch area extension to cover all gaps between and around keys
     private var touchPadding: CGFloat {
-        // Extend touch area by half the grid spacing on each side
-        // This ensures the entire margin area is covered by adjacent keys
-        KeyboardConstants.Layout.gridHorizontalSpacing / 2 + 2
+        KeyboardConstants.Layout.touchPadding
     }
 
     var body: some View {
