@@ -39,10 +39,12 @@ final class KeyboardViewController: UIInputViewController {
             self?.perform(action: action)
         }
 
-        // Configure UI on next run loop to allow faster initial display
-        DispatchQueue.main.async { [weak self] in
-            self?.configureHosting()
-        }
+        // Configure hosting synchronously so the SwiftUI view exists
+        // before viewWillAppear sets the height constraint. Deferring via
+        // DispatchQueue.main.async caused a race in WebView-based apps where
+        // viewWillAppear ran before configureHosting, leaving the extension
+        // with a height constraint but no content.
+        configureHosting()
     }
 
     override func viewWillAppear(_ animated: Bool) {
