@@ -72,6 +72,9 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         view.backgroundColor = .clear
+        // Update viewModel with current width so SwiftUI re-renders after
+        // orientation changes that happen while the keyboard is backgrounded (Bug #92).
+        viewModel.updateViewWidth(view.bounds.width)
     }
 
     override var needsInputModeSwitchKey: Bool {
@@ -88,6 +91,7 @@ final class KeyboardViewController: UIInputViewController {
         view.addSubview(controller.view)
 
         NSLayoutConstraint.activate([
+            controller.view.topAnchor.constraint(equalTo: view.topAnchor),
             controller.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             controller.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             controller.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)

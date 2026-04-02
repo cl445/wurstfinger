@@ -28,9 +28,11 @@ struct KeyboardRootView: View {
         let keyHeight = KeyboardConstants.Calculations.keyHeight(aspectRatio: viewModel.keyAspectRatio)
 
         // Calculate horizontal position offset
+        // Use viewModel.viewWidth (updated by the controller on layout changes)
+        // so SwiftUI re-evaluates after orientation changes (Bug #92).
         let screenBounds = DeviceLayoutUtils.screenBounds
         let screenShortestSide = min(screenBounds.width, screenBounds.height)
-        let currentWidth = overrideWidth ?? screenBounds.width
+        let currentWidth = overrideWidth ?? viewModel.viewWidth
 
         // Constrain the base width to the device's shortest side (portrait width)
         // This prevents the keyboard from stretching in landscape
