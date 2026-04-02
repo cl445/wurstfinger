@@ -142,7 +142,6 @@ struct HapticSettingsView: View {
                     if !editing {
                         // Trigger feedback when user releases the slider
                         let generator = UIImpactFeedbackGenerator(style: .rigid)
-                        generator.prepare()
                         generator.impactOccurred(intensity: value.wrappedValue)
                     }
                 }
