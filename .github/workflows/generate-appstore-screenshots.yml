@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: List available simulators
         run: |
@@ -61,7 +61,7 @@ jobs:
           fi
 
       - name: Cache Python venv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: venv
           key: ${{ runner.os }}-venv-appstore-${{ hashFiles('scripts/generate-appstore-screenshots.sh') }}
@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload screenshots artifact
         if: ${{ inputs.upload_artifact }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: appstore-screenshots
           path: appstore-screenshots/
