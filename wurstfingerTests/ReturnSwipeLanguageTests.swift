@@ -13,7 +13,7 @@ import Testing
 struct ReturnSwipeLanguageTests {
     /// Bug #94: French layout return swipe up on center key (O) should produce "H",
     /// because the French up-swipe character is "h" — not "U" (the English default).
-    @Test func frenchReturnSwipeUpOnCenterKeyProducesH() throws {
+    @Test func frenchReturnSwipeUpOnCenterKeyProducesH() {
         let frenchLayout = KeyboardLayout.layout(for: .french)
         let viewModel = KeyboardViewModel(layout: frenchLayout, shouldPersistSettings: false)
         var inserted: [String] = []
@@ -24,7 +24,7 @@ struct ReturnSwipeLanguageTests {
             }
         }
 
-        let centerKey = try #require(viewModel.rows[1][1])
+        let centerKey = viewModel.rows[1][1]
         viewModel.handleKeySwipeReturn(centerKey, direction: .up)
 
         #expect(
@@ -35,13 +35,13 @@ struct ReturnSwipeLanguageTests {
 
     /// Regression guard: for every language, the center key's return swipe overrides
     /// should match the uppercased version of the regular swipe output.
-    @Test func centerKeyReturnSwipeMatchesUppercasedSwipeForAllLanguages() throws {
+    @Test func centerKeyReturnSwipeMatchesUppercasedSwipeForAllLanguages() {
         for config in LanguageConfig.allLanguages {
             let layout = KeyboardLayout.layout(for: config)
             let viewModel = KeyboardViewModel(layout: layout, shouldPersistSettings: false)
             viewModel.bindActionHandler { _ in }
 
-            let centerKey = try #require(viewModel.rows[1][1])
+            let centerKey = viewModel.rows[1][1]
 
             for direction in KeyboardDirection.allCases where direction != .center {
                 // Get the regular swipe output
