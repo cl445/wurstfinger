@@ -1,4 +1,13 @@
-Version 1.1.1
+Version 1.2.0
 
-Bugfix:
-• Fehlendes Apostroph (') auf der e-Taste wiederhergestellt
+Highlights:
+• Keine toten Bereiche mehr — jeder Pixel der Tastatur reagiert jetzt auf Berührungen
+• Schnelleres haptisches Feedback — Vibration bereits beim Antippen statt erst nach der Aktion
+• Tastatur bleibt nach Drehen im Hintergrund korrekt ausgerichtet
+
+Fehlerbehebungen:
+• Französisches Layout: Return-Swipe auf Mitteltaste korrigiert
+• Auto-Großschreibung nach Löschen funktioniert wieder korrekt
+• Apostroph löst keinen Akzent-Modus mehr aus
+• iOS zeigt jetzt die korrekte Tastatursprache an
+• Diverse weitere Korrekturen bei Gesten und Einstellungen

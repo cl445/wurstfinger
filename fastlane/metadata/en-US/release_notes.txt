@@ -1,4 +1,13 @@
-Version 1.1.1
+Version 1.2.0
 
-Bug Fix:
-• Restored missing apostrophe (') on the e-key
+Highlights:
+• No more dead zones — every pixel on the keyboard now responds to touch
+• Snappier haptic feedback — vibration fires on touch-down instead of after the action
+• Keyboard stays correctly aligned after rotating while backgrounded
+
+Bug fixes:
+• French layout: fixed return swipe on center key
+• Auto-capitalization after delete works correctly again
+• Apostrophe no longer triggers accent/compose mode
+• iOS now reports the correct keyboard language
+• Various other fixes for gestures and settings
