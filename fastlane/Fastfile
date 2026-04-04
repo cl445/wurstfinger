@@ -200,8 +200,15 @@ platform :ios do
       xcargs: ENV["CI"] ? "OTHER_CODE_SIGN_FLAGS='--keychain fastlane_tmp_keychain'" : nil
     )
 
+    # Read version from Xcode project so deliver creates the correct App Store version
+    version = get_version_number(
+      xcodeproj: "Wurstfinger.xcodeproj",
+      target: "WurstfingerApp"
+    )
+
     upload_to_app_store(
       api_key: api_key,
+      app_version: version,
       skip_metadata: false,
       skip_screenshots: false,
       screenshots_path: "./fastlane/screenshots",
