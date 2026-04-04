@@ -46,11 +46,17 @@ jobs:
 
       - name: Boot Simulator
         id: sim
+        timeout-minutes: 5
         run: |
           SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 16" | grep -v "Plus\|Pro" | head -1 | grep -oE '\([A-F0-9-]+\)' | tr -d '()')
           if [ -z "$SIMULATOR_ID" ]; then
             echo "iPhone 16 simulator not found, using iPhone 15"
             SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 15" | grep -v "Plus\|Pro" | head -1 | grep -oE '\([A-F0-9-]+\)' | tr -d '()')
+          fi
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "::error::No compatible iPhone simulator found (iPhone 16 or iPhone 15)"
+            xcrun simctl list devices available
+            exit 1
           fi
           echo "Using simulator: $SIMULATOR_ID"
           echo "simulator_id=$SIMULATOR_ID" >> "$GITHUB_OUTPUT"
