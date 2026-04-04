@@ -28,7 +28,7 @@ struct SpaceKeyButton: View {
         ) {
             Color.clear
         }
-        .contentShape(Rectangle())
+        .contentShape(Rectangle().inset(by: -KeyboardTouchArea.padding))
         .accessibilityLabel(Text("Space"))
         .gesture(
             DragGesture(minimumDistance: 0)
