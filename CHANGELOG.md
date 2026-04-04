@@ -2,8 +2,13 @@
 
 ## Unreleased
 
+## v1.2.0 — 2026-04-04
+
 ### Fixed
 
+- Eliminate dead zones on keyboard surface — every pixel now responds to touch (#125)
+- Fix keyboard content gap by replacing scaleEffect with direct scaling (#124)
+- Fix keyboard misalignment after orientation change while backgrounded (#92)
 - Fix French layout return swipe on center key producing U instead of H; all center key return overrides are now config-driven (#94)
 - Fix auto-capitalization after delete canceling manual temporary shift (#113)
 - Fix angle boundary overlap in swipe direction detection (half-open ranges)
@@ -15,12 +20,16 @@
 - Fix UserDefaults `as? CGFloat` casting with `double(forKey:)` for reliable settings loading
 - Lower height constraint priority to `.defaultHigh` to prevent Auto Layout conflicts
 - Fix deprecated APIs and SwiftUI view anti-patterns
+- Fix apostrophe triggering compose/accent mode (#101)
 
 ### Added
 
+- Haptic feedback now fires on touch-down instead of action completion for snappier feel (#121)
+- FAQ section documenting iOS limitations (#86)
 - Accessibility labels for globe and return keys
 - 50+ new tests for settings, haptics, Vector2D, and gesture calculations (#90)
-- Tests for KeyboardDirection, RingBuffer, circular gestures, layout validation, and ComposeEngine (723 lines)
+- Tests for KeyboardDirection, RingBuffer, circular gestures, layout validation, and ComposeEngine
+- SwiftLint, SwiftFormat, and Periphery dead code detection in CI
 - CodeRabbit configuration for automated PR reviews
 
 ### Changed
@@ -44,6 +53,7 @@
 - Pass value types to KeyHintOverlay instead of ViewModel
 - Consolidate DeleteKeyButton @State into GestureState struct
 - Explicit LanguageConfig Equatable by id
+- Upgrade GitHub Actions to latest versions (Node.js 24)
 
 ## v1.1.1 — 2025-12-28
 
