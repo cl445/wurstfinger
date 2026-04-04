@@ -36,6 +36,9 @@ grep MARKETING_VERSION Wurstfinger.xcodeproj/project.pbxproj
 ```
 Fix, commit, force-update the tag, and re-trigger the workflow.
 
+### App Store Connect asks to "select a build"
+Fastlane's `upload_to_app_store` needs the `build_number` parameter to attach the uploaded build to the version. Without it, the version is created but no build is selected. This is already configured in the Fastfile — if it happens anyway, check that `get_build_number` returns the correct value.
+
 ### Wrong release notes in App Store Connect
 Fastlane reads from `fastlane/metadata/*/release_notes.txt`. Update them before creating the release. If already submitted, edit directly in App Store Connect or re-run the workflow after fixing.
 
