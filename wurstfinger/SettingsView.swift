@@ -63,7 +63,7 @@ struct SettingsView: View {
     private var generalSection: some View {
         Section {
             NavigationLink(destination: LanguageSelectionView()) {
-                SettingsRow(icon: "globe", color: .blue, title: "Language", subtitle: languageSettings.selectedLanguage.name)
+                SettingsRow(icon: "globe", color: .blue, title: "Languages", subtitle: enabledLanguagesSummary)
             }
 
             Toggle(isOn: $utilityColumnLeading) {
@@ -203,6 +203,14 @@ struct SettingsView: View {
     }
 
     // MARK: - Helpers
+
+    private var enabledLanguagesSummary: String {
+        let names = languageSettings.enabledLanguages.map(\.name)
+        if names.count <= 2 {
+            return names.joined(separator: ", ")
+        }
+        return "\(names[0]) + \(names.count - 1) more"
+    }
 
     private var keyboardStyleDescription: String {
         let style = KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic

@@ -9,36 +9,84 @@ import SwiftUI
 
 struct LanguageSelectionView: View {
     @StateObject private var languageSettings = LanguageSettings.shared
-    @Environment(\.dismiss) private var dismiss
+    @State private var showLastLanguageAlert = false
 
     var body: some View {
-        List(LanguageConfig.allLanguages) { language in
-            Button {
-                languageSettings.selectLanguage(language)
-                dismiss()
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(language.name)
-                            .font(.body)
-                            .foregroundColor(.primary)
-
-                        Text("MessagEase Layout")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-
-                    Spacer()
-
-                    if languageSettings.selectedLanguageId == language.id {
-                        Image(systemName: "checkmark")
-                            .foregroundColor(.accentColor)
-                    }
+        List {
+            Section {
+                ForEach(LanguageConfig.allLanguages) { language in
+                    LanguageRow(
+                        language: language,
+                        isEnabled: languageSettings.isLanguageEnabled(language),
+                        isActive: languageSettings.selectedLanguageId == language.id,
+                        onTap: {
+                            if languageSettings.isLanguageEnabled(language) {
+                                languageSettings.selectLanguage(language)
+                            } else {
+                                languageSettings.toggleLanguage(language)
+                                languageSettings.selectLanguage(language)
+                            }
+                        },
+                        onToggle: {
+                            if !languageSettings.toggleLanguage(language) {
+                                showLastLanguageAlert = true
+                            }
+                        }
+                    )
+                }
+            } footer: {
+                if languageSettings.hasMultipleLanguages {
+                    Text("Swipe right on the globe key to switch languages.")
                 }
             }
         }
-        .navigationTitle("Keyboard Language")
+        .navigationTitle("Languages")
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Cannot Disable", isPresented: $showLastLanguageAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("At least one language must be enabled.")
+        }
+    }
+}
+
+private struct LanguageRow: View {
+    let language: LanguageConfig
+    let isEnabled: Bool
+    let isActive: Bool
+    let onTap: () -> Void
+    let onToggle: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack {
+                Button(action: onToggle) {
+                    Image(systemName: isEnabled ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(isEnabled ? .accentColor : .secondary)
+                        .imageScale(.large)
+                }
+                .buttonStyle(.plain)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(language.name)
+                        .font(.body)
+                        .foregroundColor(.primary)
+
+                    Text("MessagEase Layout")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                if isActive {
+                    Text("Active")
+                        .font(.caption)
+                        .foregroundColor(.accentColor)
+                        .fontWeight(.medium)
+                }
+            }
+        }
     }
 }
 

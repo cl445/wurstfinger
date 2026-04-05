@@ -264,6 +264,232 @@ struct PrimaryLanguageResolutionTests {
     }
 }
 
+// MARK: - Multi-Language Settings Tests
+
+struct MultiLanguageSettingsTests {
+    private func createTestDefaults() -> (UserDefaults, String) {
+        let suiteName = "test.multiLang.\(UUID().uuidString)"
+        return (UserDefaults(suiteName: suiteName)!, suiteName)
+    }
+
+    private func createSettings(defaults: UserDefaults, selectedId: String = "en_US", enabledIds: [String]? = nil) -> LanguageSettings {
+        defaults.set(selectedId, forKey: SettingsKey.selectedLanguageId.rawValue)
+        if let enabledIds {
+            LanguageSettings.saveEnabledLanguageIds(enabledIds, to: defaults)
+        }
+        return LanguageSettings(userDefaults: defaults)
+    }
+
+    @Test("Migration: no enabled list seeds from selected language")
+    func migrationSeedsFromSelected() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "de_DE")
+        #expect(settings.enabledLanguageIds == ["de_DE"])
+        #expect(settings.selectedLanguageId == "de_DE")
+    }
+
+    @Test("Loads existing enabled list from UserDefaults")
+    func loadsEnabledList() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU", "de_DE"])
+        #expect(settings.enabledLanguageIds == ["en_US", "ru_RU", "de_DE"])
+    }
+
+    @Test("Toggle enables a language")
+    func toggleEnablesLanguage() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
+        settings.toggleLanguage(.russian)
+        #expect(settings.enabledLanguageIds.contains("ru_RU"))
+        #expect(settings.enabledLanguageIds.count == 2)
+    }
+
+    @Test("Toggle disables an enabled language")
+    func toggleDisablesLanguage() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU", "de_DE"])
+        let result = settings.toggleLanguage(.russian)
+        #expect(result == true)
+        #expect(!settings.enabledLanguageIds.contains("ru_RU"))
+        #expect(settings.enabledLanguageIds.count == 2)
+    }
+
+    @Test("Cannot disable last remaining language")
+    func cannotDisableLastLanguage() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
+        let result = settings.toggleLanguage(.english)
+        #expect(result == false)
+        #expect(settings.enabledLanguageIds == ["en_US"])
+    }
+
+    @Test("Disabling selected language switches to first enabled")
+    func disablingSelectedSwitchesToFirst() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "ru_RU", enabledIds: ["en_US", "ru_RU", "de_DE"])
+        settings.toggleLanguage(.russian)
+        #expect(settings.selectedLanguageId == "en_US")
+    }
+
+    @Test("Selecting a language adds it to enabled if not present")
+    func selectAddsToEnabled() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
+        settings.selectLanguage(.russian)
+        #expect(settings.selectedLanguageId == "ru_RU")
+        #expect(settings.enabledLanguageIds.contains("ru_RU"))
+    }
+
+    @Test("Next language cycles through enabled list with 2 languages")
+    func nextLanguageCyclesTwoLanguages() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
+        #expect(settings.nextLanguageId(after: "en_US") == "ru_RU")
+        #expect(settings.nextLanguageId(after: "ru_RU") == "en_US")
+    }
+
+    @Test("Next language cycles through enabled list with 3 languages")
+    func nextLanguageCyclesThreeLanguages() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU", "de_DE"])
+        #expect(settings.nextLanguageId(after: "en_US") == "ru_RU")
+        #expect(settings.nextLanguageId(after: "ru_RU") == "de_DE")
+        #expect(settings.nextLanguageId(after: "de_DE") == "en_US")
+    }
+
+    @Test("Next language cycles through many enabled languages")
+    func nextLanguageCyclesManyLanguages() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let ids = ["en_US", "ru_RU", "de_DE", "fr_FR", "es_ES"]
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ids)
+        for i in 0 ..< ids.count {
+            let next = settings.nextLanguageId(after: ids[i])
+            let expectedIndex = (i + 1) % ids.count
+            #expect(next == ids[expectedIndex], "After \(ids[i]) expected \(ids[expectedIndex]), got \(next)")
+        }
+    }
+
+    @Test("Next language returns same when only one enabled")
+    func nextLanguageSingleLanguage() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
+        #expect(settings.nextLanguageId(after: "en_US") == "en_US")
+    }
+
+    @Test("Next language falls back to first when current not in list")
+    func nextLanguageFallsBackWhenNotInList() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
+        #expect(settings.nextLanguageId(after: "de_DE") == "en_US")
+    }
+
+    @Test("hasMultipleLanguages reflects enabled count")
+    func hasMultipleLanguagesFlag() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let single = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
+        #expect(single.hasMultipleLanguages == false)
+
+        let multi = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
+        #expect(multi.hasMultipleLanguages == true)
+    }
+
+    @Test("currentLanguageLabel returns uppercase language code")
+    func languageLabelUppercase() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let enSettings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
+        #expect(enSettings.currentLanguageLabel == "EN")
+
+        let ruSettings = createSettings(defaults: defaults, selectedId: "ru_RU", enabledIds: ["ru_RU"])
+        #expect(ruSettings.currentLanguageLabel == "RU")
+
+        let deSettings = createSettings(defaults: defaults, selectedId: "de_DE", enabledIds: ["de_DE"])
+        #expect(deSettings.currentLanguageLabel == "DE")
+    }
+
+    @Test("enabledLanguages returns resolved LanguageConfig objects")
+    func enabledLanguagesResolved() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU", "de_DE"])
+        let configs = settings.enabledLanguages
+        #expect(configs.count == 3)
+        #expect(configs[0].id == "en_US")
+        #expect(configs[1].id == "ru_RU")
+        #expect(configs[2].id == "de_DE")
+    }
+
+    @Test("Stale IDs in enabled list are filtered out on load")
+    func staleIdsFiltered() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "zz_ZZ", "ru_RU"])
+        #expect(settings.enabledLanguageIds == ["en_US", "ru_RU"])
+    }
+
+    @Test("Selected language always in enabled list after init")
+    func selectedAlwaysInEnabled() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        // Selected is ru_RU but enabled list only has en_US
+        let settings = createSettings(defaults: defaults, selectedId: "ru_RU", enabledIds: ["en_US"])
+        #expect(settings.enabledLanguageIds.contains("ru_RU"))
+        #expect(settings.enabledLanguageIds.contains("en_US"))
+    }
+
+    @Test("Enabled list persistence round-trips through JSON")
+    func enabledListPersistence() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let ids = ["en_US", "ru_RU", "de_DE", "fr_FR"]
+        LanguageSettings.saveEnabledLanguageIds(ids, to: defaults)
+        let loaded = LanguageSettings.loadEnabledLanguageIds(from: defaults)
+        #expect(loaded == ids)
+    }
+
+    @Test("isLanguageEnabled reflects enabled state")
+    func isLanguageEnabledCheck() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
+        #expect(settings.isLanguageEnabled(.english) == true)
+        #expect(settings.isLanguageEnabled(.russian) == true)
+        #expect(settings.isLanguageEnabled(.german) == false)
+    }
+}
+
 // MARK: - Info.plist PrimaryLanguage Tests
 
 struct InfoPlistLanguageTests {

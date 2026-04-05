@@ -24,6 +24,7 @@ enum SettingsKey: String {
     case keyboardHorizontalPosition
     case numpadStyle
     case selectedLanguageId
+    case enabledLanguageIds
     case autoCapitalizeEnabled
     case expertModeEnabled
     case keyboardStyle
