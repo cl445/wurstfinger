@@ -441,6 +441,11 @@ final class KeyboardViewModel: ObservableObject {
         locale
     }
 
+    /// Vietnamese Telex input is active when the selected language is Vietnamese
+    var isTelexActive: Bool {
+        locale.language.languageCode?.identifier == "vi"
+    }
+
     // MARK: - Haptic Feedback (delegated to HapticFeedbackManager)
 
     /// Haptic feedback for key touch-down — called by button views on first contact
