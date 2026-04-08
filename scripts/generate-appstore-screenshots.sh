@@ -97,6 +97,21 @@ echo "  Booting simulator..."
 xcrun simctl boot "$UDID" 2>/dev/null || true
 xcrun simctl bootstatus "$UDID" -b 2>/dev/null || true
 
+# Ensure cleanup runs on any exit (normal, error, or signal)
+cleanup() {
+    echo ""
+    echo -e "${BLUE}🧹 Cleaning up...${NC}"
+    xcrun simctl status_bar "$UDID" clear 2>/dev/null || true
+    xcrun simctl shutdown "$UDID" 2>/dev/null || true
+    rm -rf "$DERIVED_DATA"
+    rm -rf "$TEMP_SCREENSHOTS"
+}
+trap cleanup EXIT
+
+# Override status bar to get consistent screenshots (Apple's standard 9:41)
+echo "  Setting consistent status bar..."
+xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100
+
 # Run screenshot tests
 echo "  Running screenshot tests..."
 rm -rf "$DERIVED_DATA"
@@ -111,9 +126,6 @@ xcodebuild test \
     2>&1 | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi
 TEST_RESULT=$?
 set -e
-
-# Shutdown simulator
-xcrun simctl shutdown "$UDID" 2>/dev/null || true
 
 if [ $TEST_RESULT -ne 0 ]; then
     echo -e "${YELLOW}⚠️  Tests may have issues, checking for screenshots...${NC}"
@@ -187,12 +199,6 @@ for src in "$FASTLANE_SCREENSHOTS/APP_IPHONE_67"/*.png; do
         COUNTER=$((COUNTER + 1))
     fi
 done
-
-# Cleanup
-echo ""
-echo -e "${BLUE}🧹 Cleaning up...${NC}"
-rm -rf "$DERIVED_DATA"
-rm -rf "$TEMP_SCREENSHOTS"
 
 # Summary
 echo ""

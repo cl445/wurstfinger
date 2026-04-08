@@ -47,31 +47,87 @@ jobs:
           xcrun simctl bootstatus "$DEVICE_UDID" -b
           echo "Simulator ready"
 
+      - name: Save existing screenshots for comparison
+        run: |
+          mkdir -p /tmp/old-screenshots
+          cp docs/images/*.webp /tmp/old-screenshots/ 2>/dev/null || true
+
       - name: Generate screenshots
         run: |
           source venv/bin/activate
           ./scripts/generate-screenshots.sh
         timeout-minutes: 25
 
-      - name: Check for screenshot changes
+      - name: Check for visual screenshot changes
         id: check_changes
         run: |
-          echo "📁 Files in docs/images/:"
-          ls -la docs/images/ || echo "Directory does not exist"
-          echo ""
-          echo "📊 Git status:"
-          git status docs/images/ || true
-          echo ""
-          echo "🔍 Git diff:"
-          git diff --stat docs/images/*.webp || true
-          echo ""
-          if git diff --quiet docs/images/*.webp 2>/dev/null; then
-            echo "Result: No changes detected"
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "Result: Changes detected!"
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
+          source venv/bin/activate
+          python3 << 'PYEOF'
+          import os
+          import sys
+          from PIL import Image
+          import numpy as np
+
+          OLD_DIR = "/tmp/old-screenshots"
+          NEW_DIR = "docs/images"
+          # Per-pixel noise threshold: channel differences below this are compression noise
+          PIXEL_THRESHOLD = 10
+          # Fraction of pixels that must exceed PIXEL_THRESHOLD to count as a real change
+          CHANGE_RATIO = 0.001  # 0.1% of pixels
+
+          changed = False
+          old_files = {f for f in os.listdir(OLD_DIR) if f.endswith(".webp")} if os.path.isdir(OLD_DIR) else set()
+          new_files = {f for f in os.listdir(NEW_DIR) if f.endswith(".webp")}
+
+          # Detect removed/renamed screenshots
+          removed = old_files - new_files
+          for filename in sorted(removed):
+              print(f"  🗑️  Removed screenshot: {filename}")
+              changed = True
+
+          for filename in sorted(new_files):
+              old_path = os.path.join(OLD_DIR, filename)
+              new_path = os.path.join(NEW_DIR, filename)
+
+              if not os.path.exists(old_path):
+                  print(f"  ✨ New screenshot: {filename}")
+                  changed = True
+                  continue
+
+              old_img = Image.open(old_path).convert("RGB")
+              new_img = Image.open(new_path).convert("RGB")
+
+              # Normalize to common dimensions to handle crop jitter
+              if old_img.size != new_img.size:
+                  w = min(old_img.width, new_img.width)
+                  h = min(old_img.height, new_img.height)
+                  old_img = old_img.resize((w, h), Image.LANCZOS)
+                  new_img = new_img.resize((w, h), Image.LANCZOS)
+
+              old_arr = np.array(old_img)
+              new_arr = np.array(new_img)
+
+              # Count pixels where any channel differs beyond noise threshold
+              pixel_diff = np.max(np.abs(old_arr.astype(float) - new_arr.astype(float)), axis=2)
+              changed_pixels = np.sum(pixel_diff > PIXEL_THRESHOLD)
+              total_pixels = pixel_diff.size
+              ratio = changed_pixels / total_pixels
+              if ratio > CHANGE_RATIO:
+                  print(f"  🔄 Visual change: {filename} ({changed_pixels}/{total_pixels} pixels changed, {ratio:.4%})")
+                  changed = True
+              else:
+                  print(f"  ✅ Unchanged: {filename} ({changed_pixels}/{total_pixels} pixels changed, {ratio:.4%})")
+                  # Restore old file so git sees no diff
+                  os.replace(old_path, new_path)
+
+          if changed:
+              print("\nResult: Visual changes detected!")
+          else:
+              print("\nResult: No visual changes")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"changed={'true' if changed else 'false'}\n")
+          PYEOF
 
       - name: Create PR with screenshots
         if: steps.check_changes.outputs.changed == 'true'
@@ -83,7 +139,7 @@ jobs:
           BRANCH_NAME="automated/update-screenshots-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$BRANCH_NAME"
 
-          git add docs/images/*.webp
+          git add -A docs/images/
           git commit -m "Update screenshots"
           git push -u origin "$BRANCH_NAME"
 
