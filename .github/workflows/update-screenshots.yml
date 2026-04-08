@@ -74,9 +74,16 @@ jobs:
           THRESHOLD = 1.0
 
           changed = False
-          new_files = [f for f in os.listdir(NEW_DIR) if f.endswith(".webp")]
+          old_files = {f for f in os.listdir(OLD_DIR) if f.endswith(".webp")} if os.path.isdir(OLD_DIR) else set()
+          new_files = {f for f in os.listdir(NEW_DIR) if f.endswith(".webp")}
 
-          for filename in new_files:
+          # Detect removed/renamed screenshots
+          removed = old_files - new_files
+          for filename in sorted(removed):
+              print(f"  🗑️  Removed screenshot: {filename}")
+              changed = True
+
+          for filename in sorted(new_files):
               old_path = os.path.join(OLD_DIR, filename)
               new_path = os.path.join(NEW_DIR, filename)
 
@@ -85,15 +92,20 @@ jobs:
                   changed = True
                   continue
 
-              old_img = np.array(Image.open(old_path).convert("RGB"))
-              new_img = np.array(Image.open(new_path).convert("RGB"))
+              old_img = Image.open(old_path).convert("RGB")
+              new_img = Image.open(new_path).convert("RGB")
 
-              if old_img.shape != new_img.shape:
-                  print(f"  📐 Size changed: {filename} ({old_img.shape} → {new_img.shape})")
-                  changed = True
-                  continue
+              # Normalize to common dimensions to handle crop jitter
+              if old_img.size != new_img.size:
+                  w = min(old_img.width, new_img.width)
+                  h = min(old_img.height, new_img.height)
+                  old_img = old_img.resize((w, h), Image.LANCZOS)
+                  new_img = new_img.resize((w, h), Image.LANCZOS)
 
-              diff = np.mean(np.abs(old_img.astype(float) - new_img.astype(float)))
+              old_arr = np.array(old_img)
+              new_arr = np.array(new_img)
+
+              diff = np.mean(np.abs(old_arr.astype(float) - new_arr.astype(float)))
               if diff > THRESHOLD:
                   print(f"  🔄 Visual change: {filename} (diff={diff:.2f})")
                   changed = True
@@ -121,7 +133,7 @@ jobs:
           BRANCH_NAME="automated/update-screenshots-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$BRANCH_NAME"
 
-          git add docs/images/*.webp
+          git add -A docs/images/
           git commit -m "Update screenshots"
           git push -u origin "$BRANCH_NAME"
 
