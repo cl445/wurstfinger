@@ -97,10 +97,6 @@ echo "  Booting simulator..."
 xcrun simctl boot "$UDID" 2>/dev/null || true
 xcrun simctl bootstatus "$UDID" -b 2>/dev/null || true
 
-# Override status bar to get consistent screenshots (Apple's standard 9:41)
-echo "  Setting consistent status bar..."
-xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100
-
 # Ensure cleanup runs on any exit (normal, error, or signal)
 cleanup() {
     echo ""
@@ -111,6 +107,10 @@ cleanup() {
     rm -rf "$TEMP_SCREENSHOTS"
 }
 trap cleanup EXIT
+
+# Override status bar to get consistent screenshots (Apple's standard 9:41)
+echo "  Setting consistent status bar..."
+xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100
 
 # Run screenshot tests
 echo "  Running screenshot tests..."

@@ -47,8 +47,7 @@ echo "  Destination: $DESTINATION"
 echo "  Output: $DOCS_DIR"
 echo ""
 
-# Override status bar to get consistent screenshots (Apple's standard 9:41)
-echo -e "${BLUE}⏰ Setting consistent status bar...${NC}"
+# Find target simulator UDID by name
 TARGET_UDID=$(xcrun simctl list devices available -j | python3 -c "
 import json, sys
 name = '$DEVICE_NAME'
@@ -60,6 +59,20 @@ for runtime_devices in devices.values():
             raise SystemExit(0)
 raise SystemExit(1)
 " 2>/dev/null || true)
+
+# Ensure cleanup runs on any exit (normal, error, or signal)
+cleanup() {
+    echo ""
+    echo -e "${BLUE}🧹 Cleaning up...${NC}"
+    if [ -n "$TARGET_UDID" ]; then
+        xcrun simctl status_bar "$TARGET_UDID" clear 2>/dev/null || true
+    fi
+    rm -rf "$DERIVED_DATA"
+}
+trap cleanup EXIT
+
+# Override status bar to get consistent screenshots (Apple's standard 9:41)
+echo -e "${BLUE}⏰ Setting consistent status bar...${NC}"
 if [ -n "$TARGET_UDID" ]; then
     xcrun simctl status_bar "$TARGET_UDID" override --time "9:41" --batteryState charged --batteryLevel 100
     echo "  Set status bar to 9:41 on $TARGET_UDID ($DEVICE_NAME)"
@@ -67,17 +80,6 @@ else
     echo "  ⚠️  Could not find simulator '$DEVICE_NAME', skipping status bar override"
 fi
 echo ""
-
-# Ensure cleanup runs on any exit (normal, error, or signal)
-cleanup() {
-    echo ""
-    echo -e "${BLUE}🧹 Cleaning up...${NC}"
-    if [ -n "$TARGET_UDID" ]; then
-        xcrun simctl status_bar "$TARGET_UDID" clear
-    fi
-    rm -rf "$DERIVED_DATA"
-}
-trap cleanup EXIT
 
 # Run UI tests to generate screenshots
 echo -e "${BLUE}🧪 Running UI tests to generate screenshots...${NC}"
