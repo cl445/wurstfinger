@@ -26,7 +26,11 @@ final class DeadZoneTests: XCTestCase {
 
     private func actionCount() -> Int {
         let el = app.staticTexts.matching(identifier: "actionCount").firstMatch
-        return Int(el.label) ?? -1
+        guard let count = Int(el.label) else {
+            XCTFail("Failed to parse actionCount label: '\(el.label)'")
+            return 0
+        }
+        return count
     }
 
     /// Taps at the given screen coordinate and asserts the action counter incremented.
@@ -41,11 +45,13 @@ final class DeadZoneTests: XCTestCase {
         app.coordinate(withNormalizedOffset: .zero)
             .withOffset(CGVector(dx: x, dy: y))
             .tap()
-        Thread.sleep(forTimeInterval: 0.5)
+        let predicate = NSPredicate { _, _ in self.actionCount() > before }
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: nil)
+        let result = XCTWaiter.wait(for: [expectation], timeout: 2.0)
         let after = actionCount()
         XCTAssertGreaterThan(
             after, before,
-            "Dead zone: \(label) at (\(Int(x)), \(Int(y)))",
+            "Dead zone: \(label) at (\(Int(x)), \(Int(y)))\(result == .timedOut ? " (timed out)" : "")",
             file: file, line: line
         )
     }
@@ -174,32 +180,29 @@ final class DeadZoneTests: XCTestCase {
         guard let ret = findKey("Return") else { return }
 
         // Gap between Space bar and Return key (horizontal)
-        // Space bar is to the left of Return. Tap just left of Return's left edge.
-        if let keyT = findKey("t") {
-            // Space bar left edge ≈ leftmost grid key left edge
-            // Tap between space bar's right side and Return
-            let spaceRightApprox = ret.frame.minX
-            let x = spaceRightApprox - 2.5 // just inside the gap
-            let y = ret.frame.midY
-            tapAndAssert(x: x, y: y, label: "gap Space-Return")
-        }
+        // Tap between space bar's right side and Return
+        let gapInset = ret.frame.width * 0.05
+        tapAndAssert(
+            x: ret.frame.minX - gapInset,
+            y: ret.frame.midY,
+            label: "gap Space-Return"
+        )
 
         // Gap between grid key 's' and Delete (row 2, grid to utility)
-        // Both 's' and Delete produce actions
         if let keyS = findKey("s") {
+            let hOffset = keyS.frame.width * 0.3
             tapAndAssert(
-                x: keyS.frame.maxX + 20,
+                x: keyS.frame.maxX + hOffset,
                 y: keyS.frame.midY,
                 label: "h-gap: s-Delete"
             )
         }
 
         // Gap between Delete and Return (vertical, utility column)
-        // Both produce actions
         if let keyS = findKey("s") {
-            let utilityX = keyS.frame.maxX + 30 // approximate utility column x
+            let hOffset = keyS.frame.width * 0.5
             tapAndAssert(
-                x: utilityX,
+                x: keyS.frame.maxX + hOffset,
                 y: (keyS.frame.maxY + ret.frame.minY) / 2,
                 label: "v-gap: Delete-Return"
             )
@@ -213,15 +216,17 @@ final class DeadZoneTests: XCTestCase {
 
         // Left edge — well to the left of the leftmost grid key
         if let keyA = findKey("a") {
+            let edgeInset = keyA.frame.width * 0.15
             tapAndAssert(
-                x: keyA.frame.minX - 10,
+                x: keyA.frame.minX - edgeInset,
                 y: keyA.frame.midY,
                 label: "left edge near 'a'"
             )
         }
         if let keyT = findKey("t") {
+            let edgeInset = keyT.frame.width * 0.15
             tapAndAssert(
-                x: keyT.frame.minX - 10,
+                x: keyT.frame.minX - edgeInset,
                 y: keyT.frame.midY,
                 label: "left edge near 't'"
             )
@@ -229,8 +234,9 @@ final class DeadZoneTests: XCTestCase {
 
         // Right edge — to the right of rightmost grid key (toward utility)
         if let keyI = findKey("i") {
+            let edgeInset = keyI.frame.width * 0.2
             tapAndAssert(
-                x: keyI.frame.maxX + 15,
+                x: keyI.frame.maxX + edgeInset,
                 y: keyI.frame.midY,
                 label: "right of 'i' (toward globe)"
             )
@@ -238,39 +244,42 @@ final class DeadZoneTests: XCTestCase {
 
         // Top edge — above the top row
         if let keyA = findKey("a") {
+            let edgeInset = keyA.frame.height * 0.15
             tapAndAssert(
                 x: keyA.frame.midX,
-                y: keyA.frame.minY - 10,
+                y: keyA.frame.minY - edgeInset,
                 label: "top edge above 'a'"
             )
         }
         if let keyN = findKey("n") {
+            let edgeInset = keyN.frame.height * 0.15
             tapAndAssert(
                 x: keyN.frame.midX,
-                y: keyN.frame.minY - 10,
+                y: keyN.frame.minY - edgeInset,
                 label: "top edge above 'n'"
             )
         }
         if let keyI = findKey("i") {
+            let edgeInset = keyI.frame.height * 0.15
             tapAndAssert(
                 x: keyI.frame.midX,
-                y: keyI.frame.minY - 10,
+                y: keyI.frame.minY - edgeInset,
                 label: "top edge above 'i'"
             )
         }
 
         // Bottom edge — below the space bar / return row
         if let ret = findKey("Return") {
+            let edgeInset = ret.frame.height * 0.1
             tapAndAssert(
                 x: ret.frame.midX,
-                y: ret.frame.maxY + 5,
+                y: ret.frame.maxY + edgeInset,
                 label: "bottom edge below Return"
             )
-            // Also test below center of space bar area
             if let keyE = findKey("e") {
                 tapAndAssert(
                     x: keyE.frame.midX,
-                    y: ret.frame.maxY + 5,
+                    y: ret.frame.maxY + edgeInset,
                     label: "bottom edge below Space"
                 )
             }
