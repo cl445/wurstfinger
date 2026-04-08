@@ -47,6 +47,17 @@ echo "  Destination: $DESTINATION"
 echo "  Output: $DOCS_DIR"
 echo ""
 
+# Override status bar to get consistent screenshots (Apple's standard 9:41)
+echo -e "${BLUE}⏰ Setting consistent status bar...${NC}"
+BOOTED_UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; devs=json.load(sys.stdin)['devices']; print(next(d['udid'] for ds in devs.values() for d in ds if d['state']=='Booted'))" 2>/dev/null || true)
+if [ -n "$BOOTED_UDID" ]; then
+    xcrun simctl status_bar "$BOOTED_UDID" override --time "9:41" --batteryState charged --batteryLevel 100
+    echo "  Set status bar to 9:41 on $BOOTED_UDID"
+else
+    echo "  ⚠️  No booted simulator found, skipping status bar override"
+fi
+echo ""
+
 # Run UI tests to generate screenshots
 echo -e "${BLUE}🧪 Running UI tests to generate screenshots...${NC}"
 
@@ -195,6 +206,10 @@ fi
 
 echo ""
 echo -e "${BLUE}🧹 Cleaning up...${NC}"
+# Clear status bar override
+if [ -n "$BOOTED_UDID" ]; then
+    xcrun simctl status_bar "$BOOTED_UDID" clear
+fi
 rm -rf "$DERIVED_DATA"
 
 echo -e "${GREEN}✨ Done!${NC}"
