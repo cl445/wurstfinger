@@ -40,45 +40,27 @@ struct LayoutValidationTests {
         }
     }
 
-    // MARK: - Special Character Position Validation
+    // MARK: - Directional Character Validation
 
-    @Test func specialCharacterKeysReferenceValidPositions() {
-        let validDirections = [
-            "up", "down", "left", "right",
-            "upLeft", "upRight", "downLeft", "downRight",
-            "center"
-        ]
-
+    @Test func directionalCharacterPositionsAreValid() {
         for language in LanguageConfig.allLanguages {
-            for (key, value) in language.specialCharacters {
-                let parts = key.split(separator: "_")
+            for (slot, value) in language.directionalCharacters {
                 #expect(
-                    parts.count == 3,
-                    "Language \(language.name): key '\(key)' should have format 'row_col_direction'"
+                    slot.row >= 0 && slot.row <= 2,
+                    "Language \(language.name): slot has invalid row \(slot.row)"
                 )
-
-                if parts.count == 3 {
-                    let row = Int(parts[0])
-                    let col = Int(parts[1])
-                    let direction = String(parts[2])
-
-                    #expect(
-                        row != nil && row! >= 0 && row! <= 2,
-                        "Language \(language.name): key '\(key)' has invalid row"
-                    )
-                    #expect(
-                        col != nil && col! >= 0 && col! <= 2,
-                        "Language \(language.name): key '\(key)' has invalid column"
-                    )
-                    #expect(
-                        validDirections.contains(direction),
-                        "Language \(language.name): key '\(key)' has invalid direction '\(direction)'"
-                    )
-                    #expect(
-                        !value.isEmpty,
-                        "Language \(language.name): key '\(key)' has empty value"
-                    )
-                }
+                #expect(
+                    slot.col >= 0 && slot.col <= 2,
+                    "Language \(language.name): slot has invalid column \(slot.col)"
+                )
+                #expect(
+                    slot.direction != .center,
+                    "Language \(language.name): directional characters should not use .center direction"
+                )
+                #expect(
+                    !value.isEmpty,
+                    "Language \(language.name): slot (\(slot.row),\(slot.col),\(slot.direction)) has empty value"
+                )
             }
         }
     }
@@ -114,6 +96,32 @@ struct LayoutValidationTests {
                     #expect(
                         key.center == expected,
                         "Language \(language.name): center[\(rowIndex)][\(colIndex)] expected '\(expected)', got '\(key.center)'"
+                    )
+                }
+            }
+        }
+    }
+
+    // MARK: - Guard: No Language Character Is Silently Overridden
+
+    @Test func allDirectionalCharactersAppearInGeneratedLayout() {
+        for config in LanguageConfig.allLanguages {
+            let layout = KeyboardLayout.layout(for: config)
+            let rows = layout.rows(for: .lower)
+
+            for (slot, expectedChar) in config.directionalCharacters {
+                let key = rows[slot.row][slot.col]
+                let output = key.output(for: slot.direction)
+
+                switch output {
+                case let .text(text):
+                    #expect(
+                        text == expectedChar,
+                        "[\(config.id)] (\(slot.row),\(slot.col),\(slot.direction)): expected '\(expectedChar)', got '\(text)'"
+                    )
+                default:
+                    Issue.record(
+                        "[\(config.id)] (\(slot.row),\(slot.col),\(slot.direction)): expected .text(\"\(expectedChar)\"), got \(String(describing: output))"
                     )
                 }
             }

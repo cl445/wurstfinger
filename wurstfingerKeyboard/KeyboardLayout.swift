@@ -146,6 +146,19 @@ enum KeyboardCircularDirection {
     case counterclockwise
 }
 
+/// Type-safe key position: row, column, and swipe direction
+struct KeySlot: Hashable {
+    let row: Int
+    let col: Int
+    let direction: KeyboardDirection
+
+    init(_ row: Int, _ col: Int, _ direction: KeyboardDirection) {
+        self.row = row
+        self.col = col
+        self.direction = direction
+    }
+}
+
 struct KeyboardGestureRecognizer {
     static func circularDirection(
         positions: [CGPoint],
@@ -304,11 +317,6 @@ extension KeyboardLayout {
         "¨", "^", "~", "°", "˘", "$", "゛", "*", "ˇ"
     ]
 
-    /// Returns the uppercased special character for use in return overrides
-    private static func upperChar(_ config: LanguageConfig, key: String, fallback: String) -> MessagEaseOutput {
-        .text((config.specialCharacters[key] ?? fallback).uppercased(with: config.locale))
-    }
-
     #if DEBUG
         private static func assertUniqueIDs(_ rows: [[MessagEaseKey]]) {
             for (rowIndex, row) in rows.enumerated() {
@@ -318,7 +326,146 @@ extension KeyboardLayout {
         }
     #endif
 
-    /// Creates the 3x3 letter grid rows using the language configuration
+    // MARK: - Slot Default Types
+
+    /// What appears in a key direction when no language character is defined
+    private enum SlotDefault {
+        case text(String)
+        case compose(trigger: String, display: String?)
+        case action(MessagEaseOutput)
+    }
+
+    // MARK: - Default Template
+
+    /// Default punctuation, compose triggers, and actions for each key position.
+    /// Language characters from LanguageConfig.directionalCharacters take priority.
+    private static let slotDefaults: [KeySlot: SlotDefault] = [
+        // Key (0,0) - top-left
+        KeySlot(0, 0, .upLeft): .action(.cycleAccents),
+        KeySlot(0, 0, .right): .text("-"),
+        KeySlot(0, 0, .downLeft): .text("$"),
+
+        // Key (0,1) - top-center
+        KeySlot(0, 1, .upLeft): .compose(trigger: "ˋ", display: "`"),
+        KeySlot(0, 1, .up): .compose(trigger: "^", display: "^"),
+        KeySlot(0, 1, .upRight): .compose(trigger: "´", display: "´"),
+        KeySlot(0, 1, .right): .text("!"),
+        KeySlot(0, 1, .downRight): .text("\\"),
+        KeySlot(0, 1, .downLeft): .text("/"),
+        KeySlot(0, 1, .left): .text("+"),
+
+        // Key (0,2) - top-right
+        KeySlot(0, 2, .upRight): .text("\n"),
+        KeySlot(0, 2, .downRight): .text("€"),
+        KeySlot(0, 2, .down): .text("="),
+        KeySlot(0, 2, .left): .text("?"),
+
+        // Key (1,0) - middle-left
+        KeySlot(1, 0, .upLeft): .text("{"),
+        KeySlot(1, 0, .upRight): .text("%"),
+        KeySlot(1, 0, .downRight): .text("_"),
+        KeySlot(1, 0, .downLeft): .text("["),
+        KeySlot(1, 0, .left): .text("("),
+
+        // Key (1,1) - center: no defaults (all 8 directions are language slots)
+
+        // Key (1,2) - middle-right
+        KeySlot(1, 2, .upLeft): .text("|"),
+        KeySlot(1, 2, .up): .action(.toggleShift(on: true)),
+        KeySlot(1, 2, .upRight): .text("}"),
+        KeySlot(1, 2, .right): .text(")"),
+        KeySlot(1, 2, .down): .action(.toggleShift(on: false)),
+        KeySlot(1, 2, .downRight): .text("]"),
+        KeySlot(1, 2, .downLeft): .text("@"),
+
+        // Key (2,0) - bottom-left
+        KeySlot(2, 0, .upLeft): .text("~"),
+        KeySlot(2, 0, .up): .compose(trigger: "¨", display: "¨"),
+        KeySlot(2, 0, .right): .text("*"),
+        KeySlot(2, 0, .downRight): .text("\t"),
+        KeySlot(2, 0, .left): .text("<"),
+
+        // Key (2,1) - bottom-center
+        KeySlot(2, 1, .upLeft): .text("\""),
+        KeySlot(2, 1, .upRight): .text("'"),
+        KeySlot(2, 1, .downRight): .text(":"),
+        KeySlot(2, 1, .down): .text("."),
+        KeySlot(2, 1, .downLeft): .text(","),
+
+        // Key (2,2) - bottom-right
+        KeySlot(2, 2, .up): .text("&"),
+        KeySlot(2, 2, .upRight): .text("°"),
+        KeySlot(2, 2, .right): .text(">"),
+        KeySlot(2, 2, .downRight): .text(" "),
+        KeySlot(2, 2, .downLeft): .text(";"),
+        KeySlot(2, 2, .left): .text("#"),
+    ]
+
+    /// Return overrides for non-language slots (punctuation variants, actions).
+    /// Language characters get auto-computed uppercase return overrides instead.
+    private static let returnDefaults: [KeySlot: MessagEaseOutput] = [
+        // Key (0,0)
+        KeySlot(0, 0, .upLeft): .cycleAccents,
+        KeySlot(0, 0, .right): .text("÷"),
+        KeySlot(0, 0, .downLeft): .text("¥"),
+
+        // Key (0,1)
+        KeySlot(0, 1, .upLeft): .text("'"),
+        KeySlot(0, 1, .up): .text("ˆ"),
+        KeySlot(0, 1, .upRight): .text("'"),
+        KeySlot(0, 1, .right): .text("¡"),
+        KeySlot(0, 1, .downRight): .text("—"),
+        KeySlot(0, 1, .downLeft): .text("–"),
+        KeySlot(0, 1, .left): .text("×"),
+
+        // Key (0,2)
+        KeySlot(0, 2, .upRight): .text("\n"),
+        KeySlot(0, 2, .downRight): .text("£"),
+        KeySlot(0, 2, .down): .text("±"),
+        KeySlot(0, 2, .left): .text("¿"),
+
+        // Key (1,0)
+        KeySlot(1, 0, .upLeft): .text("}"),
+        KeySlot(1, 0, .upRight): .text("‰"),
+        KeySlot(1, 0, .downRight): .text("¬"),
+        KeySlot(1, 0, .downLeft): .text("]"),
+        KeySlot(1, 0, .left): .text(")"),
+
+        // Key (1,1) - no defaults (language chars get auto-uppercase)
+
+        // Key (1,2)
+        KeySlot(1, 2, .upLeft): .text("¶"),
+        KeySlot(1, 2, .up): .capitalizeWord(uppercased: true),
+        KeySlot(1, 2, .upRight): .text("{"),
+        KeySlot(1, 2, .right): .text("("),
+        KeySlot(1, 2, .downRight): .text("["),
+        KeySlot(1, 2, .downLeft): .text("ª"),
+
+        // Key (2,0)
+        KeySlot(2, 0, .upLeft): .text("˜"),
+        KeySlot(2, 0, .up): .text("˝"),
+        KeySlot(2, 0, .right): .text("†"),
+        KeySlot(2, 0, .downRight): .text("\t"),
+        KeySlot(2, 0, .left): .text("‹"),
+
+        // Key (2,1)
+        KeySlot(2, 1, .upLeft): .text("\u{201C}"),
+        KeySlot(2, 1, .upRight): .text("\u{201D}"),
+        KeySlot(2, 1, .downRight): .text("„"),
+        KeySlot(2, 1, .down): .text("…"),
+        KeySlot(2, 1, .downLeft): .text(","),
+
+        // Key (2,2)
+        KeySlot(2, 2, .up): .text("§"),
+        KeySlot(2, 2, .upRight): .text("º"),
+        KeySlot(2, 2, .right): .text("›"),
+        KeySlot(2, 2, .downRight): .text(" "),
+        KeySlot(2, 2, .downLeft): .text(";"),
+        KeySlot(2, 2, .left): .text("£"),
+    ]
+
+    /// Creates the 3x3 letter grid rows using the language configuration.
+    /// Language characters take priority over default punctuation and compose triggers.
     private static func createLetterRows(for config: LanguageConfig) -> [[MessagEaseKey]] {
         let centers = config.centerCharacters
         guard centers.count == 3, centers.allSatisfy({ $0.count == 3 }) else {
@@ -326,227 +473,53 @@ extension KeyboardLayout {
             return []
         }
 
-        let rows: [[MessagEaseKey]] = [
-            // Row 0
-            [
-                Self.makeKey(
-                    center: centers[0][0],
+        var rows: [[MessagEaseKey]] = []
+
+        for row in 0 ..< 3 {
+            var keyRow: [MessagEaseKey] = []
+            for col in 0 ..< 3 {
+                var textMap: [KeyboardDirection: String] = [:]
+                var composeMap: [KeyboardDirection: (display: String?, trigger: String)] = [:]
+                var additionalOutputs: [KeyboardDirection: MessagEaseOutput] = [:]
+                var returnOverrides: [KeyboardDirection: MessagEaseOutput] = [:]
+
+                for direction in KeyboardDirection.allCases where direction != .center {
+                    let slot = KeySlot(row, col, direction)
+
+                    if let langChar = config.directionalCharacters[slot] {
+                        // Language character takes priority over any default
+                        textMap[direction] = langChar
+                        if langChar.containsLetter {
+                            returnOverrides[direction] = .text(langChar.uppercased(with: config.locale))
+                        }
+                    } else if let slotDefault = Self.slotDefaults[slot] {
+                        // Fall back to template default
+                        switch slotDefault {
+                        case let .text(text):
+                            textMap[direction] = text
+                        case let .compose(trigger, display):
+                            composeMap[direction] = (display: display, trigger: trigger)
+                        case let .action(output):
+                            additionalOutputs[direction] = output
+                        }
+                        if let retOverride = Self.returnDefaults[slot] {
+                            returnOverrides[direction] = retOverride
+                        }
+                    }
+                }
+
+                keyRow.append(Self.makeKey(
+                    center: centers[row][col],
                     locale: config.locale,
-                    textMap: [
-                        .up: config.specialCharacters["0_0_up"] ?? "",
-                        .right: "-",
-                        .downRight: config.specialCharacters["0_0_downRight"] ?? "v",
-                        .down: config.specialCharacters["0_0_down"] ?? "",
-                        .downLeft: "$"
-                    ],
-                    additionalOutputs: [
-                        .upLeft: .cycleAccents
-                    ],
-                    returnOverrides: [
-                        .upLeft: .cycleAccents,
-                        .up: upperChar(config, key: "0_0_up", fallback: ""),
-                        .right: .text("÷"),
-                        .downRight: upperChar(config, key: "0_0_downRight", fallback: "v"),
-                        .down: upperChar(config, key: "0_0_down", fallback: ""),
-                        .downLeft: .text("¥")
-                    ]
-                ),
-                Self.makeKey(
-                    center: centers[0][1],
-                    locale: config.locale,
-                    textMap: [
-                        .right: "!",
-                        .downRight: "\\",
-                        .down: config.specialCharacters["0_1_down"] ?? "l",
-                        .downLeft: "/",
-                        .left: "+"
-                    ],
-                    composeMap: [
-                        .upLeft: (display: "`", trigger: "ˋ"),
-                        .up: (display: "^", trigger: "^"),
-                        .upRight: (display: "´", trigger: "´")
-                    ],
-                    returnOverrides: [
-                        .upLeft: .text("'"),
-                        .up: .text("ˆ"),
-                        .upRight: .text("'"),
-                        .right: .text("¡"),
-                        .downRight: .text("—"),
-                        .down: upperChar(config, key: "0_1_down", fallback: "l"),
-                        .downLeft: .text("–"),
-                        .left: .text("×")
-                    ]
-                ),
-                Self.makeKey(
-                    center: centers[0][2],
-                    locale: config.locale,
-                    textMap: [
-                        .upLeft: config.specialCharacters["0_2_upLeft"] ?? "",
-                        .upRight: "\n",
-                        .downRight: "€",
-                        .down: "=",
-                        .downLeft: config.specialCharacters["0_2_downLeft"] ?? "x",
-                        .left: "?"
-                    ],
-                    returnOverrides: [
-                        .upLeft: upperChar(config, key: "0_2_upLeft", fallback: ""),
-                        .upRight: .text("\n"),
-                        .downRight: .text("£"),
-                        .down: .text("±"),
-                        .downLeft: upperChar(config, key: "0_2_downLeft", fallback: "x"),
-                        .left: .text("¿")
-                    ]
-                )
-            ],
-            // Row 1
-            [
-                Self.makeKey(
-                    center: centers[1][0],
-                    locale: config.locale,
-                    textMap: [
-                        .upLeft: "{",
-                        .up: config.specialCharacters["1_0_up"] ?? "",
-                        .upRight: "%",
-                        .right: config.specialCharacters["1_0_right"] ?? "k",
-                        .downRight: "_",
-                        .down: config.specialCharacters["1_0_down"] ?? "",
-                        .downLeft: "[",
-                        .left: "("
-                    ],
-                    returnOverrides: [
-                        .upLeft: .text("}"),
-                        .up: upperChar(config, key: "1_0_up", fallback: "u"),
-                        .upRight: .text("‰"),
-                        .right: upperChar(config, key: "1_0_right", fallback: "k"),
-                        .downRight: .text("¬"),
-                        .down: upperChar(config, key: "1_0_down", fallback: "o"),
-                        .downLeft: .text("]"),
-                        .left: .text(")")
-                    ]
-                ),
-                Self.makeKey(
-                    center: centers[1][1],
-                    locale: config.locale,
-                    textMap: [
-                        .upLeft: config.specialCharacters["1_1_upLeft"] ?? "q",
-                        .up: config.specialCharacters["1_1_up"] ?? "u",
-                        .upRight: config.specialCharacters["1_1_upRight"] ?? "p",
-                        .right: config.specialCharacters["1_1_right"] ?? "b",
-                        .downRight: config.specialCharacters["1_1_downRight"] ?? "j",
-                        .down: config.specialCharacters["1_1_down"] ?? "d",
-                        .downLeft: config.specialCharacters["1_1_downLeft"] ?? "g",
-                        .left: config.specialCharacters["1_1_left"] ?? "c"
-                    ],
-                    returnOverrides: [
-                        .upLeft: upperChar(config, key: "1_1_upLeft", fallback: "q"),
-                        .up: upperChar(config, key: "1_1_up", fallback: "u"),
-                        .upRight: upperChar(config, key: "1_1_upRight", fallback: "p"),
-                        .right: upperChar(config, key: "1_1_right", fallback: "b"),
-                        .downRight: upperChar(config, key: "1_1_downRight", fallback: "j"),
-                        .down: upperChar(config, key: "1_1_down", fallback: "d"),
-                        .downLeft: upperChar(config, key: "1_1_downLeft", fallback: "g"),
-                        .left: upperChar(config, key: "1_1_left", fallback: "c")
-                    ]
-                ),
-                Self.makeKey(
-                    center: centers[1][2],
-                    locale: config.locale,
-                    textMap: [
-                        .upLeft: "|",
-                        .upRight: "}",
-                        .right: ")",
-                        .downRight: "]",
-                        .downLeft: "@",
-                        .left: config.specialCharacters["1_2_left"] ?? "m"
-                    ],
-                    additionalOutputs: [
-                        .up: .toggleShift(on: true),
-                        .down: .toggleShift(on: false)
-                    ],
-                    returnOverrides: [
-                        .upLeft: .text("¶"),
-                        .up: .capitalizeWord(uppercased: true),
-                        .upRight: .text("{"),
-                        .right: .text("("),
-                        .downRight: .text("["),
-                        .downLeft: .text("ª"),
-                        .left: upperChar(config, key: "1_2_left", fallback: "m")
-                    ]
-                )
-            ],
-            // Row 2
-            [
-                Self.makeKey(
-                    center: centers[2][0],
-                    locale: config.locale,
-                    textMap: [
-                        .upLeft: "~",
-                        .up: config.specialCharacters["2_0_up"] ?? "",
-                        .upRight: config.specialCharacters["2_0_upRight"] ?? "y",
-                        .right: "*",
-                        .downRight: "\t",
-                        .down: config.specialCharacters["2_0_down"] ?? "",
-                        .left: "<"
-                    ],
-                    composeMap: [
-                        .up: (display: "¨", trigger: "¨")
-                    ],
-                    returnOverrides: [
-                        .upLeft: .text("˜"),
-                        .up: .text("˝"),
-                        .upRight: upperChar(config, key: "2_0_upRight", fallback: "y"),
-                        .right: .text("†"),
-                        .downRight: .text("\t"),
-                        .down: upperChar(config, key: "2_0_down", fallback: ""),
-                        .left: .text("‹")
-                    ]
-                ),
-                Self.makeKey(
-                    center: centers[2][1],
-                    locale: config.locale,
-                    textMap: [
-                        .upLeft: "\"",
-                        .up: config.specialCharacters["2_1_up"] ?? "w",
-                        .upRight: "'",
-                        .right: config.specialCharacters["2_1_right"] ?? "z",
-                        .downRight: ":",
-                        .down: ".",
-                        .downLeft: ","
-                    ],
-                    returnOverrides: [
-                        .upLeft: .text("\u{201C}"),
-                        .up: upperChar(config, key: "2_1_up", fallback: "w"),
-                        .upRight: .text("\u{201D}"),
-                        .right: upperChar(config, key: "2_1_right", fallback: "z"),
-                        .downRight: .text("„"),
-                        .down: .text("…"),
-                        .downLeft: .text(",")
-                    ]
-                ),
-                Self.makeKey(
-                    center: centers[2][2],
-                    locale: config.locale,
-                    textMap: [
-                        .upLeft: config.specialCharacters["2_2_upLeft"] ?? "f",
-                        .up: "&",
-                        .upRight: "°",
-                        .right: ">",
-                        .downRight: " ",
-                        .downLeft: ";",
-                        .left: "#"
-                    ],
-                    returnOverrides: [
-                        .upLeft: upperChar(config, key: "2_2_upLeft", fallback: "f"),
-                        .up: .text("§"),
-                        .upRight: .text("º"),
-                        .right: .text("›"),
-                        .downRight: .text(" "),
-                        .downLeft: .text(";"),
-                        .left: .text("£")
-                    ]
-                )
-            ]
-        ]
+                    textMap: textMap,
+                    composeMap: composeMap,
+                    additionalOutputs: additionalOutputs,
+                    returnOverrides: returnOverrides
+                ))
+            }
+            rows.append(keyRow)
+        }
+
         #if DEBUG
             assertUniqueIDs(rows)
         #endif
