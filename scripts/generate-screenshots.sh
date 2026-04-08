@@ -49,14 +49,35 @@ echo ""
 
 # Override status bar to get consistent screenshots (Apple's standard 9:41)
 echo -e "${BLUE}⏰ Setting consistent status bar...${NC}"
-BOOTED_UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; devs=json.load(sys.stdin)['devices']; print(next(d['udid'] for ds in devs.values() for d in ds if d['state']=='Booted'))" 2>/dev/null || true)
-if [ -n "$BOOTED_UDID" ]; then
-    xcrun simctl status_bar "$BOOTED_UDID" override --time "9:41" --batteryState charged --batteryLevel 100
-    echo "  Set status bar to 9:41 on $BOOTED_UDID"
+TARGET_UDID=$(xcrun simctl list devices available -j | python3 -c "
+import json, sys
+name = '$DEVICE_NAME'
+devices = json.load(sys.stdin)['devices']
+for runtime_devices in devices.values():
+    for d in runtime_devices:
+        if d.get('name') == name and d.get('isAvailable', True):
+            print(d['udid'])
+            raise SystemExit(0)
+raise SystemExit(1)
+" 2>/dev/null || true)
+if [ -n "$TARGET_UDID" ]; then
+    xcrun simctl status_bar "$TARGET_UDID" override --time "9:41" --batteryState charged --batteryLevel 100
+    echo "  Set status bar to 9:41 on $TARGET_UDID ($DEVICE_NAME)"
 else
-    echo "  ⚠️  No booted simulator found, skipping status bar override"
+    echo "  ⚠️  Could not find simulator '$DEVICE_NAME', skipping status bar override"
 fi
 echo ""
+
+# Ensure cleanup runs on any exit (normal, error, or signal)
+cleanup() {
+    echo ""
+    echo -e "${BLUE}🧹 Cleaning up...${NC}"
+    if [ -n "$TARGET_UDID" ]; then
+        xcrun simctl status_bar "$TARGET_UDID" clear
+    fi
+    rm -rf "$DERIVED_DATA"
+}
+trap cleanup EXIT
 
 # Run UI tests to generate screenshots
 echo -e "${BLUE}🧪 Running UI tests to generate screenshots...${NC}"
@@ -203,13 +224,5 @@ else
   echo "  - Verify Pillow is installed: pip3 install Pillow"
   echo "  - Run tests manually: xcodebuild test -scheme $SCHEME -destination '$DESTINATION' -only-testing:$TEST_TARGET"
 fi
-
-echo ""
-echo -e "${BLUE}🧹 Cleaning up...${NC}"
-# Clear status bar override
-if [ -n "$BOOTED_UDID" ]; then
-    xcrun simctl status_bar "$BOOTED_UDID" clear
-fi
-rm -rf "$DERIVED_DATA"
 
 echo -e "${GREEN}✨ Done!${NC}"
