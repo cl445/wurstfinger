@@ -15,7 +15,11 @@ final class DeadZoneTests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = true
         app = XCUIApplication()
-        app.launchArguments = ["SCREENSHOT_MODE"]
+        app.launchArguments = [
+            "SCREENSHOT_MODE",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
         app.launchEnvironment["FORCE_LAYER"] = "lower"
         app.launchEnvironment["FORCE_APPEARANCE"] = "light"
         app.launchEnvironment["DEAD_ZONE_TEST"] = "1"
