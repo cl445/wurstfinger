@@ -20,6 +20,7 @@ enum KeyboardAction {
     case dismissKeyboard
     case capitalizeWord(CapitalizationStyle)
     case moveCursor(offset: Int)
+    case moveCursorByWord(forward: Bool)
     case compose(trigger: String)
     case cycleAccents
     // Text editing actions (clipboard)
@@ -529,6 +530,24 @@ final class KeyboardViewModel: ObservableObject {
     func endSpaceDrag() {
         isSpaceDragging = false
         spaceDragResidual = 0
+    }
+
+    // MARK: - Discrete Cursor Movement
+
+    func handleDiscreteSpaceSwipe(forward: Bool) {
+        actionHandler?(.moveCursor(offset: forward ? 1 : -1))
+        feedbackDrag()
+    }
+
+    func handleDiscreteSpaceReturnSwipe(forward: Bool) {
+        actionHandler?(.moveCursorByWord(forward: forward))
+        feedbackDrag()
+    }
+
+    var cursorMovementStyle: CursorMovementStyle {
+        let raw = sharedDefaults.string(forKey: SettingsKey.cursorMovementStyle.rawValue)
+            ?? CursorMovementStyle.continuous.rawValue
+        return CursorMovementStyle(rawValue: raw) ?? .continuous
     }
 
     func beginDeleteDrag() {

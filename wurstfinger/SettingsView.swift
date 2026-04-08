@@ -31,6 +31,9 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.numpadStyle.rawValue, store: SharedDefaults.store)
     private var numpadStyleRaw = NumpadStyle.phone.rawValue
 
+    @AppStorage(SettingsKey.cursorMovementStyle.rawValue, store: SharedDefaults.store)
+    private var cursorMovementStyleRaw = CursorMovementStyle.continuous.rawValue
+
     @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
 
@@ -76,6 +79,17 @@ struct SettingsView: View {
                     icon: "textformat.size.larger", color: .teal,
                     title: "Auto-Capitalize",
                     subtitle: "Capitalize after sentence-ending punctuation"
+                )
+            }
+
+            Picker(selection: $cursorMovementStyleRaw) {
+                Text("Continuous").tag(CursorMovementStyle.continuous.rawValue)
+                Text("Step-by-step").tag(CursorMovementStyle.discrete.rawValue)
+            } label: {
+                SettingsRow(
+                    icon: "cursor.rays", color: .green,
+                    title: "Cursor Movement",
+                    subtitle: cursorMovementStyleDescription
                 )
             }
         } header: {
@@ -193,6 +207,16 @@ struct SettingsView: View {
     private var keyboardStyleDescription: String {
         let style = KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic
         return style.displayName
+    }
+
+    private var cursorMovementStyleDescription: String {
+        let style = CursorMovementStyle(rawValue: cursorMovementStyleRaw) ?? .continuous
+        switch style {
+        case .continuous:
+            return "Drag to move cursor"
+        case .discrete:
+            return "Swipe per character, return-swipe per word"
+        }
     }
 
     private var numpadStyleDescription: String {
