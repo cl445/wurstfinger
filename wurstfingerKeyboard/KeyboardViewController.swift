@@ -128,18 +128,38 @@ final class KeyboardViewController: UIInputViewController {
             dismissKeyboard()
         case let .capitalizeWord(style):
             capitalizeCurrentWord(style: style)
-        case let .moveCursor(offset):
-            textDocumentProxy.adjustTextPosition(byCharacterOffset: offset)
+        case .moveCursor, .moveCursorByWord:
+            performCursorAction(action)
         case let .compose(trigger):
             handleCompose(trigger: trigger)
         case .cycleAccents:
             handleCycleAccents()
+        case .copy, .paste, .cut:
+            performClipboardAction(action)
+        }
+    }
+
+    private func performCursorAction(_ action: KeyboardAction) {
+        switch action {
+        case let .moveCursor(offset):
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: offset)
+        case let .moveCursorByWord(forward):
+            moveCursorByWord(forward: forward)
+        default:
+            break
+        }
+    }
+
+    private func performClipboardAction(_ action: KeyboardAction) {
+        switch action {
         case .copy:
             handleCopy()
         case .paste:
             handlePaste()
         case .cut:
             handleCut()
+        default:
+            break
         }
     }
 
@@ -150,6 +170,52 @@ final class KeyboardViewController: UIInputViewController {
            SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) {
             viewModel.setLayer(.upper)
         }
+    }
+
+    /// Move cursor forward or backward by one word.
+    private func moveCursorByWord(forward: Bool) {
+        if forward {
+            guard let after = textDocumentProxy.documentContextAfterInput, !after.isEmpty else { return }
+            let offset = Self.nextWordBoundaryOffset(in: after)
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: offset)
+        } else {
+            guard let before = textDocumentProxy.documentContextBeforeInput, !before.isEmpty else { return }
+            let offset = Self.previousWordBoundaryOffset(in: before)
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: -offset)
+        }
+    }
+
+    /// Returns the character offset to the next word boundary from the start of the string.
+    static func nextWordBoundaryOffset(in text: String) -> Int {
+        // Skip leading whitespace, then skip word characters
+        var index = text.startIndex
+        // Skip whitespace
+        while index < text.endIndex, text[index].isWhitespace {
+            index = text.index(after: index)
+        }
+        // Skip word characters (non-whitespace)
+        while index < text.endIndex, !text[index].isWhitespace {
+            index = text.index(after: index)
+        }
+        return text.distance(from: text.startIndex, to: index)
+    }
+
+    /// Returns the character offset from the end of the string to the previous word boundary.
+    static func previousWordBoundaryOffset(in text: String) -> Int {
+        var index = text.endIndex
+        // Skip trailing whitespace
+        while index > text.startIndex {
+            let prev = text.index(before: index)
+            guard text[prev].isWhitespace else { break }
+            index = prev
+        }
+        // Skip word characters (non-whitespace)
+        while index > text.startIndex {
+            let prev = text.index(before: index)
+            guard !text[prev].isWhitespace else { break }
+            index = prev
+        }
+        return text.distance(from: index, to: text.endIndex)
     }
 
     /// Delete one character after cursor. Returns `true` if a character was deleted.

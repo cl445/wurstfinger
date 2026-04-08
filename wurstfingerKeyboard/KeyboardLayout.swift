@@ -21,6 +21,12 @@ enum NumpadStyle: String, CaseIterable {
     case classic // 7-8-9 / 4-5-6 / 1-2-3 (like calculator)
 }
 
+/// Space bar cursor movement style
+enum CursorMovementStyle: String, CaseIterable {
+    case continuous // Joystick-style: drag distance controls cursor position
+    case discrete // MessagEase-style: one swipe = one character, return-swipe = one word
+}
+
 /// Visual style for the keyboard appearance
 enum KeyboardStyle: String, CaseIterable {
     case classic // Traditional opaque key backgrounds
@@ -1018,6 +1024,10 @@ enum KeyboardConstants {
         /// Distance per cursor movement step (one character).
         /// Provides smooth, controlled cursor navigation.
         static let dragStep: CGFloat = 14
+
+        /// Maximum ratio of final displacement to peak displacement for a return swipe.
+        /// Below this threshold, the gesture is classified as a return swipe (word movement).
+        static let returnSwipeThreshold: CGFloat = 0.3
     }
 
     // MARK: - Delete Key Gestures

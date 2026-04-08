@@ -16,6 +16,9 @@ struct SpaceKeyButton: View {
     @State private var dragStarted = false
     @State private var hasDragged = false
     @State private var lastTranslation: CGSize = .zero
+    // Discrete mode: track peak displacement and final position
+    @State private var maxDisplacementX: CGFloat = 0
+    @State private var maxDisplacementSign: Int = 0
 
     var body: some View {
         KeyCap(
@@ -39,24 +42,36 @@ struct SpaceKeyButton: View {
                         viewModel.beginSpaceDrag()
                     }
 
-                    let deltaX = value.translation.width - lastTranslation.width
-                    viewModel.updateSpaceDrag(deltaX: deltaX)
+                    let currentX = value.translation.width
+
+                    if viewModel.cursorMovementStyle == .continuous {
+                        let deltaX = currentX - lastTranslation.width
+                        viewModel.updateSpaceDrag(deltaX: deltaX)
+                    }
+
+                    // Track peak displacement for discrete mode
+                    if abs(currentX) > abs(maxDisplacementX) {
+                        maxDisplacementX = currentX
+                        maxDisplacementSign = currentX > 0 ? 1 : -1
+                    }
 
                     lastTranslation = value.translation
 
-                    if !hasDragged, abs(value.translation.width) >= KeyboardConstants.SpaceGestures.dragActivationThreshold {
+                    if !hasDragged, abs(currentX) >= KeyboardConstants.SpaceGestures.dragActivationThreshold {
                         hasDragged = true
                     }
 
                     isActive = true
                 }
-                .onEnded { _ in
+                .onEnded { value in
                     if dragStarted {
                         viewModel.endSpaceDrag()
                     }
 
                     if !hasDragged {
                         viewModel.handleSpace()
+                    } else if viewModel.cursorMovementStyle == .discrete {
+                        classifyDiscreteGesture(finalX: value.translation.width)
                     }
 
                     resetGestureState()
@@ -64,10 +79,27 @@ struct SpaceKeyButton: View {
         )
     }
 
+    private func classifyDiscreteGesture(finalX: CGFloat) {
+        let forward = maxDisplacementSign > 0
+        let returnRatio = abs(maxDisplacementX) > 0
+            ? abs(finalX) / abs(maxDisplacementX)
+            : 1.0
+
+        if returnRatio < KeyboardConstants.SpaceGestures.returnSwipeThreshold {
+            // Finger returned near start → word movement
+            viewModel.handleDiscreteSpaceReturnSwipe(forward: forward)
+        } else {
+            // Finger stayed away → character movement
+            viewModel.handleDiscreteSpaceSwipe(forward: forward)
+        }
+    }
+
     private func resetGestureState() {
         isActive = false
         dragStarted = false
         hasDragged = false
         lastTranslation = .zero
+        maxDisplacementX = 0
+        maxDisplacementSign = 0
     }
 }
