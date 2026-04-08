@@ -47,31 +47,69 @@ jobs:
           xcrun simctl bootstatus "$DEVICE_UDID" -b
           echo "Simulator ready"
 
+      - name: Save existing screenshots for comparison
+        run: |
+          mkdir -p /tmp/old-screenshots
+          cp docs/images/*.webp /tmp/old-screenshots/ 2>/dev/null || true
+
       - name: Generate screenshots
         run: |
           source venv/bin/activate
           ./scripts/generate-screenshots.sh
         timeout-minutes: 25
 
-      - name: Check for screenshot changes
+      - name: Check for visual screenshot changes
         id: check_changes
         run: |
-          echo "📁 Files in docs/images/:"
-          ls -la docs/images/ || echo "Directory does not exist"
-          echo ""
-          echo "📊 Git status:"
-          git status docs/images/ || true
-          echo ""
-          echo "🔍 Git diff:"
-          git diff --stat docs/images/*.webp || true
-          echo ""
-          if git diff --quiet docs/images/*.webp 2>/dev/null; then
-            echo "Result: No changes detected"
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "Result: Changes detected!"
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
+          source venv/bin/activate
+          python3 << 'PYEOF'
+          import os
+          import sys
+          from PIL import Image
+          import numpy as np
+
+          OLD_DIR = "/tmp/old-screenshots"
+          NEW_DIR = "docs/images"
+          # Maximum average pixel difference (0-255) to consider identical
+          THRESHOLD = 1.0
+
+          changed = False
+          new_files = [f for f in os.listdir(NEW_DIR) if f.endswith(".webp")]
+
+          for filename in new_files:
+              old_path = os.path.join(OLD_DIR, filename)
+              new_path = os.path.join(NEW_DIR, filename)
+
+              if not os.path.exists(old_path):
+                  print(f"  ✨ New screenshot: {filename}")
+                  changed = True
+                  continue
+
+              old_img = np.array(Image.open(old_path).convert("RGB"))
+              new_img = np.array(Image.open(new_path).convert("RGB"))
+
+              if old_img.shape != new_img.shape:
+                  print(f"  📐 Size changed: {filename} ({old_img.shape} → {new_img.shape})")
+                  changed = True
+                  continue
+
+              diff = np.mean(np.abs(old_img.astype(float) - new_img.astype(float)))
+              if diff > THRESHOLD:
+                  print(f"  🔄 Visual change: {filename} (diff={diff:.2f})")
+                  changed = True
+              else:
+                  print(f"  ✅ Unchanged: {filename} (diff={diff:.2f})")
+                  # Restore old file so git sees no diff
+                  os.replace(old_path, new_path)
+
+          if changed:
+              print("\nResult: Visual changes detected!")
+          else:
+              print("\nResult: No visual changes")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"changed={'true' if changed else 'false'}\n")
+          PYEOF
 
       - name: Create PR with screenshots
         if: steps.check_changes.outputs.changed == 'true'
