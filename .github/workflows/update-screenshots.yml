@@ -70,8 +70,10 @@ jobs:
 
           OLD_DIR = "/tmp/old-screenshots"
           NEW_DIR = "docs/images"
-          # Maximum average pixel difference (0-255) to consider identical
-          THRESHOLD = 1.0
+          # Per-pixel noise threshold: channel differences below this are compression noise
+          PIXEL_THRESHOLD = 10
+          # Fraction of pixels that must exceed PIXEL_THRESHOLD to count as a real change
+          CHANGE_RATIO = 0.001  # 0.1% of pixels
 
           changed = False
           old_files = {f for f in os.listdir(OLD_DIR) if f.endswith(".webp")} if os.path.isdir(OLD_DIR) else set()
@@ -105,12 +107,16 @@ jobs:
               old_arr = np.array(old_img)
               new_arr = np.array(new_img)
 
-              diff = np.mean(np.abs(old_arr.astype(float) - new_arr.astype(float)))
-              if diff > THRESHOLD:
-                  print(f"  🔄 Visual change: {filename} (diff={diff:.2f})")
+              # Count pixels where any channel differs beyond noise threshold
+              pixel_diff = np.max(np.abs(old_arr.astype(float) - new_arr.astype(float)), axis=2)
+              changed_pixels = np.sum(pixel_diff > PIXEL_THRESHOLD)
+              total_pixels = pixel_diff.size
+              ratio = changed_pixels / total_pixels
+              if ratio > CHANGE_RATIO:
+                  print(f"  🔄 Visual change: {filename} ({changed_pixels}/{total_pixels} pixels changed, {ratio:.4%})")
                   changed = True
               else:
-                  print(f"  ✅ Unchanged: {filename} (diff={diff:.2f})")
+                  print(f"  ✅ Unchanged: {filename} ({changed_pixels}/{total_pixels} pixels changed, {ratio:.4%})")
                   # Restore old file so git sees no diff
                   os.replace(old_path, new_path)
 
