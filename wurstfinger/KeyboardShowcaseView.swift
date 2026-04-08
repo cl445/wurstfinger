@@ -11,6 +11,9 @@ struct KeyboardShowcaseView: View {
     @StateObject private var viewModel = KeyboardViewModel(shouldPersistSettings: false)
     @StateObject private var languageSettings = LanguageSettings.shared
     @State private var colorScheme: ColorScheme?
+    @State private var actionCount = 0
+
+    private let isDeadZoneTest = ProcessInfo.processInfo.environment["DEAD_ZONE_TEST"] != nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,11 +22,23 @@ struct KeyboardShowcaseView: View {
                 .background(Color(.systemBackground))
                 .accessibilityIdentifier("showcaseKeyboard")
                 .padding(.vertical, 8)
+
+            if isDeadZoneTest {
+                Text("\(actionCount)")
+                    .accessibilityIdentifier("actionCount")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
         }
         .background(Color(.systemBackground))
         .preferredColorScheme(colorScheme)
         .statusBar(hidden: true)
         .onAppear {
+            if isDeadZoneTest {
+                viewModel.bindActionHandler { _ in
+                    actionCount += 1
+                }
+            }
             // Set language from environment if specified (for UI tests)
             if let forcedLanguage = ProcessInfo.processInfo.environment["FORCE_LANGUAGE"] {
                 languageSettings.selectedLanguageId = forcedLanguage
