@@ -232,13 +232,13 @@ final class DeadZoneTests: XCTestCase {
             )
         }
 
-        // Right edge — to the right of rightmost grid key (toward utility)
-        if let keyI = findKey("i") {
-            let edgeInset = keyI.frame.width * 0.2
+        // Right edge — outside the utility column (true keyboard boundary)
+        if let ret = findKey("Return") {
+            let edgeInset = ret.frame.width * 0.15
             tapAndAssert(
-                x: keyI.frame.maxX + edgeInset,
-                y: keyI.frame.midY,
-                label: "right of 'i' (toward globe)"
+                x: ret.frame.maxX + edgeInset,
+                y: ret.frame.midY,
+                label: "right edge outside utility column"
             )
         }
 
