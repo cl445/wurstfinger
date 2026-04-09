@@ -86,16 +86,7 @@ enum GridKeyboardFactory {
         let capsLockMode = mainMode.generateShifted(locale: locale)
             .with(name: ModeNames.capsLock)
 
-        // 6. Stub numeric mode — replaced by real NumericLayouts in PR6
-        let numericStub = KeyboardMode(
-            name: ModeNames.numeric,
-            keys: allKeys,
-            arrangements: arrangements,
-            autoTransitions: [:],
-            doubleTapMode: nil
-        )
-
-        // 7. Assemble definition
+        // 6. Assemble definition
         return KeyboardDefinition(
             title: title,
             id: id,
@@ -104,7 +95,7 @@ enum GridKeyboardFactory {
                 ModeNames.main: mainMode,
                 ModeNames.shifted: shiftedMode,
                 ModeNames.capsLock: capsLockMode,
-                ModeNames.numeric: numericStub,
+                ModeNames.numeric: NumericLayouts.phone,
             ],
             defaultMode: ModeNames.main,
             settings: KeyboardDefinitionSettings(
