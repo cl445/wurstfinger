@@ -311,6 +311,21 @@ struct ValidationTests {
         #expect(errors.contains(.columnMismatch(row: 1, context: .portrait, expected: 2, got: 3)))
     }
 
+    @Test func heightMultiplierSpansPastLastRow() {
+        // Single row, but key "a" has height 2 — spans into non-existent row 1
+        let arrangement = GridArrangement(columns: 2, rows: [
+            [KeyPlacement(keyId: "a", widthMultiplier: 1, heightMultiplier: 2), KeyPlacement(keyId: "b")],
+        ])
+        let mode = KeyboardMode(
+            name: "test",
+            keys: ["a": letterKey("a", "a"), "b": letterKey("b", "b")],
+            arrangements: [.portrait: arrangement],
+            autoTransitions: [:], doubleTapMode: nil
+        )
+        let errors = mode.validate()
+        #expect(errors.contains(.rowSpanOutOfBounds(keyId: "a", context: .portrait)))
+    }
+
     // MARK: Duplicate Key ID
 
     @Test func duplicateKeyId() {

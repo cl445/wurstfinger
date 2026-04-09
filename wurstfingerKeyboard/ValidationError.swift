@@ -16,6 +16,7 @@ enum ValidationError: Error, Equatable, CustomStringConvertible {
     case noPortraitArrangement
     case duplicateKeyId(String)
     case modeNameMismatch(key: String, modeName: String)
+    case rowSpanOutOfBounds(keyId: String, context: ArrangementContext)
 
     var description: String {
         switch self {
@@ -33,6 +34,8 @@ enum ValidationError: Error, Equatable, CustomStringConvertible {
             "Duplicate key ID '\(id)' in arrangement"
         case let .modeNameMismatch(key, modeName):
             "Mode dictionary key '\(key)' does not match mode name '\(modeName)'"
+        case let .rowSpanOutOfBounds(keyId, context):
+            "Key '\(keyId)' in '\(context)' spans past the last row"
         }
     }
 }
@@ -80,6 +83,10 @@ extension KeyboardMode {
                 }
                 // Register keys that span into subsequent rows
                 for placement in row where placement.heightMultiplier > 1 {
+                    guard i + placement.heightMultiplier <= arrangement.rows.count else {
+                        errors.append(.rowSpanOutOfBounds(keyId: placement.keyId, context: context))
+                        continue
+                    }
                     for extraRow in 1 ..< placement.heightMultiplier {
                         spannedColumns[i + extraRow, default: 0] += placement.widthMultiplier
                     }
