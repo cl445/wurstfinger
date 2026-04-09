@@ -355,6 +355,24 @@ struct ValidationTests {
         let errors = mode.validate()
         #expect(errors.contains(.noPortraitArrangement))
     }
+
+    // MARK: Mode Name Mismatch
+
+    @Test func modeNameMismatchDetected() {
+        let mode = minimalMode()
+        let definition = KeyboardDefinition(
+            title: "Test", id: "test", localeIdentifier: "en_US",
+            modes: ["wrong_key": mode], // key "wrong_key" != mode.name "main"
+            defaultMode: "wrong_key",
+            settings: KeyboardDefinitionSettings(
+                autoCapitalize: false,
+                autoCapitalizers: [],
+                composeRuleOverrides: nil
+            )
+        )
+        let errors = definition.validate()
+        #expect(errors.contains(.modeNameMismatch(key: "wrong_key", modeName: "main")))
+    }
 }
 
 // MARK: - Supporting Type Tests

@@ -39,8 +39,8 @@ struct KeyboardMode: Codable, Equatable {
         keys[id]
     }
 
-    func arrangement(for context: ArrangementContext) -> GridArrangement {
-        arrangements[context] ?? arrangements[.portrait]!
+    func arrangement(for context: ArrangementContext) -> GridArrangement? {
+        arrangements[context] ?? arrangements[.portrait]
     }
 
     /// Determines the next mode after an action with the given category.

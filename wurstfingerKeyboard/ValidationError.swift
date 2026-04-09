@@ -15,6 +15,7 @@ enum ValidationError: Error, Equatable, CustomStringConvertible {
     case emptyKeyPool
     case noPortraitArrangement
     case duplicateKeyId(String)
+    case modeNameMismatch(key: String, modeName: String)
 
     var description: String {
         switch self {
@@ -30,6 +31,8 @@ enum ValidationError: Error, Equatable, CustomStringConvertible {
             "No portrait arrangement defined"
         case let .duplicateKeyId(id):
             "Duplicate key ID '\(id)' in arrangement"
+        case let .modeNameMismatch(key, modeName):
+            "Mode dictionary key '\(key)' does not match mode name '\(modeName)'"
         }
     }
 }
@@ -98,6 +101,11 @@ extension KeyboardDefinition {
         // defaultMode must exist
         if modes[defaultMode] == nil {
             errors.append(.missingMode(defaultMode))
+        }
+
+        // Mode dictionary keys must match mode names
+        for (key, mode) in modes where key != mode.name {
+            errors.append(.modeNameMismatch(key: key, modeName: mode.name))
         }
 
         // All switchMode targets must exist
