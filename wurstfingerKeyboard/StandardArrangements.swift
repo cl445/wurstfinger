@@ -2,12 +2,12 @@
 //  StandardArrangements.swift
 //  Wurstfinger
 //
-//  Standard grid arrangements for MessagEase 3x3 layouts.
+//  Standard grid arrangements for 3x3 swipe keyboard layouts.
 //
 
 import Foundation
 
-/// Standard grid arrangements for MessagEase 3x3 layouts.
+/// Standard grid arrangements for 3x3 swipe keyboard layouts.
 /// Shared across all languages using the same 3x3 grid structure.
 enum StandardArrangements {
     // MARK: - Portrait
@@ -57,8 +57,8 @@ enum StandardArrangements {
 
     // MARK: - All 4 Contexts
 
-    /// All 4 arrangement contexts for MessagEase 3x3 layouts.
-    static let messagEase3x3: [ArrangementContext: GridArrangement] = [
+    /// All 4 arrangement contexts for 3x3 grid layouts.
+    static let grid3x3: [ArrangementContext: GridArrangement] = [
         .portrait: portrait,
         .portraitUtilityLeft: portrait.mirroredHorizontally(),
         .landscape: landscape,

@@ -1,17 +1,17 @@
 //
-//  MessagEaseFactory.swift
+//  GridKeyboardFactory.swift
 //  Wurstfinger
 //
-//  Factory for creating MessagEase-style keyboard definitions.
+//  Factory for creating grid-based keyboard definitions.
 //
 
 import Foundation
 
-/// Factory for creating complete MessagEase-style keyboard definitions.
+/// Factory for creating complete grid-based keyboard definitions.
 /// All shared structure (punctuation, utility keys, arrangements, shifted layer)
 /// is generated automatically — only language-specific parameters are needed.
-enum MessagEaseFactory {
-    /// Creates a complete MessagEase keyboard definition from language-specific parameters.
+enum GridKeyboardFactory {
+    /// Creates a complete keyboard definition from language-specific parameters.
     ///
     /// - Parameters:
     ///   - id: Unique keyboard identifier (e.g. "de_messagease")
@@ -27,7 +27,7 @@ enum MessagEaseFactory {
         directionalOverrides: [String: [GestureType: String]] = [:]
     ) -> KeyboardDefinition {
         let locale = Locale(identifier: localeIdentifier)
-        let arrangements = StandardArrangements.messagEase3x3
+        let arrangements = StandardArrangements.grid3x3
 
         // 1. Build 9 letter keys from center characters + shared defaults + overrides
         var letterKeys: [String: KeyConfig] = [:]

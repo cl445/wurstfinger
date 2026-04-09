@@ -2,7 +2,7 @@
 //  CommonKeysFactoryTests.swift
 //  WurstfingerTests
 //
-//  Tests for CommonKeys, StandardArrangements, and MessagEaseFactory.
+//  Tests for CommonKeys, StandardArrangements, and GridKeyboardFactory.
 //
 
 import Foundation
@@ -93,8 +93,8 @@ struct CommonKeysTests {
 // MARK: - StandardArrangements Tests
 
 struct StandardArrangementsTests {
-    @Test func messagEase3x3HasAllFourContexts() {
-        let arrangements = StandardArrangements.messagEase3x3
+    @Test func grid3x3HasAllFourContexts() {
+        let arrangements = StandardArrangements.grid3x3
         #expect(arrangements.count == 4)
         #expect(arrangements[.portrait] != nil)
         #expect(arrangements[.portraitUtilityLeft] != nil)
@@ -103,53 +103,53 @@ struct StandardArrangementsTests {
     }
 
     @Test func portraitHasFourColumns() throws {
-        let portrait = try #require(StandardArrangements.messagEase3x3[.portrait])
+        let portrait = try #require(StandardArrangements.grid3x3[.portrait])
         #expect(portrait.columns == 4)
         #expect(portrait.rows.count == 4)
     }
 
     @Test func landscapeHasFiveColumns() throws {
-        let landscape = try #require(StandardArrangements.messagEase3x3[.landscape])
+        let landscape = try #require(StandardArrangements.grid3x3[.landscape])
         #expect(landscape.columns == 5)
         #expect(landscape.rows.count == 3)
     }
 
     @Test func portraitUtilityLeftIsMirroredPortrait() throws {
-        let portrait = try #require(StandardArrangements.messagEase3x3[.portrait])
-        let utilityLeft = try #require(StandardArrangements.messagEase3x3[.portraitUtilityLeft])
+        let portrait = try #require(StandardArrangements.grid3x3[.portrait])
+        let utilityLeft = try #require(StandardArrangements.grid3x3[.portraitUtilityLeft])
         #expect(utilityLeft == portrait.mirroredHorizontally())
     }
 
     @Test func landscapeUtilityLeftIsMirroredLandscape() throws {
-        let landscape = try #require(StandardArrangements.messagEase3x3[.landscape])
-        let utilityLeft = try #require(StandardArrangements.messagEase3x3[.landscapeUtilityLeft])
+        let landscape = try #require(StandardArrangements.grid3x3[.landscape])
+        let utilityLeft = try #require(StandardArrangements.grid3x3[.landscapeUtilityLeft])
         #expect(utilityLeft == landscape.mirroredHorizontally())
     }
 
     @Test func portraitFirstRowContainsGridAndGlobe() throws {
-        let portrait = try #require(StandardArrangements.messagEase3x3[.portrait])
+        let portrait = try #require(StandardArrangements.grid3x3[.portrait])
         let firstRowIds = portrait.rows[0].map(\.keyId)
         #expect(firstRowIds == [GridSlot.topLeft, GridSlot.topCenter, GridSlot.topRight, UtilitySlot.globe])
     }
 
     @Test func portraitSpaceBarSpansThreeColumns() throws {
-        let portrait = try #require(StandardArrangements.messagEase3x3[.portrait])
+        let portrait = try #require(StandardArrangements.grid3x3[.portrait])
         let space = try #require(portrait.rows[3].first { $0.keyId == UtilitySlot.space })
         #expect(space.widthMultiplier == 3)
     }
 
     @Test func landscapeReturnSpansTwoRows() throws {
-        let landscape = try #require(StandardArrangements.messagEase3x3[.landscape])
+        let landscape = try #require(StandardArrangements.grid3x3[.landscape])
         let returnKey = try #require(landscape.rows[1].first { $0.keyId == UtilitySlot.return })
         #expect(returnKey.heightMultiplier == 2)
     }
 }
 
-// MARK: - MessagEaseFactory Tests
+// MARK: - GridKeyboardFactory Tests
 
-struct MessagEaseFactoryTests {
+struct GridKeyboardFactoryTests {
     /// Minimal test layout for factory testing.
-    static let testLayout = MessagEaseFactory.layout(
+    static let testLayout = GridKeyboardFactory.layout(
         id: "test_messagease",
         title: "Test MessagEase",
         localeIdentifier: "en_US",
@@ -220,7 +220,7 @@ struct MessagEaseFactoryTests {
     }
 
     @Test func directionalOverridesReplaceDefaults() throws {
-        let layout = MessagEaseFactory.layout(
+        let layout = GridKeyboardFactory.layout(
             id: "test_override",
             title: "Test Override",
             localeIdentifier: "en_US",
