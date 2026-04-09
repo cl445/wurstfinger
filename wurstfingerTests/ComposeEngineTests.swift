@@ -250,6 +250,8 @@ struct ComposeEngineTests {
         #expect(ComposeEngine.composeTelex(previous: "a", trigger: "f") == "à")
         #expect(ComposeEngine.composeTelex(previous: "â", trigger: "f") == "ầ")
         #expect(ComposeEngine.composeTelex(previous: "ê", trigger: "f") == "ề")
+        #expect(ComposeEngine.composeTelex(previous: "Ơ", trigger: "f") == "Ờ")
+        #expect(ComposeEngine.composeTelex(previous: "Ớ", trigger: "f") == "Ờ")
     }
 
     @Test func telexToneHookAbove() {

@@ -164,7 +164,8 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func insertText(_ text: String) {
-        if viewModel.isTelexActive, text.count == 1,
+        if textDocumentProxy.selectedText?.isEmpty ?? true,
+           viewModel.isTelexActive, text.count == 1,
            let context = textDocumentProxy.documentContextBeforeInput, !context.isEmpty {
             let chars = Array(context.suffix(2))
             // Try digraph first: "uo" + "w" -> "ươ"

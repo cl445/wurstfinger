@@ -102,7 +102,7 @@ Initial public release of Wurstfinger — a MessagEase-inspired keyboard for iOS
 ### Features
 
 - Gesture-based typing: tap center for primary letters, swipe in 8 directions for additional characters
-- 14 keyboard languages: Catalan, Croatian, English, Estonian-Finnish, Finnish, French, German, Hebrew, Italian, Polish, Russian, Spanish, Swedish, Tagalog
+- 15 keyboard languages: Catalan, Croatian, English, Estonian-Finnish, Finnish, French, German, Hebrew, Italian, Polish, Russian, Spanish, Swedish, Tagalog, Vietnamese (with Telex input)
 - Compose rules: create accented characters by combining keys (e.g., ' + a → á)
 - Circular gestures: draw a circle on a letter for uppercase
 - Cursor control: drag on space bar to move cursor, long-press for text selection
