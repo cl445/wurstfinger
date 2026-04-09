@@ -34,7 +34,7 @@ extension GridArrangement {
     func resized(columns newColumns: Int, adjusting keyId: String, toWidth newWidth: Int) -> GridArrangement {
         precondition(newColumns > 0, "newColumns must be positive")
         precondition(newWidth > 0, "newWidth must be positive")
-        GridArrangement(
+        return GridArrangement(
             columns: newColumns,
             rows: rows.map { row in
                 row.map { placement in
