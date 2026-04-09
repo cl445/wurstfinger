@@ -26,6 +26,11 @@ enum GridKeyboardFactory {
         centerCharacters: [[String]],
         directionalOverrides: [String: [GestureType: String]] = [:]
     ) -> KeyboardDefinition {
+        precondition(
+            centerCharacters.count == 3 && centerCharacters.allSatisfy { $0.count == 3 },
+            "centerCharacters must be a 3×3 matrix"
+        )
+
         let locale = Locale(identifier: localeIdentifier)
         let arrangements = StandardArrangements.grid3x3
 
