@@ -1,16 +1,15 @@
 //
-//  MessagEaseSlot.swift
+//  GridSlot.swift
 //  Wurstfinger
 //
-//  Semantic slot names for MessagEase 3x3 layouts.
+//  Semantic slot names for 3x3 grid layouts.
 //
 
 import Foundation
 
-/// Slot names for MessagEase 3x3 layouts.
-/// Stable across all languages — DE and FR both have a "topLeft" slot,
-/// but with different characters.
-enum MessagEaseSlot {
+/// Semantic slot names for a 3x3 key grid.
+/// Stable across all languages and layout families.
+enum GridSlot {
     static let topLeft = "topLeft"
     static let topCenter = "topCenter"
     static let topRight = "topRight"

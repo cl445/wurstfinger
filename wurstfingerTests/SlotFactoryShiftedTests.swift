@@ -2,7 +2,7 @@
 //  SlotFactoryShiftedTests.swift
 //  WurstfingerTests
 //
-//  Tests for MessagEaseSlot, UtilitySlot, KeyConfig factories,
+//  Tests for GridSlot, UtilitySlot, KeyConfig factories,
 //  and shifted layer generation.
 //
 
@@ -10,33 +10,33 @@ import Foundation
 import Testing
 @testable import WurstfingerApp
 
-// MARK: - MessagEaseSlot Tests
+// MARK: - GridSlot Tests
 
-struct MessagEaseSlotTests {
+struct GridSlotTests {
     @Test func allSlotsContainsNineSlots() {
-        let flat = MessagEaseSlot.allSlots.flatMap(\.self)
+        let flat = GridSlot.allSlots.flatMap(\.self)
         #expect(flat.count == 9)
     }
 
     @Test func allSlotsHasThreeRows() {
-        #expect(MessagEaseSlot.allSlots.count == 3)
-        for row in MessagEaseSlot.allSlots {
+        #expect(GridSlot.allSlots.count == 3)
+        for row in GridSlot.allSlots {
             #expect(row.count == 3)
         }
     }
 
     @Test func allSlotsAreUnique() {
-        let flat = MessagEaseSlot.allSlots.flatMap(\.self)
+        let flat = GridSlot.allSlots.flatMap(\.self)
         #expect(Set(flat).count == 9)
     }
 
     @Test func slotNamesMatchAllSlots() {
         let expected: [[String]] = [
-            [MessagEaseSlot.topLeft, MessagEaseSlot.topCenter, MessagEaseSlot.topRight],
-            [MessagEaseSlot.midLeft, MessagEaseSlot.center, MessagEaseSlot.midRight],
-            [MessagEaseSlot.bottomLeft, MessagEaseSlot.bottomCenter, MessagEaseSlot.bottomRight],
+            [GridSlot.topLeft, GridSlot.topCenter, GridSlot.topRight],
+            [GridSlot.midLeft, GridSlot.center, GridSlot.midRight],
+            [GridSlot.bottomLeft, GridSlot.bottomCenter, GridSlot.bottomRight],
         ]
-        #expect(MessagEaseSlot.allSlots == expected)
+        #expect(GridSlot.allSlots == expected)
     }
 }
 
