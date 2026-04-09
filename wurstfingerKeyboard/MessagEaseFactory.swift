@@ -1,0 +1,112 @@
+//
+//  MessagEaseFactory.swift
+//  Wurstfinger
+//
+//  Factory for creating MessagEase-style keyboard definitions.
+//
+
+import Foundation
+
+/// Factory for creating complete MessagEase-style keyboard definitions.
+/// All shared structure (punctuation, utility keys, arrangements, shifted layer)
+/// is generated automatically — only language-specific parameters are needed.
+enum MessagEaseFactory {
+    /// Creates a complete MessagEase keyboard definition from language-specific parameters.
+    ///
+    /// - Parameters:
+    ///   - id: Unique keyboard identifier (e.g. "de_messagease")
+    ///   - title: Display name (e.g. "Deutsch MessagEase")
+    ///   - localeIdentifier: Locale string for uppercasing (e.g. "de_DE")
+    ///   - centerCharacters: 3x3 grid of center tap characters
+    ///   - directionalOverrides: Per-slot overrides that replace CommonKeys defaults
+    static func layout(
+        id: String,
+        title: String,
+        localeIdentifier: String,
+        centerCharacters: [[String]],
+        directionalOverrides: [String: [GestureType: String]] = [:]
+    ) -> KeyboardDefinition {
+        let locale = Locale(identifier: localeIdentifier)
+        let arrangements = StandardArrangements.messagEase3x3
+
+        // 1. Build 9 letter keys from center characters + shared defaults + overrides
+        var letterKeys: [String: KeyConfig] = [:]
+        for (rowIdx, row) in centerCharacters.enumerated() {
+            for (colIdx, char) in row.enumerated() {
+                let slotId = GridSlot.allSlots[rowIdx][colIdx]
+
+                // Start with shared defaults for this slot
+                var bindings = CommonKeys.defaultSlotBindings[slotId] ?? [:]
+
+                // Apply language-specific overrides (replace default binding for that gesture)
+                if let overrides = directionalOverrides[slotId] {
+                    for (gesture, text) in overrides {
+                        bindings[gesture] = KeyBinding(
+                            label: text, action: .commitText(text),
+                            category: nil, returnAction: nil, accessibilityLabel: nil
+                        )
+                    }
+                }
+
+                // Set the tap binding from center character
+                bindings[.tap] = KeyBinding(
+                    label: char, action: .commitText(char),
+                    category: nil, returnAction: nil, accessibilityLabel: nil
+                )
+
+                letterKeys[slotId] = KeyConfig(
+                    id: slotId, bindings: bindings, swipeMode: .eightWay,
+                    slideType: .none, style: .primary, tapCycleActions: nil
+                )
+            }
+        }
+
+        // 2. Merge utility keys
+        let allKeys = letterKeys.merging(CommonKeys.allUtilityKeys) { letter, _ in letter }
+
+        // 3. Main mode — stays active, no auto-transitions
+        let mainMode = KeyboardMode(
+            name: ModeNames.main,
+            keys: allKeys,
+            arrangements: arrangements,
+            autoTransitions: [:],
+            doubleTapMode: nil
+        )
+
+        // 4. Shifted — after typing a letter, returns to main
+        let shiftedMode = mainMode.generateShifted(locale: locale)
+            .with(autoTransitions: [.letter: ModeNames.main], doubleTapMode: ModeNames.capsLock)
+
+        // 5. Caps lock — like shifted but stays active
+        let capsLockMode = mainMode.generateShifted(locale: locale)
+            .with(name: ModeNames.capsLock)
+
+        // 6. Stub numeric mode — replaced by real NumericLayouts in PR6
+        let numericStub = KeyboardMode(
+            name: ModeNames.numeric,
+            keys: allKeys,
+            arrangements: arrangements,
+            autoTransitions: [:],
+            doubleTapMode: nil
+        )
+
+        // 7. Assemble definition
+        return KeyboardDefinition(
+            title: title,
+            id: id,
+            localeIdentifier: localeIdentifier,
+            modes: [
+                ModeNames.main: mainMode,
+                ModeNames.shifted: shiftedMode,
+                ModeNames.capsLock: capsLockMode,
+                ModeNames.numeric: numericStub,
+            ],
+            defaultMode: ModeNames.main,
+            settings: KeyboardDefinitionSettings(
+                autoCapitalize: true,
+                autoCapitalizers: [],
+                composeRuleOverrides: nil
+            )
+        )
+    }
+}
