@@ -43,7 +43,7 @@ struct KeyActionTests {
 
     @Test func codableRoundtripSimpleCases() throws {
         let cases: [KeyAction] = [
-            .cycleAccents, .capitalizeWord(uppercased: true),
+            .cycleAccents, .capitalizeWord(uppercased: true), .capitalizeWord(uppercased: false),
             .advanceToNextInputMode, .dismissKeyboard,
             .deleteBackward, .deleteForward,
             .space, .newline,
