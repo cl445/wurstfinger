@@ -58,35 +58,37 @@ private struct LanguageRow: View {
     let onToggle: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
-            HStack {
-                Button(action: onToggle) {
-                    Image(systemName: isEnabled ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(isEnabled ? .accentColor : .secondary)
-                        .imageScale(.large)
-                }
-                .buttonStyle(.plain)
+        HStack {
+            Button(action: onToggle) {
+                Image(systemName: isEnabled ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(isEnabled ? .accentColor : .secondary)
+                    .imageScale(.large)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("\(isEnabled ? "Disable" : "Enable") \(language.name)")
+            .accessibilityValue(isEnabled ? "Enabled" : "Disabled")
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(language.name)
-                        .font(.body)
-                        .foregroundColor(.primary)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(language.name)
+                    .font(.body)
+                    .foregroundColor(.primary)
 
-                    Text("MessagEase Layout")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Text("MessagEase Layout")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
 
-                Spacer()
+            Spacer()
 
-                if isActive {
-                    Text("Active")
-                        .font(.caption)
-                        .foregroundColor(.accentColor)
-                        .fontWeight(.medium)
-                }
+            if isActive {
+                Text("Active")
+                    .font(.caption)
+                    .foregroundColor(.accentColor)
+                    .fontWeight(.medium)
             }
         }
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
     }
 }
 

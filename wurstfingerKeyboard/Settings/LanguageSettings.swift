@@ -18,7 +18,7 @@ class LanguageSettings: ObservableObject {
         }
     }
 
-    @Published var enabledLanguageIds: [String] {
+    @Published private(set) var enabledLanguageIds: [String] {
         didSet {
             saveEnabledLanguages()
         }
@@ -141,14 +141,18 @@ class LanguageSettings: ObservableObject {
     /// Returns the next language ID after the current one, wrapping around.
     /// If only one language is enabled, returns that same language.
     func nextLanguageId(after currentId: String) -> String {
-        guard enabledLanguageIds.count > 1 else {
-            return enabledLanguageIds.first ?? currentId
+        Self.nextLanguageId(after: currentId, in: enabledLanguageIds)
+    }
+
+    static func nextLanguageId(after currentId: String, in enabledIds: [String]) -> String {
+        guard enabledIds.count > 1 else {
+            return enabledIds.first ?? currentId
         }
-        guard let currentIndex = enabledLanguageIds.firstIndex(of: currentId) else {
-            return enabledLanguageIds[0]
+        guard let currentIndex = enabledIds.firstIndex(of: currentId) else {
+            return enabledIds[0]
         }
-        let nextIndex = (currentIndex + 1) % enabledLanguageIds.count
-        return enabledLanguageIds[nextIndex]
+        let nextIndex = (currentIndex + 1) % enabledIds.count
+        return enabledIds[nextIndex]
     }
 
     // MARK: - Persistence
@@ -161,21 +165,11 @@ class LanguageSettings: ObservableObject {
         Self.saveEnabledLanguageIds(enabledLanguageIds, to: userDefaults)
     }
 
-    /// Encodes the enabled language IDs as a JSON array string for UserDefaults storage.
-    /// Using JSON rather than NSArray ensures clean cross-process serialization.
     static func saveEnabledLanguageIds(_ ids: [String], to defaults: UserDefaults) {
-        guard let data = try? JSONEncoder().encode(ids),
-              let json = String(data: data, encoding: .utf8) else { return }
-        defaults.set(json, forKey: SettingsKey.enabledLanguageIds.rawValue)
+        defaults.set(ids, forKey: SettingsKey.enabledLanguageIds.rawValue)
     }
 
     static func loadEnabledLanguageIds(from defaults: UserDefaults) -> [String]? {
-        guard let json = defaults.string(forKey: SettingsKey.enabledLanguageIds.rawValue),
-              let data = json.data(using: .utf8),
-              let ids = try? JSONDecoder().decode([String].self, from: data)
-        else {
-            return nil
-        }
-        return ids
+        defaults.stringArray(forKey: SettingsKey.enabledLanguageIds.rawValue)
     }
 }
