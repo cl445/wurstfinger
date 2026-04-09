@@ -16,19 +16,24 @@ enum SwipeMode: String, Codable {
     case twoWayVertical // Only ↑↓
     case none // No swipes (e.g. globe key)
 
+    private static let fourWayCrossGestures: Set<GestureType> = [.swipeUp, .swipeDown, .swipeLeft, .swipeRight]
+    private static let fourWayDiagonalGestures: Set<GestureType> = [.swipeUpLeft, .swipeUpRight, .swipeDownLeft, .swipeDownRight]
+    private static let twoWayHorizontalGestures: Set<GestureType> = [.swipeLeft, .swipeRight]
+    private static let twoWayVerticalGestures: Set<GestureType> = [.swipeUp, .swipeDown]
+
     /// Checks whether a given gesture is allowed in this mode.
     func allows(_ gesture: GestureType) -> Bool {
         switch self {
         case .eightWay:
             gesture.isSwipe
         case .fourWayCross:
-            [.swipeUp, .swipeDown, .swipeLeft, .swipeRight].contains(gesture)
+            Self.fourWayCrossGestures.contains(gesture)
         case .fourWayDiagonal:
-            [.swipeUpLeft, .swipeUpRight, .swipeDownLeft, .swipeDownRight].contains(gesture)
+            Self.fourWayDiagonalGestures.contains(gesture)
         case .twoWayHorizontal:
-            [.swipeLeft, .swipeRight].contains(gesture)
+            Self.twoWayHorizontalGestures.contains(gesture)
         case .twoWayVertical:
-            [.swipeUp, .swipeDown].contains(gesture)
+            Self.twoWayVerticalGestures.contains(gesture)
         case .none:
             false
         }

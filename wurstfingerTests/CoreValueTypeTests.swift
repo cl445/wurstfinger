@@ -259,7 +259,7 @@ struct KeyBindingTests {
         #expect(decoded == binding)
     }
 
-    @Test func codableRoundtripWithAllNils() throws {
+    @Test func codableRoundtripWithNilOptionalFields() throws {
         let binding = KeyBinding(
             label: "⌫", action: .deleteBackward,
             category: .utility, returnAction: nil,
@@ -376,5 +376,33 @@ struct KeyConfigTests {
         )
         #expect(config1 == config2)
         #expect(config1 != config3)
+    }
+}
+
+// MARK: - Exhaustive Enum Codable Roundtrips
+
+struct EnumCodableTests {
+    @Test func swipeModeAllCases() throws {
+        for mode in [SwipeMode.eightWay, .fourWayCross, .fourWayDiagonal, .twoWayHorizontal, .twoWayVertical, .none] {
+            let data = try JSONEncoder().encode(mode)
+            let decoded = try JSONDecoder().decode(SwipeMode.self, from: data)
+            #expect(decoded == mode)
+        }
+    }
+
+    @Test func slideTypeAllCases() throws {
+        for slide in [SlideType.none, .moveCursor, .delete] {
+            let data = try JSONEncoder().encode(slide)
+            let decoded = try JSONDecoder().decode(SlideType.self, from: data)
+            #expect(decoded == slide)
+        }
+    }
+
+    @Test func keyStyleAllCases() throws {
+        for style in [KeyStyle.primary, .secondary, .utility, .spacebar, .accent] {
+            let data = try JSONEncoder().encode(style)
+            let decoded = try JSONDecoder().decode(KeyStyle.self, from: data)
+            #expect(decoded == style)
+        }
     }
 }
