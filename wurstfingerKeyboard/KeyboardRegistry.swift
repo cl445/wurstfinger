@@ -35,4 +35,9 @@ final class KeyboardRegistry {
     static func evictAll() {
         cache.removeAll()
     }
+
+    /// Whether a definition is currently cached (for testing).
+    static func isCached(id: String) -> Bool {
+        cache[id] != nil
+    }
 }

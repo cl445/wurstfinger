@@ -28,6 +28,7 @@ struct KeyboardInfoTests {
 
 // MARK: - KeyboardRegistry
 
+@Suite(.serialized)
 struct KeyboardRegistryTests {
     @Test func availableContainsAllLanguages() {
         #expect(KeyboardRegistry.available.count == LanguageDefinitions.all.count)
@@ -50,9 +51,11 @@ struct KeyboardRegistryTests {
 
     @Test func loadCachesResult() {
         KeyboardRegistry.evictAll()
+        #expect(!KeyboardRegistry.isCached(id: LanguageDefinitions.german.id))
         let first = KeyboardRegistry.load(id: LanguageDefinitions.german.id)
-        let second = KeyboardRegistry.load(id: LanguageDefinitions.german.id)
         #expect(first != nil)
+        #expect(KeyboardRegistry.isCached(id: LanguageDefinitions.german.id))
+        let second = KeyboardRegistry.load(id: LanguageDefinitions.german.id)
         #expect(first == second)
     }
 
@@ -63,7 +66,9 @@ struct KeyboardRegistryTests {
     @Test func evictRemovesFromCache() {
         KeyboardRegistry.evictAll()
         _ = KeyboardRegistry.load(id: LanguageDefinitions.german.id)
+        #expect(KeyboardRegistry.isCached(id: LanguageDefinitions.german.id))
         KeyboardRegistry.evict(id: LanguageDefinitions.german.id)
+        #expect(!KeyboardRegistry.isCached(id: LanguageDefinitions.german.id))
         // After evict, load should still work (rebuilds from LanguageDefinitions)
         let reloaded = KeyboardRegistry.load(id: LanguageDefinitions.german.id)
         #expect(reloaded != nil)
@@ -73,11 +78,10 @@ struct KeyboardRegistryTests {
         // Load a few definitions
         _ = KeyboardRegistry.load(id: LanguageDefinitions.german.id)
         _ = KeyboardRegistry.load(id: LanguageDefinitions.english.id)
+        #expect(KeyboardRegistry.isCached(id: LanguageDefinitions.german.id))
+        #expect(KeyboardRegistry.isCached(id: LanguageDefinitions.english.id))
         KeyboardRegistry.evictAll()
-        // All should still be loadable after evict
-        let german = KeyboardRegistry.load(id: LanguageDefinitions.german.id)
-        let english = KeyboardRegistry.load(id: LanguageDefinitions.english.id)
-        #expect(german != nil)
-        #expect(english != nil)
+        #expect(!KeyboardRegistry.isCached(id: LanguageDefinitions.german.id))
+        #expect(!KeyboardRegistry.isCached(id: LanguageDefinitions.english.id))
     }
 }
