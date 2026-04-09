@@ -27,4 +27,26 @@ struct KeyPlacement: Codable, Equatable {
         self.widthMultiplier = widthMultiplier
         self.heightMultiplier = heightMultiplier
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let keyId = try container.decode(String.self, forKey: .keyId)
+        let width = try container.decode(Int.self, forKey: .widthMultiplier)
+        let height = try container.decode(Int.self, forKey: .heightMultiplier)
+
+        guard width > 0 else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .widthMultiplier, in: container,
+                debugDescription: "widthMultiplier must be positive"
+            )
+        }
+        guard height > 0 else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .heightMultiplier, in: container,
+                debugDescription: "heightMultiplier must be positive"
+            )
+        }
+
+        self.init(keyId: keyId, widthMultiplier: width, heightMultiplier: height)
+    }
 }

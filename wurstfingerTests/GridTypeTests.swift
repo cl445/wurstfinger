@@ -43,6 +43,20 @@ struct KeyPlacementTests {
         #expect(a == b)
         #expect(a != c)
     }
+
+    @Test func decodingRejectsZeroWidthMultiplier() {
+        let json = #"{"keyId":"a","widthMultiplier":0,"heightMultiplier":1}"#
+        #expect(throws: DecodingError.self) {
+            try JSONDecoder().decode(KeyPlacement.self, from: Data(json.utf8))
+        }
+    }
+
+    @Test func decodingRejectsNegativeHeightMultiplier() {
+        let json = #"{"keyId":"a","widthMultiplier":1,"heightMultiplier":-1}"#
+        #expect(throws: DecodingError.self) {
+            try JSONDecoder().decode(KeyPlacement.self, from: Data(json.utf8))
+        }
+    }
 }
 
 // MARK: - GridArrangement Tests
