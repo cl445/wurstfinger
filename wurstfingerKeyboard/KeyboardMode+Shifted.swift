@@ -35,10 +35,12 @@ extension KeyConfig {
     func autoShifted(locale: Locale) -> KeyConfig {
         let shiftedBindings = bindings.mapValues { binding -> KeyBinding in
             guard binding.resolvedCategory == .letter else { return binding }
-            let upper = binding.label.uppercased(with: locale)
+            guard case let .commitText(text) = binding.action else { return binding }
+            let upperLabel = binding.label.uppercased(with: locale)
+            let upperText = text.uppercased(with: locale)
             return KeyBinding(
-                label: upper,
-                action: .commitText(upper),
+                label: upperLabel,
+                action: .commitText(upperText),
                 category: binding.category,
                 returnAction: binding.returnAction,
                 accessibilityLabel: binding.accessibilityLabel

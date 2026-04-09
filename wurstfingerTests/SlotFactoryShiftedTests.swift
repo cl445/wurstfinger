@@ -163,6 +163,29 @@ struct KeyConfigUtilityFactoryTests {
 // MARK: - KeyConfig.autoShifted() Tests
 
 struct AutoShiftedTests {
+    @Test func autoShiftedUsesCommittedTextNotLabel() {
+        // Label and committed text differ — shifted must uppercase each independently
+        let key = KeyConfig(
+            id: "test",
+            bindings: [
+                .tap: KeyBinding(
+                    label: "display",
+                    action: .commitText("payload"),
+                    category: .letter,
+                    returnAction: nil,
+                    accessibilityLabel: nil
+                ),
+            ],
+            swipeMode: .eightWay,
+            slideType: .none,
+            style: .primary,
+            tapCycleActions: nil
+        )
+        let shifted = key.autoShifted(locale: Locale(identifier: "en_US"))
+        #expect(shifted.bindings[.tap]?.label == "DISPLAY")
+        #expect(shifted.bindings[.tap]?.action == .commitText("PAYLOAD"))
+    }
+
     @Test func autoShiftedGermanBasic() {
         let key = KeyConfig.letter("center", tap: "d", swipes: [.swipeUp: "g"])
         let shifted = key.autoShifted(locale: Locale(identifier: "de_DE"))
