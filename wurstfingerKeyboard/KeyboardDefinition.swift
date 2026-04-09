@@ -94,13 +94,6 @@ struct KeyboardDefinitionSettings: Codable, Equatable {
     }
 }
 
-/// A complete set of compose rules, loadable from JSON.
-struct ComposeRuleSet: Codable, Equatable {
-    /// trigger → (baseChar → result)
-    /// e.g. "¨" → ["a": "ä", "o": "ö", ...]
-    let rules: [String: [String: String]]
-}
-
 /// A rule for automatic capitalization.
 struct AutoCapitalizerRule: Codable, Equatable {
     /// Pattern recognized in text before cursor
