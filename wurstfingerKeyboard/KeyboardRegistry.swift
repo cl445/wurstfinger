@@ -13,13 +13,19 @@ enum KeyboardRegistry {
     /// All available keyboard layouts (lightweight metadata only).
     static let available: [KeyboardInfo] = LanguageDefinitions.all.map { KeyboardInfo(from: $0) }
 
+    /// Precomputed index for O(1) definition lookup by id.
+    private static let definitionsByID: [String: KeyboardDefinition] =
+        LanguageDefinitions.all.reduce(into: [:]) { dict, def in
+            dict[def.id] = def
+        }
+
     /// Cache for loaded definitions.
     private static var cache: [String: KeyboardDefinition] = [:]
 
     /// Loads the full definition for a keyboard ID, caching the result.
     static func load(id: String) -> KeyboardDefinition? {
         if let cached = cache[id] { return cached }
-        guard let definition = LanguageDefinitions.all.first(where: { $0.id == id }) else {
+        guard let definition = definitionsByID[id] else {
             return nil
         }
         cache[id] = definition

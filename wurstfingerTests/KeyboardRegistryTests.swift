@@ -31,7 +31,9 @@ struct KeyboardInfoTests {
 @Suite(.serialized)
 struct KeyboardRegistryTests {
     @Test func availableContainsAllLanguages() {
-        #expect(KeyboardRegistry.available.count == LanguageDefinitions.all.count)
+        let expectedIDs = Set(LanguageDefinitions.all.map(\.id))
+        let actualIDs = Set(KeyboardRegistry.available.map(\.id))
+        #expect(actualIDs == expectedIDs)
     }
 
     @Test func availableContainsGerman() {
