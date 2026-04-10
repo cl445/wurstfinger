@@ -403,6 +403,8 @@ enum LanguageDefinitions {
         ]
     )
 
+    // MARK: - Vietnamese (Telex)
+
     static let vietnamese = GridKeyboardFactory.layout(
         id: "vi_VN",
         title: "Tiếng Việt (Vietnamese-Telex)",
@@ -426,7 +428,8 @@ enum LanguageDefinitions {
             GridSlot.bottomLeft: [.swipeUpRight: "y"],
             GridSlot.bottomCenter: [.swipeUp: "w", .swipeRight: "z"],
             GridSlot.bottomRight: [.swipeUpLeft: "f"],
-        ]
+        ],
+        inputMethod: .telex
     )
 
     // MARK: - Registry

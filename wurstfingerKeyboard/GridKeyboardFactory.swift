@@ -23,13 +23,17 @@ enum GridKeyboardFactory {
     ///     mode that switches back to the main (alphabetic) layer. Defaults to
     ///     the Latin "abc"; non-Latin layouts (Hebrew, Russian, …) should
     ///     supply a script-appropriate label.
+    ///   - inputMethod: Which input method is applied to committed characters.
+    ///     Defaults to `.direct`; Vietnamese layouts should pass `.telex` so
+    ///     that `TelexMiddleware` activates for this keyboard at runtime.
     static func layout(
         id: String,
         title: String,
         localeIdentifier: String,
         centerCharacters: [[String]],
         directionalOverrides: [String: [GestureType: String]] = [:],
-        numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel
+        numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel,
+        inputMethod: InputMethodKind = .direct
     ) -> KeyboardDefinition {
         precondition(
             centerCharacters.count == 3 && centerCharacters.allSatisfy { $0.count == 3 },
@@ -106,7 +110,8 @@ enum GridKeyboardFactory {
             settings: KeyboardDefinitionSettings(
                 autoCapitalize: true,
                 autoCapitalizers: [],
-                composeRuleOverrides: nil
+                composeRuleOverrides: nil,
+                inputMethod: inputMethod
             )
         )
     }
