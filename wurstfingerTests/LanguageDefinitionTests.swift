@@ -77,14 +77,14 @@ struct GermanLayoutTests {
 
 struct NumericLayoutTests {
     @Test func phoneFirstRowIs123() {
-        let phone = NumericLayouts.phone
+        let phone = NumericLayouts.phone()
         #expect(phone.keys[GridSlot.topLeft]?.bindings[.tap]?.action == .commitText("1"))
         #expect(phone.keys[GridSlot.topCenter]?.bindings[.tap]?.action == .commitText("2"))
         #expect(phone.keys[GridSlot.topRight]?.bindings[.tap]?.action == .commitText("3"))
     }
 
     @Test func classicFirstRowIs789() {
-        let classic = NumericLayouts.classic
+        let classic = NumericLayouts.classic()
         #expect(classic.keys[GridSlot.topLeft]?.bindings[.tap]?.action == .commitText("7"))
         #expect(classic.keys[GridSlot.topCenter]?.bindings[.tap]?.action == .commitText("8"))
         #expect(classic.keys[GridSlot.topRight]?.bindings[.tap]?.action == .commitText("9"))
@@ -92,35 +92,65 @@ struct NumericLayoutTests {
 
     @Test func phoneValidates() {
         // Build a minimal definition to validate the numeric mode
-        let errors = NumericLayouts.phone.validate()
+        let errors = NumericLayouts.phone().validate()
         #expect(errors.isEmpty, "Validation errors: \(errors)")
     }
 
     @Test func classicValidates() {
-        let errors = NumericLayouts.classic.validate()
+        let errors = NumericLayouts.classic().validate()
         #expect(errors.isEmpty, "Validation errors: \(errors)")
     }
 
     @Test func symbolsKeySwitchesToMain() {
-        let phone = NumericLayouts.phone
+        let phone = NumericLayouts.phone()
         #expect(phone.keys[UtilitySlot.symbols]?.bindings[.tap]?.action == .switchMode(ModeNames.main))
     }
 
     @Test func spaceKeyOutputsZero() {
-        let phone = NumericLayouts.phone
+        let phone = NumericLayouts.phone()
         #expect(phone.keys[UtilitySlot.space]?.bindings[.tap]?.action == .commitText("0"))
     }
 
     @Test func hasSymbolSwipes() {
-        let phone = NumericLayouts.phone
+        let phone = NumericLayouts.phone()
         // Spot-check a few symbol swipes
         #expect(phone.keys[GridSlot.bottomCenter]?.bindings[.swipeDown]?.action == .commitText("."))
         #expect(phone.keys[GridSlot.bottomCenter]?.bindings[.swipeLeft]?.action == .commitText(","))
     }
 
     @Test func phoneHasAllGridAndUtilityKeys() {
-        let phone = NumericLayouts.phone
-        // 9 grid slots + 5 utility keys = 14
-        #expect(phone.keys.count == 14)
+        let phone = NumericLayouts.phone()
+        let expectedKeys = Set(
+            GridSlot.allSlots.flatMap(\.self) + [
+                UtilitySlot.globe,
+                UtilitySlot.delete,
+                UtilitySlot.return,
+                UtilitySlot.symbols,
+                UtilitySlot.space,
+            ]
+        )
+        #expect(Set(phone.keys.keys) == expectedKeys)
+    }
+
+    @Test func defaultBackToAlphaLabelIsLatinAbc() {
+        let phone = NumericLayouts.phone()
+        #expect(phone.keys[UtilitySlot.symbols]?.bindings[.tap]?.label == "abc")
+    }
+
+    @Test func customBackToAlphaLabelIsRespected() {
+        let phone = NumericLayouts.phone(backToAlphaLabel: "אבג")
+        #expect(phone.keys[UtilitySlot.symbols]?.bindings[.tap]?.label == "אבג")
+    }
+
+    @Test func hebrewLayoutUsesHebrewBackToAlphaLabel() throws {
+        let hebrew = LanguageDefinitions.hebrew
+        let numeric = try #require(hebrew.modes[ModeNames.numeric])
+        #expect(numeric.keys[UtilitySlot.symbols]?.bindings[.tap]?.label == "אבג")
+    }
+
+    @Test func russianLayoutUsesCyrillicBackToAlphaLabel() throws {
+        let russian = LanguageDefinitions.russian
+        let numeric = try #require(russian.modes[ModeNames.numeric])
+        #expect(numeric.keys[UtilitySlot.symbols]?.bindings[.tap]?.label == "абв")
     }
 }

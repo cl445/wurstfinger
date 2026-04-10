@@ -202,7 +202,8 @@ enum LanguageDefinitions {
             GridSlot.bottomLeft: [.swipeUpRight: "ז"],
             GridSlot.bottomCenter: [.swipeUp: "ס"],
             GridSlot.bottomRight: [.swipeUpLeft: "ט"],
-        ]
+        ],
+        numericBackToAlphaLabel: "אבג"
     )
 
     // MARK: - Italian
@@ -286,7 +287,8 @@ enum LanguageDefinitions {
             GridSlot.bottomLeft: [.swipeUp: "ё", .swipeRight: "э", .swipeUpRight: "д"],
             GridSlot.bottomCenter: [.swipeUp: "у", .swipeRight: "з", .swipeLeft: "ю"],
             GridSlot.bottomRight: [.swipeUpLeft: "ф"],
-        ]
+        ],
+        numericBackToAlphaLabel: "абв"
     )
 
     // MARK: - Spanish-Catalan

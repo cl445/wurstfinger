@@ -19,12 +19,17 @@ enum GridKeyboardFactory {
     ///   - localeIdentifier: Locale string for uppercasing (e.g. "de_DE")
     ///   - centerCharacters: 3x3 grid of center tap characters
     ///   - directionalOverrides: Per-slot overrides that replace CommonKeys defaults
+    ///   - numericBackToAlphaLabel: Label shown on the symbols key in numeric
+    ///     mode that switches back to the main (alphabetic) layer. Defaults to
+    ///     the Latin "abc"; non-Latin layouts (Hebrew, Russian, …) should
+    ///     supply a script-appropriate label.
     static func layout(
         id: String,
         title: String,
         localeIdentifier: String,
         centerCharacters: [[String]],
-        directionalOverrides: [String: [GestureType: String]] = [:]
+        directionalOverrides: [String: [GestureType: String]] = [:],
+        numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel
     ) -> KeyboardDefinition {
         precondition(
             centerCharacters.count == 3 && centerCharacters.allSatisfy { $0.count == 3 },
@@ -95,7 +100,7 @@ enum GridKeyboardFactory {
                 ModeNames.main: mainMode,
                 ModeNames.shifted: shiftedMode,
                 ModeNames.capsLock: capsLockMode,
-                ModeNames.numeric: NumericLayouts.phone,
+                ModeNames.numeric: NumericLayouts.phone(backToAlphaLabel: numericBackToAlphaLabel),
             ],
             defaultMode: ModeNames.main,
             settings: KeyboardDefinitionSettings(

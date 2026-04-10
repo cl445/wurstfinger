@@ -9,26 +9,45 @@ import Foundation
 
 /// Numeric keyboard modes shared across all languages.
 enum NumericLayouts {
+    /// Default Latin label for the back-to-alpha key. Languages whose
+    /// alphabet is not Latin (Hebrew, Russian, …) should pass their own
+    /// script-appropriate label via `phone(backToAlphaLabel:)`.
+    static let defaultBackToAlphaLabel = "abc"
+
     /// Phone-style layout (1-2-3 in top row).
-    static let phone: KeyboardMode = buildMode(centerDigits: [
-        ["1", "2", "3"],
-        ["4", "5", "6"],
-        ["7", "8", "9"],
-    ])
+    static func phone(backToAlphaLabel: String = defaultBackToAlphaLabel) -> KeyboardMode {
+        buildMode(
+            centerDigits: [
+                ["1", "2", "3"],
+                ["4", "5", "6"],
+                ["7", "8", "9"],
+            ],
+            backToAlphaLabel: backToAlphaLabel
+        )
+    }
 
     /// Classic calculator style (7-8-9 in top row).
-    static let classic: KeyboardMode = buildMode(centerDigits: [
-        ["7", "8", "9"],
-        ["4", "5", "6"],
-        ["1", "2", "3"],
-    ])
+    static func classic(backToAlphaLabel: String = defaultBackToAlphaLabel) -> KeyboardMode {
+        buildMode(
+            centerDigits: [
+                ["7", "8", "9"],
+                ["4", "5", "6"],
+                ["1", "2", "3"],
+            ],
+            backToAlphaLabel: backToAlphaLabel
+        )
+    }
 
     // MARK: - Numeric Utility Keys
 
-    /// Symbols key in numeric mode switches back to main (label "abc").
-    private static let backToMain = KeyConfig.utility(
-        UtilitySlot.symbols, label: "abc", action: .switchMode(ModeNames.main)
-    )
+    /// Builds the symbols key in numeric mode, which switches back to main.
+    /// The label is locale/script-aware so non-Latin keyboards (e.g. Hebrew,
+    /// Russian) can show an appropriate label instead of the Latin "abc".
+    private static func backToMain(label: String) -> KeyConfig {
+        KeyConfig.utility(
+            UtilitySlot.symbols, label: label, action: .switchMode(ModeNames.main)
+        )
+    }
 
     /// Space key with "0" on tap in numeric mode.
     private static let spaceWithZero = KeyConfig.utility(
@@ -36,14 +55,17 @@ enum NumericLayouts {
         slideType: .moveCursor
     )
 
-    /// Utility keys for numeric mode (symbols → back to main, space → 0).
-    private static let utilityKeys: [String: KeyConfig] = [
-        UtilitySlot.globe: CommonKeys.globe,
-        UtilitySlot.delete: CommonKeys.delete,
-        UtilitySlot.return: CommonKeys.return,
-        UtilitySlot.symbols: backToMain,
-        UtilitySlot.space: spaceWithZero,
-    ]
+    /// Builds the utility-key dictionary for numeric mode using the supplied
+    /// back-to-alpha label.
+    private static func utilityKeys(backToAlphaLabel: String) -> [String: KeyConfig] {
+        [
+            UtilitySlot.globe: CommonKeys.globe,
+            UtilitySlot.delete: CommonKeys.delete,
+            UtilitySlot.return: CommonKeys.return,
+            UtilitySlot.symbols: backToMain(label: backToAlphaLabel),
+            UtilitySlot.space: spaceWithZero,
+        ]
+    }
 
     // MARK: - Symbol Swipes per Digit
 
@@ -91,7 +113,7 @@ enum NumericLayouts {
 
     // MARK: - Builder
 
-    private static func buildMode(centerDigits: [[String]]) -> KeyboardMode {
+    private static func buildMode(centerDigits: [[String]], backToAlphaLabel: String) -> KeyboardMode {
         precondition(
             centerDigits.count == 3 && centerDigits.allSatisfy { $0.count == 3 },
             "centerDigits must be a 3×3 matrix"
@@ -126,7 +148,7 @@ enum NumericLayouts {
             }
         }
 
-        let allKeys = digitKeys.merging(utilityKeys) { digit, _ in digit }
+        let allKeys = digitKeys.merging(utilityKeys(backToAlphaLabel: backToAlphaLabel)) { digit, _ in digit }
 
         return KeyboardMode(
             name: ModeNames.numeric,
