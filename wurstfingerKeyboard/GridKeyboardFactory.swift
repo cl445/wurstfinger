@@ -19,12 +19,21 @@ enum GridKeyboardFactory {
     ///   - localeIdentifier: Locale string for uppercasing (e.g. "de_DE")
     ///   - centerCharacters: 3x3 grid of center tap characters
     ///   - directionalOverrides: Per-slot overrides that replace CommonKeys defaults
+    ///   - numericBackToAlphaLabel: Label shown on the symbols key in numeric
+    ///     mode that switches back to the main (alphabetic) layer. Defaults to
+    ///     the Latin "abc"; non-Latin layouts (Hebrew, Russian, …) should
+    ///     supply a script-appropriate label.
+    ///   - inputMethod: Which input method is applied to committed characters.
+    ///     Defaults to `.direct`; Vietnamese layouts should pass `.telex` so
+    ///     that `TelexMiddleware` activates for this keyboard at runtime.
     static func layout(
         id: String,
         title: String,
         localeIdentifier: String,
         centerCharacters: [[String]],
-        directionalOverrides: [String: [GestureType: String]] = [:]
+        directionalOverrides: [String: [GestureType: String]] = [:],
+        numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel,
+        inputMethod: InputMethodKind = .direct
     ) -> KeyboardDefinition {
         precondition(
             centerCharacters.count == 3 && centerCharacters.allSatisfy { $0.count == 3 },
@@ -86,16 +95,7 @@ enum GridKeyboardFactory {
         let capsLockMode = mainMode.generateShifted(locale: locale)
             .with(name: ModeNames.capsLock)
 
-        // 6. Stub numeric mode — replaced by real NumericLayouts in PR6
-        let numericStub = KeyboardMode(
-            name: ModeNames.numeric,
-            keys: allKeys,
-            arrangements: arrangements,
-            autoTransitions: [:],
-            doubleTapMode: nil
-        )
-
-        // 7. Assemble definition
+        // 6. Assemble definition
         return KeyboardDefinition(
             title: title,
             id: id,
@@ -104,13 +104,14 @@ enum GridKeyboardFactory {
                 ModeNames.main: mainMode,
                 ModeNames.shifted: shiftedMode,
                 ModeNames.capsLock: capsLockMode,
-                ModeNames.numeric: numericStub,
+                ModeNames.numeric: NumericLayouts.phone(backToAlphaLabel: numericBackToAlphaLabel),
             ],
             defaultMode: ModeNames.main,
             settings: KeyboardDefinitionSettings(
                 autoCapitalize: true,
                 autoCapitalizers: [],
-                composeRuleOverrides: nil
+                composeRuleOverrides: nil,
+                inputMethod: inputMethod
             )
         )
     }
