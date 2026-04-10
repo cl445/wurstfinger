@@ -9,7 +9,7 @@ import Foundation
 
 /// Registry for keyboard layouts.
 /// Exposes lightweight metadata via `available` and loads full definitions on demand.
-final class KeyboardRegistry {
+enum KeyboardRegistry {
     /// All available keyboard layouts (lightweight metadata only).
     static let available: [KeyboardInfo] = LanguageDefinitions.all.map { KeyboardInfo(from: $0) }
 
