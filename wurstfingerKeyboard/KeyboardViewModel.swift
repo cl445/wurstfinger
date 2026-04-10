@@ -93,10 +93,11 @@ final class KeyboardViewModel: ObservableObject {
     /// Updated by the controller in `viewWillLayoutSubviews()` so that
     /// SwiftUI re-evaluates layout after orientation changes (Bug #92).
     @Published private(set) var viewWidth: CGFloat = UIScreen.main.bounds.width
-    /// Current height of the keyboard's containing view.
-    /// Updated alongside `viewWidth` so that `currentContext` can decide
-    /// between portrait and landscape arrangements.
-    @Published private(set) var viewHeight: CGFloat = UIScreen.main.bounds.height
+    /// Whether the device is currently in a landscape orientation.
+    /// Driven by the controller via `updateOrientation(isLandscape:)`, since
+    /// the keyboard's own bounds are always shorter than tall and cannot
+    /// reliably distinguish portrait from landscape on their own.
+    @Published private(set) var isLandscape: Bool = false
     /// The currently active data-driven keyboard mode (PR 9+).
     /// `nil` while the legacy `KeyboardLayout` path is in use; PR 12 will
     /// populate this from `KeyboardRegistry` and remove the legacy path.
@@ -223,11 +224,12 @@ final class KeyboardViewModel: ObservableObject {
         viewWidth = width
     }
 
-    /// Updates the tracked view height. Called by the controller in
-    /// `viewWillLayoutSubviews()` so `currentContext` reflects orientation.
-    func updateViewHeight(_ height: CGFloat) {
-        guard height != viewHeight else { return }
-        viewHeight = height
+    /// Updates the tracked orientation. Called by the controller from
+    /// `viewWillLayoutSubviews()` (which inspects its `traitCollection`) so
+    /// `currentContext` can pick portrait/landscape arrangements correctly.
+    func updateOrientation(isLandscape: Bool) {
+        guard isLandscape != self.isLandscape else { return }
+        self.isLandscape = isLandscape
     }
 
     // MARK: - Data-Driven Arrangement Selection (PR 9)
@@ -235,7 +237,6 @@ final class KeyboardViewModel: ObservableObject {
     /// Determines the active arrangement context based on orientation and
     /// the user's utility-column preference.
     var currentContext: ArrangementContext {
-        let isLandscape = viewWidth > viewHeight
         let utilityLeft = layoutSettings.utilityColumnLeading
         switch (isLandscape, utilityLeft) {
         case (false, false): return .portrait

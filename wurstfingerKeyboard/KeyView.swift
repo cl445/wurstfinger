@@ -26,7 +26,8 @@ struct KeyView: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
-        .contentShape(Rectangle())
+        .accessibilityAddTraits(.isButton)
+        .contentShape(Rectangle().inset(by: -KeyboardTouchArea.padding))
         .onTapGesture {
             onGesture(key, .tap)
         }

@@ -15,40 +15,39 @@ import Testing
 
 @Suite(.serialized)
 struct KeyboardViewModelContextTests {
-    /// Builds a ViewModel with deterministic dimensions and a clean
-    /// utility-column setting. We use an in-memory UserDefaults so the
-    /// suite never touches the shared store.
-    private func makeViewModel(width: CGFloat, height: CGFloat, utilityLeft: Bool) -> KeyboardViewModel {
+    /// Builds a ViewModel with a deterministic orientation and utility-column
+    /// setting. We use an in-memory UserDefaults so the suite never touches
+    /// the shared store.
+    private func makeViewModel(isLandscape: Bool, utilityLeft: Bool) -> KeyboardViewModel {
         let defaults = UserDefaults(suiteName: "test.\(UUID().uuidString)")!
         let viewModel = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
         viewModel.utilityColumnLeading = utilityLeft
-        viewModel.updateViewWidth(width)
-        viewModel.updateViewHeight(height)
+        viewModel.updateOrientation(isLandscape: isLandscape)
         return viewModel
     }
 
     @Test func portraitUtilityRight() {
-        let viewModel = makeViewModel(width: 400, height: 800, utilityLeft: false)
+        let viewModel = makeViewModel(isLandscape: false, utilityLeft: false)
         #expect(viewModel.currentContext == .portrait)
     }
 
     @Test func portraitUtilityLeft() {
-        let viewModel = makeViewModel(width: 400, height: 800, utilityLeft: true)
+        let viewModel = makeViewModel(isLandscape: false, utilityLeft: true)
         #expect(viewModel.currentContext == .portraitUtilityLeft)
     }
 
     @Test func landscapeUtilityRight() {
-        let viewModel = makeViewModel(width: 800, height: 400, utilityLeft: false)
+        let viewModel = makeViewModel(isLandscape: true, utilityLeft: false)
         #expect(viewModel.currentContext == .landscape)
     }
 
     @Test func landscapeUtilityLeft() {
-        let viewModel = makeViewModel(width: 800, height: 400, utilityLeft: true)
+        let viewModel = makeViewModel(isLandscape: true, utilityLeft: true)
         #expect(viewModel.currentContext == .landscapeUtilityLeft)
     }
 
     @Test func currentArrangementIsNilWithoutMode() {
-        let viewModel = makeViewModel(width: 400, height: 800, utilityLeft: false)
+        let viewModel = makeViewModel(isLandscape: false, utilityLeft: false)
         #expect(viewModel.currentMode == nil)
         #expect(viewModel.currentArrangement == nil)
     }
@@ -88,12 +87,11 @@ struct KeyboardViewModelContextTests {
             doubleTapMode: nil
         )
 
-        let viewModel = makeViewModel(width: 400, height: 800, utilityLeft: false)
+        let viewModel = makeViewModel(isLandscape: false, utilityLeft: false)
         viewModel.currentMode = mode
         #expect(viewModel.currentArrangement?.columns == 1)
 
-        viewModel.updateViewWidth(800)
-        viewModel.updateViewHeight(400)
+        viewModel.updateOrientation(isLandscape: true)
         #expect(viewModel.currentArrangement?.columns == 2)
     }
 }

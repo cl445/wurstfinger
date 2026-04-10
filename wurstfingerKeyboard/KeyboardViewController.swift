@@ -79,6 +79,10 @@ final class KeyboardViewController: UIInputViewController {
         // Update viewModel with current width so SwiftUI re-renders after
         // orientation changes that happen while the keyboard is backgrounded (Bug #92).
         viewModel.updateViewWidth(view.bounds.width)
+        // Keyboard bounds are always shorter than tall, so we cannot infer
+        // orientation from view.bounds. Use the trait collection instead:
+        // compact verticalSizeClass corresponds to landscape on phones.
+        viewModel.updateOrientation(isLandscape: traitCollection.verticalSizeClass == .compact)
     }
 
     override var needsInputModeSwitchKey: Bool {
