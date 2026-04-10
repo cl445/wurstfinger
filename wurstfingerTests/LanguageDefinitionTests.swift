@@ -26,8 +26,13 @@ struct LanguageDefinitionValidationTests {
         #expect(layout.modes[ModeNames.numeric] != nil, "\(layout.id) missing numeric mode")
     }
 
-    @Test func allLanguagesCount() {
-        #expect(LanguageDefinitions.all.count == 14)
+    @Test func allLanguagesMatchRegistry() {
+        // Parity check against the canonical LanguageConfig registry —
+        // catches drift if a language is added to one list but not the other.
+        #expect(
+            Set(LanguageDefinitions.all.map(\.id))
+                == Set(LanguageConfig.allLanguages.map(\.id))
+        )
     }
 }
 
