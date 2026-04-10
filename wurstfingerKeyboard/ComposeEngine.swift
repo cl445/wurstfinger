@@ -78,7 +78,8 @@ struct ComposeEngine {
         // Sort by key for deterministic iteration order across runs
         for (_, charMap) in ruleSet.rules.sorted(by: { $0.key < $1.key }) {
             for (base, accented) in charMap.sorted(by: { $0.key < $1.key }) {
-                // Skip self-mappings like " " → "¨" or composition mappings
+                // Skip non-cycling entries: space fallbacks (" " → trigger char)
+                // and multi-character bases (already-composed forms like "â" → "ấ")
                 if base == " " || base.count > 1 { continue }
 
                 // Add base → accented mapping

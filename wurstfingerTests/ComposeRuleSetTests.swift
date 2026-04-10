@@ -31,7 +31,11 @@ struct ComposeRuleSetGlobalTests {
     }
 
     @Test func globalMatchesSharedEngine() {
-        // Verify that ComposeRuleSet.global produces the same results as shared engine
+        // Assert raw rule data so failures pinpoint data-table vs engine regression
+        #expect(ComposeRuleSet.global.rules["¨"]?["a"] == "ä")
+        #expect(ComposeRuleSet.global.rules["~"]?["n"] == "ñ")
+        #expect(ComposeRuleSet.global.rules["$"]?["e"] == "€")
+        // Verify that the shared engine produces the same results
         #expect(ComposeEngine.shared.compose(previous: "a", trigger: "¨") == "ä")
         #expect(ComposeEngine.shared.compose(previous: "n", trigger: "~") == "ñ")
         #expect(ComposeEngine.shared.compose(previous: "e", trigger: "$") == "€")
