@@ -93,6 +93,14 @@ final class KeyboardViewModel: ObservableObject {
     /// Updated by the controller in `viewWillLayoutSubviews()` so that
     /// SwiftUI re-evaluates layout after orientation changes (Bug #92).
     @Published private(set) var viewWidth: CGFloat = UIScreen.main.bounds.width
+    /// Current height of the keyboard's containing view.
+    /// Updated alongside `viewWidth` so that `currentContext` can decide
+    /// between portrait and landscape arrangements.
+    @Published private(set) var viewHeight: CGFloat = UIScreen.main.bounds.height
+    /// The currently active data-driven keyboard mode (PR 9+).
+    /// `nil` while the legacy `KeyboardLayout` path is in use; PR 12 will
+    /// populate this from `KeyboardRegistry` and remove the legacy path.
+    @Published var currentMode: KeyboardMode?
     private var locale: Locale
 
     // MARK: - Settings (delegated to extracted classes)
@@ -213,6 +221,34 @@ final class KeyboardViewModel: ObservableObject {
     func updateViewWidth(_ width: CGFloat) {
         guard width != viewWidth else { return }
         viewWidth = width
+    }
+
+    /// Updates the tracked view height. Called by the controller in
+    /// `viewWillLayoutSubviews()` so `currentContext` reflects orientation.
+    func updateViewHeight(_ height: CGFloat) {
+        guard height != viewHeight else { return }
+        viewHeight = height
+    }
+
+    // MARK: - Data-Driven Arrangement Selection (PR 9)
+
+    /// Determines the active arrangement context based on orientation and
+    /// the user's utility-column preference.
+    var currentContext: ArrangementContext {
+        let isLandscape = viewWidth > viewHeight
+        let utilityLeft = layoutSettings.utilityColumnLeading
+        switch (isLandscape, utilityLeft) {
+        case (false, false): return .portrait
+        case (false, true): return .portraitUtilityLeft
+        case (true, false): return .landscape
+        case (true, true): return .landscapeUtilityLeft
+        }
+    }
+
+    /// The grid arrangement for `currentMode` and `currentContext`.
+    /// Returns `nil` while the legacy layout path is still in use.
+    var currentArrangement: GridArrangement? {
+        currentMode?.arrangement(for: currentContext)
     }
 
     func reloadSettings() {
