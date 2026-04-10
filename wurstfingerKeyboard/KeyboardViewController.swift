@@ -164,8 +164,39 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func insertText(_ text: String) {
+        if textDocumentProxy.selectedText?.isEmpty ?? true,
+           viewModel.isTelexActive, text.count == 1,
+           let context = textDocumentProxy.documentContextBeforeInput, !context.isEmpty {
+            let chars = Array(context.suffix(2))
+            // Try digraph first: "uo" + "w" -> "ươ"
+            if chars.count >= 2,
+               let (replacement, deleteCount) = ComposeEngine.composeTelexDigraph(
+                   prev2: String(chars[chars.count - 2]),
+                   prev1: String(chars[chars.count - 1]),
+                   trigger: text
+               ) {
+                for _ in 0 ..< deleteCount {
+                    textDocumentProxy.deleteBackward()
+                }
+                textDocumentProxy.insertText(replacement)
+                checkAutoCapitalizationAfterInsert(text)
+                return
+            }
+            // Then single-char compose
+            if let composed = ComposeEngine.composeTelex(
+                previous: String(chars.last!), trigger: text
+            ) {
+                textDocumentProxy.deleteBackward()
+                textDocumentProxy.insertText(composed)
+                checkAutoCapitalizationAfterInsert(text)
+                return
+            }
+        }
         textDocumentProxy.insertText(text)
-        // Spanish sentence-opening punctuation triggers immediate capitalization
+        checkAutoCapitalizationAfterInsert(text)
+    }
+
+    private func checkAutoCapitalizationAfterInsert(_ text: String) {
         if AutoCapitalization.shouldCapitalizeImmediately(after: text),
            SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue) {
             viewModel.setLayer(.upper)

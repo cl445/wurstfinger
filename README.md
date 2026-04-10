@@ -59,7 +59,7 @@ Want to try the latest features before they hit the App Store? Join our public T
 
 ## Features
 
-- **Multi-language support**: 14 languages including Catalan, Croatian, English, Estonian-Finnish, Finnish, French, German, Hebrew, Italian, Polish, Russian, Spanish, Swedish, and Tagalog
+- **Multi-language support**: 15 languages including Catalan, Croatian, English, Estonian-Finnish, Finnish, French, German, Hebrew, Italian, Polish, Russian, Spanish, Swedish, Tagalog, and Vietnamese (with Telex input)
 - **MessagEase layout** with symbol and numeric layers
 - **Compose engine** that reproduces Thumb-Key's combination triggers (e.g. `' + a → á`)
 - **Return swipes** for punctuation and math symbols (`?`→`¿`, `*`→`†`, `/`→`÷`, ...)

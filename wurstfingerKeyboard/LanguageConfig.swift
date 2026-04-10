@@ -549,6 +549,38 @@ extension LanguageConfig {
         ]
     )
 
+    /// Vietnamese keyboard layout (Telex input method)
+    static let vietnamese = LanguageConfig(
+        id: "vi_VN",
+        name: "Tiếng Việt (Vietnamese-Telex)",
+        locale: Locale(identifier: "vi_VN"),
+        centerCharacters: [
+            ["a", "n", "i"],
+            ["h", "o", "r"],
+            ["t", "e", "s"]
+        ],
+        directionalCharacters: [
+            KeySlot(0, 0, .down): "đ",
+            KeySlot(0, 0, .downRight): "v",
+            KeySlot(0, 1, .down): "l",
+            KeySlot(0, 2, .downLeft): "x",
+            KeySlot(1, 0, .right): "k",
+            KeySlot(1, 1, .upLeft): "q",
+            KeySlot(1, 1, .up): "u",
+            KeySlot(1, 1, .upRight): "p",
+            KeySlot(1, 1, .right): "b",
+            KeySlot(1, 1, .downRight): "j",
+            KeySlot(1, 1, .down): "d",
+            KeySlot(1, 1, .downLeft): "g",
+            KeySlot(1, 1, .left): "c",
+            KeySlot(1, 2, .left): "m",
+            KeySlot(2, 0, .upRight): "y",
+            KeySlot(2, 1, .up): "w",
+            KeySlot(2, 1, .right): "z",
+            KeySlot(2, 2, .upLeft): "f",
+        ]
+    )
+
     // MARK: - Language Registry
 
     /// All available language configurations
@@ -568,6 +600,7 @@ extension LanguageConfig {
         .spanish, // Español (Spanish)
         .swedish, // Svenska (Swedish)
         .tagalog, // Tagalog
+        .vietnamese, // Tiếng Việt (Vietnamese-Telex)
     ].sorted { $0.name < $1.name }
 
     /// Get language config by ID
