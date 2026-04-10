@@ -275,6 +275,7 @@ private final class MockTextInputTarget: TextInputTarget {
     }
 
     var events: [Event] = []
+    var documentContextBeforeInput: String?
 
     func insertText(_ text: String) {
         events.append(.insertText(text))
@@ -343,6 +344,121 @@ struct TextInputMiddlewareTests {
         pipe.process(PipelineFixtures.context(action: .commitText("x")))
 
         #expect(sink.received.count == 1, "Pipeline must continue even without a target")
+    }
+}
+
+// MARK: - TelexMiddleware
+
+struct TelexMiddlewareTests {
+    /// Shared spy capturing deleteBackward calls and exposing a mutable
+    /// documentContextBefore. Tests configure the context, dispatch through
+    /// the pipeline, and then inspect what the middleware forwarded.
+    private final class Spy {
+        var deletes = 0
+        var context: String?
+        func deleteBackward() {
+            deletes += 1
+        }
+    }
+
+    private func pipeline(
+        spy: Spy,
+        isActive: @escaping () -> Bool = { true },
+        digraph: @escaping (String, String, String) -> (String, Int)? = { _, _, _ in nil },
+        single: @escaping (String, String) -> String? = { _, _ in nil }
+    ) -> (ActionPipeline, RecordingMiddleware) {
+        let telex = TelexMiddleware(
+            isActive: isActive,
+            documentContextBefore: { spy.context },
+            deleteBackward: { spy.deleteBackward() },
+            composeDigraph: digraph,
+            composeSingle: single
+        )
+        let sink = RecordingMiddleware()
+        return (ActionPipeline(middlewares: [telex, sink]), sink)
+    }
+
+    @Test func inactiveMiddlewarePassesThroughUnchanged() {
+        let spy = Spy()
+        spy.context = "a"
+        let (pipe, sink) = pipeline(
+            spy: spy,
+            isActive: { false },
+            single: { _, _ in "á" }
+        )
+        pipe.process(PipelineFixtures.context(action: .commitText("s")))
+        #expect(sink.received.count == 1)
+        #expect(sink.received.first?.action == .commitText("s"))
+        #expect(spy.deletes == 0)
+    }
+
+    @Test func singleCharComposeReplacesAction() {
+        let spy = Spy()
+        spy.context = "a"
+        let (pipe, sink) = pipeline(
+            spy: spy,
+            single: { prev, trig in prev == "a" && trig == "s" ? "á" : nil }
+        )
+        pipe.process(PipelineFixtures.context(action: .commitText("s")))
+        #expect(sink.received.first?.action == .commitText("á"))
+        #expect(spy.deletes == 1)
+    }
+
+    @Test func digraphComposePrefersTwoCharLookback() {
+        let spy = Spy()
+        spy.context = "uo"
+        // Both would match — the middleware must prefer the digraph.
+        let (pipe, sink) = pipeline(
+            spy: spy,
+            digraph: { p2, p1, t in p2 == "u" && p1 == "o" && t == "w" ? ("ươ", 2) : nil },
+            single: { _, _ in "should-not-win" }
+        )
+        pipe.process(PipelineFixtures.context(action: .commitText("w")))
+        #expect(sink.received.first?.action == .commitText("ươ"))
+        #expect(spy.deletes == 2)
+    }
+
+    @Test func nonMatchingTriggerIsForwardedUnchanged() {
+        let spy = Spy()
+        spy.context = "x"
+        let (pipe, sink) = pipeline(spy: spy)
+        pipe.process(PipelineFixtures.context(action: .commitText("q")))
+        #expect(sink.received.first?.action == .commitText("q"))
+        #expect(spy.deletes == 0)
+    }
+
+    @Test func multiCharCommitIsNotComposed() {
+        let spy = Spy()
+        spy.context = "a"
+        let (pipe, sink) = pipeline(
+            spy: spy,
+            single: { _, _ in "á" }
+        )
+        pipe.process(PipelineFixtures.context(action: .commitText("ss")))
+        #expect(sink.received.first?.action == .commitText("ss"))
+        #expect(spy.deletes == 0)
+    }
+
+    @Test func emptyDocumentContextPassesThrough() {
+        let spy = Spy()
+        spy.context = nil
+        let (pipe, sink) = pipeline(
+            spy: spy,
+            single: { _, _ in "á" }
+        )
+        pipe.process(PipelineFixtures.context(action: .commitText("s")))
+        #expect(sink.received.first?.action == .commitText("s"))
+        #expect(spy.deletes == 0)
+    }
+
+    @Test func nonCommitTextActionsAreForwardedUnchanged() {
+        let spy = Spy()
+        spy.context = "a"
+        let (pipe, sink) = pipeline(spy: spy)
+        pipe.process(PipelineFixtures.context(action: .deleteBackward))
+        pipe.process(PipelineFixtures.context(action: .space))
+        #expect(sink.received.map(\.action) == [.deleteBackward, .space])
+        #expect(spy.deletes == 0)
     }
 }
 

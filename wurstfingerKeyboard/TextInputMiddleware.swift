@@ -19,6 +19,11 @@ protocol TextInputTarget: AnyObject {
     func insertText(_ text: String)
     func deleteBackward()
     func adjustTextPosition(byCharacterOffset offset: Int)
+
+    /// Text immediately before the cursor (up to the current paragraph start).
+    /// Required for lookback-based composition (e.g. Vietnamese Telex digraphs).
+    /// `nil` when no context is available yet.
+    var documentContextBeforeInput: String? { get }
 }
 
 /// Applies text-mutating actions (`.commitText`, `.deleteBackward`,
