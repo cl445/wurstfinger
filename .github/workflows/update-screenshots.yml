@@ -97,12 +97,17 @@ jobs:
               old_img = Image.open(old_path).convert("RGB")
               new_img = Image.open(new_path).convert("RGB")
 
-              # Normalize to common dimensions to handle crop jitter
+              # Dimension changes indicate a real layout shift (or crop jitter
+              # from non-deterministic cropping). Flag as changed instead of
+              # resizing — resize-and-compare masks crop bugs and also turns
+              # tiny layout diffs into huge pixel deltas across the whole image.
               if old_img.size != new_img.size:
-                  w = min(old_img.width, new_img.width)
-                  h = min(old_img.height, new_img.height)
-                  old_img = old_img.resize((w, h), Image.LANCZOS)
-                  new_img = new_img.resize((w, h), Image.LANCZOS)
+                  print(
+                      f"  📐 Dimension change: {filename} "
+                      f"{old_img.size} -> {new_img.size}"
+                  )
+                  changed = True
+                  continue
 
               old_arr = np.array(old_img)
               new_arr = np.array(new_img)
