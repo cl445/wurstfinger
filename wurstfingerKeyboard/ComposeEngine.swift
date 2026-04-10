@@ -1,143 +1,85 @@
+//
 //  ComposeEngine.swift
 //  Wurstfinger
 //
-//  Generated from Thumb-Key compose rules.
+//  Compose engine for character composition and accent cycling.
 //
 
 import Foundation
 
 struct ComposeEngine {
-    private static let composeMap: [String: [String: String]] = [
-        "¨": [
-            "a": "ä", "A": "Ä", "e": "ë", "E": "Ë", "h": "ḧ", "H": "Ḧ",
-            "i": "ï", "I": "Ï", "o": "ö", "O": "Ö", "t": "ẗ", "u": "ü",
-            "U": "Ü", "w": "ẅ", "W": "Ẅ", "x": "ẍ", "X": "Ẍ", "y": "ÿ",
-            "Y": "Ÿ", " ": "¨", "'": "\"", "υ": "ϋ", "ύ": "ΰ",
-            "Υ": "Ϋ", "ι": "ϊ", "ί": "ΐ", "Ι": "Ϊ"
-        ],
-        "´": [
-            "a": "á", "A": "Á", "â": "ấ", "Â": "Ấ", "ă": "ắ", "Ă": "Ắ",
-            "c": "ć", "C": "Ć", "e": "é", "E": "É", "ê": "ế", "Ê": "Ế",
-            "g": "ǵ", "G": "Ǵ", "i": "í", "I": "Í", "j": "j́", "J": "J́",
-            "k": "ḱ", "K": "Ḱ", "l": "ĺ", "L": "Ĺ", "m": "ḿ", "M": "Ḿ",
-            "n": "ń", "N": "Ń", "o": "ó", "O": "Ó", "ô": "ố", "Ô": "Ố",
-            "ơ": "ớ", "Ơ": "Ớ", "p": "ṕ", "P": "Ṕ", "r": "ŕ", "R": "Ŕ",
-            "s": "ś", "S": "Ś", "u": "ú", "U": "Ú", "ư": "ứ", "Ư": "Ứ",
-            "w": "ẃ", "W": "Ẃ", "y": "ý", "Y": "Ý", "z": "ź", "Z": "Ź",
-            "'": "”", " ": "'", "\"": "'", "α": "ά", "Α": "Ά", "ε": "έ",
-            "Ε": "Έ", "η": "ή", "Η": "Ή", "ι": "ί", "ϊ": "ΐ", "Ι": "Ί",
-            "ο": "ό", "Ο": "Ό", "υ": "ύ", "ϋ": "ΰ", "ω": "ώ", "Ω": "Ώ"
-        ],
-        "ˋ": [
-            "a": "à", "A": "À", "â": "ầ", "Â": "Ầ", "ă": "ằ", "Ă": "Ằ",
-            "e": "è", "E": "È", "ê": "ề", "Ê": "Ề", "i": "ì", "I": "Ì",
-            "n": "ǹ", "N": "Ǹ", "o": "ò", "O": "Ò", "ô": "ồ", "Ô": "Ồ",
-            "ơ": "ờ", "Ơ": "Ờ", "u": "ù", "U": "Ù", "ư": "ừ", "Ư": "Ừ",
-            "ü": "ǜ", "Ü": "Ǜ", "w": "ẁ", "W": "Ẁ", "y": "ỳ", "Y": "Ỳ",
-            "`": " “", " ": "`", "α": "ά", "Α": "Ά", "ε": "έ", "Ε": "Έ",
-            "η": "ή", "Η": "Ή", "ι": "ί", "ϊ": "ΐ", "Ι": "Ί", "ο": "ό",
-            "Ο": "Ό", "υ": "ύ", "ϋ": "ΰ", "ω": "ώ", "Ω": "Ώ"
-        ],
-        "^": [
-            "a": "â", "A": "Â", "c": "ĉ", "C": "Ĉ", "e": "ê", "E": "Ê",
-            "g": "ĝ", "G": "Ĝ", "h": "ĥ", "H": "Ĥ", "i": "î", "I": "Î",
-            "j": "ĵ", "J": "Ĵ", "o": "ô", "O": "Ô", "s": "ŝ", "S": "Ŝ",
-            "u": "û", "U": "Û", "w": "ŵ", "W": "Ŵ", "y": "ŷ", "Y": "Ŷ",
-            "z": "ẑ", "Z": "Ẑ", " ": "^"
-        ],
-        "~": [
-            "a": "ã", "A": "Ã", "â": "ẫ", "Â": "Ẫ", "ă": "ẵ", "Ă": "Ẵ",
-            "c": "ç", "C": "Ç", "e": "ẽ", "E": "Ẽ", "ê": "ễ", "Ê": "Ễ",
-            "i": "ĩ", "I": "Ĩ", "n": "ñ", "N": "Ñ", "o": "õ", "O": "Õ",
-            "ô": "ỗ", "Ô": "Ỗ", "ơ": "ỡ", "Ơ": "Ỡ", "u": "ũ", "U": "Ũ",
-            "ư": "ữ", "Ư": "Ữ", "v": "ṽ", "V": "Ṽ", "y": "ỹ", "Y": "Ỹ",
-            " ": "~"
-        ],
-        "°": [
-            "a": "å", "A": "Å", "o": "ø", "O": "Ø", "u": "ů", "U": "Ů",
-            " ": "°"
-        ],
-        "˘": [
-            "a": "ă",
-            "A": "Ă",
-            "e": "ĕ",
-            "E": "Ĕ",
-            "g": "ğ",
-            "G": "Ğ",
-            "i": "ĭ",
-            "I": "Ĭ",
-            "o": "ŏ",
-            "O": "Ŏ",
-            "u": "ŭ",
-            "U": "Ŭ",
-            " ": "˘"
-        ],
-        "!": [
-            "a": "æ", "A": "Æ", "æ": "ą", "Æ": "Ą", "c": "ç", "C": "Ç",
-            "e": "ę", "E": "Ę", "l": "ł", "L": "Ł", "o": "œ", "O": "Œ",
-            "s": "ß", "S": "ẞ", "z": "ż", "Z": "Ż", "!": "¡", "?": "¿",
-            "`": " “", "´": "”", "\"": " “", "'": "”", "<": "«", ">": "»",
-            " ": "!"
-        ],
-        "$": [
-            "c": "¢", "C": "¢", "e": "€", "E": "€", "f": "₣", "F": "₣",
-            "l": "£", "L": "£", "y": "¥", "Y": "¥", "w": "₩", "W": "₩",
-            " ": "$"
-        ],
-        "゛": [
-            "あ": "ぁ", "い": "ぃ", "う": "ぅ", "え": "ぇ", "お": "ぉ", "ぅ": "ゔ",
-            "か": "が", "き": "ぎ", "く": "ぐ", "け": "げ", "こ": "ご", "が": "ゕ",
-            "げ": "ゖ", "さ": "ざ", "し": "じ", "す": "ず", "せ": "ぜ", "そ": "ぞ",
-            "た": "だ", "ち": "ぢ", "つ": "づ", "て": "で", "と": "ど", "づ": "っ",
-            "は": "ば", "ひ": "び", "ふ": "ぶ", "へ": "べ", "ほ": "ぼ", "ば": "ぱ",
-            "び": "ぴ", "ぶ": "ぷ", "べ": "ぺ", "ぼ": "ぽ", "や": "ゃ", "ゆ": "ゅ",
-            "よ": "ょ", "わ": "ゎ", "ゝ": "ゞ", "ア": "ァ", "イ": "ィ", "ウ": "ゥ",
-            "エ": "ェ", "オ": "ォ", "ゥ": "ヴ", "カ": "ガ", "キ": "ギ", "ク": "グ",
-            "ケ": "ゲ", "コ": "ゴ", "ガ": "ヵ", "ゲ": "ヶ", "サ": "ザ", "シ": "ジ",
-            "ス": "ズ", "セ": "ゼ", "ソ": "ゾ", "タ": "ダ", "チ": "ヂ", "ツ": "ヅ",
-            "テ": "デ", "ト": "ド", "ヅ": "ッ", "ハ": "バ", "ヒ": "ビ", "フ": "ブ",
-            "ヘ": "ベ", "ホ": "ボ", "バ": "パ", "ビ": "ピ", "ブ": "プ", "ベ": "ペ",
-            "ボ": "ポ", "ヤ": "ャ", "ユ": "ュ", "ヨ": "ョ", "ワ": "ヷ",
-            "ヰ": "ヸ", "ヱ": "ヹ", "ヲ": "ヺ", "ヷ": "ヮ", "ヽ": "ヾ"
-        ],
-        "?": [
-            "a": "ả", "A": "Ả", "â": "ẩ", "Â": "Ẩ", "ă": "ẳ", "Ă": "Ẳ",
-            "o": "ỏ", "O": "Ỏ", "ô": "ổ", "Ô": "Ổ", "ơ": "ở", "Ơ": "Ở",
-            "u": "ủ", "U": "Ủ", "ư": "ử", "Ư": "Ử", "i": "ỉ", "I": "Ỉ",
-            "e": "ẻ", "E": "Ẻ", "ê": "ể", "Ê": "Ể", "y": "ỷ", "Y": "Ỷ",
-            " ": "?"
-        ],
-        "*": [
-            "a": "ạ", "A": "Ạ", "â": "ậ", "Â": "Ậ", "ă": "ặ", "Ă": "Ặ",
-            "o": "ọ", "O": "Ọ", "ô": "ộ", "Ô": "Ộ", "ơ": "ợ", "Ơ": "Ợ",
-            "u": "ụ", "U": "Ụ", "ư": "ự", "Ư": "Ự", "i": "ị", "I": "Ị",
-            "e": "ẹ", "E": "Ẹ", "ê": "ệ", "Ê": "Ệ", "y": "ỵ", "Y": "Ỵ",
-            " ": "*"
-        ],
-        "ˇ": [
-            "c": "č", "d": "ď", "e": "ě", "l": "ľ", "n": "ň", "r": "ř",
-            "s": "š", "t": "ť", "z": "ž", "C": "Č", "D": "Ď", "E": "Ě",
-            "L": "Ľ", "N": "Ň", "R": "Ř", "S": "Š", "T": "Ť", "Z": "Ž",
-            " ": "ˇ"
-        ]
-    ]
+    let ruleSet: ComposeRuleSet
+    private let accentCycles: [String: [String]]
 
-    static func compose(previous: String, trigger: String) -> String? {
-        guard let mapping = composeMap[trigger], let replacement = mapping[previous] else {
+    init(ruleSet: ComposeRuleSet) {
+        self.ruleSet = ruleSet
+        accentCycles = Self.buildAccentCycles(from: ruleSet)
+    }
+
+    /// Shared instance using global compose rules.
+    static let shared = ComposeEngine(ruleSet: .global)
+
+    /// Creates an engine with global rules merged with language-specific overrides.
+    static func withGlobalRules(overrides: ComposeRuleSet) -> ComposeEngine {
+        ComposeEngine(ruleSet: ComposeRuleSet.global.merging(overrides: overrides))
+    }
+
+    // MARK: - Instance Methods
+
+    func compose(previous: String, trigger: String) -> String? {
+        guard let mapping = ruleSet.rules[trigger],
+              let replacement = mapping[previous]
+        else {
             return nil
         }
         return replacement
     }
 
-    // Accent cycling: base character → variants in cycle order
-    private static let accentCycles: [String: [String]] = {
+    func cycleAccent(for character: String) -> String? {
+        guard let cycle = accentCycles[character],
+              let currentIndex = cycle.firstIndex(of: character)
+        else {
+            return nil
+        }
+        let nextIndex = (currentIndex + 1) % cycle.count
+        return cycle[nextIndex]
+    }
+
+    // MARK: - Static API (backward compatibility)
+
+    static func compose(previous: String, trigger: String) -> String? {
+        shared.compose(previous: previous, trigger: trigger)
+    }
+
+    static func cycleAccent(for character: String) -> String? {
+        shared.cycleAccent(for: character)
+    }
+
+    // MARK: - Accent Cycle Builder
+
+    /// Number cycles (not language-specific).
+    private static let numberCycles: [String: [String]] = [
+        "0": ["0", "⁰"],
+        "1": ["1", "¹", "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒"],
+        "2": ["2", "²", "⅔", "⅖"],
+        "3": ["3", "³", "¾", "⅜", "⅗"],
+        "4": ["4", "⁴", "⅘"],
+        "5": ["5", "⁵", "⅚", "⅝"],
+        "6": ["6", "⁶"],
+        "7": ["7", "⁷", "⅞"],
+        "8": ["8", "⁸"],
+        "9": ["9", "⁹"],
+    ]
+
+    private static func buildAccentCycles(from ruleSet: ComposeRuleSet) -> [String: [String]] {
         var cycles: [String: [String]] = [:]
 
         // Build reverse mapping: character → all its accented variants
         // Sort by key for deterministic iteration order across runs
-        for (_, charMap) in composeMap.sorted(by: { $0.key < $1.key }) {
+        for (_, charMap) in ruleSet.rules.sorted(by: { $0.key < $1.key }) {
             for (base, accented) in charMap.sorted(by: { $0.key < $1.key }) {
-                // Skip self-mappings like " " → "\"" or composition mappings
+                // Skip non-cycling entries: space fallbacks (" " → trigger char)
+                // and multi-character bases (already-composed forms like "â" → "ấ")
                 if base == " " || base.count > 1 { continue }
 
                 // Add base → accented mapping
@@ -173,19 +115,6 @@ struct ComposeEngine {
         }
 
         // Add number cycles: digit → superscript → fractions
-        let numberCycles: [String: [String]] = [
-            "0": ["0", "⁰"],
-            "1": ["1", "¹", "½", "⅓", "¼", "⅕", "⅙", "⅐", "⅛", "⅑", "⅒"],
-            "2": ["2", "²", "⅔", "⅖"],
-            "3": ["3", "³", "¾", "⅜", "⅗"],
-            "4": ["4", "⁴", "⅘"],
-            "5": ["5", "⁵", "⅚", "⅝"],
-            "6": ["6", "⁶"],
-            "7": ["7", "⁷", "⅞"],
-            "8": ["8", "⁸"],
-            "9": ["9", "⁹"]
-        ]
-
         for (base, cycle) in numberCycles.sorted(by: { $0.key < $1.key }) {
             if completeCycles[base] == nil {
                 completeCycles[base] = cycle
@@ -198,15 +127,6 @@ struct ComposeEngine {
         }
 
         return completeCycles
-    }()
-
-    static func cycleAccent(for character: String) -> String? {
-        guard let cycle = accentCycles[character], let currentIndex = cycle.firstIndex(of: character) else {
-            return nil
-        }
-
-        let nextIndex = (currentIndex + 1) % cycle.count
-        return cycle[nextIndex]
     }
 
     // MARK: - Vietnamese Telex
@@ -236,7 +156,7 @@ struct ComposeEngine {
         "a", "ă", "â", "e", "ê", "i", "o", "ô", "ơ", "u", "ư", "y"
     ]
 
-    /// Reverse tone map built from composeMap: toned char -> (base, telex trigger).
+    /// Reverse tone map built from the global compose rules: toned char -> (base, telex trigger).
     /// Includes both lowercase and uppercase entries so the caller can pass original case.
     private static let telexToneReverseMap: [String: (base: String, trigger: String)] = {
         let vowels: Set = [
@@ -252,7 +172,7 @@ struct ComposeEngine {
         ]
         var result: [String: (base: String, trigger: String)] = [:]
         for (composeTrigger, telexKey) in reverseTelex {
-            guard let charMap = composeMap[composeTrigger] else { continue }
+            guard let charMap = ComposeRuleSet.global.rules[composeTrigger] else { continue }
             for (base, toned) in charMap where vowels.contains(base) {
                 result[toned] = (base: base, trigger: telexKey)
             }

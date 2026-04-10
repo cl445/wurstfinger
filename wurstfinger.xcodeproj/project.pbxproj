@@ -82,6 +82,9 @@
 			membershipExceptions = (
 				AutoCapitalization.swift,
 				ComposeEngine.swift,
+				ComposeRuleSet.swift,
+				"ComposeRuleSet+Global.swift",
+				"ComposeRuleSet+Merge.swift",
 				DeleteKeyButton.swift,
 				GeometryUtils.swift,
 				GestureFeatureCalculations.swift,
