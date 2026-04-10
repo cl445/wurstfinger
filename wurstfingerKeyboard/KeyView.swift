@@ -93,19 +93,11 @@ struct KeyView: View {
             .fill(Self.backgroundColor(for: key.style))
     }
 
-    @ViewBuilder
     private var label: some View {
-        if Self.isIconOnly(style: key.style) {
-            // Utility keys are rendered as icons. The exact icon resolution
-            // is handled by call sites in PR 12; for now show the binding
-            // label as a placeholder so previews remain meaningful.
-            Text(primaryLabel)
-                .font(.system(size: Self.fontSize(for: key.style), weight: .regular))
-                .foregroundColor(.primary)
-        } else {
-            Text(primaryLabel)
-                .font(.system(size: Self.fontSize(for: key.style), weight: .regular))
-                .foregroundColor(.primary)
-        }
+        // Utility keys will switch to icon rendering in PR 12; until then
+        // both branches render the same Text, so keep a single body.
+        Text(primaryLabel)
+            .font(.system(size: Self.fontSize(for: key.style), weight: .regular))
+            .foregroundColor(.primary)
     }
 }
