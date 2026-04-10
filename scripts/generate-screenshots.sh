@@ -145,11 +145,12 @@ docs_dir = os.environ['DOCS_DIR']
 # Screenshots that come from the tab-based app (Home/Test/Settings/Setup) —
 # these include the system status bar (clock!) and the home indicator. We
 # strip fixed top/bottom bands so the current clock time cannot introduce
-# spurious pixel diffs. Values are in pixels at 3x (iPhone 16/17 Pro native
-# scale) and include safety margin for the Dynamic Island area.
+# spurious pixel diffs. Ratios are derived from iPhone 16/17 Pro (2622px
+# tall at 3x) but scale with image height so other simulators crop sanely
+# too. The status bar ratio includes safety margin for the Dynamic Island.
 TAB_SCREEN_RE = re.compile(r'-0[1-5]-(home|test-light|test-dark|settings|setup)$')
-STATUS_BAR_PX = 210
-HOME_INDICATOR_PX = 80
+STATUS_BAR_RATIO = 210 / 2622
+HOME_INDICATOR_RATIO = 80 / 2622
 
 # Screenshots that come from AppStoreScreenshotView (chat + keyboard). These
 # fill the whole screen and have no visible system status bar, so they must
@@ -211,9 +212,9 @@ def largest_content_block_crop(img, threshold=10, gap=100, padding=10):
 
 def crop_screenshot(img, base_name):
     if TAB_SCREEN_RE.search(base_name):
-        # Fixed crop: strip status bar + home indicator.
-        top = min(STATUS_BAR_PX, img.height)
-        bottom = max(top, img.height - HOME_INDICATOR_PX)
+        # Proportional crop: strip status bar + home indicator.
+        top = min(int(round(img.height * STATUS_BAR_RATIO)), img.height)
+        bottom = max(top, img.height - int(round(img.height * HOME_INDICATOR_RATIO)))
         return img.crop((0, top, img.width, bottom))
     if APPSTORE_CHAT_RE.search(base_name):
         # AppStoreScreenshotView already fills the screen exactly.
