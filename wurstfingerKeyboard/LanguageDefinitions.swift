@@ -403,6 +403,32 @@ enum LanguageDefinitions {
         ]
     )
 
+    static let vietnamese = GridKeyboardFactory.layout(
+        id: "vi_VN",
+        title: "Tiếng Việt (Vietnamese-Telex)",
+        localeIdentifier: "vi_VN",
+        centerCharacters: [
+            ["a", "n", "i"],
+            ["h", "o", "r"],
+            ["t", "e", "s"],
+        ],
+        directionalOverrides: [
+            GridSlot.topLeft: [.swipeDown: "đ", .swipeDownRight: "v"],
+            GridSlot.topCenter: [.swipeDown: "l"],
+            GridSlot.topRight: [.swipeDownLeft: "x"],
+            GridSlot.midLeft: [.swipeRight: "k"],
+            GridSlot.center: [
+                .swipeUpLeft: "q", .swipeUp: "u", .swipeUpRight: "p",
+                .swipeRight: "b", .swipeDownRight: "j", .swipeDown: "d",
+                .swipeDownLeft: "g", .swipeLeft: "c",
+            ],
+            GridSlot.midRight: [.swipeLeft: "m"],
+            GridSlot.bottomLeft: [.swipeUpRight: "y"],
+            GridSlot.bottomCenter: [.swipeUp: "w", .swipeRight: "z"],
+            GridSlot.bottomRight: [.swipeUpLeft: "f"],
+        ]
+    )
+
     // MARK: - Registry
 
     /// All available language definitions, sorted alphabetically by title.
@@ -421,5 +447,6 @@ enum LanguageDefinitions {
         spanish,
         swedish,
         tagalog,
+        vietnamese,
     ].sorted { $0.title < $1.title }
 }
