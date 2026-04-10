@@ -22,6 +22,7 @@ struct LanguageDefinitionValidationTests {
     func layoutHasRequiredModes(layout: KeyboardDefinition) {
         #expect(layout.modes[ModeNames.main] != nil, "\(layout.id) missing main mode")
         #expect(layout.modes[ModeNames.shifted] != nil, "\(layout.id) missing shifted mode")
+        #expect(layout.modes[ModeNames.capsLock] != nil, "\(layout.id) missing capsLock mode")
         #expect(layout.modes[ModeNames.numeric] != nil, "\(layout.id) missing numeric mode")
     }
 

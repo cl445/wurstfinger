@@ -92,6 +92,10 @@ enum NumericLayouts {
     // MARK: - Builder
 
     private static func buildMode(centerDigits: [[String]]) -> KeyboardMode {
+        precondition(
+            centerDigits.count == 3 && centerDigits.allSatisfy { $0.count == 3 },
+            "centerDigits must be a 3×3 matrix"
+        )
         var digitKeys: [String: KeyConfig] = [:]
 
         for (rowIdx, row) in centerDigits.enumerated() {
