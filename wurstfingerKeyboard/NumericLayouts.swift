@@ -148,7 +148,13 @@ enum NumericLayouts {
             }
         }
 
-        let allKeys = digitKeys.merging(utilityKeys(backToAlphaLabel: backToAlphaLabel)) { digit, _ in digit }
+        let utilityKeyMap = utilityKeys(backToAlphaLabel: backToAlphaLabel)
+        let duplicateIds = Set(digitKeys.keys).intersection(utilityKeyMap.keys)
+        precondition(
+            duplicateIds.isEmpty,
+            "Duplicate key ids in numeric layout: \(duplicateIds)"
+        )
+        let allKeys = digitKeys.merging(utilityKeyMap) { digit, _ in digit }
 
         return KeyboardMode(
             name: ModeNames.numeric,
