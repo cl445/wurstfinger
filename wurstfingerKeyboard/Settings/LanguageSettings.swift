@@ -5,6 +5,7 @@
 //  Created by Claas Flint on 06.11.25.
 //
 
+import Combine
 import Foundation
 
 /// Manages keyboard language settings shared between host app and keyboard extension.
@@ -107,14 +108,14 @@ class LanguageSettings: ObservableObject {
     /// Short uppercase label for the current language, e.g. "EN", "RU", "DE"
     var currentLanguageLabel: String {
         let lang = selectedLanguage.locale.language.languageCode?.identifier ?? selectedLanguageId
-        return lang.uppercased()
+        return lang.uppercased(with: selectedLanguage.locale)
     }
 
     func selectLanguage(_ language: LanguageConfig) {
-        selectedLanguageId = language.id
         if !enabledLanguageIds.contains(language.id) {
             enabledLanguageIds.append(language.id)
         }
+        selectedLanguageId = language.id
     }
 
     /// Toggle a language on/off in the enabled list. Returns false if trying to
@@ -123,11 +124,11 @@ class LanguageSettings: ObservableObject {
     func toggleLanguage(_ language: LanguageConfig) -> Bool {
         if let index = enabledLanguageIds.firstIndex(of: language.id) {
             guard enabledLanguageIds.count > 1 else { return false }
-            enabledLanguageIds.remove(at: index)
-            // If the removed language was selected, switch to the first enabled
             if selectedLanguageId == language.id {
-                selectedLanguageId = enabledLanguageIds[0]
+                let fallbackId = enabledLanguageIds[index == 0 ? 1 : 0]
+                selectedLanguageId = fallbackId
             }
+            enabledLanguageIds.remove(at: index)
         } else {
             enabledLanguageIds.append(language.id)
         }
