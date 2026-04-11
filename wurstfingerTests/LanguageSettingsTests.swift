@@ -636,6 +636,24 @@ struct PinnedLanguageTests {
         let stored = defaults.string(forKey: SettingsKey.pinnedLanguageId.rawValue)
         #expect(stored == nil)
     }
+
+    @Test("KeyboardViewModel boots with pinned language, not selected")
+    func viewModelBootsWithPinnedLanguage() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        defaults.set("en_US", forKey: SettingsKey.selectedLanguageId.rawValue)
+        LanguageSettings.saveEnabledLanguageIds(["en_US", "ru_RU"], to: defaults)
+        defaults.set("ru_RU", forKey: SettingsKey.pinnedLanguageId.rawValue)
+
+        let viewModel = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
+        viewModel.bindActionHandler { _ in }
+
+        #expect(
+            viewModel.currentLocale().identifier == "ru_RU",
+            "ViewModel should boot with pinned language ru_RU, not selected en_US"
+        )
+    }
 }
 
 // MARK: - Info.plist PrimaryLanguage Tests
