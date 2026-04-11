@@ -22,6 +22,17 @@ class LanguageSettings: ObservableObject {
     @Published private(set) var enabledLanguageIds: [String] {
         didSet {
             saveEnabledLanguages()
+            if let pinned = pinnedLanguageId, !enabledLanguageIds.contains(pinned) {
+                pinnedLanguageId = nil
+            }
+        }
+    }
+
+    /// Optional pinned default language. When set, the keyboard always opens
+    /// with this language. When nil, it opens with the last-used language.
+    @Published var pinnedLanguageId: String? {
+        didSet {
+            userDefaults.set(pinnedLanguageId, forKey: SettingsKey.pinnedLanguageId.rawValue)
         }
     }
 
@@ -51,12 +62,23 @@ class LanguageSettings: ObservableObject {
             resolvedEnabled = [resolvedLanguageId]
         }
 
+        // Load pinned language (before enabledLanguageIds didSet can fire)
+        let storedPinned = defaults.string(forKey: SettingsKey.pinnedLanguageId.rawValue)
+
         selectedLanguageId = resolvedLanguageId
         enabledLanguageIds = resolvedEnabled
+        pinnedLanguageId = storedPinned
 
         // Ensure selected language is in the enabled list
         if !resolvedEnabled.contains(resolvedLanguageId) {
             enabledLanguageIds.insert(resolvedLanguageId, at: 0)
+        }
+
+        // Clear stale pinned ID
+        if let pinned = pinnedLanguageId {
+            if !enabledLanguageIds.contains(pinned) || LanguageConfig.language(withId: pinned) == nil {
+                pinnedLanguageId = nil
+            }
         }
 
         // Persist normalized values
@@ -109,6 +131,32 @@ class LanguageSettings: ObservableObject {
     var currentLanguageLabel: String {
         let lang = selectedLanguage.locale.language.languageCode?.identifier ?? selectedLanguageId
         return lang.uppercased(with: selectedLanguage.locale)
+    }
+
+    var pinnedLanguage: LanguageConfig? {
+        pinnedLanguageId.flatMap { LanguageConfig.language(withId: $0) }
+    }
+
+    /// Returns the language the keyboard should open with: pinned if set and
+    /// valid, otherwise the last-used selected language.
+    var startupLanguageId: String {
+        if let pinned = pinnedLanguageId, enabledLanguageIds.contains(pinned),
+           LanguageConfig.language(withId: pinned) != nil {
+            return pinned
+        }
+        return selectedLanguageId
+    }
+
+    /// Pin a language as the default startup language. If already pinned, unpin it.
+    func pinLanguage(_ language: LanguageConfig) {
+        if pinnedLanguageId == language.id {
+            pinnedLanguageId = nil
+        } else {
+            if !enabledLanguageIds.contains(language.id) {
+                enabledLanguageIds.append(language.id)
+            }
+            pinnedLanguageId = language.id
+        }
     }
 
     func selectLanguage(_ language: LanguageConfig) {

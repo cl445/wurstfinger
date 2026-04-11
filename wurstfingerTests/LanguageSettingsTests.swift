@@ -490,6 +490,154 @@ struct MultiLanguageSettingsTests {
     }
 }
 
+// MARK: - Pinned Default Language Tests
+
+struct PinnedLanguageTests {
+    private func createTestDefaults() -> (UserDefaults, String) {
+        let suiteName = "test.pinned.\(UUID().uuidString)"
+        return (UserDefaults(suiteName: suiteName)!, suiteName)
+    }
+
+    private func createSettings(
+        defaults: UserDefaults,
+        selectedId: String = "en_US",
+        enabledIds: [String],
+        pinnedId: String? = nil
+    ) -> LanguageSettings {
+        defaults.set(selectedId, forKey: SettingsKey.selectedLanguageId.rawValue)
+        LanguageSettings.saveEnabledLanguageIds(enabledIds, to: defaults)
+        defaults.set(pinnedId, forKey: SettingsKey.pinnedLanguageId.rawValue)
+        return LanguageSettings(userDefaults: defaults)
+    }
+
+    @Test("Pin a language sets pinnedLanguageId")
+    func pinSetsId() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"])
+        settings.pinLanguage(.russian)
+        #expect(settings.pinnedLanguageId == "ru_RU")
+    }
+
+    @Test("Unpin by tapping the same language")
+    func unpinSameLanguage() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
+        settings.pinLanguage(.russian)
+        #expect(settings.pinnedLanguageId == nil)
+    }
+
+    @Test("Pin a different language replaces the previous pin")
+    func pinDifferentLanguage() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"], pinnedId: "en_US")
+        settings.pinLanguage(.russian)
+        #expect(settings.pinnedLanguageId == "ru_RU")
+    }
+
+    @Test("Pinning a disabled language enables it first")
+    func pinDisabledLanguageEnablesIt() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, enabledIds: ["en_US"])
+        settings.pinLanguage(.russian)
+        #expect(settings.pinnedLanguageId == "ru_RU")
+        #expect(settings.enabledLanguageIds.contains("ru_RU"))
+    }
+
+    @Test("Disabling the pinned language clears the pin")
+    func disablingPinnedLanguageClearsPin() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
+        settings.toggleLanguage(.russian)
+        #expect(settings.pinnedLanguageId == nil)
+    }
+
+    @Test("startupLanguageId returns pinned when set")
+    func startupReturnsPinned() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
+        #expect(settings.startupLanguageId == "ru_RU")
+    }
+
+    @Test("startupLanguageId returns selectedLanguageId when no pin")
+    func startupReturnsSelectedWhenNoPin() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
+        #expect(settings.startupLanguageId == "en_US")
+    }
+
+    @Test("Stale pinned ID is cleared on load")
+    func stalePinnedIdCleared() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"], pinnedId: "zz_ZZ")
+        #expect(settings.pinnedLanguageId == nil)
+    }
+
+    @Test("Pinned ID not in enabled list is cleared on load")
+    func pinnedNotInEnabledCleared() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, enabledIds: ["en_US"], pinnedId: "ru_RU")
+        #expect(settings.pinnedLanguageId == nil)
+    }
+
+    @Test("pinnedLanguage returns resolved LanguageConfig")
+    func pinnedLanguageResolved() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
+        #expect(settings.pinnedLanguage?.id == "ru_RU")
+    }
+
+    @Test("pinnedLanguage is nil when no pin")
+    func pinnedLanguageNilWhenNoPin() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"])
+        #expect(settings.pinnedLanguage == nil)
+    }
+
+    @Test("Pin persists to UserDefaults")
+    func pinPersists() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"])
+        settings.pinLanguage(.russian)
+        let stored = defaults.string(forKey: SettingsKey.pinnedLanguageId.rawValue)
+        #expect(stored == "ru_RU")
+    }
+
+    @Test("Unpin persists nil to UserDefaults")
+    func unpinPersistsNil() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
+        settings.pinLanguage(.russian)
+        let stored = defaults.string(forKey: SettingsKey.pinnedLanguageId.rawValue)
+        #expect(stored == nil)
+    }
+}
+
 // MARK: - Info.plist PrimaryLanguage Tests
 
 struct InfoPlistLanguageTests {

@@ -206,10 +206,15 @@ struct SettingsView: View {
 
     private var enabledLanguagesSummary: String {
         let names = languageSettings.enabledLanguages.map(\.name)
-        if names.count <= 2 {
-            return names.joined(separator: ", ")
+        let list = if names.count <= 2 {
+            names.joined(separator: ", ")
+        } else {
+            "\(names[0]) + \(names.count - 1) more"
         }
-        return "\(names[0]) + \(names.count - 1) more"
+        if let pinned = languageSettings.pinnedLanguage {
+            return "\(list) (default: \(pinned.name))"
+        }
+        return list
     }
 
     private var keyboardStyleDescription: String {

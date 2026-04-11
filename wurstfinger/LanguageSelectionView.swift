@@ -18,13 +18,13 @@ struct LanguageSelectionView: View {
                     LanguageRow(
                         language: language,
                         isEnabled: languageSettings.isLanguageEnabled(language),
-                        isActive: languageSettings.selectedLanguageId == language.id,
+                        isDefault: languageSettings.pinnedLanguageId == language.id,
                         onTap: {
                             if languageSettings.isLanguageEnabled(language) {
-                                languageSettings.selectLanguage(language)
+                                languageSettings.pinLanguage(language)
                             } else {
                                 languageSettings.toggleLanguage(language)
-                                languageSettings.selectLanguage(language)
+                                languageSettings.pinLanguage(language)
                             }
                         },
                         onToggle: {
@@ -36,7 +36,7 @@ struct LanguageSelectionView: View {
                 }
             } footer: {
                 if languageSettings.hasMultipleLanguages {
-                    Text("Swipe right on the globe key to switch languages.")
+                    Text("Swipe right on the globe key to switch languages. Tap a language to set it as the default startup language.")
                 }
             }
         }
@@ -53,7 +53,7 @@ struct LanguageSelectionView: View {
 private struct LanguageRow: View {
     let language: LanguageConfig
     let isEnabled: Bool
-    let isActive: Bool
+    let isDefault: Bool
     let onTap: () -> Void
     let onToggle: () -> Void
 
@@ -80,8 +80,8 @@ private struct LanguageRow: View {
 
             Spacer()
 
-            if isActive {
-                Text("Active")
+            if isDefault {
+                Text("Default")
                     .font(.caption)
                     .foregroundColor(.accentColor)
                     .fontWeight(.medium)
