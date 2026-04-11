@@ -108,6 +108,7 @@ final class KeyboardViewModel: ObservableObject {
 
     let hapticSettings: HapticSettings
     let layoutSettings: LayoutSettings
+    let labelVisibilitySettings: LabelVisibilitySettings
     private let hapticManager: HapticFeedbackManager
 
     // MARK: - Computed Properties for Backward Compatibility
@@ -173,6 +174,7 @@ final class KeyboardViewModel: ObservableObject {
         // Initialize extracted settings classes
         hapticSettings = HapticSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
         layoutSettings = LayoutSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
+        labelVisibilitySettings = LabelVisibilitySettings(defaults: defaults, shouldPersist: shouldPersistSettings)
         hapticManager = HapticFeedbackManager(settings: hapticSettings)
 
         // Load layout based on selected language or use provided layout
@@ -195,6 +197,9 @@ final class KeyboardViewModel: ObservableObject {
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &settingsCancellables)
         layoutSettings.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &settingsCancellables)
+        labelVisibilitySettings.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &settingsCancellables)
 
@@ -256,6 +261,7 @@ final class KeyboardViewModel: ObservableObject {
         // Delegate to extracted settings classes - eliminates duplicate code
         hapticSettings.reload()
         layoutSettings.reload()
+        labelVisibilitySettings.reload()
 
         // Reload language if it changed
         reloadLanguage()
@@ -314,7 +320,11 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     func displayText(for key: MessagEaseKey) -> String {
-        switch activeLayer {
+        // Hide the center label when its category is toggled off in settings.
+        // Numbers (in .numbers layer) and functional characters are never hidden.
+        let category = LabelCategory.classify(key.center)
+        guard labelVisibilitySettings.isVisible(category) else { return "" }
+        return switch activeLayer {
         case .lower:
             key.center.lowercased()
         case .upper:

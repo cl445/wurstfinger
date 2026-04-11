@@ -85,6 +85,12 @@ final class wurstfingerUITests: XCTestCase {
         // Check main settings rows exist
         XCTAssertTrue(app.staticTexts["Language"].waitForExistence(timeout: 2), "Language row missing")
         XCTAssertTrue(app.staticTexts["Key Aspect Ratio"].exists, "Key Aspect Ratio row missing")
+
+        // Haptic Feedback is in a later section — scroll until visible
+        for _ in 0 ..< 5 {
+            if app.staticTexts["Haptic Feedback"].exists { break }
+            app.swipeUp()
+        }
         XCTAssertTrue(app.staticTexts["Haptic Feedback"].exists, "Haptic Feedback row missing")
 
         // Version is in the About section at the bottom — scroll until visible
@@ -113,6 +119,12 @@ final class wurstfingerUITests: XCTestCase {
     @MainActor
     func testSettingsHapticFeedbackNavigation() {
         app.tabBars.buttons["Settings"].tap()
+
+        // Haptic Feedback is in a later section — scroll until visible
+        for _ in 0 ..< 5 {
+            if app.staticTexts["Haptic Feedback"].exists { break }
+            app.swipeUp()
+        }
 
         // Tap on Haptic Feedback row
         app.staticTexts["Haptic Feedback"].tap()

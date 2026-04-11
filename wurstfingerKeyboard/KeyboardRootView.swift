@@ -167,7 +167,8 @@ struct KeyboardRootView: View {
                         activeLayer: viewModel.activeLayer,
                         isCapsLockActive: viewModel.isCapsLockActive,
                         locale: viewModel.currentLocale(),
-                        keyHeight: keyHeight
+                        keyHeight: keyHeight,
+                        labelVisibility: viewModel.labelVisibilitySettings
                     ),
                     config: KeyboardButtonConfig(fontSize: scaledMainLabelSize(for: keyHeight)),
                     callbacks: KeyboardButtonCallbacks(

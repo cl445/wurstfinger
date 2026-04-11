@@ -118,6 +118,7 @@
 				KeyboardViewController.swift,
 				KeyboardViewModel.swift,
 				KeyHintOverlay.swift,
+				LabelCategory.swift,
 				LanguageConfig.swift,
 				LanguageDefinitions.swift,
 				LanguageSettings.swift,

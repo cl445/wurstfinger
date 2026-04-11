@@ -29,6 +29,9 @@ enum SettingsKey: String {
     case keyboardStyle
     case keyboardFullAccess
     case cursorMovementStyle
+    case hideLetters
+    case hideStandardSymbols
+    case hideExtraSymbols
 }
 
 // MARK: - Haptic Settings
@@ -220,6 +223,65 @@ final class LayoutSettings: ObservableObject {
     /// Position range: 0.0 (left) to 1.0 (right)
     private static func clampPosition(_ value: Double) -> Double {
         min(1.0, max(0.0, value))
+    }
+
+    private func persistIfNeeded(_ value: some Any, forKey key: SettingsKey) {
+        guard shouldPersist else { return }
+        defaults.set(value, forKey: key.rawValue)
+    }
+}
+
+// MARK: - Label Visibility Settings
+
+/// Controls which categories of key labels are visible on the keyboard.
+/// Letters, standard symbols, and extra symbols can each be independently hidden
+/// so users can practice the layout from memory. Numbers and functional keys
+/// are always visible.
+final class LabelVisibilitySettings: ObservableObject {
+    private let defaults: UserDefaults
+    private let shouldPersist: Bool
+
+    @Published var hideLetters: Bool {
+        didSet { persistIfNeeded(hideLetters, forKey: .hideLetters) }
+    }
+
+    @Published var hideStandardSymbols: Bool {
+        didSet { persistIfNeeded(hideStandardSymbols, forKey: .hideStandardSymbols) }
+    }
+
+    @Published var hideExtraSymbols: Bool {
+        didSet { persistIfNeeded(hideExtraSymbols, forKey: .hideExtraSymbols) }
+    }
+
+    init(defaults: UserDefaults = SharedDefaults.store, shouldPersist: Bool = true) {
+        self.defaults = defaults
+        self.shouldPersist = shouldPersist
+
+        hideLetters = defaults.object(forKey: SettingsKey.hideLetters.rawValue) as? Bool ?? false
+        hideStandardSymbols = defaults.object(forKey: SettingsKey.hideStandardSymbols.rawValue) as? Bool ?? false
+        hideExtraSymbols = defaults.object(forKey: SettingsKey.hideExtraSymbols.rawValue) as? Bool ?? false
+    }
+
+    /// Reload settings from UserDefaults (e.g., after changes from host app).
+    func reload() {
+        let newHideLetters = defaults.object(forKey: SettingsKey.hideLetters.rawValue) as? Bool ?? false
+        if hideLetters != newHideLetters { hideLetters = newHideLetters }
+
+        let newHideStandard = defaults.object(forKey: SettingsKey.hideStandardSymbols.rawValue) as? Bool ?? false
+        if hideStandardSymbols != newHideStandard { hideStandardSymbols = newHideStandard }
+
+        let newHideExtra = defaults.object(forKey: SettingsKey.hideExtraSymbols.rawValue) as? Bool ?? false
+        if hideExtraSymbols != newHideExtra { hideExtraSymbols = newHideExtra }
+    }
+
+    /// Returns whether a label of the given category should be visible.
+    func isVisible(_ category: LabelCategory) -> Bool {
+        switch category {
+        case .letter: !hideLetters
+        case .standardSymbol: !hideStandardSymbols
+        case .extraSymbol: !hideExtraSymbols
+        case .number, .functional: true
+        }
     }
 
     private func persistIfNeeded(_ value: some Any, forKey key: SettingsKey) {

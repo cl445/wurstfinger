@@ -14,6 +14,7 @@ struct KeyHintOverlay: View {
     let isCapsLockActive: Bool
     let locale: Locale
     let keyHeight: CGFloat
+    let labelVisibility: LabelVisibilitySettings
 
     private let directions: [KeyboardDirection] = KeyboardDirection.allCases.filter { $0 != .center }
 
@@ -37,11 +38,13 @@ struct KeyHintOverlay: View {
             let scaledVerticalPadding = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
 
             ForEach(directions, id: \.self) { direction in
-                if let label = key.primaryLabel(for: direction, isCapsLock: isCapsLockActive) {
+                if let label = key.primaryLabel(for: direction, isCapsLock: isCapsLockActive),
+                   let output = key.output(for: direction) {
+                    let category = output.labelCategory
                     // Hide down icon on r-key when not in caps mode
-                    if shouldShowLabel(for: direction) {
-                        let displayLabel = transformLabel(label, activeLayer: activeLayer)
-                        hintText(displayLabel, isLetter: isLetter(displayLabel))
+                    if shouldShowLabel(for: direction), labelVisibility.isVisible(category) {
+                        let displayLabel = transformLabel(label, category: category)
+                        hintText(displayLabel, category: category)
                             .fixedSize()
                             .padding(direction.edgePadding(
                                 horizontal: scaledHorizontalPadding,
@@ -63,9 +66,9 @@ struct KeyHintOverlay: View {
         return true
     }
 
-    private func transformLabel(_ label: String, activeLayer: KeyboardLayer) -> String {
+    private func transformLabel(_ label: String, category: LabelCategory) -> String {
         // Transform label based on active layer (for shift/caps)
-        guard isLetter(label) else { return label }
+        guard category == .letter else { return label }
 
         switch activeLayer {
         case .upper:
@@ -77,13 +80,7 @@ struct KeyHintOverlay: View {
         }
     }
 
-    private func isLetter(_ text: String) -> Bool {
-        // Check if the text is a letter (any alphabet, including non-Latin scripts)
-        guard let firstChar = text.first else { return false }
-        return firstChar.isLetter
-    }
-
-    private func hintText(_ text: String, isLetter: Bool) -> some View {
+    private func hintText(_ text: String, category: LabelCategory) -> some View {
         // Three-tier color system similar to MessagEase:
         // 1. Center character (not shown here): primary color (highest priority)
         // 2. Letter hints: medium priority - between primary and secondary
@@ -93,7 +90,7 @@ struct KeyHintOverlay: View {
         let opacity: CGFloat
         let weight: Font.Weight
 
-        if isLetter {
+        if category == .letter {
             // Letters: medium priority, blend between primary and secondary
             color = Color.primary
             opacity = 0.65

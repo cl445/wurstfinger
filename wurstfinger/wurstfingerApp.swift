@@ -21,7 +21,10 @@ struct wurstfingerApp: App {
         let defaults: [String: Any] = [
             SettingsKey.keyAspectRatio.rawValue: DeviceLayoutUtils.defaultKeyAspectRatio,
             SettingsKey.keyboardScale.rawValue: DeviceLayoutUtils.defaultKeyboardScale,
-            SettingsKey.keyboardHorizontalPosition.rawValue: DeviceLayoutUtils.defaultKeyboardPosition
+            SettingsKey.keyboardHorizontalPosition.rawValue: DeviceLayoutUtils.defaultKeyboardPosition,
+            SettingsKey.hideLetters.rawValue: false,
+            SettingsKey.hideStandardSymbols.rawValue: false,
+            SettingsKey.hideExtraSymbols.rawValue: false
         ]
         SharedDefaults.store.register(defaults: defaults)
 

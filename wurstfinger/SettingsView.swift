@@ -45,6 +45,15 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.expertModeEnabled.rawValue, store: SharedDefaults.store)
     private var expertModeEnabled = false
 
+    @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
+    private var hideLetters = false
+
+    @AppStorage(SettingsKey.hideStandardSymbols.rawValue, store: SharedDefaults.store)
+    private var hideStandardSymbols = false
+
+    @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
+    private var hideExtraSymbols = false
+
     var body: some View {
         NavigationStack {
             Form {
@@ -125,6 +134,15 @@ struct SettingsView: View {
                 Text("Classic (7-8-9)").tag(NumpadStyle.classic.rawValue)
             } label: {
                 SettingsRow(icon: "number.square", color: .purple, title: "Numpad Style", subtitle: numpadStyleDescription)
+            }
+
+            NavigationLink(destination: LabelVisibilitySettingsView()) {
+                SettingsRow(
+                    icon: "eye",
+                    color: .mint,
+                    title: "Label Visibility",
+                    subtitle: labelVisibilityDescription
+                )
             }
         } header: {
             Text("Appearance")
@@ -250,6 +268,15 @@ struct SettingsView: View {
             return "Off"
         }
         return "\(Int(round(value * 100)))%"
+    }
+
+    private var labelVisibilityDescription: String {
+        let hiddenCount = [hideLetters, hideStandardSymbols, hideExtraSymbols].count(where: { $0 })
+        switch hiddenCount {
+        case 0: return "All visible"
+        case 3: return "All hidden"
+        default: return "\(hiddenCount) hidden"
+        }
     }
 }
 
