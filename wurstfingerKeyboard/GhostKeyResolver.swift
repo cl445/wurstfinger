@@ -19,8 +19,13 @@ struct GhostKeyResolver: GestureResolver {
     let fallbackMode: KeyboardMode
 
     func resolve(keyId: String, gesture: GestureType, in mode: KeyboardMode) -> KeyBinding? {
-        // Only fall through if the primary mode has no binding here.
-        if let key = mode.key(for: keyId), key.bindings[gesture] != nil {
+        // Only fall through if the primary mode has no *reachable* binding
+        // here. A binding declared behind a swipeMode that disallows the
+        // current gesture is effectively unreachable, so ghost fallback
+        // must still apply.
+        if let key = mode.key(for: keyId),
+           key.bindings[gesture] != nil,
+           !gesture.isSwipe || key.swipeMode.allows(gesture) {
             return nil
         }
         // Look up the same key id in the fallback mode.

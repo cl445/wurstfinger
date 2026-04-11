@@ -253,6 +253,42 @@ struct GhostKeyResolverTests {
         // fourWayCross blocks diagonals even in the fallback mode.
         #expect(GhostKeyResolver(fallbackMode: fallback).resolve(keyId: "a", gesture: .swipeUpLeft, in: primary) == nil)
     }
+
+    @Test func fallsThroughWhenPrimaryBindingUnreachableDueToSwipeMode() {
+        // Primary declares a diagonal binding but uses fourWayCross, which
+        // blocks diagonals. The declared binding is effectively unreachable,
+        // so ghost fallback must still apply.
+        let primary = Fixtures.mode(name: "main", keys: [
+            Fixtures.key(
+                id: "a",
+                bindings: [.swipeUpLeft: Fixtures.binding(action: .commitText("unreachable"))],
+                swipeMode: .fourWayCross
+            ),
+        ])
+        let fallback = Fixtures.mode(name: "numeric", keys: [
+            Fixtures.key(id: "a", bindings: [.swipeUpLeft: Fixtures.binding(action: .commitText("ghost"))]),
+        ])
+        #expect(
+            GhostKeyResolver(fallbackMode: fallback)
+                .resolve(keyId: "a", gesture: .swipeUpLeft, in: primary)?.action == .commitText("ghost")
+        )
+    }
+
+    @Test func primaryNonSwipeBindingStillOwnsEvenIfSwipeModeIsNone() {
+        // A non-swipe primary binding (e.g. tap) must not be shadowed by
+        // ghost fallback, even when swipeMode is .none.
+        let primary = Fixtures.mode(name: "main", keys: [
+            Fixtures.key(
+                id: "a",
+                bindings: [.tap: Fixtures.binding(action: .commitText("primary"))],
+                swipeMode: .none
+            ),
+        ])
+        let fallback = Fixtures.mode(name: "numeric", keys: [
+            Fixtures.key(id: "a", bindings: [.tap: Fixtures.binding(action: .commitText("ghost"))]),
+        ])
+        #expect(GhostKeyResolver(fallbackMode: fallback).resolve(keyId: "a", gesture: .tap, in: primary) == nil)
+    }
 }
 
 // MARK: - GestureResolverChain
