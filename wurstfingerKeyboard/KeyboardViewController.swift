@@ -79,6 +79,21 @@ final class KeyboardViewController: UIInputViewController {
         // Update viewModel with current width so SwiftUI re-renders after
         // orientation changes that happen while the keyboard is backgrounded (Bug #92).
         viewModel.updateViewWidth(view.bounds.width)
+        viewModel.updateOrientation(isLandscape: detectIsLandscape())
+    }
+
+    /// Determines whether the host app is currently in a landscape orientation.
+    ///
+    /// On iPhone, `verticalSizeClass == .compact` is the canonical signal.
+    /// On iPad, `verticalSizeClass` stays `.regular` in both orientations,
+    /// so we fall back to the window scene's `interfaceOrientation`. The
+    /// keyboard's own bounds are always shorter than tall and cannot be
+    /// used as a substitute.
+    private func detectIsLandscape() -> Bool {
+        if traitCollection.userInterfaceIdiom == .pad {
+            return view.window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        }
+        return traitCollection.verticalSizeClass == .compact
     }
 
     override var needsInputModeSwitchKey: Bool {
