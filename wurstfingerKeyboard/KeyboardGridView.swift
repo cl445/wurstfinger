@@ -41,8 +41,16 @@ struct KeyboardGridView: View {
         }
     }
 
-    @ViewBuilder
     private func cell(for placement: KeyPlacement) -> some View {
+        assert(
+            placement.heightMultiplier == 1,
+            "KeyboardGridView currently renders only single-row cells; multi-row rendering is deferred to PR 12."
+        )
+        return cellContent(for: placement)
+    }
+
+    @ViewBuilder
+    private func cellContent(for placement: KeyPlacement) -> some View {
         if let key = keys[placement.keyId] {
             KeyView(key: key, onGesture: onGesture)
                 .gridCellColumns(placement.widthMultiplier)
