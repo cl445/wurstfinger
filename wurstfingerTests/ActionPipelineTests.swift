@@ -87,19 +87,36 @@ private enum PipelineFixtures {
     }
 }
 
+/// Shared event log used to assert execution order across multiple
+/// `RecordingMiddleware` instances in the same pipeline.
+private final class OrderLog {
+    var events: [String] = []
+}
+
 /// A recording middleware that captures the context it received and
 /// forwards it unchanged. Used to verify pipeline ordering and
 /// short-circuit behavior.
+///
+/// Optionally also appends `name` to a shared `OrderLog` when invoked,
+/// so multi-middleware tests can assert the exact execution order
+/// rather than just reachability.
 private final class RecordingMiddleware: ActionMiddleware {
     var received: [ActionContext] = []
     private let shouldForward: Bool
+    private let name: String?
+    private let orderLog: OrderLog?
 
-    init(forwards: Bool = true) {
+    init(forwards: Bool = true, name: String? = nil, orderLog: OrderLog? = nil) {
         shouldForward = forwards
+        self.name = name
+        self.orderLog = orderLog
     }
 
     func process(_ context: ActionContext, next: (ActionContext) -> Void) {
         received.append(context)
+        if let name {
+            orderLog?.events.append(name)
+        }
         if shouldForward {
             next(context)
         }
@@ -125,13 +142,15 @@ private final class RewritingMiddleware: ActionMiddleware {
 
 struct ActionPipelineTests {
     @Test func runsMiddlewaresInOrder() {
-        let a = RecordingMiddleware()
-        let b = RecordingMiddleware()
-        let c = RecordingMiddleware()
+        let log = OrderLog()
+        let a = RecordingMiddleware(name: "A", orderLog: log)
+        let b = RecordingMiddleware(name: "B", orderLog: log)
+        let c = RecordingMiddleware(name: "C", orderLog: log)
         let pipeline = ActionPipeline(middlewares: [a, b, c])
 
         pipeline.process(PipelineFixtures.context(action: .commitText("a")))
 
+        #expect(log.events == ["A", "B", "C"])
         #expect(a.received.count == 1)
         #expect(b.received.count == 1)
         #expect(c.received.count == 1)
@@ -328,12 +347,23 @@ struct TextInputMiddlewareTests {
 
     @Test func nonTextActionsAreIgnored() {
         let target = MockTextInputTarget()
-        let pipe = pipeline(target: target)
-        pipe.process(PipelineFixtures.context(action: .advanceToNextInputMode))
-        pipe.process(PipelineFixtures.context(action: .switchMode("numeric")))
-        pipe.process(PipelineFixtures.context(action: .dismissKeyboard))
-        pipe.process(PipelineFixtures.context(action: .copy))
+        let sink = RecordingMiddleware()
+        let middleware = TextInputMiddleware(target: { target })
+        let pipe = ActionPipeline(middlewares: [middleware, sink])
+
+        let actions: [KeyAction] = [
+            .advanceToNextInputMode,
+            .switchMode("numeric"),
+            .dismissKeyboard,
+            .copy,
+        ]
+        for action in actions {
+            pipe.process(PipelineFixtures.context(action: action))
+        }
+
         #expect(target.events.isEmpty)
+        // Pipeline contract: no-op branches must still forward unchanged.
+        #expect(sink.received.map(\.action) == actions)
     }
 
     @Test func missingTargetIsToleratedAndForwardsContext() {
@@ -522,13 +552,21 @@ struct AutoCapitalizationMiddlewareTests {
             onCapitalize: {},
             onReleaseCapitalize: {}
         )
-        let pipe = ActionPipeline(middlewares: [middleware])
+        let sink = RecordingMiddleware()
+        let pipe = ActionPipeline(middlewares: [middleware, sink])
 
-        pipe.process(PipelineFixtures.context(action: .moveCursor(offset: 1)))
-        pipe.process(PipelineFixtures.context(action: .copy))
-        pipe.process(PipelineFixtures.context(action: .advanceToNextInputMode))
+        let actions: [KeyAction] = [
+            .moveCursor(offset: 1),
+            .copy,
+            .advanceToNextInputMode,
+        ]
+        for action in actions {
+            pipe.process(PipelineFixtures.context(action: action))
+        }
 
         #expect(evaluated == 0, "Cursor moves and clipboard-only actions don't affect caps")
+        // Pipeline contract: skipped branch must still forward downstream.
+        #expect(sink.received.map(\.action) == actions)
     }
 
     @Test func affectsCapitalizationPolicyIsStable() {
@@ -607,12 +645,15 @@ struct ModeTransitionMiddlewareTests {
             definition: modeTransitionDefinition(shiftedAutoTransitions: [.letter: "main"]),
             onModeChange: { changes.append($0) }
         )
-        let pipe = ActionPipeline(middlewares: [middleware])
+        let sink = RecordingMiddleware()
+        let pipe = ActionPipeline(middlewares: [middleware, sink])
 
         let binding = PipelineFixtures.binding(action: .commitText("A"), category: .letter)
         pipe.process(ActionContext(action: .commitText("A"), binding: binding, mode: "capsLock"))
 
         #expect(changes.isEmpty)
+        // Pipeline contract: no transition still forwards downstream.
+        #expect(sink.received.map(\.action) == [.commitText("A")])
     }
 
     @Test func unknownModeIsIgnored() {
@@ -621,12 +662,15 @@ struct ModeTransitionMiddlewareTests {
             definition: modeTransitionDefinition(shiftedAutoTransitions: [.letter: "main"]),
             onModeChange: { changes.append($0) }
         )
-        let pipe = ActionPipeline(middlewares: [middleware])
+        let sink = RecordingMiddleware()
+        let pipe = ActionPipeline(middlewares: [middleware, sink])
 
         let binding = PipelineFixtures.binding(action: .commitText("A"), category: .letter)
         pipe.process(ActionContext(action: .commitText("A"), binding: binding, mode: "ghost"))
 
         #expect(changes.isEmpty)
+        // Pipeline contract: unknown mode still forwards downstream.
+        #expect(sink.received.map(\.action) == [.commitText("A")])
     }
 
     @Test func fallsBackToInferredCategoryWhenBindingMissing() {
@@ -650,12 +694,15 @@ struct ModeTransitionMiddlewareTests {
             definition: modeTransitionDefinition(shiftedAutoTransitions: [.letter: "shifted"]),
             onModeChange: { changes.append($0) }
         )
-        let pipe = ActionPipeline(middlewares: [middleware])
+        let sink = RecordingMiddleware()
+        let pipe = ActionPipeline(middlewares: [middleware, sink])
 
         let binding = PipelineFixtures.binding(action: .commitText("A"), category: .letter)
         pipe.process(ActionContext(action: .commitText("A"), binding: binding, mode: "shifted"))
 
         #expect(changes.isEmpty)
+        // Pipeline contract: suppressed transition still forwards downstream.
+        #expect(sink.received.map(\.action) == [.commitText("A")])
     }
 
     @Test func runsAfterDownstreamMiddlewares() {

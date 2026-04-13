@@ -37,8 +37,13 @@ protocol TextInputTarget: AnyObject {
 /// left to the view controller in PR 11 — they will migrate in PR 12 when
 /// the pipeline is wired end-to-end.
 struct TextInputMiddleware: ActionMiddleware {
-    /// Host-provided text input target. Weakly held so the middleware
-    /// cannot extend the lifetime of the view controller that owns it.
+    /// Host-provided text input target resolver.
+    ///
+    /// The closure itself is strongly retained by the middleware, so *callers*
+    /// are responsible for capturing the owning object (typically the keyboard
+    /// view controller) weakly when constructing it. The standard pattern is
+    /// `{ [weak controller] in controller?.textInputTarget }`, which keeps the
+    /// middleware from extending the controller's lifetime.
     private let targetProvider: () -> TextInputTarget?
 
     init(target: @escaping () -> TextInputTarget?) {
