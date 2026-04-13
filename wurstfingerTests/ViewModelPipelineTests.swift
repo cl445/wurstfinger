@@ -12,54 +12,7 @@ import Foundation
 import Testing
 @testable import WurstfingerApp
 
-// MARK: - Helpers
-
-private final class MockTextTarget: TextInputTarget {
-    enum Event: Equatable {
-        case insertText(String)
-        case deleteBackward
-        case adjustCursor(Int)
-    }
-
-    var events: [Event] = []
-    var documentContextBeforeInput: String?
-    var documentContextAfterInput: String?
-    var selectedText: String?
-    var hasFullAccess: Bool = false
-
-    func insertText(_ text: String) {
-        events.append(.insertText(text))
-        documentContextBeforeInput = (documentContextBeforeInput ?? "") + text
-    }
-
-    func deleteBackward() {
-        events.append(.deleteBackward)
-        if let ctx = documentContextBeforeInput, !ctx.isEmpty {
-            documentContextBeforeInput = String(ctx.dropLast())
-        }
-    }
-
-    func adjustTextPosition(byCharacterOffset offset: Int) {
-        events.append(.adjustCursor(offset))
-    }
-}
-
-private func makeViewModel(
-    languageId: String = "de_DE",
-    advanceToNextInputMode: @escaping () -> Void = {},
-    dismissKeyboard: @escaping () -> Void = {}
-) -> (KeyboardViewModel, MockTextTarget) {
-    let defaults = UserDefaults(suiteName: "test.\(UUID().uuidString)")!
-    let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
-    let target = MockTextTarget()
-    vm.bindTextInputTarget(target)
-    vm.bindViewControllerActions(
-        advanceToNextInputMode: advanceToNextInputMode,
-        dismissKeyboard: dismissKeyboard
-    )
-    vm.loadDefinition(for: languageId)
-    return (vm, target)
-}
+// Helpers (MockTextTarget, makeViewModel) are in TestHelpers.swift
 
 // MARK: - Tap → commitText
 

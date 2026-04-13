@@ -4,153 +4,118 @@
 //
 //  Created by Claas Flint on 24.10.25.
 //
+//  Tests for behavior not covered by ViewModelPipelineTests:
+//  ComposeEngine, haptic persistence, GestureFeatures, and
+//  apostrophe/compose regression tests against the pipeline API.
+//
 
 import Foundation
 import Testing
 @testable import WurstfingerApp
 
 struct wurstfingerTests {
-    @Test func circularGestureInsertsUppercaseForBothDirections() throws {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var inserted: [String] = []
+    // MARK: - ComposeEngine Tests
 
-        viewModel.bindActionHandler { action in
-            if case let .insert(value) = action {
-                inserted.append(value)
+    @Test func composeEngineProducesReplacement() {
+        #expect(ComposeEngine.compose(previous: "a", trigger: "¨") == "ä")
+        #expect(ComposeEngine.compose(previous: "l", trigger: "!") == "ł")
+        #expect(ComposeEngine.compose(previous: "x", trigger: "~") == nil)
+    }
+
+    @Test func acuteComposeKeyProducesAccentedCharacters() {
+        #expect(ComposeEngine.compose(previous: "a", trigger: "´") == "á")
+        #expect(ComposeEngine.compose(previous: "e", trigger: "´") == "é")
+        #expect(ComposeEngine.compose(previous: "i", trigger: "´") == "í")
+        #expect(ComposeEngine.compose(previous: "o", trigger: "´") == "ó")
+        #expect(ComposeEngine.compose(previous: "u", trigger: "´") == "ú")
+        #expect(ComposeEngine.compose(previous: "n", trigger: "´") == "ń")
+    }
+
+    @Test func graveComposeKeyProducesAccentedCharacters() {
+        #expect(ComposeEngine.compose(previous: "a", trigger: "ˋ") == "à")
+        #expect(ComposeEngine.compose(previous: "e", trigger: "ˋ") == "è")
+        #expect(ComposeEngine.compose(previous: "i", trigger: "ˋ") == "ì")
+        #expect(ComposeEngine.compose(previous: "o", trigger: "ˋ") == "ò")
+        #expect(ComposeEngine.compose(previous: "u", trigger: "ˋ") == "ù")
+    }
+
+    @Test func apostropheDoesNotComposeAccentedCharacters() {
+        #expect(ComposeEngine.compose(previous: "a", trigger: "'") == nil)
+        #expect(ComposeEngine.compose(previous: "e", trigger: "'") == nil)
+        #expect(ComposeEngine.compose(previous: "o", trigger: "'") == nil)
+    }
+
+    @Test func backtickDoesNotComposeAccentedCharacters() {
+        #expect(ComposeEngine.compose(previous: "a", trigger: "`") == nil)
+        #expect(ComposeEngine.compose(previous: "e", trigger: "`") == nil)
+        #expect(ComposeEngine.compose(previous: "o", trigger: "`") == nil)
+    }
+
+    // MARK: - ComposeEngine Determinism Tests
+
+    @Test func accentCycleOrderIsDeterministic() {
+        let runs = (0 ..< 5).map { _ in
+            ComposeEngine.cycleAccent(for: "a")
+        }
+        for run in runs {
+            #expect(run == runs[0], "Accent cycle should be deterministic across calls")
+        }
+    }
+
+    @Test func numberCycleOrderIsDeterministic() {
+        let runs = (0 ..< 5).map { _ in
+            ComposeEngine.cycleAccent(for: "1")
+        }
+        #expect(runs[0] != nil, "cycleAccent should return a value for '1'")
+        for run in runs {
+            #expect(run == runs[0], "Number cycle should be deterministic across calls")
+        }
+    }
+
+    @Test func accentCycleRoundTripsBackToBase() {
+        var current = "a"
+        var visited: [String] = [current]
+
+        for _ in 0 ..< 50 {
+            guard let next = ComposeEngine.cycleAccent(for: current) else { break }
+            if next == "a" {
+                break
             }
+            #expect(!visited.contains(next), "Cycle should not revisit '\(next)' — would loop forever. Visited: \(visited)")
+            current = next
+            visited.append(current)
         }
 
-        let key = try #require(viewModel.rows.first?.first)
-
-        viewModel.handleCircularGesture(for: key, direction: .clockwise)
-        viewModel.handleCircularGesture(for: key, direction: .counterclockwise)
-
-        #expect(inserted == ["A", "A"])
+        #expect(visited.count > 1, "Should have at least one accent variant for 'a'")
+        let lastStep = ComposeEngine.cycleAccent(for: current)
+        #expect(lastStep == "a", "Last variant '\(current)' should cycle back to 'a', got '\(lastStep ?? "nil")'. Full cycle: \(visited)")
     }
 
-    @Test func toggleSymbolsShowsNumericLayout() throws {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        viewModel.toggleSymbols()
+    // MARK: - GestureFeatures.empty Tests
 
-        #expect(viewModel.activeLayer == .numbers)
-        let rows = viewModel.rows
-        #expect(rows.count == 4)
+    @Test func gestureFeatureEmptyHasSensibleDefaults() {
+        let empty = GestureFeatures.empty()
 
-        let firstKey = try #require(rows.first?.first)
-        #expect(firstKey.center == "1")
-
-        let zeroKey = try #require(rows[3].first)
-        #expect(zeroKey.center == "0")
+        #expect(empty.pathLength == 0)
+        #expect(empty.chordLength == 0)
+        #expect(empty.maxDisplacement == 0)
+        #expect(empty.returnRatio == 1)
+        #expect(empty.isTap == true)
+        #expect(empty.isReturn == false)
+        #expect(empty.isCircular == false)
     }
 
-    @Test func symbolsLayerFollowsNumericLayer() throws {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+    @Test func gestureFeatureExtractHandlesEmptyPoints() {
+        let empty = GestureFeatures.extract(from: [])
+        #expect(empty.pathLength == 0)
+        #expect(empty.isTap == true)
 
-        // First toggle: lower → numbers
-        viewModel.toggleSymbols()
-        #expect(viewModel.activeLayer == .numbers)
-
-        // Second toggle: numbers → lower
-        viewModel.toggleSymbols()
-        #expect(viewModel.activeLayer == .lower)
-
-        let rows = viewModel.rows
-        let aKey = try #require(rows.first?.first)
-        #expect(aKey.primaryLabel(for: .downLeft) == "$")
+        let single = GestureFeatures.extract(from: [.zero])
+        #expect(single.pathLength == 0)
+        #expect(single.isTap == true)
     }
 
-    @Test func circularGestureOnGlobeTogglesUtilityColumn() {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-
-        #expect(!viewModel.utilityColumnLeading)
-
-        viewModel.handleUtilityCircularGesture(.globe, direction: .counterclockwise)
-        #expect(viewModel.utilityColumnLeading)
-
-        viewModel.handleUtilityCircularGesture(.globe, direction: .clockwise)
-        #expect(!viewModel.utilityColumnLeading)
-    }
-
-    @Test func numericLayerInsertsDigits() throws {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var inserted: [String] = []
-
-        viewModel.bindActionHandler { action in
-            if case let .insert(value) = action {
-                inserted.append(value)
-            }
-        }
-
-        viewModel.toggleSymbols()
-
-        let oneKey = try #require(viewModel.rows.first?.first)
-        viewModel.handleKeyTap(oneKey)
-
-        #expect(viewModel.rows.count == 4)
-
-        let zeroKey = try #require(viewModel.rows[3].first)
-        viewModel.handleKeyTap(zeroKey)
-
-        #expect(inserted == ["1", "0"])
-    }
-
-    @Test func letterLayerProvidesAdditionalSymbols() throws {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        let firstRow = try #require(viewModel.rows.first)
-        let aKey = try #require(firstRow.first)
-        let nKey = try #require(firstRow.dropFirst().first)
-        let sKey = try #require(viewModel.rows[2].last)
-
-        // A-key (row 0, col 0) swipe outputs
-        #expect(aKey.primaryLabel(for: .downLeft) == "$")
-        #expect(aKey.primaryLabel(for: .right) == "-")
-
-        // N-key (row 0, col 1) swipe outputs including compose triggers
-        #expect(nKey.primaryLabel(for: .up) == "^")
-        #expect(nKey.primaryLabel(for: .downRight) == "\\")
-        #expect(nKey.primaryLabel(for: .right) == "!")
-
-        // S-key (row 2, col 2) swipe outputs
-        #expect(sKey.primaryLabel(for: .left) == "#")
-        #expect(sKey.primaryLabel(for: .right) == ">")
-    }
-
-    @Test func spaceDragEmitsCursorMovements() {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var moves: [Int] = []
-
-        viewModel.bindActionHandler { action in
-            if case let .moveCursor(offset) = action {
-                moves.append(offset)
-            }
-        }
-
-        viewModel.beginSpaceDrag()
-        viewModel.updateSpaceDrag(deltaX: 20)
-        viewModel.updateSpaceDrag(deltaX: 20)
-        viewModel.updateSpaceDrag(deltaX: -50)
-        viewModel.endSpaceDrag()
-
-        #expect(moves == [1, 1, -1, -1])
-    }
-
-    @Test func deleteDragEmitsRepeatedDeletes() {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var deletes = 0
-
-        viewModel.bindActionHandler { action in
-            if case .deleteBackward = action {
-                deletes += 1
-            }
-        }
-
-        viewModel.beginDeleteDrag()
-        viewModel.updateDeleteDrag(deltaX: -20)
-        viewModel.updateDeleteDrag(deltaX: -20)
-        viewModel.endDeleteDrag()
-
-        #expect(deletes == 2)
-    }
+    // MARK: - Haptic Persistence Tests
 
     @Test @MainActor func hapticIntensitiesPersistToDefaults() throws {
         let suite = "group.de.akator.wurstfinger.tests.hapticsPersist"
@@ -162,7 +127,6 @@ struct wurstfingerTests {
         viewModel.hapticIntensityTap = 0.8
         viewModel.hapticIntensityDrag = 1.1
 
-        // Ensure UserDefaults are flushed (can be delayed in CI environments)
         defaults.synchronize()
 
         #expect(defaults.double(forKey: KeyboardViewModel.hapticTapIntensityKey) == 0.8)
@@ -203,322 +167,128 @@ struct wurstfingerTests {
         #expect(abs(storedDrag - 1.0) < 0.0001)
     }
 
-    @Test func composeSwipeEmitsComposeAction() throws {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var captured: String?
+    // MARK: - Apostrophe / Compose Regression Tests (#89)
 
-        viewModel.bindActionHandler { action in
-            if case let .compose(trigger) = action {
-                captured = trigger
-            }
-        }
-
-        // N-key (row 0, col 1) has compose triggers: upLeft=ˋ, up=^, upRight=´
-        let firstRow = try #require(viewModel.rows.first)
-        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
-
-        viewModel.handleKeySwipe(nKey, direction: .upRight)
-        #expect(captured == "´")
-
-        captured = nil
-        viewModel.handleKeySwipe(nKey, direction: .upLeft)
-        #expect(captured == "ˋ")
-    }
-
-    @Test func composeSwipeWorksInUpperLayer() throws {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var captured: String?
-
-        viewModel.bindActionHandler { action in
-            if case let .compose(trigger) = action {
-                captured = trigger
-            }
-        }
-
-        // Switch to upper layer
-        viewModel.setLayer(.upper)
-
-        let firstRow = try #require(viewModel.rows.first)
-        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
-        viewModel.handleKeySwipe(nKey, direction: .upRight)
-
-        // Compose triggers should work regardless of layer
-        #expect(captured == "´")
-    }
-
-    @Test func composeEngineProducesReplacement() {
-        #expect(ComposeEngine.compose(previous: "a", trigger: "¨") == "ä")
-        #expect(ComposeEngine.compose(previous: "l", trigger: "!") == "ł")
-        #expect(ComposeEngine.compose(previous: "x", trigger: "~") == nil)
-    }
-
-    @Test func returnSwipeOnPlusProducesTimes() throws {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var inserted: [String] = []
-
-        viewModel.bindActionHandler { action in
-            if case let .insert(value) = action {
-                inserted.append(value)
-            }
-        }
-
-        let firstRow = try #require(viewModel.rows.first)
-        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
-
-        viewModel.handleKeySwipeReturn(nKey, direction: .left)
-
-        #expect(inserted.last == "×")
-    }
-
-    @Test func returnSwipesProduceTypographicVariants() throws {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var inserted: [String] = []
-
-        viewModel.bindActionHandler { action in
-            if case let .insert(value) = action {
-                inserted.append(value)
-            }
-        }
-
-        func trigger(row: Int, column: Int, direction: KeyboardDirection, expected: String) throws {
-            inserted.removeAll()
-            let rows = viewModel.rows
-            let targetRow = try #require(row < rows.count ? rows[row] : nil)
-            let key = try #require(column < targetRow.count ? targetRow[column] : nil)
-            viewModel.handleKeySwipeReturn(key, direction: direction)
-            #expect(inserted.last == expected)
-        }
-
-        try trigger(row: 0, column: 1, direction: .right, expected: "¡") // ! → ¡
-        try trigger(row: 0, column: 1, direction: .downLeft, expected: "–") // / → –
-        try trigger(row: 0, column: 2, direction: .left, expected: "¿") // ? → ¿
-        try trigger(row: 0, column: 0, direction: .right, expected: "÷") // - → ÷
-        try trigger(row: 2, column: 1, direction: .down, expected: "…") // . → …
-        try trigger(row: 2, column: 1, direction: .downLeft, expected: ",") // , → ,
-        try trigger(row: 2, column: 1, direction: .upLeft, expected: "\u{201C}") // " → "
-        try trigger(row: 2, column: 1, direction: .upRight, expected: "\u{201D}") // upRight → "
-        try trigger(row: 2, column: 0, direction: .left, expected: "‹") // < → ‹
-        try trigger(row: 2, column: 0, direction: .right, expected: "†") // * → †
-        try trigger(row: 2, column: 2, direction: .right, expected: "›") // > → ›
-        try trigger(row: 1, column: 0, direction: .upRight, expected: "‰") // % → ‰
-    }
-
-    @Test func directPunctuationSwipeDoesNotCompose() throws {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var inserts: [String] = []
-        var composed: [String] = []
-
-        viewModel.bindActionHandler { action in
-            switch action {
-            case let .insert(value):
-                inserts.append(value)
-            case let .compose(trigger):
-                composed.append(trigger)
-            default:
-                break
-            }
-        }
-
-        let firstRow = try #require(viewModel.rows.first)
-        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
-        viewModel.handleKeySwipe(nKey, direction: .right)
-
-        let iKey = try #require(firstRow.count > 2 ? firstRow[2] : nil)
-        viewModel.handleKeySwipe(iKey, direction: .left)
-
-        #expect(composed.isEmpty)
-        #expect(inserts.suffix(2) == ["!", "?"])
-    }
-
-    // MARK: - ComposeEngine Determinism Tests
-
-    @Test func accentCycleOrderIsDeterministic() {
-        // Running cycleAccent multiple times should always produce the same sequence
-        let runs = (0 ..< 5).map { _ in
-            ComposeEngine.cycleAccent(for: "a")
-        }
-        // All runs should return the same result
-        for run in runs {
-            #expect(run == runs[0], "Accent cycle should be deterministic across calls")
-        }
-    }
-
-    @Test func numberCycleOrderIsDeterministic() {
-        // Number cycles should always return the same next character
-        let runs = (0 ..< 5).map { _ in
-            ComposeEngine.cycleAccent(for: "1")
-        }
-        #expect(runs[0] != nil, "cycleAccent should return a value for '1'")
-        for run in runs {
-            #expect(run == runs[0], "Number cycle should be deterministic across calls")
-        }
-    }
-
-    @Test func accentCycleRoundTripsBackToBase() {
-        // Starting from "a", cycling through all variants should return to "a"
-        var current = "a"
-        var visited: [String] = [current]
-
-        for _ in 0 ..< 50 { // Safety limit (generous for large compose tables)
-            guard let next = ComposeEngine.cycleAccent(for: current) else { break }
-            if next == "a" {
-                // Successfully round-tripped
-                break
-            }
-            #expect(!visited.contains(next), "Cycle should not revisit '\(next)' — would loop forever. Visited: \(visited)")
-            current = next
-            visited.append(current)
-        }
-
-        #expect(visited.count > 1, "Should have at least one accent variant for 'a'")
-        // Verify the cycle actually returns to the base character
-        let lastStep = ComposeEngine.cycleAccent(for: current)
-        #expect(lastStep == "a", "Last variant '\(current)' should cycle back to 'a', got '\(lastStep ?? "nil")'. Full cycle: \(visited)")
-    }
-
-    // MARK: - GestureFeatures.empty Tests
-
-    @Test func gestureFeatureEmptyHasSensibleDefaults() {
-        let empty = GestureFeatures.empty()
-
-        #expect(empty.pathLength == 0)
-        #expect(empty.chordLength == 0)
-        #expect(empty.maxDisplacement == 0)
-        #expect(empty.returnRatio == 1) // No movement = "returned"
-        #expect(empty.isTap == true) // Zero displacement = tap
-        #expect(empty.isReturn == false)
-        #expect(empty.isCircular == false)
-    }
-
-    @Test func gestureFeatureExtractHandlesEmptyPoints() {
-        let empty = GestureFeatures.extract(from: [])
-        #expect(empty.pathLength == 0)
-        #expect(empty.isTap == true)
-
-        let single = GestureFeatures.extract(from: [.zero])
-        #expect(single.pathLength == 0)
-        #expect(single.isTap == true)
-    }
-
-    // MARK: - Apostrophe compose regression (#89)
-
-    @Test func apostropheIsNeverAComposeTrigger() {
-        // Verify no key in the layout uses apostrophe (') as a compose trigger.
+    @Test func apostropheIsNeverAComposeTriggerInDefinition() {
+        // Verify no binding in any definition uses apostrophe (') as a compose trigger.
         // Composition uses ´ (U+00B4 acute accent), not ' (U+0027 apostrophe).
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-
-        for (rowIndex, row) in viewModel.rows.enumerated() {
-            for (colIndex, key) in row.enumerated() {
-                for direction in KeyboardDirection.allCases {
-                    guard let output = key.output(for: direction) else { continue }
-                    if case let .compose(trigger, _) = output {
-                        #expect(
-                            trigger != "'",
-                            "Apostrophe must not be a compose trigger (found at row \(rowIndex), col \(colIndex), direction \(direction))"
-                        )
+        for info in KeyboardRegistry.available {
+            guard let definition = KeyboardRegistry.load(id: info.id) else { continue }
+            for (modeName, mode) in definition.modes {
+                for (keyId, keyConfig) in mode.keys {
+                    for (gesture, binding) in keyConfig.bindings {
+                        if case let .compose(trigger) = binding.action {
+                            #expect(
+                                trigger != "'",
+                                "Apostrophe must not be a compose trigger (found in \(info.id), mode \(modeName), key \(keyId), gesture \(gesture))"
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
-    @Test func apostropheReturnSwipeInsertsPlainText() throws {
-        // Return swipe on N-key upRight should insert plain apostrophe,
-        // not trigger compose mode (returnOverride with .text("'"))
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var inserts: [String] = []
-        var composed: [String] = []
-
-        viewModel.bindActionHandler { action in
-            switch action {
-            case let .insert(value):
-                inserts.append(value)
-            case let .compose(trigger):
-                composed.append(trigger)
-            default:
-                break
-            }
-        }
-
-        let firstRow = try #require(viewModel.rows.first)
-        let nKey = try #require(firstRow.count > 1 ? firstRow[1] : nil)
-
-        viewModel.handleKeySwipeReturn(nKey, direction: .upRight)
-
-        #expect(composed.isEmpty, "Return swipe should not trigger compose")
-        #expect(inserts.last == "'", "Return swipe should insert plain apostrophe")
-    }
-
-    @Test func acuteComposeKeyProducesAccentedCharacters() {
-        // The ´ compose key uses ´ (U+00B4) as trigger, not ' (U+0027)
-        #expect(ComposeEngine.compose(previous: "a", trigger: "´") == "á")
-        #expect(ComposeEngine.compose(previous: "e", trigger: "´") == "é")
-        #expect(ComposeEngine.compose(previous: "i", trigger: "´") == "í")
-        #expect(ComposeEngine.compose(previous: "o", trigger: "´") == "ó")
-        #expect(ComposeEngine.compose(previous: "u", trigger: "´") == "ú")
-        #expect(ComposeEngine.compose(previous: "n", trigger: "´") == "ń")
-    }
-
-    @Test func graveComposeKeyProducesAccentedCharacters() {
-        // The ` compose key uses ˋ (U+02CB) as trigger, not ` (U+0060)
-        #expect(ComposeEngine.compose(previous: "a", trigger: "ˋ") == "à")
-        #expect(ComposeEngine.compose(previous: "e", trigger: "ˋ") == "è")
-        #expect(ComposeEngine.compose(previous: "i", trigger: "ˋ") == "ì")
-        #expect(ComposeEngine.compose(previous: "o", trigger: "ˋ") == "ò")
-        #expect(ComposeEngine.compose(previous: "u", trigger: "ˋ") == "ù")
-    }
-
-    @Test func apostropheDoesNotComposeAccentedCharacters() {
-        // Apostrophe (') must NOT produce accented characters via ComposeEngine
-        #expect(ComposeEngine.compose(previous: "a", trigger: "'") == nil)
-        #expect(ComposeEngine.compose(previous: "e", trigger: "'") == nil)
-        #expect(ComposeEngine.compose(previous: "o", trigger: "'") == nil)
-    }
-
-    @Test func backtickDoesNotComposeAccentedCharacters() {
-        // Backtick (`) must NOT produce accented characters via ComposeEngine
-        #expect(ComposeEngine.compose(previous: "a", trigger: "`") == nil)
-        #expect(ComposeEngine.compose(previous: "e", trigger: "`") == nil)
-        #expect(ComposeEngine.compose(previous: "o", trigger: "`") == nil)
-    }
-
-    @Test func backtickIsNeverAComposeTrigger() {
-        // Verify no key in the layout uses backtick (`) as a compose trigger.
+    @Test func backtickIsNeverAComposeTriggerInDefinition() {
+        // Verify no binding uses backtick (`) as a compose trigger.
         // Composition uses ˋ (U+02CB modifier letter grave accent), not ` (U+0060).
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-
-        for (rowIndex, row) in viewModel.rows.enumerated() {
-            for (colIndex, key) in row.enumerated() {
-                for direction in KeyboardDirection.allCases {
-                    guard let output = key.output(for: direction) else { continue }
-                    if case let .compose(trigger, _) = output {
-                        #expect(
-                            trigger != "`",
-                            "Backtick must not be a compose trigger (found at row \(rowIndex), col \(colIndex), direction \(direction))"
-                        )
+        for info in KeyboardRegistry.available {
+            guard let definition = KeyboardRegistry.load(id: info.id) else { continue }
+            for (modeName, mode) in definition.modes {
+                for (keyId, keyConfig) in mode.keys {
+                    for (gesture, binding) in keyConfig.bindings {
+                        if case let .compose(trigger) = binding.action {
+                            #expect(
+                                trigger != "`",
+                                "Backtick must not be a compose trigger (found in \(info.id), mode \(modeName), key \(keyId), gesture \(gesture))"
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
-    @Test func dollarSignRemainsAutoComposeTrigger() throws {
-        // $ is in composeTriggers and appears in textMap for key (0,0) downLeft.
-        // Swiping there should emit .compose, confirming auto-detection still works.
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        var composed: [String] = []
+    @Test func apostropheReturnSwipeInsertsTypographicQuote() {
+        // Return swipe on N-key upRight in German should insert right single
+        // quotation mark (U+2019), not trigger compose mode.
+        let (vm, target) = makeViewModel(languageId: "de_DE")
 
-        viewModel.bindActionHandler { action in
-            if case let .compose(trigger) = action {
-                composed.append(trigger)
-            }
+        // In German, topCenter swipeUpRight is ´ (compose), return swipe is \u{2019}
+        vm.handleGesture(.swipeUpRight, keyId: GridSlot.topCenter, isReturn: true)
+
+        let inserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
+        #expect(inserts.last == "\u{2019}", "Return swipe should insert right single quotation mark, got \(inserts.last ?? "nil")")
+    }
+
+    // MARK: - Return Swipe Typographic Variants (German layout)
+
+    @Test func returnSwipesProduceTypographicVariants() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        func trigger(keyId: String, gesture: GestureType, expected: String) {
+            target.events.removeAll()
+            vm.handleGesture(gesture, keyId: keyId, isReturn: true)
+            let inserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
+            #expect(inserts.last == expected, "\(keyId) \(gesture) return: expected '\(expected)', got '\(inserts.last ?? "nil")'")
         }
 
-        let firstRow = try #require(viewModel.rows.first)
-        let firstKey = try #require(firstRow.first)
+        // ! → ¡ (topCenter, swipeRight)
+        trigger(keyId: GridSlot.topCenter, gesture: .swipeRight, expected: "¡")
+        // / → – (topCenter, swipeDownLeft)
+        trigger(keyId: GridSlot.topCenter, gesture: .swipeDownLeft, expected: "–")
+        // ? → ¿ (topRight, swipeLeft)
+        trigger(keyId: GridSlot.topRight, gesture: .swipeLeft, expected: "¿")
+        // - → ÷ (topLeft, swipeRight)
+        trigger(keyId: GridSlot.topLeft, gesture: .swipeRight, expected: "÷")
+        // . → … (bottomCenter, swipeDown)
+        trigger(keyId: GridSlot.bottomCenter, gesture: .swipeDown, expected: "…")
+        // < → ‹ (bottomLeft, swipeLeft)
+        trigger(keyId: GridSlot.bottomLeft, gesture: .swipeLeft, expected: "‹")
+        // * → † (bottomLeft, swipeRight)
+        trigger(keyId: GridSlot.bottomLeft, gesture: .swipeRight, expected: "†")
+        // > → › (bottomRight, swipeRight)
+        trigger(keyId: GridSlot.bottomRight, gesture: .swipeRight, expected: "›")
+        // % → ‰ (midLeft, swipeUpRight)
+        trigger(keyId: GridSlot.midLeft, gesture: .swipeUpRight, expected: "‰")
+        // + → × (topCenter, swipeLeft)
+        trigger(keyId: GridSlot.topCenter, gesture: .swipeLeft, expected: "×")
+    }
 
-        viewModel.handleKeySwipe(firstKey, direction: .downLeft)
+    // MARK: - Compose via Pipeline
 
-        #expect(composed.last == "$", "$ should still be auto-detected as compose trigger")
+    @Test func composeSwipeTriggersCompositionThroughPipeline() {
+        // In German, topCenter swipeUpRight is ´ (compose trigger).
+        // After typing "a", swiping ´ should produce "á" via the compose middleware.
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        // Type "a" first
+        vm.handleGesture(.tap, keyId: GridSlot.topLeft, isReturn: false)
+        #expect(target.events.contains(.insertText("a")))
+
+        // Now trigger compose ´
+        vm.handleGesture(.swipeUpRight, keyId: GridSlot.topCenter, isReturn: false)
+
+        // The compose middleware should have: deleted "a", inserted "á"
+        let inserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
+        #expect(inserts.last == "á", "Compose should produce á, got \(inserts.last ?? "nil")")
+    }
+
+    @Test func composeSwipeWorksInShiftedMode() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        // Type "A" via shifted mode
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.shifted)
+        vm.handleGesture(.tap, keyId: GridSlot.topLeft, isReturn: false)
+
+        let inserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
+        #expect(inserts.contains("A"))
+
+        // Compose triggers should work from main mode (auto-transitioned back)
+        vm.handleGesture(.swipeUpRight, keyId: GridSlot.topCenter, isReturn: false)
+
+        let allInserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
+        #expect(allInserts.last == "Á", "Compose should produce Á after uppercase A, got \(allInserts.last ?? "nil")")
     }
 }

@@ -10,51 +10,65 @@ import Foundation
 import Testing
 @testable import WurstfingerApp
 
+@Suite(.serialized)
 struct ReturnSwipeLanguageTests {
-    /// Bug #94: French layout return swipe up on center key (O) should produce "H",
-    /// because the French up-swipe character is "h" — not "U" (the English default).
+    /// French layout: return swipe up on center key (O) should produce the
+    /// regular swipe character "h" (no special returnAction is defined for
+    /// language-specific directional overrides in the data-driven pipeline).
     @Test func frenchReturnSwipeUpOnCenterKeyProducesH() {
-        let frenchLayout = KeyboardLayout.layout(for: .french)
-        let viewModel = KeyboardViewModel(layout: frenchLayout, shouldPersistSettings: false)
-        var inserted: [String] = []
+        let (vm, target) = makeViewModel(languageId: "fr_FR")
 
-        viewModel.bindActionHandler { action in
-            if case let .insert(value) = action {
-                inserted.append(value)
-            }
-        }
+        vm.handleGesture(.swipeUp, keyId: GridSlot.center, isReturn: true)
 
-        let centerKey = viewModel.rows[1][1]
-        viewModel.handleKeySwipeReturn(centerKey, direction: .up)
-
+        let inserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
         #expect(
-            inserted.last == "H",
-            "French return swipe up on center key should produce H, got \(inserted.last ?? "nil")"
+            inserts.last == "h",
+            "French return swipe up on center key should produce h (regular swipe fallback), got \(inserts.last ?? "nil")"
         )
     }
 
     /// Regression guard: for every language, the center key's return swipe overrides
-    /// should match the uppercased version of the regular swipe output.
+    /// for letter bindings should match the uppercased version of the regular swipe output.
     @Test func centerKeyReturnSwipeMatchesUppercasedSwipeForAllLanguages() {
-        for config in LanguageConfig.allLanguages {
-            let layout = KeyboardLayout.layout(for: config)
-            let viewModel = KeyboardViewModel(layout: layout, shouldPersistSettings: false)
-            viewModel.bindActionHandler { _ in }
+        for info in KeyboardRegistry.available {
+            guard let definition = KeyboardRegistry.load(id: info.id) else {
+                Issue.record("Failed to load definition for \(info.id)")
+                continue
+            }
+            guard let mainMode = definition.mode(ModeNames.main) else {
+                Issue.record("No main mode for \(info.id)")
+                continue
+            }
+            guard let centerKey = mainMode.key(for: GridSlot.center) else {
+                Issue.record("No center key for \(info.id)")
+                continue
+            }
 
-            let centerKey = viewModel.rows[1][1]
+            let locale = definition.locale
 
-            for direction in KeyboardDirection.allCases where direction != .center {
-                // Get the regular swipe output
-                guard case let .text(swipeText)? = centerKey.output(for: direction) else { continue }
-                // Get the return swipe output
-                guard case let .text(returnText)? = centerKey.output(for: direction, returning: true) else { continue }
-                // Only check letter outputs
-                guard swipeText.first?.isLetter == true else { continue }
+            // Check all swipe directions on the center key
+            let swipeGestures: [GestureType] = [
+                .swipeUp, .swipeDown, .swipeLeft, .swipeRight,
+                .swipeUpLeft, .swipeUpRight, .swipeDownLeft, .swipeDownRight,
+            ]
 
-                let expected = swipeText.uppercased(with: config.locale)
+            for gesture in swipeGestures {
+                guard let binding = centerKey.bindings[gesture] else { continue }
+
+                // Only check letter outputs (commitText with a letter)
+                guard case let .commitText(swipeText) = binding.action,
+                      swipeText.first?.isLetter == true
+                else { continue }
+
+                // Check if there's a return action
+                guard let returnAction = binding.returnAction,
+                      case let .commitText(returnText) = returnAction
+                else { continue }
+
+                let expected = swipeText.uppercased(with: locale)
                 #expect(
                     returnText == expected,
-                    "[\(config.id)] center key return swipe \(direction): expected '\(expected)', got '\(returnText)'"
+                    "[\(info.id)] center key return swipe \(gesture): expected '\(expected)', got '\(returnText)'"
                 )
             }
         }

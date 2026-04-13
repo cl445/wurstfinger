@@ -10,37 +10,6 @@ import CoreGraphics
 import Foundation
 import UIKit
 
-enum KeyboardAction {
-    case insert(String)
-    case deleteBackward
-    case deleteForward
-    case space
-    case newline
-    case advanceToNextInputMode
-    case dismissKeyboard
-    case capitalizeWord(CapitalizationStyle)
-    case moveCursor(offset: Int)
-    case moveCursorByWord(forward: Bool)
-    case compose(trigger: String)
-    case cycleAccents
-    // Text editing actions (clipboard)
-    case copy
-    case paste
-    case cut
-}
-
-enum CapitalizationStyle {
-    case uppercased
-    case lowercased
-}
-
-enum UtilityKey {
-    case globe
-    case symbols
-    case delete
-    case `return`
-}
-
 enum KeyboardHapticEvent {
     case tap
     case drag
@@ -86,9 +55,6 @@ final class KeyboardViewModel: ObservableObject {
 
     // MARK: - State
 
-    @Published var activeLayer: KeyboardLayer = .lower
-    @Published var isCapsLockActive: Bool = false
-    @Published var isManualShift: Bool = false
     /// Current width of the keyboard's containing view.
     /// Updated by the controller in `viewWillLayoutSubviews()` so that
     /// SwiftUI re-evaluates layout after orientation changes (Bug #92).
@@ -102,7 +68,6 @@ final class KeyboardViewModel: ObservableObject {
     @Published var currentMode: KeyboardMode?
     /// Name of the currently active mode in the data-driven definition.
     @Published var activeModeName: String = ModeNames.main
-    var locale: Locale
 
     // MARK: - Data-Driven Pipeline State (internal for extension access)
 
@@ -163,10 +128,8 @@ final class KeyboardViewModel: ObservableObject {
 
     // MARK: - Private State
 
-    private var layout: KeyboardLayout
     let sharedDefaults: UserDefaults
     let shouldPersistSettings: Bool
-    var actionHandler: ((KeyboardAction) -> Void)?
     var isSpaceDragging = false
     var spaceDragResidual: CGFloat = 0
     var isDeleteDragging = false
@@ -175,7 +138,6 @@ final class KeyboardViewModel: ObservableObject {
     private var settingsCancellables = Set<AnyCancellable>()
 
     init(
-        layout: KeyboardLayout? = nil,
         userDefaults: UserDefaults? = nil,
         shouldPersistSettings: Bool = true
     ) {
@@ -188,21 +150,6 @@ final class KeyboardViewModel: ObservableObject {
         hapticSettings = HapticSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
         layoutSettings = LayoutSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
         hapticManager = HapticFeedbackManager(settings: hapticSettings)
-
-        // Load layout based on selected language or use provided layout
-        if let providedLayout = layout {
-            self.layout = providedLayout
-            // If a specific layout is provided, use German locale as default
-            // (This is mainly for testing)
-            locale = Locale(identifier: "de_DE")
-        } else {
-            let selectedLanguage = LanguageSettings.shared.selectedLanguage
-            // Read numpad style from UserDefaults (default to phone style)
-            let numpadStyleRaw = defaults.string(forKey: Self.numpadStyleKey) ?? NumpadStyle.phone.rawValue
-            let numpadStyle = NumpadStyle(rawValue: numpadStyleRaw) ?? .phone
-            self.layout = KeyboardLayout.layout(for: selectedLanguage, numpadStyle: numpadStyle)
-            locale = selectedLanguage.locale
-        }
 
         // Forward settings changes to trigger objectWillChange on this ViewModel
         hapticSettings.objectWillChange
@@ -280,61 +227,6 @@ final class KeyboardViewModel: ObservableObject {
         // Delegate to extracted settings classes - eliminates duplicate code
         hapticSettings.reload()
         layoutSettings.reload()
-
-        // Reload language if it changed
-        reloadLanguage()
-    }
-
-    private func reloadLanguage() {
-        // Read language ID directly from UserDefaults to catch changes from host app
-        let languageId = sharedDefaults.string(forKey: SettingsKey.selectedLanguageId.rawValue) ?? LanguageSettings.detectSystemLanguage()
-
-        if languageId != locale.identifier {
-            // Notify SwiftUI that we're about to change the model
-            objectWillChange.send()
-
-            if let newLanguage = LanguageConfig.language(withId: languageId) {
-                // Read numpad style from UserDefaults (default to phone style)
-                let numpadStyleRaw = sharedDefaults.string(forKey: Self.numpadStyleKey) ?? NumpadStyle.phone.rawValue
-                let numpadStyle = NumpadStyle(rawValue: numpadStyleRaw) ?? .phone
-                layout = KeyboardLayout.layout(for: newLanguage, numpadStyle: numpadStyle)
-                locale = newLanguage.locale
-                // Reset to lower layer when language changes
-                activeLayer = .lower
-                isCapsLockActive = false
-                isManualShift = false
-            }
-        }
-    }
-
-    var rows: [[MessagEaseKey]] {
-        layout.rows(for: activeLayer)
-    }
-
-    var symbolToggleLabel: String {
-        switch activeLayer {
-        case .lower, .upper:
-            "123"
-        case .numbers, .symbols:
-            "ABC"
-        }
-    }
-
-    var isSymbolsToggleActive: Bool {
-        switch activeLayer {
-        case .numbers, .symbols:
-            true
-        default:
-            false
-        }
-    }
-
-    var spaceColumnSpan: Int {
-        activeLayer == .numbers ? 2 : 3
-    }
-
-    func bindActionHandler(_ handler: @escaping (KeyboardAction) -> Void) {
-        actionHandler = handler
     }
 
     // MARK: - Haptic Feedback (delegated to HapticFeedbackManager)

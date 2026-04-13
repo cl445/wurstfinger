@@ -28,7 +28,7 @@ struct AppStoreScreenshotView: View {
             textInputBar
 
             // Keyboard at the bottom
-            KeyboardRootView(viewModel: viewModel)
+            DataDrivenKeyboardRootView(viewModel: viewModel)
                 .frame(maxWidth: .infinity)
                 .accessibilityIdentifier("screenshotKeyboard")
         }
@@ -172,17 +172,20 @@ struct AppStoreScreenshotView: View {
             languageSettings.selectedLanguageId = forcedLanguage
         }
 
-        // Set keyboard layer
+        // Load definition for the selected language
+        viewModel.loadDefinition(for: languageSettings.selectedLanguageId)
+
+        // Set keyboard mode
         if let forcedLayer = env["FORCE_LAYER"] {
             switch forcedLayer {
             case "numbers":
-                viewModel.setLayer(.numbers)
+                viewModel.switchToMode(ModeNames.numeric)
             case "symbols":
-                viewModel.setLayer(.symbols)
+                viewModel.switchToMode(ModeNames.symbols)
             case "upper":
-                viewModel.setLayer(.upper)
+                viewModel.switchToMode(ModeNames.shifted)
             case "lower":
-                viewModel.setLayer(.lower)
+                viewModel.switchToMode(ModeNames.main)
             default:
                 break
             }
