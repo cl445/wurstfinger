@@ -469,7 +469,7 @@ struct TelexMiddlewareTests {
         #expect(spy.deletes == 0)
     }
 
-    @Test func emptyDocumentContextPassesThrough() {
+    @Test func nilDocumentContextPassesThrough() {
         let spy = Spy()
         spy.context = nil
         let (pipe, sink) = pipeline(

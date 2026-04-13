@@ -70,6 +70,7 @@ struct TelexMiddleware: ActionMiddleware {
             // larger than the visible lookback) so a buggy rule table cannot
             // delete unrelated text before the forwarded commit.
             guard (1 ... chars.count).contains(deleteCount) else {
+                assertionFailure("Telex digraph returned invalid deleteCount=\(deleteCount) for lookback size \(chars.count)")
                 next(context)
                 return
             }
