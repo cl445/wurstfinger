@@ -24,7 +24,9 @@ import SwiftUI
 struct KeyboardGridView: View {
     let arrangement: GridArrangement
     let keys: [String: KeyConfig]
-    let onGesture: (KeyConfig, GestureType) -> Void
+    let onGesture: (KeyConfig, GestureType, Bool) -> Void
+    var onTouchDown: (() -> Void)?
+    var onSlide: ((KeyConfig, SlidePhase) -> Void)?
 
     var body: some View {
         Grid(
@@ -52,8 +54,13 @@ struct KeyboardGridView: View {
     @ViewBuilder
     private func cellContent(for placement: KeyPlacement) -> some View {
         if let key = keys[placement.keyId] {
-            KeyView(key: key, onGesture: onGesture)
-                .gridCellColumns(placement.widthMultiplier)
+            KeyView(
+                key: key,
+                onGesture: onGesture,
+                onTouchDown: { onTouchDown?() },
+                onSlide: onSlide
+            )
+            .gridCellColumns(placement.widthMultiplier)
         } else {
             // Missing key in pool — render an empty placeholder so the
             // surrounding layout still aligns. PR 12 will surface this as

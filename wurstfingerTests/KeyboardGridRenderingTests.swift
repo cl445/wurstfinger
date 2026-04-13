@@ -167,7 +167,7 @@ struct KeyViewStyleTests {
             style: .primary,
             tapCycleActions: nil
         )
-        let view = KeyView(key: key) { _, _ in }
+        let view = KeyView(key: key, onGesture: { _, _, _ in }, onTouchDown: {})
         #expect(view.primaryLabel == "midLeft")
     }
 
@@ -186,7 +186,7 @@ struct KeyViewStyleTests {
             style: .primary,
             tapCycleActions: nil
         )
-        let view = KeyView(key: key) { _, _ in }
+        let view = KeyView(key: key, onGesture: { _, _, _ in }, onTouchDown: {})
         #expect(view.primaryLabel == "d")
     }
 
@@ -205,7 +205,7 @@ struct KeyViewStyleTests {
             style: .utility,
             tapCycleActions: nil
         )
-        let view = KeyView(key: key) { _, _ in }
+        let view = KeyView(key: key, onGesture: { _, _, _ in }, onTouchDown: {})
         #expect(view.accessibilityLabel == "Löschen")
     }
 }

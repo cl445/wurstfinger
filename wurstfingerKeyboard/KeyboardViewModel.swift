@@ -86,9 +86,9 @@ final class KeyboardViewModel: ObservableObject {
 
     // MARK: - State
 
-    @Published private(set) var activeLayer: KeyboardLayer = .lower
-    @Published private(set) var isCapsLockActive: Bool = false
-    @Published private(set) var isManualShift: Bool = false
+    @Published var activeLayer: KeyboardLayer = .lower
+    @Published var isCapsLockActive: Bool = false
+    @Published var isManualShift: Bool = false
     /// Current width of the keyboard's containing view.
     /// Updated by the controller in `viewWillLayoutSubviews()` so that
     /// SwiftUI re-evaluates layout after orientation changes (Bug #92).
@@ -99,10 +99,24 @@ final class KeyboardViewModel: ObservableObject {
     /// reliably distinguish portrait from landscape on their own.
     @Published private(set) var isLandscape: Bool = false
     /// The currently active data-driven keyboard mode (PR 9+).
-    /// `nil` while the legacy `KeyboardLayout` path is in use; PR 12 will
-    /// populate this from `KeyboardRegistry` and remove the legacy path.
     @Published var currentMode: KeyboardMode?
-    private var locale: Locale
+    /// Name of the currently active mode in the data-driven definition.
+    @Published var activeModeName: String = ModeNames.main
+    var locale: Locale
+
+    // MARK: - Data-Driven Pipeline State (internal for extension access)
+
+    var currentDefinition: KeyboardDefinition?
+    var resolverChain: GestureResolverChain?
+    var returnSwipeResolverChain: GestureResolverChain?
+    var pipeline: ActionPipeline?
+    weak var textInputTarget: TextInputTarget?
+    var onAdvanceToNextInputMode: (() -> Void)?
+    var onDismissKeyboard: (() -> Void)?
+    var lastSwitchModeTime: Date?
+    var lastSwitchModeTarget: String?
+    /// Locale used by the pipeline (set from definition, separate from legacy locale).
+    var pipelineLocale: Locale?
 
     // MARK: - Settings (delegated to extracted classes)
 
@@ -150,13 +164,13 @@ final class KeyboardViewModel: ObservableObject {
     // MARK: - Private State
 
     private var layout: KeyboardLayout
-    private let sharedDefaults: UserDefaults
-    private let shouldPersistSettings: Bool
-    private var actionHandler: ((KeyboardAction) -> Void)?
-    private var isSpaceDragging = false
-    private var spaceDragResidual: CGFloat = 0
-    private var isDeleteDragging = false
-    private var deleteDragResidual: CGFloat = 0
+    let sharedDefaults: UserDefaults
+    let shouldPersistSettings: Bool
+    var actionHandler: ((KeyboardAction) -> Void)?
+    var isSpaceDragging = false
+    var spaceDragResidual: CGFloat = 0
+    var isDeleteDragging = false
+    var deleteDragResidual: CGFloat = 0
     private var userDefaultsObserver: NSObjectProtocol?
     private var settingsCancellables = Set<AnyCancellable>()
 
@@ -252,6 +266,16 @@ final class KeyboardViewModel: ObservableObject {
         currentMode?.arrangement(for: currentContext)
     }
 
+    /// The active mode resolved from the current definition and mode name.
+    var activeModeFromDefinition: KeyboardMode? {
+        currentDefinition?.mode(activeModeName)
+    }
+
+    /// Exposes haptic tap to the pipeline extension.
+    func triggerHapticTap() {
+        hapticManager.tap()
+    }
+
     func reloadSettings() {
         // Delegate to extracted settings classes - eliminates duplicate code
         hapticSettings.reload()
@@ -313,176 +337,6 @@ final class KeyboardViewModel: ObservableObject {
         actionHandler = handler
     }
 
-    func displayText(for key: MessagEaseKey) -> String {
-        switch activeLayer {
-        case .lower:
-            key.center.lowercased()
-        case .upper:
-            key.center.uppercased()
-        case .numbers, .symbols:
-            key.center
-        }
-    }
-
-    func handleKeyTap(_ key: MessagEaseKey) {
-        guard let output = key.character(for: .center, on: activeLayer) else { return }
-        insertText(output)
-    }
-
-    func handleKeySwipe(_ key: MessagEaseKey, direction: KeyboardDirection) {
-        if direction == .center {
-            handleKeyTap(key)
-            return
-        }
-
-        guard let output = key.output(for: direction) else {
-            // No output defined for this direction - do nothing
-            return
-        }
-
-        perform(output)
-    }
-
-    func handleKeySwipeReturn(_ key: MessagEaseKey, direction: KeyboardDirection) {
-        guard direction != .center else {
-            handleKeyTap(key)
-            return
-        }
-
-        if let output = key.output(for: direction, returning: true) {
-            perform(output)
-        } else if let fallback = key.output(for: direction) {
-            perform(fallback)
-        }
-        // No output defined - do nothing
-    }
-
-    func handleCircularGesture(for key: MessagEaseKey, direction: KeyboardCircularDirection) {
-        // Try to get circular output from the key
-        // First tries requested direction, then opposite direction
-        // If neither is defined, does nothing
-        if let output = key.circularOutput(for: direction) {
-            perform(output)
-        }
-        // If no output is defined, do nothing (no fallback to tap)
-    }
-
-    func handleSpace() {
-        actionHandler?(.space)
-    }
-
-    func handleDelete() {
-        actionHandler?(.deleteBackward)
-    }
-
-    func handleReturn() {
-        actionHandler?(.newline)
-    }
-
-    func handleAdvanceToNextInputMode() {
-        actionHandler?(.advanceToNextInputMode)
-    }
-
-    func handleDismissKeyboard() {
-        actionHandler?(.dismissKeyboard)
-    }
-
-    func handleGlobeSwipe(direction: KeyboardDirection) {
-        switch direction {
-        case .left:
-            handleAdvanceToNextInputMode()
-        case .down:
-            handleDismissKeyboard()
-        default:
-            // Center and other directions reserved for future use (e.g., emoji)
-            break
-        }
-    }
-
-    func toggleShift() {
-        switch activeLayer {
-        case .lower:
-            setShiftState(active: true)
-        case .upper:
-            setShiftState(active: false)
-        case .numbers, .symbols:
-            setLayer(.lower)
-        }
-    }
-
-    func toggleSymbols() {
-        switch activeLayer {
-        case .lower, .upper:
-            setLayer(.numbers)
-        case .numbers, .symbols:
-            setLayer(.lower)
-        }
-    }
-
-    /// Handle swipe gestures on the symbols toggle key (123/ABC)
-    /// - Up: Copy
-    /// - Up-Right: Cut
-    /// - Down: Paste
-    /// - Other directions: Toggle symbols
-    func handleSymbolsKeySwipe(_ direction: KeyboardDirection) {
-        switch direction {
-        case .up:
-            actionHandler?(.copy)
-        case .upRight:
-            actionHandler?(.cut)
-        case .down:
-            actionHandler?(.paste)
-        default:
-            toggleSymbols()
-        }
-    }
-
-    func setLayer(_ layer: KeyboardLayer) {
-        activeLayer = layer
-        if layer != .upper {
-            isManualShift = false
-        }
-    }
-
-    private func setShiftState(active: Bool) {
-        if active {
-            // If shift is already active, activate caps-lock
-            if activeLayer == .upper && !isCapsLockActive {
-                isCapsLockActive = true
-                isManualShift = false
-            } else {
-                // First activation - temporary shift
-                isCapsLockActive = false
-                activeLayer = .upper
-                isManualShift = true
-            }
-        } else {
-            // Deactivate shift/caps-lock
-            isCapsLockActive = false
-            isManualShift = false
-            activeLayer = .lower
-        }
-    }
-
-    private func resolvedText(_ value: String) -> String {
-        switch activeLayer {
-        case .upper:
-            value.uppercased(with: locale)
-        default:
-            value
-        }
-    }
-
-    /// Returns the locale for the current keyboard language
-    func currentLocale() -> Locale {
-        locale
-    }
-
-    /// Vietnamese Telex input is active when the selected language is Vietnamese
-    var isTelexActive: Bool {
-        locale.language.languageCode?.identifier == "vi"
-    }
-
     // MARK: - Haptic Feedback (delegated to HapticFeedbackManager)
 
     /// Haptic feedback for key touch-down — called by button views on first contact
@@ -490,135 +344,7 @@ final class KeyboardViewModel: ObservableObject {
         hapticManager.tap()
     }
 
-    private func feedbackDrag() {
+    func feedbackDrag() {
         hapticManager.drag()
-    }
-
-    private func insertText(_ value: String) {
-        performTextInsertion(value)
-    }
-
-    /// For testing: simulates the text insertion flow without haptic feedback
-    func simulateTextInsertion(_ value: String) {
-        performTextInsertion(value)
-    }
-
-    private func performTextInsertion(_ value: String) {
-        let resolvedValue = resolvedText(value)
-        // Deactivate one-shot shift BEFORE the handler, so auto-cap reactivation
-        // by the handler (e.g. after ¿/¡) is not stomped
-        if activeLayer == .upper && !isCapsLockActive {
-            setLayer(.lower)
-        }
-        actionHandler?(.insert(resolvedValue))
-    }
-
-    private func perform(_ output: MessagEaseOutput) {
-        switch output {
-        case let .text(value):
-            insertText(value)
-        case let .toggleShift(on):
-            setShiftState(active: on)
-        case .toggleSymbols:
-            toggleSymbols()
-        case let .capitalizeWord(uppercased):
-            actionHandler?(.capitalizeWord(uppercased ? .uppercased : .lowercased))
-        case let .compose(trigger, _):
-            actionHandler?(.compose(trigger: trigger))
-        case .cycleAccents:
-            actionHandler?(.cycleAccents)
-        }
-    }
-
-    func toggleUtilityColumnPosition() {
-        utilityColumnLeading.toggle()
-        if shouldPersistSettings {
-            sharedDefaults.set(utilityColumnLeading, forKey: SettingsKey.utilityColumnLeading.rawValue)
-        }
-    }
-
-    func handleUtilityCircularGesture(_ key: UtilityKey, direction _: KeyboardCircularDirection) {
-        switch key {
-        case .globe:
-            toggleUtilityColumnPosition()
-        default:
-            break
-        }
-    }
-
-    func beginSpaceDrag() {
-        isSpaceDragging = true
-        spaceDragResidual = 0
-    }
-
-    func updateSpaceDrag(deltaX: CGFloat) {
-        guard isSpaceDragging, deltaX != 0 else { return }
-
-        spaceDragResidual += deltaX
-
-        while spaceDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
-            actionHandler?(.moveCursor(offset: -1))
-            feedbackDrag()
-            spaceDragResidual += KeyboardConstants.SpaceGestures.dragStep
-        }
-
-        while spaceDragResidual >= KeyboardConstants.SpaceGestures.dragStep {
-            actionHandler?(.moveCursor(offset: 1))
-            feedbackDrag()
-            spaceDragResidual -= KeyboardConstants.SpaceGestures.dragStep
-        }
-    }
-
-    func endSpaceDrag() {
-        isSpaceDragging = false
-        spaceDragResidual = 0
-    }
-
-    // MARK: - Discrete Cursor Movement
-
-    func handleDiscreteSpaceSwipe(forward: Bool) {
-        actionHandler?(.moveCursor(offset: forward ? 1 : -1))
-        feedbackDrag()
-    }
-
-    func handleDiscreteSpaceReturnSwipe(forward: Bool) {
-        actionHandler?(.moveCursorByWord(forward: forward))
-        feedbackDrag()
-    }
-
-    var cursorMovementStyle: CursorMovementStyle {
-        let raw = sharedDefaults.string(forKey: SettingsKey.cursorMovementStyle.rawValue)
-            ?? CursorMovementStyle.continuous.rawValue
-        return CursorMovementStyle(rawValue: raw) ?? .continuous
-    }
-
-    func beginDeleteDrag() {
-        isDeleteDragging = true
-        deleteDragResidual = 0
-    }
-
-    func updateDeleteDrag(deltaX: CGFloat) {
-        guard isDeleteDragging, deltaX != 0 else { return }
-
-        deleteDragResidual += deltaX
-
-        // Drag left = delete backward
-        while deleteDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
-            actionHandler?(.deleteBackward)
-            feedbackDrag()
-            deleteDragResidual += KeyboardConstants.SpaceGestures.dragStep
-        }
-
-        // Drag right = delete forward
-        while deleteDragResidual >= KeyboardConstants.SpaceGestures.dragStep {
-            actionHandler?(.deleteForward)
-            feedbackDrag()
-            deleteDragResidual -= KeyboardConstants.SpaceGestures.dragStep
-        }
-    }
-
-    func endDeleteDrag() {
-        isDeleteDragging = false
-        deleteDragResidual = 0
     }
 }
