@@ -220,25 +220,8 @@ extension KeyboardViewModel {
         return true
     }
 
-    /// Handles `.switchMode` actions with double-tap → capsLock detection.
+    /// Handles `.switchMode` actions.
     func handleSwitchMode(_ targetMode: String) {
-        let now = Date()
-        let doubleTapInterval: TimeInterval = 0.4
-
-        if let lastTime = lastSwitchModeTime,
-           let lastTarget = lastSwitchModeTarget,
-           lastTarget == targetMode,
-           now.timeIntervalSince(lastTime) < doubleTapInterval {
-            if let dtMode = currentDefinition?.mode(targetMode)?.doubleTapMode {
-                switchToMode(dtMode)
-                lastSwitchModeTime = nil
-                lastSwitchModeTarget = nil
-                return
-            }
-        }
-
-        lastSwitchModeTime = now
-        lastSwitchModeTarget = targetMode
         switchToMode(targetMode)
     }
 

@@ -39,7 +39,6 @@ struct DataDrivenKeyboardRootView: View {
                 KeyboardGridView(
                     arrangement: arrangement,
                     keys: mode.keys,
-                    activeModeName: viewModel.activeModeName,
                     onGesture: { key, gesture, isReturn in
                         viewModel.handleGesture(gesture, keyId: key.id, isReturn: isReturn)
                     },

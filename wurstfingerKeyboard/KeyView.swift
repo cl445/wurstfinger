@@ -17,7 +17,6 @@ import SwiftUI
 /// swipe/tap/circular gesture classification.
 struct KeyView: View {
     let key: KeyConfig
-    let activeModeName: String
     let onGesture: (KeyConfig, GestureType, Bool) -> Void
     var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
@@ -52,6 +51,7 @@ struct KeyView: View {
             label
             hintOverlay
         }
+        .frame(height: effectiveKeyHeight)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(.isButton)
@@ -136,20 +136,13 @@ struct KeyView: View {
         style == .utility
     }
 
-    /// Background fill for the key. Highlighted styles get a slightly tinted
-    /// background to distinguish them from primary keys.
+    /// Background fill for the key. All keys share the same background,
+    /// matching the old uniform `secondarySystemBackground` / `tertiarySystemFill`.
     static func backgroundColor(for style: KeyStyle, active: Bool = false) -> Color {
         if active {
-            return Color(.systemGray3)
+            return Color(.tertiarySystemFill)
         }
-        switch style {
-        case .primary, .accent:
-            return Color(.systemGray5)
-        case .secondary:
-            return Color(.systemGray6)
-        case .utility, .spacebar:
-            return Color(.systemGray4)
-        }
+        return Color(.secondarySystemBackground)
     }
 
     // MARK: - Gesture Selection
@@ -210,15 +203,6 @@ struct KeyView: View {
         .swipeDownRight: .bottomTrailing,
     ]
 
-    /// Returns true if the binding switches to the mode we're already in —
-    /// these hints are hidden because the action is a no-op.
-    private func isSwitchToCurrentMode(_ binding: KeyBinding) -> Bool {
-        if case let .switchMode(target) = binding.action {
-            return target == activeModeName
-        }
-        return false
-    }
-
     /// Maps certain key actions to SF Symbol names for hint rendering.
     /// Matches the old GlobeKeyHintOverlay / SymbolsKeyHintOverlay icons.
     private static func hintIcon(for action: KeyAction) -> String? {
@@ -271,8 +255,8 @@ struct KeyView: View {
 
             ForEach(Array(key.bindings.keys), id: \.self) { gesture in
                 if let binding = key.bindings[gesture],
-                   let alignment = Self.hintAlignments[gesture],
-                   !isSwitchToCurrentMode(binding) {
+                   !binding.label.isEmpty,
+                   let alignment = Self.hintAlignments[gesture] {
                     hintContent(for: binding)
                         .fixedSize()
                         .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
@@ -287,13 +271,29 @@ struct KeyView: View {
         .allowsHitTesting(false)
     }
 
+    /// Whether the icon is a "globe-style" hint (globe, dismiss) that gets
+    /// larger, bolder styling vs. a "symbols-style" hint (copy, paste, cut).
+    private static func isGlobeStyleIcon(for action: KeyAction) -> Bool {
+        switch action {
+        case .advanceToNextInputMode, .dismissKeyboard: true
+        default: false
+        }
+    }
+
     @ViewBuilder
     private func hintContent(for binding: KeyBinding) -> some View {
         if let iconName = Self.hintIcon(for: binding.action) {
-            // SF Symbol for utility actions (copy, paste, cut, dismiss)
-            Image(systemName: iconName)
-                .font(.system(size: scaledHintFontSize * 0.6, weight: .regular))
-                .foregroundStyle(Color.secondary.opacity(0.45))
+            if Self.isGlobeStyleIcon(for: binding.action) {
+                // Globe / dismiss: larger, bolder (old GlobeKeyHintOverlay)
+                Image(systemName: iconName)
+                    .font(.system(size: scaledHintFontSize * 0.75, weight: .medium))
+                    .foregroundStyle(Color.primary.opacity(0.5))
+            } else {
+                // Copy / paste / cut: smaller, lighter (old SymbolsKeyHintOverlay)
+                Image(systemName: iconName)
+                    .font(.system(size: scaledHintFontSize * 0.6, weight: .regular))
+                    .foregroundStyle(Color.secondary.opacity(0.45))
+            }
         } else {
             // Text hint — letters get higher prominence than symbols
             let isLetter = binding.label.first?.isLetter ?? false

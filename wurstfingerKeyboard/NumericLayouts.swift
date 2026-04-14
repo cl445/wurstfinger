@@ -48,7 +48,22 @@ enum NumericLayouts {
 
     private static func backToMain(label: String) -> KeyConfig {
         KeyConfig.utility(
-            UtilitySlot.symbols, label: label, action: .switchMode(ModeNames.main)
+            UtilitySlot.symbols, label: label, action: .switchMode(ModeNames.main),
+            swipeMode: .eightWay,
+            swipes: [
+                .swipeUp: KeyBinding(
+                    label: "copy", action: .copy, category: .utility,
+                    returnAction: nil, accessibilityLabel: "Kopieren"
+                ),
+                .swipeUpRight: KeyBinding(
+                    label: "cut", action: .cut, category: .utility,
+                    returnAction: nil, accessibilityLabel: "Ausschneiden"
+                ),
+                .swipeDown: KeyBinding(
+                    label: "paste", action: .paste, category: .utility,
+                    returnAction: nil, accessibilityLabel: "Einsetzen"
+                ),
+            ]
         )
     }
 

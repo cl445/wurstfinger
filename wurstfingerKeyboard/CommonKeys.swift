@@ -148,7 +148,7 @@ enum CommonKeys {
 
         GridSlot.topRight: [
             .swipeUpRight: KeyBinding(
-                label: "⏎", action: .commitText("\n"), category: nil,
+                label: "", action: .commitText("\n"), category: nil,
                 returnAction: .commitText("\n"), accessibilityLabel: nil
             ),
             .swipeDownRight: KeyBinding(
@@ -291,7 +291,7 @@ enum CommonKeys {
                 returnAction: .commitText("›"), accessibilityLabel: nil
             ),
             .swipeDownRight: KeyBinding(
-                label: "⎵", action: .commitText(" "), category: nil,
+                label: "", action: .commitText(" "), category: nil,
                 returnAction: .commitText(" "), accessibilityLabel: nil
             ),
             .swipeDownLeft: KeyBinding(

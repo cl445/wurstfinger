@@ -119,14 +119,36 @@ struct ViewModelModeTests {
         #expect(target.events.contains(.insertText("A")))
     }
 
-    @Test func doubleTapShiftActivatesCapsLock() {
+    @Test func shiftWhileShiftedActivatesCapsLock() {
         let (vm, _) = makeViewModel()
         // First shift → shifted
         vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
         #expect(vm.activeModeName == ModeNames.shifted)
-        // Second shift within interval → capsLock
+        // Second shift while shifted → capsLock (direct switchMode)
         vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
         #expect(vm.activeModeName == ModeNames.capsLock)
+    }
+
+    @Test func capsLockSwipeUpStaysInCapsLock() {
+        let (vm, _) = makeViewModel()
+        // Activate capsLock
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.capsLock)
+        // Third swipe up — stays in capsLock (no-op)
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.capsLock)
+    }
+
+    @Test func capsLockSwipeDownGoesToMain() {
+        let (vm, _) = makeViewModel()
+        // Activate capsLock
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.capsLock)
+        // Swipe down → back to main
+        vm.handleGesture(.swipeDown, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.main)
     }
 
     @Test func capsLockStaysAfterLetter() {
@@ -146,6 +168,50 @@ struct ViewModelModeTests {
         // Tap symbols key → numeric mode
         vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
         #expect(vm.activeModeName == ModeNames.numeric)
+    }
+
+    @Test func shiftLabelChangesPerMode() throws {
+        let (vm, _) = makeViewModel()
+
+        // Main mode: midRight swipeUp label = "⇧"
+        let mainMode = try #require(vm.activeModeFromDefinition)
+        let mainMidRight = try #require(mainMode.keys[GridSlot.midRight])
+        #expect(mainMidRight.bindings[.swipeUp]?.label == "⇧")
+
+        // Shifted mode: midRight swipeUp label = "⇧"
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.shifted)
+        let shiftedMode = try #require(vm.activeModeFromDefinition)
+        let shiftedMidRight = try #require(shiftedMode.keys[GridSlot.midRight])
+        #expect(shiftedMidRight.bindings[.swipeUp]?.label == "⇧")
+
+        // CapsLock mode: midRight swipeUp label = "⇪"
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.capsLock)
+        let capsMode = try #require(vm.activeModeFromDefinition)
+        let capsMidRight = try #require(capsMode.keys[GridSlot.midRight])
+        #expect(capsMidRight.bindings[.swipeUp]?.label == "⇪")
+    }
+
+    @Test func shiftDownHiddenInMainVisibleInShiftedAndCapsLock() throws {
+        let (vm, _) = makeViewModel()
+
+        // Main mode: midRight swipeDown is removed (hidden, matching old behavior)
+        let mainMode = try #require(vm.activeModeFromDefinition)
+        let mainMidRight = try #require(mainMode.keys[GridSlot.midRight])
+        #expect(mainMidRight.bindings[.swipeDown] == nil)
+
+        // Shifted mode: swipeDown "⇩" is visible
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        let shiftedMode = try #require(vm.activeModeFromDefinition)
+        let shiftedMidRight = try #require(shiftedMode.keys[GridSlot.midRight])
+        #expect(shiftedMidRight.bindings[.swipeDown]?.label == "⇩")
+
+        // CapsLock mode: swipeDown "⇩" is visible
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        let capsMode = try #require(vm.activeModeFromDefinition)
+        let capsMidRight = try #require(capsMode.keys[GridSlot.midRight])
+        #expect(capsMidRight.bindings[.swipeDown]?.label == "⇩")
     }
 }
 

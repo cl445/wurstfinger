@@ -202,15 +202,34 @@ struct GridKeyboardFactoryTests {
         #expect(shifted.autoTransitions[.letter] == ModeNames.main)
     }
 
-    @Test func shiftedModeDoubleTapToCapsLock() throws {
+    @Test func shiftedSwipeUpPointsToCapsLock() throws {
         let shifted = try #require(Self.testLayout.modes[ModeNames.shifted])
-        #expect(shifted.doubleTapMode == ModeNames.capsLock)
+        let midRight = try #require(shifted.keys[GridSlot.midRight])
+        let swipeUp = try #require(midRight.bindings[.swipeUp])
+        #expect(swipeUp.action == .switchMode(ModeNames.capsLock))
+        #expect(swipeUp.label == "⇧")
+    }
+
+    @Test func capsLockSwipeUpIsNoOpWithCapsLockIcon() throws {
+        let capsLock = try #require(Self.testLayout.modes[ModeNames.capsLock])
+        let midRight = try #require(capsLock.keys[GridSlot.midRight])
+        let swipeUp = try #require(midRight.bindings[.swipeUp])
+        #expect(swipeUp.action == .switchMode(ModeNames.capsLock))
+        #expect(swipeUp.label == "⇪")
     }
 
     @Test func capsLockHasNoAutoTransitions() throws {
         let capsLock = try #require(Self.testLayout.modes[ModeNames.capsLock])
         #expect(capsLock.autoTransitions.isEmpty)
         #expect(capsLock.doubleTapMode == nil)
+    }
+
+    @Test func mainModeShiftLabelIsUpArrow() throws {
+        let main = try #require(Self.testLayout.modes[ModeNames.main])
+        let midRight = try #require(main.keys[GridSlot.midRight])
+        let swipeUp = try #require(midRight.bindings[.swipeUp])
+        #expect(swipeUp.action == .switchMode(ModeNames.shifted))
+        #expect(swipeUp.label == "⇧")
     }
 
     @Test func shiftedLettersAreUppercased() throws {
