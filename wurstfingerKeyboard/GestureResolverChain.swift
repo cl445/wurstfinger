@@ -27,8 +27,7 @@ struct GestureResolverChain {
     }
 
     /// Convenience that returns the resolved `KeyAction` directly, or
-    /// `.none` if nothing matched. Mirrors the legacy gesture-handler shape
-    /// so PR 11/12 can swap call sites without translation.
+    /// `.none` if nothing matched.
     func resolveAction(keyId: String, gesture: GestureType, in mode: KeyboardMode) -> KeyAction {
         resolve(keyId: keyId, gesture: gesture, in: mode)?.action ?? .none
     }

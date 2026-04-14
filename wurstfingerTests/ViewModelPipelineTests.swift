@@ -2,9 +2,9 @@
 //  ViewModelPipelineTests.swift
 //  WurstfingerTests
 //
-//  End-to-end tests for the data-driven gesture → resolver → pipeline → text
-//  flow wired in PR 12. Each test constructs a real KeyboardViewModel with a
-//  real KeyboardDefinition and a mock TextInputTarget, then exercises
+//  End-to-end tests for the gesture → resolver → pipeline → text flow.
+//  Each test constructs a real KeyboardViewModel with a real
+//  KeyboardDefinition and a mock TextInputTarget, then exercises
 //  handleGesture/handleSlide to verify observable side effects.
 //
 
@@ -196,7 +196,7 @@ struct ViewModelModeTests {
     @Test func shiftDownHiddenInMainVisibleInShiftedAndCapsLock() throws {
         let (vm, _) = makeViewModel()
 
-        // Main mode: midRight swipeDown is removed (hidden, matching old behavior)
+        // Main mode: midRight swipeDown is removed (only shown in shifted/capsLock)
         let mainMode = try #require(vm.activeModeFromDefinition)
         let mainMidRight = try #require(mainMode.keys[GridSlot.midRight])
         #expect(mainMidRight.bindings[.swipeDown] == nil)

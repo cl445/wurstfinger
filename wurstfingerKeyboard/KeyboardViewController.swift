@@ -92,7 +92,7 @@ final class KeyboardViewController: UIInputViewController {
         super.viewWillLayoutSubviews()
         view.backgroundColor = .clear
         // Update viewModel with current width so SwiftUI re-renders after
-        // orientation changes that happen while the keyboard is backgrounded (Bug #92).
+        // orientation changes that happen while the keyboard is backgrounded.
         viewModel.updateViewWidth(view.bounds.width)
         viewModel.updateOrientation(isLandscape: detectIsLandscape())
     }

@@ -25,7 +25,7 @@ enum NumericLayouts {
                 ["7", "8", "9"],
             ],
             // Phone layout swaps digits but keeps circular gestures at their
-            // physical positions (matching the old swapCenterAndCircular logic).
+            // physical positions.
             circularOverrides: phoneCircularOverrides,
             backToAlphaLabel: backToAlphaLabel
         )
@@ -102,7 +102,7 @@ enum NumericLayouts {
     // MARK: - Circular Gestures
 
     /// Circular gesture bindings for the classic (7-8-9) layout.
-    /// Both directions produce the same symbol, matching old MessagEase behavior.
+    /// Both directions produce the same symbol.
     private static let classicCircularOverrides: [String: KeyBinding] = [
         GridSlot.topLeft: KeyBinding(
             label: "∫", action: .commitText("∫"), category: nil,
@@ -144,7 +144,7 @@ enum NumericLayouts {
 
     /// Phone layout: digits 1-2-3 sit in the top row (physical position of
     /// 7-8-9 in classic), so circular gestures follow the digit, not the
-    /// position — matching the old swapCenterAndCircular behavior.
+    /// position, not the grid slot.
     private static let phoneCircularOverrides: [String: KeyBinding] = [
         // Top row (digits 1-2-3 here, circular from classic bottom row)
         GridSlot.topLeft: classicCircularOverrides[GridSlot.bottomLeft]!,

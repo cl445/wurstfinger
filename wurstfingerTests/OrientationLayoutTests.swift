@@ -2,7 +2,7 @@
 //  OrientationLayoutTests.swift
 //  wurstfingerTests
 //
-//  Tests for Bug #92: Keyboard misalignment after orientation change while backgrounded.
+//  Tests for keyboard misalignment after orientation change while backgrounded.
 //
 
 import Combine
@@ -11,7 +11,7 @@ import Testing
 @testable import WurstfingerApp
 
 struct OrientationLayoutTests {
-    /// Bug #92: When the keyboard is backgrounded during an orientation change
+    /// When the keyboard is backgrounded during an orientation change
     /// (e.g. user opens camera in landscape), the keyboard layout uses stale
     /// screen bounds on return because no @Published property triggers a SwiftUI
     /// re-render. viewWillAppear is NOT called when the keyboard was already

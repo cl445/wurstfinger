@@ -53,8 +53,7 @@ enum GridKeyboardFactory {
                 var bindings = CommonKeys.defaultSlotBindings[slotId] ?? [:]
 
                 // Apply language-specific overrides (replace default binding for that gesture).
-                // Letters get an auto-generated uppercase return action matching the
-                // old KeyboardLayout behavior (return swipe = uppercase).
+                // Letters get an auto-generated uppercase return action.
                 if let overrides = directionalOverrides[slotId] {
                     for (gesture, text) in overrides {
                         let isLetter = text.unicodeScalars.contains { CharacterSet.letters.contains($0) }
@@ -106,8 +105,7 @@ enum GridKeyboardFactory {
             .with(name: ModeNames.capsLock)
             .replacingShiftUpBinding(label: "⇪", action: .switchMode(ModeNames.capsLock))
 
-        // 6. Main mode — remove shift-down hint from midRight.
-        //    Old code hid "⇩" in lower layer; we replicate by omitting the binding.
+        // 6. Main mode — remove shift-down hint from midRight (only shown in shifted/capsLock).
         let mainMode = baseMode
             .removingBinding(keyId: GridSlot.midRight, gesture: .swipeDown)
 

@@ -2,7 +2,7 @@
 //  KeyboardConstants.swift
 //  Wurstfinger
 //
-//  Extracted from KeyboardLayout.swift for PR 13 legacy cleanup.
+//  Shared constants for keyboard dimensions, font sizes, and gesture thresholds.
 //
 
 import CoreGraphics

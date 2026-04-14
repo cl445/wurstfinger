@@ -43,10 +43,8 @@ protocol TextInputTarget: AnyObject {
 /// Non-text actions (mode switches, haptics, capitalization) pass through
 /// unchanged so later middlewares can react to them.
 ///
-/// Actions that require more than a direct target call (delete-forward,
-/// word-cursor movement, copy/paste, capitalize-word) are intentionally
-/// left to the view controller in PR 11 — they will migrate in PR 12 when
-/// the pipeline is wired end-to-end.
+/// Advanced actions (delete-forward, word-cursor movement, copy/paste,
+/// capitalize-word) are handled by `AdvancedTextMiddleware`.
 struct TextInputMiddleware: ActionMiddleware {
     /// Host-provided text input target resolver.
     ///

@@ -57,14 +57,14 @@ final class KeyboardViewModel: ObservableObject {
 
     /// Current width of the keyboard's containing view.
     /// Updated by the controller in `viewWillLayoutSubviews()` so that
-    /// SwiftUI re-evaluates layout after orientation changes (Bug #92).
+    /// SwiftUI re-evaluates layout after orientation changes.
     @Published private(set) var viewWidth: CGFloat = UIScreen.main.bounds.width
     /// Whether the device is currently in a landscape orientation.
     /// Driven by the controller via `updateOrientation(isLandscape:)`, since
     /// the keyboard's own bounds are always shorter than tall and cannot
     /// reliably distinguish portrait from landscape on their own.
     @Published private(set) var isLandscape: Bool = false
-    /// The currently active data-driven keyboard mode (PR 9+).
+    /// The currently active keyboard mode.
     @Published var currentMode: KeyboardMode?
     /// Name of the currently active mode in the data-driven definition.
     @Published var activeModeName: String = ModeNames.main
@@ -78,7 +78,7 @@ final class KeyboardViewModel: ObservableObject {
     weak var textInputTarget: TextInputTarget?
     var onAdvanceToNextInputMode: (() -> Void)?
     var onDismissKeyboard: (() -> Void)?
-    /// Locale used by the pipeline (set from definition, separate from legacy locale).
+    /// Locale used by the pipeline (set from the keyboard definition).
     var pipelineLocale: Locale?
 
     // MARK: - Settings (delegated to extracted classes)
@@ -191,7 +191,7 @@ final class KeyboardViewModel: ObservableObject {
         self.isLandscape = isLandscape
     }
 
-    // MARK: - Data-Driven Arrangement Selection (PR 9)
+    // MARK: - Arrangement Selection
 
     /// Determines the active arrangement context based on orientation and
     /// the user's utility-column preference.
@@ -206,7 +206,7 @@ final class KeyboardViewModel: ObservableObject {
     }
 
     /// The grid arrangement for `currentMode` and `currentContext`.
-    /// Returns `nil` while the legacy layout path is still in use.
+    /// Returns `nil` if no definition is loaded.
     var currentArrangement: GridArrangement? {
         currentMode?.arrangement(for: currentContext)
     }
