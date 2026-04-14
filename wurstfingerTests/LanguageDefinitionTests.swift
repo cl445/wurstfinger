@@ -115,22 +115,28 @@ struct NumericLayoutTests {
         #expect(phone.keys[UtilitySlot.symbols]?.bindings[.tap]?.action == .switchMode(ModeNames.main))
     }
 
-    @Test func spaceKeyOutputsZero() {
+    @Test func zeroKeyIsStandaloneDigit() {
         let phone = NumericLayouts.phone()
-        #expect(phone.keys[UtilitySlot.space]?.bindings[.tap]?.action == .commitText("0"))
+        #expect(phone.keys[GridSlot.zero]?.bindings[.tap]?.action == .commitText("0"))
+    }
+
+    @Test func spaceKeyIsSpace() {
+        let phone = NumericLayouts.phone()
+        #expect(phone.keys[UtilitySlot.space]?.bindings[.tap]?.action == .space)
     }
 
     @Test func hasSymbolSwipes() {
         let phone = NumericLayouts.phone()
-        // Spot-check a few symbol swipes
+        // Spot-check symbol swipes inherited from CommonKeys.defaultSlotBindings
         #expect(phone.keys[GridSlot.bottomCenter]?.bindings[.swipeDown]?.action == .commitText("."))
-        #expect(phone.keys[GridSlot.bottomCenter]?.bindings[.swipeLeft]?.action == .commitText(","))
+        #expect(phone.keys[GridSlot.bottomCenter]?.bindings[.swipeDownLeft]?.action == .commitText(","))
     }
 
     @Test func phoneHasAllGridAndUtilityKeys() {
         let phone = NumericLayouts.phone()
         let expectedKeys = Set(
             GridSlot.allSlots.flatMap(\.self) + [
+                GridSlot.zero,
                 UtilitySlot.globe,
                 UtilitySlot.delete,
                 UtilitySlot.return,

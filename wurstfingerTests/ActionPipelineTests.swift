@@ -227,6 +227,7 @@ struct ComposeMiddlewareTests {
             compose: { previous, trigger in
                 (previous == "a" && trigger == "¨") ? "ä" : nil
             },
+            cycleAccent: { _ in nil },
             previousCharacter: { "a" },
             deletePreviousCharacter: { deleted += 1 }
         )
@@ -243,6 +244,7 @@ struct ComposeMiddlewareTests {
         var deleted = 0
         let middleware = ComposeMiddleware(
             compose: { _, _ in nil },
+            cycleAccent: { _ in nil },
             previousCharacter: { "x" },
             deletePreviousCharacter: { deleted += 1 }
         )
@@ -258,6 +260,7 @@ struct ComposeMiddlewareTests {
     @Test func insertsTriggerWhenNoPreviousCharacter() {
         let middleware = ComposeMiddleware(
             compose: { _, _ in "should not run" },
+            cycleAccent: { _ in nil },
             previousCharacter: { "" },
             deletePreviousCharacter: { Issue.record("Must not delete without previous char") }
         )
@@ -269,18 +272,53 @@ struct ComposeMiddlewareTests {
         #expect(sink.received.first?.action == .commitText("'"))
     }
 
-    @Test func passesThroughNonComposeActions() {
+    @Test func passesThroughNonTextActions() {
         let middleware = ComposeMiddleware(
-            compose: { _, _ in Issue.record("compose must not run for non-.compose actions"); return nil },
+            compose: { _, _ in Issue.record("compose must not run for non-text actions"); return nil },
+            cycleAccent: { _ in nil },
             previousCharacter: { "a" },
-            deletePreviousCharacter: { Issue.record("delete must not run for non-.compose actions") }
+            deletePreviousCharacter: { Issue.record("delete must not run for non-text actions") }
         )
         let sink = RecordingMiddleware()
         let pipeline = ActionPipeline(middlewares: [middleware, sink])
 
-        pipeline.process(PipelineFixtures.context(action: .commitText("a")))
+        pipeline.process(PipelineFixtures.context(action: .deleteBackward))
 
-        #expect(sink.received.first?.action == .commitText("a"))
+        #expect(sink.received.first?.action == .deleteBackward)
+    }
+
+    @Test func composeTriggerProducesComposedCharacter() {
+        var deleted = 0
+        let middleware = ComposeMiddleware(
+            compose: { previous, trigger in
+                (previous == "a" && trigger == "°") ? "å" : nil
+            },
+            cycleAccent: { _ in nil },
+            previousCharacter: { "a" },
+            deletePreviousCharacter: { deleted += 1 }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .compose(trigger: "°")))
+
+        #expect(sink.received.first?.action == .commitText("å"))
+        #expect(deleted == 1)
+    }
+
+    @Test func passesThroughCommitTextWithoutComposeCheck() {
+        let middleware = ComposeMiddleware(
+            compose: { _, _ in Issue.record("compose must not run for commitText"); return nil },
+            cycleAccent: { _ in nil },
+            previousCharacter: { "a" },
+            deletePreviousCharacter: { Issue.record("Must not delete for commitText") }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .commitText("!")))
+
+        #expect(sink.received.first?.action == .commitText("!"))
     }
 }
 
@@ -737,6 +775,7 @@ struct PipelineIntegrationTests {
         var deleted = 0
         let compose = ComposeMiddleware(
             compose: { prev, trig in (prev == "a" && trig == "¨") ? "ä" : nil },
+            cycleAccent: { _ in nil },
             previousCharacter: { "a" },
             deletePreviousCharacter: { deleted += 1 }
         )
@@ -770,6 +809,7 @@ struct PipelineIntegrationTests {
         let haptic = HapticMiddleware(trigger: { _ in steps.append("haptic") })
         let compose = ComposeMiddleware(
             compose: { _, _ in nil },
+            cycleAccent: { _ in nil },
             previousCharacter: { "" },
             deletePreviousCharacter: {}
         )

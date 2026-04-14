@@ -14,27 +14,60 @@ import SwiftUI
 struct DataDrivenKeyboardRootView: View {
     @ObservedObject var viewModel: KeyboardViewModel
 
+    /// Optional width override used by InteractiveKeyboardPreview.
+    /// When nil, falls back to `viewModel.viewWidth`.
+    var overrideWidth: CGFloat?
+
+    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
+    private var keyboardStyle: KeyboardStyle = .classic
+
     var body: some View {
-        if let mode = viewModel.activeModeFromDefinition,
-           let arrangement = mode.arrangement(for: viewModel.currentContext) {
-            KeyboardGridView(
-                arrangement: arrangement,
-                keys: mode.keys,
-                onGesture: { key, gesture, isReturn in
-                    viewModel.handleGesture(gesture, keyId: key.id, isReturn: isReturn)
-                },
-                onTouchDown: {
-                    viewModel.feedbackTap()
-                },
-                onSlide: { key, phase in
-                    viewModel.handleSlide(key, phase: phase)
-                }
-            )
-            .scaleEffect(viewModel.keyboardScale)
-            .frame(maxWidth: .infinity)
-        } else {
-            // Fallback: show nothing while definition loads.
-            // This should only flash for a single frame at most.
+        let screenBounds = DeviceLayoutUtils.screenBounds
+        let screenShortestSide = min(screenBounds.width, screenBounds.height)
+        let currentWidth = overrideWidth ?? viewModel.viewWidth
+        let baseWidth = min(currentWidth, screenShortestSide)
+        let scaledWidth = baseWidth * viewModel.keyboardScale
+        let availableSpace = currentWidth - scaledWidth
+        let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
+
+        ZStack {
+            keyboardBackground
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if let mode = viewModel.activeModeFromDefinition,
+               let arrangement = mode.arrangement(for: viewModel.currentContext) {
+                KeyboardGridView(
+                    arrangement: arrangement,
+                    keys: mode.keys,
+                    activeModeName: viewModel.activeModeName,
+                    onGesture: { key, gesture, isReturn in
+                        viewModel.handleGesture(gesture, keyId: key.id, isReturn: isReturn)
+                    },
+                    onTouchDown: {
+                        viewModel.feedbackTap()
+                    },
+                    onSlide: { key, phase in
+                        viewModel.handleSlide(key, phase: phase)
+                    }
+                )
+                .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
+                .padding(.top, KeyboardConstants.Layout.verticalPaddingTop)
+                .padding(.bottom, KeyboardConstants.Layout.verticalPaddingBottom)
+                .frame(width: scaledWidth)
+                .offset(x: horizontalOffset)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Background
+
+    @ViewBuilder
+    private var keyboardBackground: some View {
+        switch keyboardStyle {
+        case .classic:
+            Color(.systemBackground)
+        case .liquidGlass:
             Color.clear
         }
     }

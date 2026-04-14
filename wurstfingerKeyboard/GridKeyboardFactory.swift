@@ -52,12 +52,18 @@ enum GridKeyboardFactory {
                 // Start with shared defaults for this slot
                 var bindings = CommonKeys.defaultSlotBindings[slotId] ?? [:]
 
-                // Apply language-specific overrides (replace default binding for that gesture)
+                // Apply language-specific overrides (replace default binding for that gesture).
+                // Letters get an auto-generated uppercase return action matching the
+                // old KeyboardLayout behavior (return swipe = uppercase).
                 if let overrides = directionalOverrides[slotId] {
                     for (gesture, text) in overrides {
+                        let isLetter = text.unicodeScalars.contains { CharacterSet.letters.contains($0) }
+                        let returnAction: KeyAction? = isLetter
+                            ? .commitText(text.uppercased(with: locale))
+                            : nil
                         bindings[gesture] = KeyBinding(
                             label: text, action: .commitText(text),
-                            category: nil, returnAction: nil, accessibilityLabel: nil
+                            category: nil, returnAction: returnAction, accessibilityLabel: nil
                         )
                     }
                 }

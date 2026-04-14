@@ -17,12 +17,29 @@ import SwiftUI
 /// swipe/tap/circular gesture classification.
 struct KeyView: View {
     let key: KeyConfig
+    let activeModeName: String
     let onGesture: (KeyConfig, GestureType, Bool) -> Void
     var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
     var spanRatio: CGFloat = 1.0
 
     @State private var isActive = false
+
+    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
+    private var keyboardStyle: KeyboardStyle = .classic
+
+    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
+    private var keyboardScale: Double = DeviceLayoutUtils.defaultKeyboardScale
+
+    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
+    private var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
+
+    /// Maps emoji labels to SF Symbol names for utility keys.
+    private static let sfSymbolMap: [String: String] = [
+        "🌐": "globe",
+        "⌫": "delete.backward",
+        "↵": "return",
+    ]
 
     var body: some View {
         keyContent
@@ -52,8 +69,8 @@ struct KeyView: View {
                 onGestureRecognized: { classification in
                     onGesture(key, classification.gesture, classification.isReturn)
                 },
-                onTouchDown: { onTouchDown?() },
-                aspectRatio: spanRatio,
+                onTouchDown: onTouchDown,
+                aspectRatio: keyAspectRatio,
                 isActive: $isActive
             ))
         }
@@ -77,9 +94,8 @@ struct KeyView: View {
         return primaryLabel
     }
 
-    /// Font size derived from the visual style. Pure function so it can be
-    /// unit tested without rendering the SwiftUI tree.
-    static func fontSize(for style: KeyStyle) -> CGFloat {
+    /// Base font size derived from the visual style.
+    static func baseFontSize(for style: KeyStyle) -> CGFloat {
         switch style {
         case .primary:
             KeyboardConstants.FontSizes.mainLabelBaseSize
@@ -92,6 +108,27 @@ struct KeyView: View {
         case .accent:
             KeyboardConstants.FontSizes.mainLabelBaseSize
         }
+    }
+
+    /// Effective key height accounting for both keyboard scale and aspect ratio,
+    /// matching the old `KeyboardRootView` calculation.
+    private var effectiveKeyHeight: CGFloat {
+        KeyboardConstants.Calculations.keyHeight(aspectRatio: keyAspectRatio) * keyboardScale
+    }
+
+    /// Scaled font size proportional to effective key height, matching the old
+    /// `scaledMainLabelSize(for:)` behavior in KeyboardRootView.
+    private var scaledFontSize: CGFloat {
+        let base = Self.baseFontSize(for: key.style)
+        let scaled = base * (effectiveKeyHeight / KeyboardConstants.FontSizes.mainLabelReferenceHeight)
+        return min(max(scaled, KeyboardConstants.FontSizes.mainLabelMinSize), KeyboardConstants.FontSizes.mainLabelMaxSize)
+    }
+
+    /// Scaled hint font size proportional to effective key height.
+    private var scaledHintFontSize: CGFloat {
+        let base = KeyboardConstants.FontSizes.hintBaseSize
+        let scaled = base * (effectiveKeyHeight / KeyboardConstants.FontSizes.hintReferenceHeight)
+        return min(max(scaled, KeyboardConstants.FontSizes.hintMinSize), KeyboardConstants.FontSizes.hintMaxSize)
     }
 
     /// Whether the key should be rendered as an icon-only key (no text label).
@@ -125,15 +162,37 @@ struct KeyView: View {
 
     // MARK: - View Construction
 
+    @ViewBuilder
     private var background: some View {
-        RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
-            .fill(Self.backgroundColor(for: key.style, active: isActive))
+        let shape = RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
+        switch keyboardStyle {
+        case .classic:
+            shape.fill(Self.backgroundColor(for: key.style, active: isActive))
+        case .liquidGlass:
+            shape.fill(.bar)
+                .overlay(
+                    shape.strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
+                )
+        }
     }
 
+    @ViewBuilder
     private var label: some View {
-        Text(primaryLabel)
-            .font(.system(size: Self.fontSize(for: key.style), weight: .regular))
-            .foregroundColor(.primary)
+        if key.style == .spacebar {
+            // Spacebar renders blank, matching the old SpaceKeyButton behavior.
+            EmptyView()
+        } else {
+            let font = Font.system(size: scaledFontSize, weight: .semibold, design: .rounded)
+            if let sfName = Self.sfSymbolMap[primaryLabel] {
+                Image(systemName: sfName)
+                    .font(font)
+                    .foregroundColor(.primary)
+            } else {
+                Text(primaryLabel)
+                    .font(font)
+                    .foregroundColor(.primary)
+            }
+        }
     }
 
     // MARK: - Hint Overlay
@@ -151,20 +210,72 @@ struct KeyView: View {
         .swipeDownRight: .bottomTrailing,
     ]
 
+    /// Returns true if the binding switches to the mode we're already in —
+    /// these hints are hidden because the action is a no-op.
+    private func isSwitchToCurrentMode(_ binding: KeyBinding) -> Bool {
+        if case let .switchMode(target) = binding.action {
+            return target == activeModeName
+        }
+        return false
+    }
+
+    /// Maps certain key actions to SF Symbol names for hint rendering.
+    /// Matches the old GlobeKeyHintOverlay / SymbolsKeyHintOverlay icons.
+    private static func hintIcon(for action: KeyAction) -> String? {
+        switch action {
+        case .advanceToNextInputMode: "globe"
+        case .dismissKeyboard: "keyboard.chevron.compact.down"
+        case .copy: "doc.on.doc"
+        case .paste: "doc.on.clipboard"
+        case .cut: "scissors"
+        default: nil
+        }
+    }
+
+    /// Directional edge padding for hint labels, matching the old
+    /// `KeyboardDirection.edgePadding(horizontal:vertical:)` behavior.
+    /// Padding is only applied on the edges where the hint is aligned,
+    /// keeping hints close to the key border and away from the center label.
+    private static func hintEdgePadding(
+        for gesture: GestureType, horizontal: CGFloat, vertical: CGFloat
+    ) -> EdgeInsets {
+        switch gesture {
+        case .swipeUp:
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: 0)
+        case .swipeDown:
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: 0)
+        case .swipeLeft:
+            EdgeInsets(top: 0, leading: horizontal, bottom: 0, trailing: 0)
+        case .swipeRight:
+            EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: horizontal)
+        case .swipeUpLeft:
+            EdgeInsets(top: vertical, leading: horizontal, bottom: 0, trailing: 0)
+        case .swipeUpRight:
+            EdgeInsets(top: vertical, leading: 0, bottom: 0, trailing: horizontal)
+        case .swipeDownLeft:
+            EdgeInsets(top: 0, leading: horizontal, bottom: vertical, trailing: 0)
+        case .swipeDownRight:
+            EdgeInsets(top: 0, leading: 0, bottom: vertical, trailing: horizontal)
+        default:
+            EdgeInsets()
+        }
+    }
+
     private var hintOverlay: some View {
         GeometryReader { proxy in
             let size = proxy.size
+            // Scale padding proportionally with font size, matching old KeyHintOverlay
+            let fontRatio = scaledHintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize
+            let hPad = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * fontRatio
+            let vPad = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
+
             ForEach(Array(key.bindings.keys), id: \.self) { gesture in
                 if let binding = key.bindings[gesture],
-                   let alignment = Self.hintAlignments[gesture] {
-                    Text(binding.label)
-                        .font(.system(
-                            size: KeyboardConstants.FontSizes.hintBaseSize,
-                            weight: .regular
-                        ))
-                        .foregroundColor(.secondary)
+                   let alignment = Self.hintAlignments[gesture],
+                   !isSwitchToCurrentMode(binding) {
+                    hintContent(for: binding)
                         .fixedSize()
-                        .padding(4)
+                        .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
                         .frame(
                             width: size.width,
                             height: size.height,
@@ -174,5 +285,31 @@ struct KeyView: View {
             }
         }
         .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private func hintContent(for binding: KeyBinding) -> some View {
+        if let iconName = Self.hintIcon(for: binding.action) {
+            // SF Symbol for utility actions (copy, paste, cut, dismiss)
+            Image(systemName: iconName)
+                .font(.system(size: scaledHintFontSize * 0.6, weight: .regular))
+                .foregroundStyle(Color.secondary.opacity(0.45))
+        } else {
+            // Text hint — letters get higher prominence than symbols
+            let isLetter = binding.label.first?.isLetter ?? false
+            Text(binding.label)
+                .font(.system(
+                    size: scaledHintFontSize,
+                    weight: isLetter ? .medium : .regular,
+                    design: .rounded
+                ))
+                .foregroundStyle(
+                    isLetter
+                        ? Color.primary.opacity(0.65)
+                        : Color.secondary.opacity(0.55)
+                )
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+        }
     }
 }

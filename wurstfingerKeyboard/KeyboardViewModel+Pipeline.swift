@@ -71,10 +71,13 @@ extension KeyboardViewModel {
             self?.triggerHapticTap()
         }))
 
-        // 2. Compose
+        // 2. Compose + Cycle Accents
         middlewares.append(ComposeMiddleware(
             compose: { previous, trigger in
                 ComposeEngine.compose(previous: previous, trigger: trigger)
+            },
+            cycleAccent: { character in
+                ComposeEngine.cycleAccent(for: character)
             },
             previousCharacter: { [weak self] in
                 self?.textInputTarget?.documentContextBeforeInput?.last.map(String.init) ?? ""
@@ -157,6 +160,12 @@ extension KeyboardViewModel {
     func handleGesture(_ gesture: GestureType, keyId: String, isReturn: Bool) {
         guard let mode = activeModeFromDefinition else { return }
 
+        // Circular gestures: try requested direction, fall back to opposite.
+        if gesture == .circularClockwise || gesture == .circularCounterclockwise {
+            handleCircular(keyId: keyId, in: mode, gesture: gesture)
+            return
+        }
+
         let chain = isReturn ? returnSwipeResolverChain : resolverChain
         guard let binding = chain?.resolve(keyId: keyId, gesture: gesture, in: mode) else { return }
 
@@ -174,6 +183,41 @@ extension KeyboardViewModel {
             mode: activeModeName
         )
         pipeline?.process(context)
+    }
+
+    /// Handles a circular gesture. Checks for an explicit binding first
+    /// (e.g. superscripts on the numeric layer), then falls back to
+    /// inserting the uppercase center character, then tries the opposite
+    /// direction's binding.
+    private func handleCircular(keyId: String, in mode: KeyboardMode, gesture: GestureType) {
+        guard let key = mode.key(for: keyId) else { return }
+        let opposite: GestureType = gesture == .circularClockwise
+            ? .circularCounterclockwise : .circularClockwise
+
+        // 1. Explicit binding for this direction
+        if let binding = key.bindings[gesture] {
+            dispatchAction(binding.action)
+            return
+        }
+        // 2. Uppercase of center character (letter keys)
+        if tryCircularUppercase(key: key) { return }
+        // 3. Fallback to opposite direction's binding
+        if let binding = key.bindings[opposite] {
+            dispatchAction(binding.action)
+        }
+    }
+
+    /// Tries to insert the uppercase center character.
+    @discardableResult
+    private func tryCircularUppercase(key: KeyConfig) -> Bool {
+        guard let tapBinding = key.bindings[.tap],
+              case let .commitText(text) = tapBinding.action,
+              text.first?.isLetter == true
+        else { return false }
+        let locale = pipelineLocale ?? Locale.current
+        let uppercased = text.uppercased(with: locale)
+        dispatchAction(.commitText(uppercased))
+        return true
     }
 
     /// Handles `.switchMode` actions with double-tap → capsLock detection.

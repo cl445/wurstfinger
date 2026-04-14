@@ -13,17 +13,16 @@ import Testing
 @Suite(.serialized)
 struct ReturnSwipeLanguageTests {
     /// French layout: return swipe up on center key (O) should produce the
-    /// regular swipe character "h" (no special returnAction is defined for
-    /// language-specific directional overrides in the data-driven pipeline).
-    @Test func frenchReturnSwipeUpOnCenterKeyProducesH() {
+    /// uppercase version "H" (letter overrides auto-generate uppercase return actions).
+    @Test func frenchReturnSwipeUpOnCenterKeyProducesUppercaseH() {
         let (vm, target) = makeViewModel(languageId: "fr_FR")
 
         vm.handleGesture(.swipeUp, keyId: GridSlot.center, isReturn: true)
 
         let inserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
         #expect(
-            inserts.last == "h",
-            "French return swipe up on center key should produce h (regular swipe fallback), got \(inserts.last ?? "nil")"
+            inserts.last == "H",
+            "French return swipe up on center key should produce H (uppercase), got \(inserts.last ?? "nil")"
         )
     }
 

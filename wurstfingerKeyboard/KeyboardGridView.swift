@@ -20,6 +20,7 @@ import SwiftUI
 struct KeyboardGridView: View {
     let arrangement: GridArrangement
     let keys: [String: KeyConfig]
+    let activeModeName: String
     let onGesture: (KeyConfig, GestureType, Bool) -> Void
     var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
@@ -52,6 +53,7 @@ struct KeyboardGridView: View {
         if let key = keys[placement.keyId] {
             KeyView(
                 key: key,
+                activeModeName: activeModeName,
                 onGesture: onGesture,
                 onTouchDown: onTouchDown,
                 onSlide: onSlide,

@@ -19,6 +19,8 @@ enum GridSlot {
     static let bottomLeft = "bottomLeft"
     static let bottomCenter = "bottomCenter"
     static let bottomRight = "bottomRight"
+    /// Extra slot for the "0" digit key (only used in numeric mode).
+    static let zero = "zero"
 
     /// Ordered list of all slots (for mapping from centerCharacters arrays)
     static let allSlots: [[String]] = [
