@@ -153,7 +153,7 @@ struct KeyView: View {
     private var hintOverlay: some View {
         GeometryReader { proxy in
             let size = proxy.size
-            ForEach(Array(Self.hintAlignments.keys), id: \.self) { gesture in
+            ForEach(Array(key.bindings.keys), id: \.self) { gesture in
                 if let binding = key.bindings[gesture],
                    let alignment = Self.hintAlignments[gesture] {
                     Text(binding.label)
