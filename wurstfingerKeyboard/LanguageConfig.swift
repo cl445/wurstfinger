@@ -34,13 +34,18 @@ extension LanguageConfig {
     /// sorted alphabetically by name. This is the single source of truth --
     /// adding a new `KeyboardDefinition` to `LanguageDefinitions.all`
     /// automatically surfaces it here.
-    static let allLanguages: [LanguageConfig] = KeyboardRegistry.available.map { info in
-        LanguageConfig(
-            id: info.id,
-            name: info.title,
-            locale: Locale(identifier: info.localeIdentifier)
-        )
-    }.sorted { $0.name < $1.name }
+    ///
+    /// Computed on every access so callers always see the current registry
+    /// state (important for tests that mutate `KeyboardRegistry`).
+    static var allLanguages: [LanguageConfig] {
+        KeyboardRegistry.available.map { info in
+            LanguageConfig(
+                id: info.id,
+                name: info.title,
+                locale: Locale(identifier: info.localeIdentifier)
+            )
+        }.sorted { $0.name < $1.name }
+    }
 
     /// Get language config by ID.
     static func language(withId id: String) -> LanguageConfig? {
