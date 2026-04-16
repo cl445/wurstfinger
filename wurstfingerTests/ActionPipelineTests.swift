@@ -295,6 +295,9 @@ private final class MockTextInputTarget: TextInputTarget {
 
     var events: [Event] = []
     var documentContextBeforeInput: String?
+    var documentContextAfterInput: String?
+    var selectedText: String?
+    var hasFullAccess: Bool = false
 
     func insertText(_ text: String) {
         events.append(.insertText(text))

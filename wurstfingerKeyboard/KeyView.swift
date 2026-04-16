@@ -2,7 +2,8 @@
 //  KeyView.swift
 //  Wurstfinger
 //
-//  Generic key view that renders any KeyConfig with style-based appearance.
+//  Generic key view that renders any KeyConfig with style-based appearance
+//  and full gesture recognition.
 //
 
 import SwiftUI
@@ -11,25 +12,50 @@ import SwiftUI
 ///
 /// Visual appearance is driven by `key.style`. Hints derive directly from
 /// `key.bindings`, so only the gestures actually defined on a key are shown.
-///
-/// PR 9 introduces this view as additive infrastructure. The legacy
-/// `KeyboardButton` continues to drive the existing `KeyboardRootView` until
-/// PR 12 wires the data-driven path through `KeyboardGridView`.
+/// Keys with a `slideType` (space, delete) use `SlideGestureHandler` for
+/// continuous drag tracking. All other keys use `KeyGestureRecognizer` for
+/// swipe/tap/circular gesture classification.
 struct KeyView: View {
     let key: KeyConfig
-    let onGesture: (KeyConfig, GestureType) -> Void
+    let onGesture: (KeyConfig, GestureType, Bool) -> Void
+    var onTouchDown: (() -> Void)?
+    var onSlide: ((KeyConfig, SlidePhase) -> Void)?
+    var spanRatio: CGFloat = 1.0
+
+    @State private var isActive = false
 
     var body: some View {
-        ZStack {
+        keyContent
+    }
+
+    @ViewBuilder
+    private var keyContent: some View {
+        let base = ZStack {
             background
             label
+            hintOverlay
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(.isButton)
         .contentShape(Rectangle().inset(by: -KeyboardTouchArea.padding))
-        .onTapGesture {
-            onGesture(key, .tap)
+
+        if usesSlideGesture {
+            base.modifier(SlideGestureHandler(
+                slideType: key.slideType,
+                onSlide: { phase in onSlide?(key, phase) },
+                onTouchDown: { onTouchDown?() },
+                isActive: $isActive
+            ))
+        } else {
+            base.modifier(KeyGestureRecognizer(
+                onGestureRecognized: { classification in
+                    onGesture(key, classification.gesture, classification.isReturn)
+                },
+                onTouchDown: { onTouchDown?() },
+                aspectRatio: spanRatio,
+                isActive: $isActive
+            ))
         }
     }
 
@@ -75,29 +101,78 @@ struct KeyView: View {
 
     /// Background fill for the key. Highlighted styles get a slightly tinted
     /// background to distinguish them from primary keys.
-    static func backgroundColor(for style: KeyStyle) -> Color {
+    static func backgroundColor(for style: KeyStyle, active: Bool = false) -> Color {
+        if active {
+            return Color(.systemGray3)
+        }
         switch style {
         case .primary, .accent:
-            Color(.systemGray5)
+            return Color(.systemGray5)
         case .secondary:
-            Color(.systemGray6)
+            return Color(.systemGray6)
         case .utility, .spacebar:
-            Color(.systemGray4)
+            return Color(.systemGray4)
         }
+    }
+
+    // MARK: - Gesture Selection
+
+    /// Whether this key uses slide gesture handling instead of standard
+    /// gesture classification.
+    private var usesSlideGesture: Bool {
+        key.slideType != .none
     }
 
     // MARK: - View Construction
 
     private var background: some View {
         RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
-            .fill(Self.backgroundColor(for: key.style))
+            .fill(Self.backgroundColor(for: key.style, active: isActive))
     }
 
     private var label: some View {
-        // Utility keys will switch to icon rendering in PR 12; until then
-        // both branches render the same Text, so keep a single body.
         Text(primaryLabel)
             .font(.system(size: Self.fontSize(for: key.style), weight: .regular))
             .foregroundColor(.primary)
+    }
+
+    // MARK: - Hint Overlay
+
+    /// Mapping from swipe `GestureType` to the SwiftUI `Alignment` where
+    /// the hint label should be placed.
+    private static let hintAlignments: [GestureType: Alignment] = [
+        .swipeUp: .top,
+        .swipeDown: .bottom,
+        .swipeLeft: .leading,
+        .swipeRight: .trailing,
+        .swipeUpLeft: .topLeading,
+        .swipeUpRight: .topTrailing,
+        .swipeDownLeft: .bottomLeading,
+        .swipeDownRight: .bottomTrailing,
+    ]
+
+    private var hintOverlay: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            ForEach(Array(key.bindings.keys), id: \.self) { gesture in
+                if let binding = key.bindings[gesture],
+                   let alignment = Self.hintAlignments[gesture] {
+                    Text(binding.label)
+                        .font(.system(
+                            size: KeyboardConstants.FontSizes.hintBaseSize,
+                            weight: .regular
+                        ))
+                        .foregroundColor(.secondary)
+                        .fixedSize()
+                        .padding(4)
+                        .frame(
+                            width: size.width,
+                            height: size.height,
+                            alignment: alignment
+                        )
+                }
+            }
+        }
+        .allowsHitTesting(false)
     }
 }

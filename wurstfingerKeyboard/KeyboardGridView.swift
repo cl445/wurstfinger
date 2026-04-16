@@ -12,19 +12,17 @@ import SwiftUI
 /// `gridCellColumns`, so multi-column keys (e.g. space) are supported
 /// without hardcoding any positions.
 ///
-/// PR 9 introduces this view as additive infrastructure. The legacy
-/// `KeyboardRootView` continues to render the keyboard until PR 12 swaps
-/// the rendering path over.
-///
 /// **Height-spanning keys.** SwiftUI's `Grid` does not expose a built-in
-/// `gridCellRows` modifier; row spanning is therefore tracked on the
-/// `KeyPlacement` and exposed via `gridCellSpan(for:)` for tests, while the
-/// actual visual rendering of multi-row keys is handled by PR 12 once the
-/// data-driven path replaces `KeyboardRootView`.
+/// `gridCellRows` modifier. Multi-row placements (e.g. landscape return key)
+/// are tracked in the model via `KeyPlacement.heightMultiplier` but the
+/// rendering is not yet implemented here. Currently all placements fed to
+/// this view must have `heightMultiplier == 1`.
 struct KeyboardGridView: View {
     let arrangement: GridArrangement
     let keys: [String: KeyConfig]
-    let onGesture: (KeyConfig, GestureType) -> Void
+    let onGesture: (KeyConfig, GestureType, Bool) -> Void
+    var onTouchDown: (() -> Void)?
+    var onSlide: ((KeyConfig, SlidePhase) -> Void)?
 
     var body: some View {
         Grid(
@@ -44,7 +42,7 @@ struct KeyboardGridView: View {
     private func cell(for placement: KeyPlacement) -> some View {
         assert(
             placement.heightMultiplier == 1,
-            "KeyboardGridView currently renders only single-row cells; multi-row rendering is deferred to PR 12."
+            "Multi-row rendering is not yet implemented in KeyboardGridView"
         )
         return cellContent(for: placement)
     }
@@ -52,12 +50,17 @@ struct KeyboardGridView: View {
     @ViewBuilder
     private func cellContent(for placement: KeyPlacement) -> some View {
         if let key = keys[placement.keyId] {
-            KeyView(key: key, onGesture: onGesture)
-                .gridCellColumns(placement.widthMultiplier)
+            KeyView(
+                key: key,
+                onGesture: onGesture,
+                onTouchDown: onTouchDown,
+                onSlide: onSlide,
+                spanRatio: CGFloat(placement.widthMultiplier) / CGFloat(placement.heightMultiplier)
+            )
+            .gridCellColumns(placement.widthMultiplier)
+            .gridCellAnchor(.top)
+            .id(placement.keyId)
         } else {
-            // Missing key in pool — render an empty placeholder so the
-            // surrounding layout still aligns. PR 12 will surface this as
-            // a validation error during keyboard load.
             Color.clear
                 .gridCellColumns(placement.widthMultiplier)
         }

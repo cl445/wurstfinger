@@ -24,6 +24,17 @@ protocol TextInputTarget: AnyObject {
     /// Required for lookback-based composition (e.g. Vietnamese Telex digraphs).
     /// `nil` when no context is available yet.
     var documentContextBeforeInput: String? { get }
+
+    /// Text immediately after the cursor (up to the current paragraph end).
+    /// Required for delete-forward and word-boundary movement.
+    var documentContextAfterInput: String? { get }
+
+    /// Currently selected text, if any.
+    var selectedText: String? { get }
+
+    /// Whether Full Access (Open Access) is enabled for the keyboard.
+    /// Clipboard operations require this.
+    var hasFullAccess: Bool { get }
 }
 
 /// Applies text-mutating actions (`.commitText`, `.deleteBackward`,

@@ -10,9 +10,10 @@ import SwiftUI
 import UIKit
 
 final class KeyboardViewController: UIInputViewController {
-    private var hostingController: UIHostingController<KeyboardRootView>?
+    private var hostingController: UIHostingController<AnyView>?
     private lazy var viewModel = KeyboardViewModel()
     private var heightConstraint: NSLayoutConstraint?
+    private var documentProxyTarget: DocumentProxyTarget?
 
     /// Reports the active keyboard language to iOS (shown in Settings > Keyboards).
     /// Reads directly from SharedDefaults to pick up language changes made in the host app,
@@ -34,10 +35,26 @@ final class KeyboardViewController: UIInputViewController {
         // Set background immediately to avoid flash
         view.backgroundColor = .clear
 
-        // Bind action handler first
+        // Bind legacy action handler (still used by existing SpaceKeyButton/
+        // DeleteKeyButton/KeyboardRootView until PR 13 cleanup)
         viewModel.bindActionHandler { [weak self] action in
             self?.perform(action: action)
         }
+
+        // Wire up the data-driven pipeline
+        let target = DocumentProxyTarget(controller: self)
+        documentProxyTarget = target
+        viewModel.bindTextInputTarget(target)
+        viewModel.bindViewControllerActions(
+            advanceToNextInputMode: { [weak self] in self?.advanceToNextInputMode() },
+            dismissKeyboard: { [weak self] in self?.dismissKeyboard() }
+        )
+
+        // Load the keyboard definition for the selected language
+        let languageId = SharedDefaults.store.string(
+            forKey: SettingsKey.selectedLanguageId.rawValue
+        ) ?? LanguageSettings.detectSystemLanguage()
+        viewModel.loadDefinition(for: languageId)
 
         // Configure hosting synchronously so the SwiftUI view exists
         // before viewWillAppear sets the height constraint. Deferring via
@@ -53,6 +70,11 @@ final class KeyboardViewController: UIInputViewController {
         SharedDefaults.store.set(hasFullAccess, forKey: SettingsKey.keyboardFullAccess.rawValue)
         // Reload settings every time keyboard appears
         viewModel.reloadSettings()
+        // Reload definition if language changed while keyboard was backgrounded
+        let languageId = SharedDefaults.store.string(
+            forKey: SettingsKey.selectedLanguageId.rawValue
+        ) ?? LanguageSettings.detectSystemLanguage()
+        viewModel.loadDefinition(for: languageId)
         updateKeyboardHeight()
         checkAutoCapitalization()
     }
@@ -101,8 +123,8 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func configureHosting() {
-        let rootView = KeyboardRootView(viewModel: viewModel)
-        let controller = UIHostingController(rootView: rootView)
+        let rootView = DataDrivenKeyboardRootView(viewModel: viewModel)
+        let controller = UIHostingController(rootView: AnyView(rootView))
         controller.view.translatesAutoresizingMaskIntoConstraints = false
         controller.view.backgroundColor = .clear
 
