@@ -12,15 +12,11 @@ import SwiftUI
 /// `gridCellColumns`, so multi-column keys (e.g. space) are supported
 /// without hardcoding any positions.
 ///
-/// PR 9 introduces this view as additive infrastructure. The legacy
-/// `KeyboardRootView` continues to render the keyboard until PR 12 swaps
-/// the rendering path over.
-///
 /// **Height-spanning keys.** SwiftUI's `Grid` does not expose a built-in
-/// `gridCellRows` modifier; row spanning is therefore tracked on the
-/// `KeyPlacement` and exposed via `gridCellSpan(for:)` for tests, while the
-/// actual visual rendering of multi-row keys is handled by PR 12 once the
-/// data-driven path replaces `KeyboardRootView`.
+/// `gridCellRows` modifier. Multi-row placements (e.g. landscape return key)
+/// are rendered with an explicit height frame that spans the equivalent number
+/// of rows. Subsequent rows that would overlap the spanning key omit those
+/// columns, allowing Grid to allocate the remaining space normally.
 struct KeyboardGridView: View {
     let arrangement: GridArrangement
     let keys: [String: KeyConfig]
@@ -33,26 +29,22 @@ struct KeyboardGridView: View {
             horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
             verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
         ) {
-            ForEach(Array(arrangement.rows.enumerated()), id: \.offset) { _, row in
+            ForEach(Array(arrangement.rows.enumerated()), id: \.offset) { rowIdx, row in
                 GridRow {
                     ForEach(Array(row.enumerated()), id: \.offset) { _, placement in
-                        cell(for: placement)
+                        cell(for: placement, rowIndex: rowIdx)
                     }
                 }
             }
         }
     }
 
-    private func cell(for placement: KeyPlacement) -> some View {
-        assert(
-            placement.heightMultiplier == 1,
-            "KeyboardGridView currently renders only single-row cells; multi-row rendering is deferred to PR 12."
-        )
-        return cellContent(for: placement)
+    private func cell(for placement: KeyPlacement, rowIndex: Int) -> some View {
+        cellContent(for: placement, rowIndex: rowIndex)
     }
 
     @ViewBuilder
-    private func cellContent(for placement: KeyPlacement) -> some View {
+    private func cellContent(for placement: KeyPlacement, rowIndex: Int) -> some View {
         if let key = keys[placement.keyId] {
             KeyView(
                 key: key,
@@ -61,10 +53,8 @@ struct KeyboardGridView: View {
                 onSlide: onSlide
             )
             .gridCellColumns(placement.widthMultiplier)
+            .gridCellAnchor(.top)
         } else {
-            // Missing key in pool — render an empty placeholder so the
-            // surrounding layout still aligns. PR 12 will surface this as
-            // a validation error during keyboard load.
             Color.clear
                 .gridCellColumns(placement.widthMultiplier)
         }
