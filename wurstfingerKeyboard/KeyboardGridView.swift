@@ -14,9 +14,9 @@ import SwiftUI
 ///
 /// **Height-spanning keys.** SwiftUI's `Grid` does not expose a built-in
 /// `gridCellRows` modifier. Multi-row placements (e.g. landscape return key)
-/// are rendered with an explicit height frame that spans the equivalent number
-/// of rows. Subsequent rows that would overlap the spanning key omit those
-/// columns, allowing Grid to allocate the remaining space normally.
+/// are tracked in the model via `KeyPlacement.heightMultiplier` but the
+/// rendering is not yet implemented here. Currently all placements fed to
+/// this view must have `heightMultiplier == 1`.
 struct KeyboardGridView: View {
     let arrangement: GridArrangement
     let keys: [String: KeyConfig]
@@ -40,7 +40,11 @@ struct KeyboardGridView: View {
     }
 
     private func cell(for placement: KeyPlacement) -> some View {
-        cellContent(for: placement)
+        assert(
+            placement.heightMultiplier == 1,
+            "Multi-row rendering is not yet implemented in KeyboardGridView"
+        )
+        return cellContent(for: placement)
     }
 
     @ViewBuilder
