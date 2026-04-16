@@ -12,8 +12,9 @@ import SwiftUI
 ///
 /// Visual appearance is driven by `key.style`. Hints derive directly from
 /// `key.bindings`, so only the gestures actually defined on a key are shown.
-/// Gesture recognition uses `KeyGestureRecognizer` for the same preprocessing
-/// pipeline as the legacy `KeyboardButton`.
+/// Keys with a `slideType` (space, delete) use `SlideGestureHandler` for
+/// continuous drag tracking. All other keys use `KeyGestureRecognizer` for
+/// swipe/tap/circular gesture classification.
 struct KeyView: View {
     let key: KeyConfig
     let onGesture: (KeyConfig, GestureType, Bool) -> Void
@@ -119,7 +120,7 @@ struct KeyView: View {
     /// Whether this key uses slide gesture handling instead of standard
     /// gesture classification.
     private var usesSlideGesture: Bool {
-        key.slideType != .none && onSlide != nil
+        key.slideType != .none
     }
 
     // MARK: - View Construction
