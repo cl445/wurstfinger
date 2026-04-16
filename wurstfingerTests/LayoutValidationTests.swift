@@ -10,6 +10,7 @@ import Foundation
 import Testing
 @testable import WurstfingerApp
 
+@Suite(.serialized)
 struct LayoutValidationTests {
     // MARK: - Registry & Loading
 
@@ -136,9 +137,15 @@ struct LayoutValidationTests {
             else { continue }
 
             for slotId in gridSlots {
-                guard let key = mainMode.key(for: slotId),
-                      let tapBinding = key.bindings[.tap]
-                else { continue }
+                guard let key = mainMode.key(for: slotId) else {
+                    Issue.record("Language \(info.id) missing grid key '\(slotId)'")
+                    continue
+                }
+
+                guard let tapBinding = key.bindings[.tap] else {
+                    Issue.record("Language \(info.id) key '\(slotId)' is missing a .tap binding")
+                    continue
+                }
 
                 #expect(
                     !tapBinding.label.isEmpty,

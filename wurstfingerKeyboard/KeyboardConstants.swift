@@ -54,8 +54,8 @@ enum KeyboardConstants {
         // Main label dynamic scaling
         /// Base size for main label scaling calculations.
         static let mainLabelBaseSize: CGFloat = 26
-        /// Reference key height for scaling calculations (matches KeyDimensions.height).
-        static let mainLabelReferenceHeight: CGFloat = 54
+        /// Reference key height for scaling calculations.
+        static let mainLabelReferenceHeight: CGFloat = KeyDimensions.height
         /// Minimum main label size to ensure readability.
         static let mainLabelMinSize: CGFloat = 20
         /// Maximum main label size to prevent overflow.
@@ -64,8 +64,8 @@ enum KeyboardConstants {
         // Hint label dynamic scaling
         /// Base size for hint label scaling.
         static let hintBaseSize: CGFloat = 14
-        /// Reference height for hint scaling (matches KeyDimensions.height).
-        static let hintReferenceHeight: CGFloat = 54
+        /// Reference height for hint scaling.
+        static let hintReferenceHeight: CGFloat = KeyDimensions.height
         /// Minimum hint size to ensure readability.
         static let hintMinSize: CGFloat = 10
         /// Maximum hint size to prevent visual clutter.
