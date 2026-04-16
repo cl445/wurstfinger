@@ -54,10 +54,12 @@ struct KeyboardGridView: View {
                 key: key,
                 onGesture: onGesture,
                 onTouchDown: onTouchDown,
-                onSlide: onSlide
+                onSlide: onSlide,
+                spanRatio: CGFloat(placement.widthMultiplier) / CGFloat(placement.heightMultiplier)
             )
             .gridCellColumns(placement.widthMultiplier)
             .gridCellAnchor(.top)
+            .id(placement.keyId)
         } else {
             Color.clear
                 .gridCellColumns(placement.widthMultiplier)

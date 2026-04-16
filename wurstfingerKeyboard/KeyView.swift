@@ -19,6 +19,7 @@ struct KeyView: View {
     let onGesture: (KeyConfig, GestureType, Bool) -> Void
     var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
+    var spanRatio: CGFloat = 1.0
 
     @State private var isActive = false
 
@@ -51,7 +52,7 @@ struct KeyView: View {
                     onGesture(key, classification.gesture, classification.isReturn)
                 },
                 onTouchDown: { onTouchDown?() },
-                aspectRatio: 1.0,
+                aspectRatio: spanRatio,
                 isActive: $isActive
             ))
         }
