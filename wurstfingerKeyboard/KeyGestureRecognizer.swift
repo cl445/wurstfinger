@@ -52,11 +52,20 @@ struct KeyGestureRecognizer: ViewModifier {
                         positions.append(point)
                         isActive = true
                     }
-                    .onEnded { _ in
+                    .onEnded { value in
                         defer {
                             positions.removeAll()
                             isActive = false
                         }
+                        if positions.isEmpty {
+                            positions.append(.zero)
+                        }
+                        positions.append(
+                            CGPoint(
+                                x: value.translation.width,
+                                y: value.translation.height
+                            )
+                        )
                         let classification = Self.classify(
                             positions: positions.elements,
                             aspectRatio: aspectRatio

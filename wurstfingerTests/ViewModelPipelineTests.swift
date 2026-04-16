@@ -130,11 +130,15 @@ struct ViewModelSwipeTests {
 @Suite(.serialized)
 struct ViewModelReturnSwipeTests {
     @Test func returnSwipeExecutesReturnAction() {
-        let (vm, target) = makeViewModel()
-        // swipeDownRight on topLeft in German: normal → "v",
-        // return action should produce something different (compose "v")
-        vm.handleGesture(.swipeDownRight, keyId: GridSlot.topLeft, isReturn: true)
-        #expect(!target.events.isEmpty)
+        // topLeft swipeRight: normal → "-", return → "÷"
+        let (normalVM, normalTarget) = makeViewModel()
+        normalVM.handleGesture(.swipeRight, keyId: GridSlot.topLeft, isReturn: false)
+
+        let (returnVM, returnTarget) = makeViewModel()
+        returnVM.handleGesture(.swipeRight, keyId: GridSlot.topLeft, isReturn: true)
+
+        #expect(normalTarget.events.contains(.insertText("-")))
+        #expect(returnTarget.events.contains(.insertText("÷")))
     }
 }
 

@@ -123,7 +123,7 @@ extension KeyboardViewModel {
         middlewares.append(AutoCapitalizationMiddleware(
             evaluate: { [weak self] in
                 guard let self,
-                      SharedDefaults.store.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue)
+                      sharedDefaults.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue)
                 else { return nil }
                 return AutoCapitalization.shouldCapitalize(
                     context: textInputTarget?.documentContextBeforeInput
@@ -164,6 +164,9 @@ extension KeyboardViewModel {
             handleSwitchMode(targetMode)
             return
         }
+
+        lastSwitchModeTime = nil
+        lastSwitchModeTarget = nil
 
         let context = ActionContext(
             action: binding.action,

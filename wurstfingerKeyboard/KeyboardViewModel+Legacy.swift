@@ -16,9 +16,9 @@ extension KeyboardViewModel {
     func displayText(for key: MessagEaseKey) -> String {
         switch activeLayer {
         case .lower:
-            key.center.lowercased()
+            key.center.lowercased(with: locale)
         case .upper:
-            key.center.uppercased()
+            key.center.uppercased(with: locale)
         case .numbers, .symbols:
             key.center
         }
