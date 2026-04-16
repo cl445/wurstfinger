@@ -49,7 +49,7 @@ struct KeyboardGridView: View {
             KeyView(
                 key: key,
                 onGesture: onGesture,
-                onTouchDown: { onTouchDown?() },
+                onTouchDown: onTouchDown,
                 onSlide: onSlide
             )
             .gridCellColumns(placement.widthMultiplier)

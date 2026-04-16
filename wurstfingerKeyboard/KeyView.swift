@@ -17,7 +17,7 @@ import SwiftUI
 struct KeyView: View {
     let key: KeyConfig
     let onGesture: (KeyConfig, GestureType, Bool) -> Void
-    let onTouchDown: () -> Void
+    var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
 
     @State private var isActive = false
@@ -42,7 +42,7 @@ struct KeyView: View {
             base.modifier(SlideGestureHandler(
                 slideType: key.slideType,
                 onSlide: { phase in onSlide?(key, phase) },
-                onTouchDown: onTouchDown,
+                onTouchDown: { onTouchDown?() },
                 isActive: $isActive
             ))
         } else {
@@ -50,7 +50,7 @@ struct KeyView: View {
                 onGestureRecognized: { classification in
                     onGesture(key, classification.gesture, classification.isReturn)
                 },
-                onTouchDown: onTouchDown,
+                onTouchDown: { onTouchDown?() },
                 aspectRatio: 1.0,
                 isActive: $isActive
             ))
