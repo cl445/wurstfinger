@@ -16,7 +16,7 @@ struct LanguageConfig: Identifiable {
 }
 
 extension LanguageConfig: Equatable {
-    /// Compares by id only. Safe because all instances are static constants.
+    /// Compares by id only. IDs are unique across `KeyboardRegistry.available`.
     static func == (lhs: LanguageConfig, rhs: LanguageConfig) -> Bool {
         lhs.id == rhs.id
     }
