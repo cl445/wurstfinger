@@ -29,22 +29,22 @@ struct KeyboardGridView: View {
             horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
             verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
         ) {
-            ForEach(Array(arrangement.rows.enumerated()), id: \.offset) { rowIdx, row in
+            ForEach(Array(arrangement.rows.enumerated()), id: \.offset) { _, row in
                 GridRow {
                     ForEach(Array(row.enumerated()), id: \.offset) { _, placement in
-                        cell(for: placement, rowIndex: rowIdx)
+                        cell(for: placement)
                     }
                 }
             }
         }
     }
 
-    private func cell(for placement: KeyPlacement, rowIndex: Int) -> some View {
-        cellContent(for: placement, rowIndex: rowIndex)
+    private func cell(for placement: KeyPlacement) -> some View {
+        cellContent(for: placement)
     }
 
     @ViewBuilder
-    private func cellContent(for placement: KeyPlacement, rowIndex: Int) -> some View {
+    private func cellContent(for placement: KeyPlacement) -> some View {
         if let key = keys[placement.keyId] {
             KeyView(
                 key: key,
