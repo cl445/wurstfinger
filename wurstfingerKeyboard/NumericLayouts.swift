@@ -213,7 +213,7 @@ enum NumericLayouts {
 
         let utilities = utilityKeys(backToAlphaLabel: backToAlphaLabel)
         precondition(
-            digitKeys.keys.isDisjoint(with: utilities.keys),
+            Set(digitKeys.keys).isDisjoint(with: utilities.keys),
             "digit and utility key IDs must not overlap"
         )
         let allKeys = digitKeys.merging(utilities) { digit, _ in digit }
