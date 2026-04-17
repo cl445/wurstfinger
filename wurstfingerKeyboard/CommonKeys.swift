@@ -20,11 +20,11 @@ enum CommonKeys {
             accessibilityLabel: "Tastatur wechseln"
         )
         bindings[.swipeLeft] = KeyBinding(
-            label: "🌐", action: .advanceToNextInputMode,
+            label: "", action: .advanceToNextInputMode,
             category: .utility, returnAction: nil, accessibilityLabel: nil
         )
         bindings[.swipeDown] = KeyBinding(
-            label: "⌨↓", action: .dismissKeyboard,
+            label: "", action: .dismissKeyboard,
             category: .utility, returnAction: nil,
             accessibilityLabel: "Tastatur ausblenden"
         )
@@ -51,15 +51,15 @@ enum CommonKeys {
         swipeMode: .eightWay,
         swipes: [
             .swipeUp: KeyBinding(
-                label: "copy", action: .copy, category: .utility,
+                label: "", action: .copy, category: .utility,
                 returnAction: nil, accessibilityLabel: "Kopieren"
             ),
             .swipeUpRight: KeyBinding(
-                label: "cut", action: .cut, category: .utility,
+                label: "", action: .cut, category: .utility,
                 returnAction: nil, accessibilityLabel: "Ausschneiden"
             ),
             .swipeDown: KeyBinding(
-                label: "paste", action: .paste, category: .utility,
+                label: "", action: .paste, category: .utility,
                 returnAction: nil, accessibilityLabel: "Einsetzen"
             ),
         ]

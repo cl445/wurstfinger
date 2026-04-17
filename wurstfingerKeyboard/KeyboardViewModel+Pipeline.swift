@@ -193,14 +193,14 @@ extension KeyboardViewModel {
 
         // 1. Explicit binding for this direction
         if let binding = key.bindings[gesture] {
-            dispatchAction(binding.action)
+            dispatchBinding(binding)
             return
         }
         // 2. Uppercase of center character (letter keys)
         if tryCircularUppercase(key: key) { return }
         // 3. Fallback to opposite direction's binding
         if let binding = key.bindings[opposite] {
-            dispatchAction(binding.action)
+            dispatchBinding(binding)
         }
     }
 
@@ -298,9 +298,15 @@ extension KeyboardViewModel {
         }
     }
 
-    /// Dispatches a raw action through the pipeline.
+    /// Dispatches a raw action through the pipeline (no binding context).
     func dispatchAction(_ action: KeyAction) {
         let context = ActionContext(action: action, binding: nil, mode: activeModeName)
+        pipeline?.process(context)
+    }
+
+    /// Dispatches a binding through the pipeline, preserving its category context.
+    private func dispatchBinding(_ binding: KeyBinding) {
+        let context = ActionContext(action: binding.action, binding: binding, mode: activeModeName)
         pipeline?.process(context)
     }
 }

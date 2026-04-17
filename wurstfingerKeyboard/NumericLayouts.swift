@@ -52,15 +52,15 @@ enum NumericLayouts {
             swipeMode: .eightWay,
             swipes: [
                 .swipeUp: KeyBinding(
-                    label: "copy", action: .copy, category: .utility,
+                    label: "", action: .copy, category: .utility,
                     returnAction: nil, accessibilityLabel: "Kopieren"
                 ),
                 .swipeUpRight: KeyBinding(
-                    label: "cut", action: .cut, category: .utility,
+                    label: "", action: .cut, category: .utility,
                     returnAction: nil, accessibilityLabel: "Ausschneiden"
                 ),
                 .swipeDown: KeyBinding(
-                    label: "paste", action: .paste, category: .utility,
+                    label: "", action: .paste, category: .utility,
                     returnAction: nil, accessibilityLabel: "Einsetzen"
                 ),
             ]
@@ -108,12 +108,6 @@ enum NumericLayouts {
             .swipeRight: KeyBinding(
                 label: "≥", action: .commitText("≥"), category: nil,
                 returnAction: nil, accessibilityLabel: nil
-            ),
-        ],
-        GridSlot.bottomCenter: [
-            .swipeUpRight: KeyBinding(
-                label: "'", action: .commitText("'"), category: nil,
-                returnAction: .commitText("\u{201D}"), accessibilityLabel: nil
             ),
         ],
     ]

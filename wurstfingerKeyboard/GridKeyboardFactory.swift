@@ -93,15 +93,16 @@ enum GridKeyboardFactory {
             doubleTapMode: nil
         )
 
-        // 4. Shifted — generated from base (keeps shift-down "⇩" hint).
-        //    Shift-up points directly to capsLock (label stays ⇧).
-        let shiftedMode = baseMode.generateShifted(locale: locale)
+        // Generate the shifted base once and derive both shifted + caps lock.
+        let shiftedBase = baseMode.generateShifted(locale: locale)
+
+        // 4. Shifted — shift-up points directly to capsLock (label stays ⇧).
+        let shiftedMode = shiftedBase
             .with(autoTransitions: [.letter: ModeNames.main])
             .replacingShiftUpBinding(label: "⇧", action: .switchMode(ModeNames.capsLock))
 
-        // 5. Caps lock — generated from base (keeps shift-down "⇩" hint).
-        //    Shift-up is no-op (stays in capsLock), label shows ⇪.
-        let capsLockMode = baseMode.generateShifted(locale: locale)
+        // 5. Caps lock — shift-up is no-op (stays in capsLock), label shows ⇪.
+        let capsLockMode = shiftedBase
             .with(name: ModeNames.capsLock)
             .replacingShiftUpBinding(label: "⇪", action: .switchMode(ModeNames.capsLock))
 
