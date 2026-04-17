@@ -69,7 +69,7 @@ struct KeyView: View {
                 onGestureRecognized: { classification in
                     onGesture(key, classification.gesture, classification.isReturn)
                 },
-                onTouchDown: onTouchDown,
+                onTouchDown: { onTouchDown?() },
                 aspectRatio: keyAspectRatio,
                 isActive: $isActive
             ))

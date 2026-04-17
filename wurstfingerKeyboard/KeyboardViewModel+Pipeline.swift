@@ -174,9 +174,6 @@ extension KeyboardViewModel {
             return
         }
 
-        lastSwitchModeTime = nil
-        lastSwitchModeTarget = nil
-
         let context = ActionContext(
             action: binding.action,
             binding: binding,
