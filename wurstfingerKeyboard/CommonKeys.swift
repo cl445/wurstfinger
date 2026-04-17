@@ -46,23 +46,26 @@ enum CommonKeys {
         accessibilityLabel: "Zeilenumbruch"
     )
 
+    /// Clipboard swipe bindings shared between the symbols key and numeric back-to-main key.
+    static let clipboardSwipes: [GestureType: KeyBinding] = [
+        .swipeUp: KeyBinding(
+            label: "", action: .copy, category: .utility,
+            returnAction: nil, accessibilityLabel: "Kopieren"
+        ),
+        .swipeUpRight: KeyBinding(
+            label: "", action: .cut, category: .utility,
+            returnAction: nil, accessibilityLabel: "Ausschneiden"
+        ),
+        .swipeDown: KeyBinding(
+            label: "", action: .paste, category: .utility,
+            returnAction: nil, accessibilityLabel: "Einsetzen"
+        ),
+    ]
+
     static let symbols = KeyConfig.utility(
         UtilitySlot.symbols, label: "123", action: .switchMode(ModeNames.numeric),
         swipeMode: .eightWay,
-        swipes: [
-            .swipeUp: KeyBinding(
-                label: "", action: .copy, category: .utility,
-                returnAction: nil, accessibilityLabel: "Kopieren"
-            ),
-            .swipeUpRight: KeyBinding(
-                label: "", action: .cut, category: .utility,
-                returnAction: nil, accessibilityLabel: "Ausschneiden"
-            ),
-            .swipeDown: KeyBinding(
-                label: "", action: .paste, category: .utility,
-                returnAction: nil, accessibilityLabel: "Einsetzen"
-            ),
-        ]
+        swipes: clipboardSwipes
     )
 
     static let spacebar = KeyConfig(

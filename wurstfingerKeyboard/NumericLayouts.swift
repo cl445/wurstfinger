@@ -50,20 +50,7 @@ enum NumericLayouts {
         KeyConfig.utility(
             UtilitySlot.symbols, label: label, action: .switchMode(ModeNames.main),
             swipeMode: .eightWay,
-            swipes: [
-                .swipeUp: KeyBinding(
-                    label: "", action: .copy, category: .utility,
-                    returnAction: nil, accessibilityLabel: "Kopieren"
-                ),
-                .swipeUpRight: KeyBinding(
-                    label: "", action: .cut, category: .utility,
-                    returnAction: nil, accessibilityLabel: "Ausschneiden"
-                ),
-                .swipeDown: KeyBinding(
-                    label: "", action: .paste, category: .utility,
-                    returnAction: nil, accessibilityLabel: "Einsetzen"
-                ),
-            ]
+            swipes: CommonKeys.clipboardSwipes
         )
     }
 
