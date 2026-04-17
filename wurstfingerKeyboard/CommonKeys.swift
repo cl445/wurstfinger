@@ -73,7 +73,7 @@ enum CommonKeys {
         bindings: [
             .tap: KeyBinding(
                 label: "␣", action: .space, category: .utility,
-                returnAction: nil, accessibilityLabel: nil
+                returnAction: nil, accessibilityLabel: "Leerzeichen"
             ),
         ],
         swipeMode: .none,

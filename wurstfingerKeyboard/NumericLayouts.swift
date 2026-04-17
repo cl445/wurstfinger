@@ -63,7 +63,7 @@ enum NumericLayouts {
                 category: .digit, returnAction: nil, accessibilityLabel: nil
             ),
         ],
-        swipeMode: .eightWay,
+        swipeMode: .none,
         slideType: .none,
         style: .primary,
         tapCycleActions: nil
@@ -211,7 +211,12 @@ enum NumericLayouts {
             }
         }
 
-        let allKeys = digitKeys.merging(utilityKeys(backToAlphaLabel: backToAlphaLabel)) { digit, _ in digit }
+        let utilities = utilityKeys(backToAlphaLabel: backToAlphaLabel)
+        precondition(
+            digitKeys.keys.isDisjoint(with: utilities.keys),
+            "digit and utility key IDs must not overlap"
+        )
+        let allKeys = digitKeys.merging(utilities) { digit, _ in digit }
 
         return KeyboardMode(
             name: ModeNames.numeric,
