@@ -71,10 +71,13 @@ extension KeyboardViewModel {
             self?.triggerHapticTap()
         }))
 
-        // 2. Compose
+        // 2. Compose + Cycle Accents
         middlewares.append(ComposeMiddleware(
             compose: { previous, trigger in
                 ComposeEngine.compose(previous: previous, trigger: trigger)
+            },
+            cycleAccent: { character in
+                ComposeEngine.cycleAccent(for: character)
             },
             previousCharacter: { [weak self] in
                 self?.textInputTarget?.documentContextBeforeInput?.last.map(String.init) ?? ""
@@ -157,6 +160,12 @@ extension KeyboardViewModel {
     func handleGesture(_ gesture: GestureType, keyId: String, isReturn: Bool) {
         guard let mode = activeModeFromDefinition else { return }
 
+        // Circular gestures: try requested direction, fall back to opposite.
+        if gesture == .circularClockwise || gesture == .circularCounterclockwise {
+            handleCircular(keyId: keyId, in: mode, gesture: gesture)
+            return
+        }
+
         let chain = isReturn ? returnSwipeResolverChain : resolverChain
         guard let binding = chain?.resolve(keyId: keyId, gesture: gesture, in: mode) else { return }
 
@@ -164,9 +173,6 @@ extension KeyboardViewModel {
             handleSwitchMode(targetMode)
             return
         }
-
-        lastSwitchModeTime = nil
-        lastSwitchModeTarget = nil
 
         let context = ActionContext(
             action: binding.action,
@@ -176,25 +182,43 @@ extension KeyboardViewModel {
         pipeline?.process(context)
     }
 
-    /// Handles `.switchMode` actions with double-tap → capsLock detection.
-    func handleSwitchMode(_ targetMode: String) {
-        let now = Date()
-        let doubleTapInterval: TimeInterval = 0.4
+    /// Handles a circular gesture. Checks for an explicit binding first
+    /// (e.g. superscripts on the numeric layer), then falls back to
+    /// inserting the uppercase center character, then tries the opposite
+    /// direction's binding.
+    private func handleCircular(keyId: String, in mode: KeyboardMode, gesture: GestureType) {
+        guard let key = mode.key(for: keyId) else { return }
+        let opposite: GestureType = gesture == .circularClockwise
+            ? .circularCounterclockwise : .circularClockwise
 
-        if let lastTime = lastSwitchModeTime,
-           let lastTarget = lastSwitchModeTarget,
-           lastTarget == targetMode,
-           now.timeIntervalSince(lastTime) < doubleTapInterval {
-            if let dtMode = currentDefinition?.mode(targetMode)?.doubleTapMode {
-                switchToMode(dtMode)
-                lastSwitchModeTime = nil
-                lastSwitchModeTarget = nil
-                return
-            }
+        // 1. Explicit binding for this direction
+        if let binding = key.bindings[gesture] {
+            dispatchBinding(binding)
+            return
         }
+        // 2. Uppercase of center character (letter keys)
+        if tryCircularUppercase(key: key) { return }
+        // 3. Fallback to opposite direction's binding
+        if let binding = key.bindings[opposite] {
+            dispatchBinding(binding)
+        }
+    }
 
-        lastSwitchModeTime = now
-        lastSwitchModeTarget = targetMode
+    /// Tries to insert the uppercase center character.
+    @discardableResult
+    private func tryCircularUppercase(key: KeyConfig) -> Bool {
+        guard let tapBinding = key.bindings[.tap],
+              case let .commitText(text) = tapBinding.action,
+              text.first?.isLetter == true
+        else { return false }
+        let locale = pipelineLocale ?? Locale.current
+        let uppercased = text.uppercased(with: locale)
+        dispatchAction(.commitText(uppercased))
+        return true
+    }
+
+    /// Handles `.switchMode` actions.
+    func handleSwitchMode(_ targetMode: String) {
         switchToMode(targetMode)
     }
 
@@ -274,9 +298,15 @@ extension KeyboardViewModel {
         }
     }
 
-    /// Dispatches a raw action through the pipeline.
+    /// Dispatches a raw action through the pipeline (no binding context).
     func dispatchAction(_ action: KeyAction) {
         let context = ActionContext(action: action, binding: nil, mode: activeModeName)
+        pipeline?.process(context)
+    }
+
+    /// Dispatches a binding through the pipeline, preserving its category context.
+    private func dispatchBinding(_ binding: KeyBinding) {
+        let context = ActionContext(action: binding.action, binding: binding, mode: activeModeName)
         pipeline?.process(context)
     }
 }

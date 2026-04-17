@@ -52,12 +52,18 @@ enum GridKeyboardFactory {
                 // Start with shared defaults for this slot
                 var bindings = CommonKeys.defaultSlotBindings[slotId] ?? [:]
 
-                // Apply language-specific overrides (replace default binding for that gesture)
+                // Apply language-specific overrides (replace default binding for that gesture).
+                // Letters get an auto-generated uppercase return action matching the
+                // old KeyboardLayout behavior (return swipe = uppercase).
                 if let overrides = directionalOverrides[slotId] {
                     for (gesture, text) in overrides {
+                        let isLetter = text.unicodeScalars.contains { CharacterSet.letters.contains($0) }
+                        let returnAction: KeyAction? = isLetter
+                            ? .commitText(text.uppercased(with: locale))
+                            : nil
                         bindings[gesture] = KeyBinding(
                             label: text, action: .commitText(text),
-                            category: nil, returnAction: nil, accessibilityLabel: nil
+                            category: nil, returnAction: returnAction, accessibilityLabel: nil
                         )
                     }
                 }
@@ -78,8 +84,8 @@ enum GridKeyboardFactory {
         // 2. Merge utility keys
         let allKeys = letterKeys.merging(CommonKeys.allUtilityKeys) { letter, _ in letter }
 
-        // 3. Main mode — stays active, no auto-transitions
-        let mainMode = KeyboardMode(
+        // 3. Build base mode with all keys (includes shift-down on midRight)
+        let baseMode = KeyboardMode(
             name: ModeNames.main,
             keys: allKeys,
             arrangements: arrangements,
@@ -87,15 +93,25 @@ enum GridKeyboardFactory {
             doubleTapMode: nil
         )
 
-        // 4. Shifted — after typing a letter, returns to main
-        let shiftedMode = mainMode.generateShifted(locale: locale)
-            .with(autoTransitions: [.letter: ModeNames.main], doubleTapMode: ModeNames.capsLock)
+        // Generate the shifted base once and derive both shifted + caps lock.
+        let shiftedBase = baseMode.generateShifted(locale: locale)
 
-        // 5. Caps lock — like shifted but stays active
-        let capsLockMode = mainMode.generateShifted(locale: locale)
+        // 4. Shifted — shift-up points directly to capsLock (label stays ⇧).
+        let shiftedMode = shiftedBase
+            .with(autoTransitions: [.letter: ModeNames.main])
+            .replacingShiftUpBinding(label: "⇧", action: .switchMode(ModeNames.capsLock))
+
+        // 5. Caps lock — shift-up is no-op (stays in capsLock), label shows ⇪.
+        let capsLockMode = shiftedBase
             .with(name: ModeNames.capsLock)
+            .replacingShiftUpBinding(label: "⇪", action: .switchMode(ModeNames.capsLock))
 
-        // 6. Assemble definition
+        // 6. Main mode — remove shift-down hint from midRight.
+        //    Old code hid "⇩" in lower layer; we replicate by omitting the binding.
+        let mainMode = baseMode
+            .removingBinding(keyId: GridSlot.midRight, gesture: .swipeDown)
+
+        // 7. Assemble definition
         return KeyboardDefinition(
             title: title,
             id: id,

@@ -12,10 +12,28 @@ import Foundation
 enum CommonKeys {
     // MARK: - Utility Keys
 
-    static let globe = KeyConfig.utility(
-        UtilitySlot.globe, label: "🌐", action: .advanceToNextInputMode,
-        accessibilityLabel: "Tastatur wechseln"
-    )
+    static let globe: KeyConfig = {
+        var bindings: [GestureType: KeyBinding] = [:]
+        bindings[.tap] = KeyBinding(
+            label: "", action: .advanceToNextInputMode,
+            category: .utility, returnAction: nil,
+            accessibilityLabel: "Tastatur wechseln"
+        )
+        bindings[.swipeLeft] = KeyBinding(
+            label: "", action: .advanceToNextInputMode,
+            category: .utility, returnAction: nil, accessibilityLabel: nil
+        )
+        bindings[.swipeDown] = KeyBinding(
+            label: "", action: .dismissKeyboard,
+            category: .utility, returnAction: nil,
+            accessibilityLabel: "Tastatur ausblenden"
+        )
+        return KeyConfig(
+            id: UtilitySlot.globe, bindings: bindings,
+            swipeMode: .fourWayCross, slideType: .none,
+            style: .utility, tapCycleActions: nil
+        )
+    }()
 
     static let delete = KeyConfig.utility(
         UtilitySlot.delete, label: "⌫", action: .deleteBackward,
@@ -28,13 +46,40 @@ enum CommonKeys {
         accessibilityLabel: "Zeilenumbruch"
     )
 
+    /// Clipboard swipe bindings shared between the symbols key and numeric back-to-main key.
+    static let clipboardSwipes: [GestureType: KeyBinding] = [
+        .swipeUp: KeyBinding(
+            label: "", action: .copy, category: .utility,
+            returnAction: nil, accessibilityLabel: "Kopieren"
+        ),
+        .swipeUpRight: KeyBinding(
+            label: "", action: .cut, category: .utility,
+            returnAction: nil, accessibilityLabel: "Ausschneiden"
+        ),
+        .swipeDown: KeyBinding(
+            label: "", action: .paste, category: .utility,
+            returnAction: nil, accessibilityLabel: "Einsetzen"
+        ),
+    ]
+
     static let symbols = KeyConfig.utility(
-        UtilitySlot.symbols, label: "123", action: .switchMode(ModeNames.numeric)
+        UtilitySlot.symbols, label: "123", action: .switchMode(ModeNames.numeric),
+        swipeMode: .eightWay,
+        swipes: clipboardSwipes
     )
 
-    static let spacebar = KeyConfig.utility(
-        UtilitySlot.space, label: "␣", action: .space,
-        slideType: .moveCursor
+    static let spacebar = KeyConfig(
+        id: UtilitySlot.space,
+        bindings: [
+            .tap: KeyBinding(
+                label: "␣", action: .space, category: .utility,
+                returnAction: nil, accessibilityLabel: "Leerzeichen"
+            ),
+        ],
+        swipeMode: .none,
+        slideType: .moveCursor,
+        style: .spacebar,
+        tapCycleActions: nil
     )
 
     /// All utility keys as dictionary, mergeable with language keys.
@@ -56,7 +101,7 @@ enum CommonKeys {
 
         GridSlot.topLeft: [
             .swipeUpLeft: KeyBinding(
-                label: "àá", action: .cycleAccents, category: .compose,
+                label: "\u{1F152}", action: .cycleAccents, category: .compose,
                 returnAction: .cycleAccents, accessibilityLabel: nil
             ),
             .swipeRight: KeyBinding(
@@ -64,7 +109,7 @@ enum CommonKeys {
                 returnAction: .commitText("÷"), accessibilityLabel: nil
             ),
             .swipeDownLeft: KeyBinding(
-                label: "$", action: .commitText("$"), category: nil,
+                label: "$", action: .compose(trigger: "$"), category: .compose,
                 returnAction: .commitText("¥"), accessibilityLabel: nil
             ),
         ],
@@ -106,7 +151,7 @@ enum CommonKeys {
 
         GridSlot.topRight: [
             .swipeUpRight: KeyBinding(
-                label: "⏎", action: .commitText("\n"), category: nil,
+                label: "", action: .commitText("\n"), category: nil,
                 returnAction: .commitText("\n"), accessibilityLabel: nil
             ),
             .swipeDownRight: KeyBinding(
@@ -187,7 +232,7 @@ enum CommonKeys {
 
         GridSlot.bottomLeft: [
             .swipeUpLeft: KeyBinding(
-                label: "~", action: .commitText("~"), category: nil,
+                label: "~", action: .compose(trigger: "~"), category: .compose,
                 returnAction: .commitText("˜"), accessibilityLabel: nil
             ),
             .swipeUp: KeyBinding(
@@ -195,7 +240,7 @@ enum CommonKeys {
                 returnAction: .commitText("˝"), accessibilityLabel: nil
             ),
             .swipeRight: KeyBinding(
-                label: "*", action: .commitText("*"), category: nil,
+                label: "*", action: .compose(trigger: "*"), category: .compose,
                 returnAction: .commitText("†"), accessibilityLabel: nil
             ),
             .swipeDownRight: KeyBinding(
@@ -241,7 +286,7 @@ enum CommonKeys {
                 returnAction: .commitText("§"), accessibilityLabel: nil
             ),
             .swipeUpRight: KeyBinding(
-                label: "°", action: .commitText("°"), category: nil,
+                label: "°", action: .compose(trigger: "°"), category: .compose,
                 returnAction: .commitText("º"), accessibilityLabel: nil
             ),
             .swipeRight: KeyBinding(
@@ -249,7 +294,7 @@ enum CommonKeys {
                 returnAction: .commitText("›"), accessibilityLabel: nil
             ),
             .swipeDownRight: KeyBinding(
-                label: "⎵", action: .commitText(" "), category: nil,
+                label: "", action: .commitText(" "), category: nil,
                 returnAction: .commitText(" "), accessibilityLabel: nil
             ),
             .swipeDownLeft: KeyBinding(

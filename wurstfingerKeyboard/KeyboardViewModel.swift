@@ -78,8 +78,6 @@ final class KeyboardViewModel: ObservableObject {
     weak var textInputTarget: TextInputTarget?
     var onAdvanceToNextInputMode: (() -> Void)?
     var onDismissKeyboard: (() -> Void)?
-    var lastSwitchModeTime: Date?
-    var lastSwitchModeTarget: String?
     /// Locale used by the pipeline (set from definition, separate from legacy locale).
     var pipelineLocale: Locale?
 

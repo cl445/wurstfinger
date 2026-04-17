@@ -143,8 +143,8 @@ struct KeyViewStyleTests {
         // Primary keys are large, utility keys use the utility label size.
         // The exact values don't matter; the test guards against the two
         // styles ever collapsing onto the same rendering path.
-        let primary = KeyView.fontSize(for: .primary)
-        let utility = KeyView.fontSize(for: .utility)
+        let primary = KeyView.baseFontSize(for: .primary)
+        let utility = KeyView.baseFontSize(for: .utility)
         #expect(primary != utility)
     }
 

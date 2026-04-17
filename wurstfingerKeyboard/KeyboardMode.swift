@@ -63,4 +63,47 @@ struct KeyboardMode: Codable, Equatable {
             doubleTapMode: doubleTapMode ?? self.doubleTapMode
         )
     }
+
+    /// Returns a copy with a specific binding removed from a key.
+    func removingBinding(keyId: String, gesture: GestureType) -> KeyboardMode {
+        guard var key = keys[keyId] else { return self }
+        var bindings = key.bindings
+        bindings.removeValue(forKey: gesture)
+        key = KeyConfig(
+            id: key.id, bindings: bindings, swipeMode: key.swipeMode,
+            slideType: key.slideType, style: key.style,
+            tapCycleActions: key.tapCycleActions
+        )
+        var updatedKeys = keys
+        updatedKeys[keyId] = key
+        return KeyboardMode(
+            name: name, keys: updatedKeys, arrangements: arrangements,
+            autoTransitions: autoTransitions, doubleTapMode: doubleTapMode
+        )
+    }
+
+    /// Returns a copy where the shift-up binding on midRight is replaced.
+    /// Used to point shifted → capsLock and capsLock → capsLock (no-op).
+    func replacingShiftUpBinding(label: String, action: KeyAction) -> KeyboardMode {
+        guard var midRight = keys[GridSlot.midRight],
+              let existing = midRight.bindings[.swipeUp]
+        else { return self }
+        var bindings = midRight.bindings
+        bindings[.swipeUp] = KeyBinding(
+            label: label, action: action,
+            category: existing.category, returnAction: existing.returnAction,
+            accessibilityLabel: existing.accessibilityLabel
+        )
+        midRight = KeyConfig(
+            id: midRight.id, bindings: bindings, swipeMode: midRight.swipeMode,
+            slideType: midRight.slideType, style: midRight.style,
+            tapCycleActions: midRight.tapCycleActions
+        )
+        var updatedKeys = keys
+        updatedKeys[GridSlot.midRight] = midRight
+        return KeyboardMode(
+            name: name, keys: updatedKeys, arrangements: arrangements,
+            autoTransitions: autoTransitions, doubleTapMode: doubleTapMode
+        )
+    }
 }

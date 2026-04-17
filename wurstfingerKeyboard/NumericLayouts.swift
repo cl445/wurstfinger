@@ -3,6 +3,8 @@
 //  Wurstfinger
 //
 //  Numeric keyboard modes (phone and classic digit ordering).
+//  Swipe bindings are inherited from CommonKeys.defaultSlotBindings so that
+//  the numeric layer has the same punctuation layout as the letter layer.
 //
 
 import Foundation
@@ -22,6 +24,9 @@ enum NumericLayouts {
                 ["4", "5", "6"],
                 ["7", "8", "9"],
             ],
+            // Phone layout swaps digits but keeps circular gestures at their
+            // physical positions (matching the old swapCenterAndCircular logic).
+            circularOverrides: phoneCircularOverrides,
             backToAlphaLabel: backToAlphaLabel
         )
     }
@@ -34,86 +39,134 @@ enum NumericLayouts {
                 ["4", "5", "6"],
                 ["1", "2", "3"],
             ],
+            circularOverrides: classicCircularOverrides,
             backToAlphaLabel: backToAlphaLabel
         )
     }
 
     // MARK: - Numeric Utility Keys
 
-    /// Builds the symbols key in numeric mode, which switches back to main.
-    /// The label is locale/script-aware so non-Latin keyboards (e.g. Hebrew,
-    /// Russian) can show an appropriate label instead of the Latin "abc".
     private static func backToMain(label: String) -> KeyConfig {
         KeyConfig.utility(
-            UtilitySlot.symbols, label: label, action: .switchMode(ModeNames.main)
+            UtilitySlot.symbols, label: label, action: .switchMode(ModeNames.main),
+            swipeMode: .eightWay,
+            swipes: CommonKeys.clipboardSwipes
         )
     }
 
-    /// Space key with "0" on tap in numeric mode.
-    private static let spaceWithZero = KeyConfig.utility(
-        UtilitySlot.space, label: "0", action: .commitText("0"),
-        slideType: .moveCursor
+    /// Standalone "0" digit key in the bottom row.
+    private static let zeroKey = KeyConfig(
+        id: GridSlot.zero,
+        bindings: [
+            .tap: KeyBinding(
+                label: "0", action: .commitText("0"),
+                category: .digit, returnAction: nil, accessibilityLabel: nil
+            ),
+        ],
+        swipeMode: .none,
+        slideType: .none,
+        style: .primary,
+        tapCycleActions: nil
     )
 
-    /// Builds the utility-key dictionary for numeric mode using the supplied
-    /// back-to-alpha label.
     private static func utilityKeys(backToAlphaLabel: String) -> [String: KeyConfig] {
         [
             UtilitySlot.globe: CommonKeys.globe,
             UtilitySlot.delete: CommonKeys.delete,
             UtilitySlot.return: CommonKeys.return,
             UtilitySlot.symbols: backToMain(label: backToAlphaLabel),
-            UtilitySlot.space: spaceWithZero,
+            UtilitySlot.space: CommonKeys.spacebar,
+            GridSlot.zero: zeroKey,
         ]
     }
 
-    // MARK: - Symbol Swipes per Digit
+    // MARK: - Numeric-Specific Overrides
 
-    /// Default symbol swipes for each digit key position.
-    private static let digitSwipes: [String: [GestureType: String]] = [
+    /// Extra swipe bindings that only appear on the numeric layer
+    /// (beyond what CommonKeys.defaultSlotBindings provides).
+    private static let numericExtraSwipes: [String: [GestureType: KeyBinding]] = [
         GridSlot.topLeft: [
-            .swipeRight: "#",
-            .swipeDown: "(",
-            .swipeDownRight: "/",
-        ],
-        GridSlot.topCenter: [
-            .swipeDown: "$",
-            .swipeLeft: "+",
-            .swipeRight: "!",
+            .swipeLeft: KeyBinding(
+                label: "≤", action: .commitText("≤"), category: nil,
+                returnAction: nil, accessibilityLabel: nil
+            ),
         ],
         GridSlot.topRight: [
-            .swipeLeft: ")",
-            .swipeDown: "=",
-            .swipeDownLeft: "\\",
+            .swipeRight: KeyBinding(
+                label: "≥", action: .commitText("≥"), category: nil,
+                returnAction: nil, accessibilityLabel: nil
+            ),
         ],
-        GridSlot.midLeft: [
-            .swipeRight: "*",
-            .swipeUp: "[",
-            .swipeDown: "{",
-        ],
-        GridSlot.midRight: [
-            .swipeLeft: "%",
-            .swipeUp: "]",
-            .swipeDown: "}",
-        ],
-        GridSlot.bottomLeft: [
-            .swipeRight: "-",
-            .swipeUp: "<",
-        ],
-        GridSlot.bottomCenter: [
-            .swipeDown: ".",
-            .swipeLeft: ",",
-            .swipeRight: ":",
-        ],
-        GridSlot.bottomRight: [
-            .swipeLeft: "@",
-            .swipeUp: ">",
-        ],
+    ]
+
+    // MARK: - Circular Gestures
+
+    /// Circular gesture bindings for the classic (7-8-9) layout.
+    /// Both directions produce the same symbol, matching old MessagEase behavior.
+    private static let classicCircularOverrides: [String: KeyBinding] = [
+        GridSlot.topLeft: KeyBinding(
+            label: "∫", action: .commitText("∫"), category: nil,
+            returnAction: nil, accessibilityLabel: nil
+        ),
+        GridSlot.topCenter: KeyBinding(
+            label: "∏", action: .commitText("∏"), category: nil,
+            returnAction: nil, accessibilityLabel: nil
+        ),
+        GridSlot.topRight: KeyBinding(
+            label: "∑", action: .commitText("∑"), category: nil,
+            returnAction: nil, accessibilityLabel: nil
+        ),
+        GridSlot.midLeft: KeyBinding(
+            label: "¼", action: .commitText("¼"), category: nil,
+            returnAction: nil, accessibilityLabel: nil
+        ),
+        GridSlot.center: KeyBinding(
+            label: "a", action: .commitText("a"), category: nil,
+            returnAction: nil, accessibilityLabel: nil
+        ),
+        GridSlot.midRight: KeyBinding(
+            label: "ⁿ", action: .commitText("ⁿ"), category: nil,
+            returnAction: nil, accessibilityLabel: nil
+        ),
+        GridSlot.bottomLeft: KeyBinding(
+            label: "¹", action: .commitText("¹"), category: nil,
+            returnAction: nil, accessibilityLabel: nil
+        ),
+        GridSlot.bottomCenter: KeyBinding(
+            label: "²", action: .commitText("²"), category: nil,
+            returnAction: nil, accessibilityLabel: nil
+        ),
+        GridSlot.bottomRight: KeyBinding(
+            label: "³", action: .commitText("³"), category: nil,
+            returnAction: nil, accessibilityLabel: nil
+        ),
+    ]
+
+    /// Phone layout: digits 1-2-3 sit in the top row (physical position of
+    /// 7-8-9 in classic), so circular gestures follow the digit, not the
+    /// position — matching the old swapCenterAndCircular behavior.
+    private static let phoneCircularOverrides: [String: KeyBinding] = [
+        // Top row (digits 1-2-3 here, circular from classic bottom row)
+        GridSlot.topLeft: classicCircularOverrides[GridSlot.bottomLeft]!,
+        GridSlot.topCenter: classicCircularOverrides[GridSlot.bottomCenter]!,
+        GridSlot.topRight: classicCircularOverrides[GridSlot.bottomRight]!,
+        // Middle row unchanged
+        GridSlot.midLeft: classicCircularOverrides[GridSlot.midLeft]!,
+        GridSlot.center: classicCircularOverrides[GridSlot.center]!,
+        GridSlot.midRight: classicCircularOverrides[GridSlot.midRight]!,
+        // Bottom row (digits 7-8-9 here, circular from classic top row)
+        GridSlot.bottomLeft: classicCircularOverrides[GridSlot.topLeft]!,
+        GridSlot.bottomCenter: classicCircularOverrides[GridSlot.topCenter]!,
+        GridSlot.bottomRight: classicCircularOverrides[GridSlot.topRight]!,
     ]
 
     // MARK: - Builder
 
-    private static func buildMode(centerDigits: [[String]], backToAlphaLabel: String) -> KeyboardMode {
+    private static func buildMode(
+        centerDigits: [[String]],
+        circularOverrides: [String: KeyBinding],
+        backToAlphaLabel: String
+    ) -> KeyboardMode {
         precondition(
             centerDigits.count == 3 && centerDigits.allSatisfy { $0.count == 3 },
             "centerDigits must be a 3×3 matrix"
@@ -123,23 +176,35 @@ enum NumericLayouts {
         for (rowIdx, row) in centerDigits.enumerated() {
             for (colIdx, digit) in row.enumerated() {
                 let slotId = GridSlot.allSlots[rowIdx][colIdx]
+
+                // Start with shared punctuation defaults (same as letter layer),
+                // but remove shift/capsLock bindings that don't apply to numeric.
+                // This intentionally drops the entire binding including any returnAction
+                // (e.g. midRight.swipeUp carries capitalizeWord as returnAction).
                 var bindings: [GestureType: KeyBinding] = [:]
+                for (gesture, binding) in CommonKeys.defaultSlotBindings[slotId] ?? [:] {
+                    if case .switchMode = binding.action { continue }
+                    bindings[gesture] = binding
+                }
+
+                // Merge numeric-specific extras (doesn't replace existing)
+                if let extras = numericExtraSwipes[slotId] {
+                    for (gesture, binding) in extras where bindings[gesture] == nil {
+                        bindings[gesture] = binding
+                    }
+                }
+
+                // Add circular gesture bindings
+                if let circBinding = circularOverrides[slotId] {
+                    bindings[.circularClockwise] = circBinding
+                    bindings[.circularCounterclockwise] = circBinding
+                }
 
                 // Tap → digit
                 bindings[.tap] = KeyBinding(
                     label: digit, action: .commitText(digit),
                     category: .digit, returnAction: nil, accessibilityLabel: nil
                 )
-
-                // Symbol swipes
-                if let swipes = digitSwipes[slotId] {
-                    for (gesture, symbol) in swipes {
-                        bindings[gesture] = KeyBinding(
-                            label: symbol, action: .commitText(symbol),
-                            category: nil, returnAction: nil, accessibilityLabel: nil
-                        )
-                    }
-                }
 
                 digitKeys[slotId] = KeyConfig(
                     id: slotId, bindings: bindings, swipeMode: .eightWay,
@@ -148,18 +213,17 @@ enum NumericLayouts {
             }
         }
 
-        let utilityKeyMap = utilityKeys(backToAlphaLabel: backToAlphaLabel)
-        let duplicateIds = Set(digitKeys.keys).intersection(utilityKeyMap.keys)
+        let utilities = utilityKeys(backToAlphaLabel: backToAlphaLabel)
         precondition(
-            duplicateIds.isEmpty,
-            "Duplicate key ids in numeric layout: \(duplicateIds)"
+            Set(digitKeys.keys).isDisjoint(with: utilities.keys),
+            "digit and utility key IDs must not overlap"
         )
-        let allKeys = digitKeys.merging(utilityKeyMap) { digit, _ in digit }
+        let allKeys = digitKeys.merging(utilities) { digit, _ in digit }
 
         return KeyboardMode(
             name: ModeNames.numeric,
             keys: allKeys,
-            arrangements: StandardArrangements.grid3x3,
+            arrangements: StandardArrangements.numeric3x3,
             autoTransitions: [:],
             doubleTapMode: nil
         )
