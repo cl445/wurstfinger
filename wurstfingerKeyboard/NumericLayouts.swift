@@ -179,6 +179,8 @@ enum NumericLayouts {
 
                 // Start with shared punctuation defaults (same as letter layer),
                 // but remove shift/capsLock bindings that don't apply to numeric.
+                // This intentionally drops the entire binding including any returnAction
+                // (e.g. midRight.swipeUp carries capitalizeWord as returnAction).
                 var bindings: [GestureType: KeyBinding] = [:]
                 for (gesture, binding) in CommonKeys.defaultSlotBindings[slotId] ?? [:] {
                     if case .switchMode = binding.action { continue }
