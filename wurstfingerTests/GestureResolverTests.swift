@@ -2,7 +2,7 @@
 //  GestureResolverTests.swift
 //  WurstfingerTests
 //
-//  Tests for PR 10: PrimaryResolver, ReturnSwipeResolver, GhostKeyResolver,
+//  Tests for PrimaryResolver, ReturnSwipeResolver, GhostKeyResolver,
 //  and GestureResolverChain composition.
 //
 
@@ -344,7 +344,7 @@ struct GestureResolverChainTests {
     }
 
     @Test func chainResolveReturnsBindingNotJustAction() {
-        // The non-action variant exposes the full binding so PR 11 middleware
+        // The non-action variant exposes the full binding so middleware
         // can read category / accessibility metadata.
         let mode = Fixtures.mode(keys: [
             Fixtures.key(id: "a", bindings: [

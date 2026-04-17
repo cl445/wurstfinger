@@ -2,8 +2,8 @@
 //  ActionPipelineTests.swift
 //  WurstfingerTests
 //
-//  Tests for PR 11: ActionContext, ActionPipeline, and the middleware
-//  suite (HapticMiddleware, ComposeMiddleware, TextInputMiddleware,
+//  Tests for ActionContext, ActionPipeline, and the middleware suite
+//  (HapticMiddleware, ComposeMiddleware, TextInputMiddleware,
 //  AutoCapitalizationMiddleware, ModeTransitionMiddleware).
 //
 

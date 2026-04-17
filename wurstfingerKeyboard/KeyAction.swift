@@ -19,7 +19,6 @@ enum KeyAction: Codable, Equatable {
     case cycleAccents
 
     /// Switch to another mode by name.
-    /// Replaces the old toggleShift/toggleSymbols — arbitrary modes possible.
     /// e.g. "shifted", "numeric", "emoji", "symbols", "main"
     case switchMode(String)
 

@@ -2,7 +2,7 @@
 //  KeyboardGridRenderingTests.swift
 //  WurstfingerTests
 //
-//  Tests for PR 9: ViewModel.currentContext, KeyboardGridView span behavior,
+//  Tests for ViewModel.currentContext, KeyboardGridView span behavior,
 //  and KeyView style-based rendering helpers.
 //
 

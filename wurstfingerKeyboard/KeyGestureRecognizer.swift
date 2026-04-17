@@ -16,8 +16,7 @@ struct GestureClassification {
     let isReturn: Bool
 }
 
-/// Reusable gesture recognition logic shared between `KeyView` (data-driven
-/// path) and potentially `KeyboardButton` (legacy path).
+/// Reusable gesture recognition logic used by `KeyView`.
 ///
 /// Wraps the existing `GesturePreprocessor` + `GestureFeatures` pipeline and
 /// produces `GestureType` values instead of `KeyboardDirection`.

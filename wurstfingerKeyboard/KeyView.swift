@@ -110,14 +110,12 @@ struct KeyView: View {
         }
     }
 
-    /// Effective key height accounting for both keyboard scale and aspect ratio,
-    /// matching the old `KeyboardRootView` calculation.
+    /// Effective key height accounting for both keyboard scale and aspect ratio.
     private var effectiveKeyHeight: CGFloat {
         KeyboardConstants.Calculations.keyHeight(aspectRatio: keyAspectRatio) * keyboardScale
     }
 
-    /// Scaled font size proportional to effective key height, matching the old
-    /// `scaledMainLabelSize(for:)` behavior in KeyboardRootView.
+    /// Scaled font size proportional to effective key height.
     private var scaledFontSize: CGFloat {
         let base = Self.baseFontSize(for: key.style)
         let scaled = base * (effectiveKeyHeight / KeyboardConstants.FontSizes.mainLabelReferenceHeight)
@@ -136,8 +134,7 @@ struct KeyView: View {
         style == .utility
     }
 
-    /// Background fill for the key. All keys share the same background,
-    /// matching the old uniform `secondarySystemBackground` / `tertiarySystemFill`.
+    /// Background fill for the key.
     static func backgroundColor(for style: KeyStyle, active: Bool = false) -> Color {
         if active {
             return Color(.tertiarySystemFill)
@@ -172,7 +169,7 @@ struct KeyView: View {
     @ViewBuilder
     private var label: some View {
         if key.style == .spacebar {
-            // Spacebar renders blank, matching the old SpaceKeyButton behavior.
+            // Spacebar renders blank — label is purely for accessibility.
             EmptyView()
         } else {
             let font = Font.system(size: scaledFontSize, weight: .semibold, design: .rounded)
@@ -204,7 +201,6 @@ struct KeyView: View {
     ]
 
     /// Maps certain key actions to SF Symbol names for hint rendering.
-    /// Matches the old GlobeKeyHintOverlay / SymbolsKeyHintOverlay icons.
     private static func hintIcon(for action: KeyAction) -> String? {
         switch action {
         case .advanceToNextInputMode: "globe"
@@ -216,10 +212,9 @@ struct KeyView: View {
         }
     }
 
-    /// Directional edge padding for hint labels, matching the old
-    /// `KeyboardDirection.edgePadding(horizontal:vertical:)` behavior.
-    /// Padding is only applied on the edges where the hint is aligned,
-    /// keeping hints close to the key border and away from the center label.
+    /// Directional edge padding for hint labels. Padding is only applied on
+    /// the edges where the hint is aligned, keeping hints close to the key
+    /// border and away from the center label.
     private static func hintEdgePadding(
         for gesture: GestureType, horizontal: CGFloat, vertical: CGFloat
     ) -> EdgeInsets {
@@ -248,7 +243,7 @@ struct KeyView: View {
     private var hintOverlay: some View {
         GeometryReader { proxy in
             let size = proxy.size
-            // Scale padding proportionally with font size, matching old KeyHintOverlay
+            // Scale padding proportionally with font size
             let fontRatio = scaledHintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize
             let hPad = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * fontRatio
             let vPad = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
@@ -284,12 +279,12 @@ struct KeyView: View {
     private func hintContent(for binding: KeyBinding) -> some View {
         if let iconName = Self.hintIcon(for: binding.action) {
             if Self.isGlobeStyleIcon(for: binding.action) {
-                // Globe / dismiss: larger, bolder (old GlobeKeyHintOverlay)
+                // Globe / dismiss: larger, bolder for discoverability
                 Image(systemName: iconName)
                     .font(.system(size: scaledHintFontSize * 0.75, weight: .medium))
                     .foregroundStyle(Color.primary.opacity(0.5))
             } else {
-                // Copy / paste / cut: smaller, lighter (old SymbolsKeyHintOverlay)
+                // Copy / paste / cut: smaller, lighter to avoid visual clutter
                 Image(systemName: iconName)
                     .font(.system(size: scaledHintFontSize * 0.6, weight: .regular))
                     .foregroundStyle(Color.secondary.opacity(0.45))
