@@ -227,3 +227,44 @@ final class LayoutSettings: ObservableObject {
         defaults.set(value, forKey: key.rawValue)
     }
 }
+
+// MARK: - Numpad Style
+
+enum NumpadStyle: String, CaseIterable {
+    case phone // 1-2-3 / 4-5-6 / 7-8-9 (default, like phone keypad)
+    case classic // 7-8-9 / 4-5-6 / 1-2-3 (like calculator)
+}
+
+// MARK: - Cursor Movement Style
+
+/// Space bar cursor movement style
+enum CursorMovementStyle: String, CaseIterable {
+    case continuous // Joystick-style: drag distance controls cursor position
+    case discrete // MessagEase-style: one swipe = one character, return-swipe = one word
+}
+
+// MARK: - Keyboard Style
+
+/// Visual style for the keyboard appearance
+enum KeyboardStyle: String, CaseIterable {
+    case classic // Traditional opaque key backgrounds
+    case liquidGlass // iOS 26+ Liquid Glass effect (falls back to classic on older iOS)
+
+    var displayName: String {
+        switch self {
+        case .classic:
+            "Classic"
+        case .liquidGlass:
+            "Liquid Glass"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .classic:
+            "Traditional opaque keys"
+        case .liquidGlass:
+            "Transparent glass effect (iOS 26+)"
+        }
+    }
+}

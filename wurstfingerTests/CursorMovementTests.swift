@@ -2,79 +2,16 @@
 //  CursorMovementTests.swift
 //  WurstfingerTests
 //
-//  Tests for word boundary calculation used by discrete cursor movement.
+//  Tests for discrete gesture classification and cursor movement via pipeline.
 //
 
 import Foundation
 import Testing
 @testable import WurstfingerApp
 
-struct WordBoundaryTests {
-    // MARK: - Forward (nextWordBoundaryOffset)
-
-    @Test func forwardSkipsToEndOfFirstWord() {
-        #expect(KeyboardViewController.nextWordBoundaryOffset(in: "hello world") == 5)
-    }
-
-    @Test func forwardSkipsLeadingWhitespace() {
-        #expect(KeyboardViewController.nextWordBoundaryOffset(in: "  hello") == 7)
-    }
-
-    @Test func forwardHandlesSingleCharacter() {
-        #expect(KeyboardViewController.nextWordBoundaryOffset(in: "a") == 1)
-    }
-
-    @Test func forwardHandlesOnlyWhitespace() {
-        #expect(KeyboardViewController.nextWordBoundaryOffset(in: "   ") == 3)
-    }
-
-    @Test func forwardHandlesEmptyString() {
-        #expect(KeyboardViewController.nextWordBoundaryOffset(in: "") == 0)
-    }
-
-    @Test func forwardHandlesPunctuation() {
-        // Punctuation is non-whitespace, so it's treated as part of a word
-        #expect(KeyboardViewController.nextWordBoundaryOffset(in: "hello, world") == 6)
-    }
-
-    @Test func forwardHandlesMultipleSpaces() {
-        #expect(KeyboardViewController.nextWordBoundaryOffset(in: "   word") == 7)
-    }
-
-    // MARK: - Backward (previousWordBoundaryOffset)
-
-    @Test func backwardSkipsToStartOfLastWord() {
-        #expect(KeyboardViewController.previousWordBoundaryOffset(in: "hello world") == 5)
-    }
-
-    @Test func backwardSkipsTrailingWhitespace() {
-        #expect(KeyboardViewController.previousWordBoundaryOffset(in: "hello  ") == 7)
-    }
-
-    @Test func backwardHandlesSingleCharacter() {
-        #expect(KeyboardViewController.previousWordBoundaryOffset(in: "a") == 1)
-    }
-
-    @Test func backwardHandlesOnlyWhitespace() {
-        #expect(KeyboardViewController.previousWordBoundaryOffset(in: "   ") == 3)
-    }
-
-    @Test func backwardHandlesEmptyString() {
-        #expect(KeyboardViewController.previousWordBoundaryOffset(in: "") == 0)
-    }
-
-    @Test func backwardHandlesPunctuation() {
-        #expect(KeyboardViewController.previousWordBoundaryOffset(in: "hello, world") == 5)
-    }
-
-    @Test func backwardHandlesMultipleWords() {
-        #expect(KeyboardViewController.previousWordBoundaryOffset(in: "one two three") == 5)
-    }
-}
-
 struct DiscreteGestureClassificationTests {
     @Test func returnRatioBelowThresholdIsReturnSwipe() {
-        // finalX near zero, maxDisplacement large → return swipe
+        // finalX near zero, maxDisplacement large -> return swipe
         let maxDisplacement: CGFloat = 50
         let finalX: CGFloat = 5
         let ratio = abs(finalX) / abs(maxDisplacement)
@@ -82,7 +19,7 @@ struct DiscreteGestureClassificationTests {
     }
 
     @Test func returnRatioAboveThresholdIsRegularSwipe() {
-        // finalX close to maxDisplacement → regular swipe
+        // finalX close to maxDisplacement -> regular swipe
         let maxDisplacement: CGFloat = 50
         let finalX: CGFloat = 45
         let ratio = abs(finalX) / abs(maxDisplacement)
@@ -93,5 +30,48 @@ struct DiscreteGestureClassificationTests {
         let threshold = KeyboardConstants.SpaceGestures.returnSwipeThreshold
         #expect(threshold > 0)
         #expect(threshold < 1)
+    }
+}
+
+@Suite(.serialized)
+struct CursorMovementPipelineTests {
+    @Test func spaceSlideMoveCursorForward() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        guard let spaceKey = vm.activeModeFromDefinition?.key(for: UtilitySlot.space) else {
+            Issue.record("Space key not found in definition")
+            return
+        }
+        vm.handleSlide(spaceKey, phase: .began)
+        let step = KeyboardConstants.SpaceGestures.dragStep
+        vm.handleSlide(spaceKey, phase: .changed(deltaX: step * 2))
+        vm.handleSlide(spaceKey, phase: .ended)
+        #expect(target.events.contains(.adjustCursor(1)))
+    }
+
+    @Test func spaceSlideMoveCursorBackward() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        guard let spaceKey = vm.activeModeFromDefinition?.key(for: UtilitySlot.space) else {
+            Issue.record("Space key not found in definition")
+            return
+        }
+        vm.handleSlide(spaceKey, phase: .began)
+        let step = KeyboardConstants.SpaceGestures.dragStep
+        vm.handleSlide(spaceKey, phase: .changed(deltaX: -step * 2))
+        vm.handleSlide(spaceKey, phase: .ended)
+        #expect(target.events.contains(.adjustCursor(-1)))
+    }
+
+    @Test func deleteSlideProducesDeletions() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        target.documentContextBeforeInput = "hello"
+        guard let deleteKey = vm.activeModeFromDefinition?.key(for: UtilitySlot.delete) else {
+            Issue.record("Delete key not found in definition")
+            return
+        }
+        vm.handleSlide(deleteKey, phase: .began)
+        let step = KeyboardConstants.SpaceGestures.dragStep
+        vm.handleSlide(deleteKey, phase: .changed(deltaX: -step * 2))
+        vm.handleSlide(deleteKey, phase: .ended)
+        #expect(target.events.contains(.deleteBackward))
     }
 }

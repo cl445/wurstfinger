@@ -12,8 +12,8 @@ struct GesturePlaygroundView: View {
     @State private var processedPoints: [CGPoint] = []
     @State private var classificationResult: String = "Draw a gesture..."
     @State private var features: GestureFeatures?
-    @State private var detectedDirection: KeyboardDirection = .center
-    @State private var detectedCircularDirection: KeyboardCircularDirection?
+    @State private var detectedGesture: GestureType = .tap
+    @State private var isCircularCW: Bool?
 
     @AppStorage("keyAspectRatio", store: SharedDefaults.store)
     private var keyAspectRatio = 1.5
@@ -56,8 +56,6 @@ struct GesturePlaygroundView: View {
                 }
 
                 // Calculate scale to fit key + margin in 300x300
-                // Key is roughly 81x54 (1.5 AR). 300 width.
-                // Let's map keyWidth to 200pt (leaving 50pt margin on sides)
                 let scale = 200.0 / keyWidth
                 let offsetX = (300.0 - (keyWidth * scale)) / 2.0
                 let offsetY = (300.0 - (keyHeight * scale)) / 2.0
@@ -66,7 +64,7 @@ struct GesturePlaygroundView: View {
                 RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius * scale)
                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     .frame(width: keyWidth * scale, height: keyHeight * scale)
-                    .position(x: 150, y: 150) // Center it
+                    .position(x: 150, y: 150)
 
                 // Raw Path (Red) - Scaled up
                 Path { path in
@@ -133,7 +131,7 @@ struct GesturePlaygroundView: View {
                         .font(.caption)
                         .foregroundColor(.secondary.opacity(0.5))
                 }
-                .contentShape(Rectangle()) // Make the whole area touchable even outside the visual key if needed, but let's stick to key size
+                .contentShape(Rectangle())
                 .gesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged { value in
@@ -161,8 +159,8 @@ struct GesturePlaygroundView: View {
                         Text(classificationResult)
                             .font(.title3.bold())
                         Spacer()
-                        if detectedDirection != .center {
-                            Text(String(describing: detectedDirection).capitalized)
+                        if detectedGesture != .tap {
+                            Text(String(describing: detectedGesture))
                                 .padding(6)
                                 .background(Color.blue.opacity(0.2))
                                 .cornerRadius(6)
@@ -290,8 +288,8 @@ struct GesturePlaygroundView: View {
         processedPoints = []
         features = nil
         classificationResult = "Draw a gesture..."
-        detectedDirection = .center
-        detectedCircularDirection = nil
+        detectedGesture = .tap
+        isCircularCW = nil
     }
 
     private func scalePoint(_ point: CGPoint, scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> CGPoint {
@@ -341,8 +339,8 @@ struct GesturePlaygroundView: View {
     }
 
     private func angleToSector(_ angle: CGFloat) -> String {
-        let dir = KeyboardDirection.direction(for: CGSize(width: cos(angle), height: sin(angle)), tolerance: 0)
-        return String(describing: dir).capitalized
+        let gesture = KeyGestureRecognizer.angleToGestureType(angle)
+        return String(describing: gesture)
     }
 
     private func featureRow(_ label: String, _ value: String) -> some View {
@@ -359,9 +357,6 @@ struct GesturePlaygroundView: View {
         let preprocessor = GesturePreprocessor(config: config)
 
         // 2. Preprocess
-        // Note: The playground canvas is likely larger than a key, but we treat it as 1:1 for now
-        // or we could scale points to simulate key size.
-        // For debugging, seeing raw behavior is often better.
         processedPoints = preprocessor.preprocess(rawPoints)
 
         // 3. Extract Features
@@ -373,18 +368,14 @@ struct GesturePlaygroundView: View {
         var result = ""
         if feats.isTap {
             result = "Tap"
-            detectedDirection = .center
+            detectedGesture = .tap
         } else if feats.isCircular {
             result = "Circular (\(feats.isClockwise ? "CW" : "CCW"))"
-            detectedCircularDirection = feats.isClockwise ? .clockwise : .counterclockwise
-            detectedDirection = .center
+            isCircularCW = feats.isClockwise
+            detectedGesture = .tap
         } else {
             result = feats.isReturn ? "Return Swipe" : "Swipe"
-            let swipeSize = CGSize(
-                width: cos(feats.maxDisplacementAngle),
-                height: sin(feats.maxDisplacementAngle)
-            )
-            detectedDirection = KeyboardDirection.direction(for: swipeSize, tolerance: 0)
+            detectedGesture = KeyGestureRecognizer.angleToGestureType(feats.maxDisplacementAngle)
         }
 
         classificationResult = result

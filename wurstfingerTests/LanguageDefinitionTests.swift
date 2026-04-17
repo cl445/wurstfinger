@@ -26,13 +26,17 @@ struct LanguageDefinitionValidationTests {
         #expect(layout.modes[ModeNames.numeric] != nil, "\(layout.id) missing numeric mode")
     }
 
-    @Test func allLanguagesMatchRegistry() {
-        // Parity check against the canonical LanguageConfig registry —
-        // catches drift if a language is added to one list but not the other.
-        #expect(
-            Set(LanguageDefinitions.all.map(\.id))
-                == Set(LanguageConfig.allLanguages.map(\.id))
-        )
+    @Test func allLanguagesAreResolvableViaLanguageConfig() {
+        // LanguageConfig.allLanguages is now derived from KeyboardRegistry.available.
+        // Verify every definition is resolvable via the lookup helper.
+        for definition in LanguageDefinitions.all {
+            let config = LanguageConfig.language(withId: definition.id)
+            #expect(config != nil, "LanguageConfig.language(withId:) cannot resolve \(definition.id)")
+            #expect(
+                config?.id == definition.id,
+                "ID mismatch for \(definition.id)"
+            )
+        }
     }
 }
 

@@ -5,7 +5,41 @@
 //  Created by Claas Flint on 19.11.25.
 //
 
+import Combine
 import SwiftUI
+
+/// A simple in-memory text target that captures pipeline output
+/// for the interactive preview.
+private class PreviewTextTarget: TextInputTarget, ObservableObject {
+    @Published var text: String = ""
+    var documentContextBeforeInput: String? {
+        text
+    }
+
+    var documentContextAfterInput: String? {
+        nil
+    }
+
+    var selectedText: String? {
+        nil
+    }
+
+    var hasFullAccess: Bool {
+        false
+    }
+
+    func deleteBackward() {
+        if !text.isEmpty {
+            text.removeLast()
+        }
+    }
+
+    func insertText(_ text: String) {
+        self.text += text
+    }
+
+    func adjustTextPosition(byCharacterOffset _: Int) {}
+}
 
 struct InteractiveKeyboardPreview: View {
     @Binding var aspectRatio: Double
@@ -13,7 +47,7 @@ struct InteractiveKeyboardPreview: View {
     @Binding var position: Double
 
     @StateObject private var previewViewModel = KeyboardViewModel(shouldPersistSettings: false)
-    @State private var previewText = ""
+    @StateObject private var previewTarget = PreviewTextTarget()
 
     init(
         aspectRatio: Binding<Double> = .constant(1.5),
@@ -31,12 +65,9 @@ struct InteractiveKeyboardPreview: View {
         let scaledHeight = baseHeight * scale
 
         // Determine height constraints based on usage
-        // If scaling is involved (size settings), we clamp between min/max
-        // If only aspect ratio changes (aspect settings), we allow it to grow naturally but cap it
         if scale < 0.99 {
             return min(KeyboardConstants.Preview.maxHeight, max(KeyboardConstants.Preview.minHeight, scaledHeight))
         } else {
-            // For aspect ratio view, we want to show the full height relative to width
             let keyHeight = 54.0 * (1.5 / aspectRatio)
             let totalHeight = (keyHeight * 4) + (8 * 3) + (10 * 2)
             return min(400, max(200, totalHeight))
@@ -49,17 +80,17 @@ struct InteractiveKeyboardPreview: View {
                 Text("Preview")
                     .font(.headline)
                 Spacer()
-                if !previewText.isEmpty {
+                if !previewTarget.text.isEmpty {
                     Button("Clear") {
-                        previewText = ""
+                        previewTarget.text = ""
                     }
                     .font(.caption)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            if !previewText.isEmpty {
-                Text(previewText)
+            if !previewTarget.text.isEmpty {
+                Text(previewTarget.text)
                     .font(.title2)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
@@ -75,48 +106,33 @@ struct InteractiveKeyboardPreview: View {
                     .cornerRadius(8)
             }
 
-            GeometryReader { geometry in
+            GeometryReader { _ in
                 ZStack(alignment: .top) {
                     Color(.systemGray6)
 
-                    KeyboardRootView(
-                        viewModel: previewViewModel,
-                        scaleAnchor: scale < 0.99 ? .top : .center,
-                        frameAlignment: scale < 0.99 ? .top : .center,
-                        overrideWidth: geometry.size.width
-                    )
+                    DataDrivenKeyboardRootView(viewModel: previewViewModel)
 
-                    .onChange(of: aspectRatio) { _, newValue in
-                        previewViewModel.keyAspectRatio = newValue
-                    }
-                    .onChange(of: scale) { _, newValue in
-                        previewViewModel.keyboardScale = newValue
-                    }
-                    .onChange(of: position) { _, newValue in
-                        previewViewModel.keyboardHorizontalPosition = newValue
-                    }
-                    .onAppear {
-                        previewViewModel.keyAspectRatio = aspectRatio
-                        previewViewModel.keyboardScale = scale
-                        previewViewModel.keyboardHorizontalPosition = position
-
-                        previewViewModel.bindActionHandler { action in
-                            switch action {
-                            case let .insert(text):
-                                previewText += text
-                            case .deleteBackward:
-                                if !previewText.isEmpty {
-                                    previewText.removeLast()
-                                }
-                            case .space:
-                                previewText += " "
-                            case .newline:
-                                previewText += "\n"
-                            default:
-                                break
-                            }
+                        .onChange(of: aspectRatio) { _, newValue in
+                            previewViewModel.keyAspectRatio = newValue
                         }
-                    }
+                        .onChange(of: scale) { _, newValue in
+                            previewViewModel.keyboardScale = newValue
+                        }
+                        .onChange(of: position) { _, newValue in
+                            previewViewModel.keyboardHorizontalPosition = newValue
+                        }
+                        .onAppear {
+                            previewViewModel.keyAspectRatio = aspectRatio
+                            previewViewModel.keyboardScale = scale
+                            previewViewModel.keyboardHorizontalPosition = position
+
+                            // Wire up preview text target and load definition
+                            previewViewModel.bindTextInputTarget(previewTarget)
+                            let languageId = SharedDefaults.store.string(
+                                forKey: SettingsKey.selectedLanguageId.rawValue
+                            ) ?? LanguageSettings.detectSystemLanguage()
+                            previewViewModel.loadDefinition(for: languageId)
+                        }
                 }
             }
             .frame(height: previewHeight)
