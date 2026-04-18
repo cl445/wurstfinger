@@ -70,82 +70,12 @@
 			);
 			target = 437E1C002EB3C30000C5635A /* Wurstfinger */;
 		};
-		427511FC2EAAF62100C5635A /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerTests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 4275119E2EAAF62100C5635A /* WurstfingerTests */;
-		};
 		42C0B35D2EB16D3400DF2D45 /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				ActionMiddleware.swift,
-				ActionPipeline.swift,
-				AdvancedTextMiddleware.swift,
-				ArrangementContext.swift,
-				AutoCapitalization.swift,
-				AutoCapitalizationMiddleware.swift,
-				CommonKeys.swift,
-				ComposeEngine.swift,
-				ComposeMiddleware.swift,
-				ComposeRuleSet.swift,
-				"ComposeRuleSet+Global.swift",
-				"ComposeRuleSet+Merge.swift",
-				DataDrivenKeyboardRootView.swift,
-				DocumentProxyTarget.swift,
-				GeometryUtils.swift,
-				GestureFeatureCalculations.swift,
-				GesturePreprocessor.swift,
-				GestureResolver.swift,
-				GestureResolverChain.swift,
-				GestureType.swift,
-				GhostKeyResolver.swift,
-				GridArrangement.swift,
-				GridKeyboardFactory.swift,
-				GridSlot.swift,
-				HapticFeedbackManager.swift,
-				HapticMiddleware.swift,
-				KeyAction.swift,
-				KeyBinding.swift,
-				KeyboardConstants.swift,
-				KeyboardButtonComponents.swift,
-				KeyboardDefinition.swift,
-				KeyboardGridView.swift,
-				KeyboardInfo.swift,
-				KeyboardMode.swift,
-				"KeyboardMode+Shifted.swift",
-				KeyboardRegistry.swift,
-				KeyboardSettings.swift,
-				KeyboardViewController.swift,
-				KeyboardViewModel.swift,
-				"KeyboardViewModel+Pipeline.swift",
-				KeyCategory.swift,
-				KeyConfig.swift,
-				"KeyConfig+Factories.swift",
-				KeyGestureRecognizer.swift,
-				KeyPlacement.swift,
-				KeyStyle.swift,
-				KeyView.swift,
-				LanguageConfig.swift,
-				LanguageDefinitions.swift,
-				LanguageSettings.swift,
-				ModeTransitionMiddleware.swift,
-				NumericLayouts.swift,
-				PrimaryResolver.swift,
-				ReturnSwipeResolver.swift,
-				RingBuffer.swift,
-				SlideGestureHandler.swift,
-				SlideType.swift,
-				StandardArrangements.swift,
-				SwipeMode.swift,
-				TelexMiddleware.swift,
-				TextInputMiddleware.swift,
-				UtilitySlot.swift,
-				ValidationError.swift,
-				Vector2D.swift,
-				ViewControllerActionMiddleware.swift,
-				ViewExtensions.swift,
+				Info.plist,
+				PrivacyInfo.xcprivacy,
+				Settings/SharedDefaults.swift,
 			);
 			target = 427511912EAAF62000C5635A /* WurstfingerApp */;
 		};
@@ -171,7 +101,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				42C0B35D2EB16D3400DF2D45 /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerApp" target */,
-				427511FC2EAAF62100C5635A /* Exceptions for "wurstfingerKeyboard" folder in "WurstfingerTests" target */,
 				422B5FA22EAED9E8002A926E /* Exceptions for "wurstfingerKeyboard" folder in "Wurstfinger" target */,
 			);
 			path = wurstfingerKeyboard;
@@ -252,6 +181,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				427511942EAAF62000C5635A /* wurstfinger */,
+				437E1C052EB3C30000C5635A /* wurstfingerKeyboard */,
 			);
 			name = WurstfingerApp;
 			packageProductDependencies = (
@@ -276,7 +206,6 @@
 			);
 			fileSystemSynchronizedGroups = (
 				427511A22EAAF62100C5635A /* wurstfingerTests */,
-				437E1C052EB3C30000C5635A /* wurstfingerKeyboard */,
 			);
 			name = WurstfingerTests;
 			packageProductDependencies = (
