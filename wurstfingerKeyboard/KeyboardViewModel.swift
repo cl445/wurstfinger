@@ -153,7 +153,6 @@ final class KeyboardViewModel: ObservableObject {
         enabledLanguageIds = LanguageSettings.loadEnabledLanguageIds(from: defaults)
             ?? [SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue) ?? "en_US"]
 
-
         // Forward settings changes to trigger objectWillChange on this ViewModel
         hapticSettings.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }

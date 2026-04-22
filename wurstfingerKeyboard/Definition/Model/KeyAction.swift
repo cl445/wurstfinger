@@ -31,6 +31,9 @@ enum KeyAction: Codable, Equatable {
     /// Dismiss keyboard
     case dismissKeyboard
 
+    /// Switch to the next enabled language
+    case switchToNextLanguage
+
     /// Delete backward
     case deleteBackward
 

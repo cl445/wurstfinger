@@ -647,10 +647,15 @@ struct PinnedLanguageTests {
         defaults.set("ru_RU", forKey: SettingsKey.pinnedLanguageId.rawValue)
 
         let viewModel = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
-        viewModel.bindActionHandler { _ in }
+        let target = MockTextTarget()
+        viewModel.bindTextInputTarget(target)
+        viewModel.bindViewControllerActions(advanceToNextInputMode: {}, dismissKeyboard: {})
+
+        let startupId = LanguageSettings(userDefaults: defaults).startupLanguageId
+        viewModel.loadDefinition(for: startupId)
 
         #expect(
-            viewModel.currentLocale().identifier == "ru_RU",
+            viewModel.pipelineLocale?.identifier == "ru_RU",
             "ViewModel should boot with pinned language ru_RU, not selected en_US"
         )
     }
