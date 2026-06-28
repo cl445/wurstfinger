@@ -33,9 +33,45 @@ struct KeyboardDefinition: Codable, Equatable {
     /// Keyboard-specific settings
     let settings: KeyboardDefinitionSettings
 
+    /// Label for the numeric layer's "back to alphabet" key (e.g. "abc",
+    /// "אבג", "абв"). Retained on the definition so the numeric mode can be
+    /// rebuilt at load time (e.g. when switching the numpad style) without
+    /// re-deriving the per-language label.
+    let numericBackToAlphaLabel: String
+
+    init(
+        title: String,
+        id: String,
+        localeIdentifier: String,
+        modes: [String: KeyboardMode],
+        defaultMode: String,
+        settings: KeyboardDefinitionSettings,
+        numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel
+    ) {
+        self.title = title
+        self.id = id
+        self.localeIdentifier = localeIdentifier
+        self.modes = modes
+        self.defaultMode = defaultMode
+        self.settings = settings
+        self.numericBackToAlphaLabel = numericBackToAlphaLabel
+    }
+
     /// Convenience: Mode lookup
     func mode(_ name: String) -> KeyboardMode? {
         modes[name]
+    }
+
+    /// Returns a copy with `name`'s mode replaced. Used to swap the numeric
+    /// layer (phone/classic) at load time based on user settings.
+    func replacingMode(_ name: String, with mode: KeyboardMode) -> KeyboardDefinition {
+        var updated = modes
+        updated[name] = mode
+        return KeyboardDefinition(
+            title: title, id: id, localeIdentifier: localeIdentifier,
+            modes: updated, defaultMode: defaultMode, settings: settings,
+            numericBackToAlphaLabel: numericBackToAlphaLabel
+        )
     }
 }
 

@@ -298,7 +298,36 @@ struct ViewModelVCActionTests {
         let (vm, _) = makeViewModel(
             advanceToNextInputMode: { advanceCalled = true }
         )
-        vm.handleGesture(.tap, keyId: UtilitySlot.globe, isReturn: false)
+        // Input-method switch is bound to swipe-left on the globe key.
+        vm.handleGesture(.swipeLeft, keyId: UtilitySlot.globe, isReturn: false)
         #expect(advanceCalled)
+    }
+}
+
+// MARK: - Numpad style wiring
+
+@Suite(.serialized)
+struct ViewModelNumpadStyleTests {
+    private func loadedNumericTopLeftDigit(numpadStyle: String?) -> String? {
+        let defaults = UserDefaults(suiteName: "test.\(UUID().uuidString)")!
+        if let numpadStyle {
+            defaults.set(numpadStyle, forKey: SettingsKey.numpadStyle.rawValue)
+        }
+        let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
+        vm.loadDefinition(for: "de_DE")
+        return vm.currentDefinition?
+            .mode(ModeNames.numeric)?
+            .keys[GridSlot.topLeft]?
+            .bindings[.tap]?.label
+    }
+
+    @Test func defaultNumpadIsPhone() {
+        // Phone layout: 1-2-3 in the top row.
+        #expect(loadedNumericTopLeftDigit(numpadStyle: nil) == "1")
+    }
+
+    @Test func classicNumpadSwapsTopRow() {
+        // Classic calculator layout: 7-8-9 in the top row.
+        #expect(loadedNumericTopLeftDigit(numpadStyle: NumpadStyle.classic.rawValue) == "7")
     }
 }

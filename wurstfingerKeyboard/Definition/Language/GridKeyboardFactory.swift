@@ -126,7 +126,8 @@ enum GridKeyboardFactory {
                 autoCapitalizers: [],
                 composeRuleOverrides: nil,
                 inputMethod: inputMethod
-            )
+            ),
+            numericBackToAlphaLabel: numericBackToAlphaLabel
         )
     }
 }
