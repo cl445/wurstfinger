@@ -134,24 +134,35 @@ jobs:
               f.write(f"changed={'true' if changed else 'false'}\n")
           PYEOF
 
-      - name: Create PR with screenshots
+      - name: Create or update PR with screenshots
         if: steps.check_changes.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Create a new branch for the PR
-          BRANCH_NAME="automated/update-screenshots-$(date +%Y%m%d-%H%M%S)"
-          git checkout -b "$BRANCH_NAME"
+          BASE_BRANCH="${{ github.ref_name }}"
+          # Stable branch name per base so repeated runs reuse one PR
+          # instead of piling up duplicate screenshot PRs.
+          BRANCH_NAME="automated/update-screenshots-${BASE_BRANCH}"
 
+          # The branch always holds exactly "base + one screenshot commit".
+          # Recreating it from the current base commit and force-pushing keeps
+          # an existing PR up to date without checkout conflicts against the
+          # freshly generated (uncommitted) screenshots in the working tree.
+          git checkout -B "$BRANCH_NAME"
           git add -A docs/images/
           git commit -m "Update screenshots"
-          git push -u origin "$BRANCH_NAME"
+          git push -f -u origin "$BRANCH_NAME"
 
-          # Create PR
-          gh pr create \
-            --title "Update screenshots" \
-            --body "Automated screenshot update from CI workflow." \
-            --base "${{ github.ref_name }}"
+          # Open a PR only if none is already tracking this branch
+          EXISTING_PR=$(gh pr list --state open --head "$BRANCH_NAME" --base "$BASE_BRANCH" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Updated existing PR #${EXISTING_PR}"
+          else
+            gh pr create \
+              --title "Update screenshots" \
+              --body "Automated screenshot update from CI workflow." \
+              --base "$BASE_BRANCH"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
