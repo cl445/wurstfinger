@@ -20,11 +20,6 @@ struct StyleSettingsView: View {
     @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
     private var previewPosition = DeviceLayoutUtils.defaultKeyboardPosition
 
-    private var keyboardStyle: KeyboardStyle {
-        get { KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic }
-        set { keyboardStyleRaw = newValue.rawValue }
-    }
-
     var body: some View {
         VStack(spacing: 20) {
             // Keyboard Preview

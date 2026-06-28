@@ -58,7 +58,7 @@ enum GridKeyboardFactory {
                     for (gesture, text) in overrides {
                         let isLetter = text.unicodeScalars.contains { CharacterSet.letters.contains($0) }
                         let returnAction: KeyAction? = isLetter
-                            ? .commitText(text.uppercased(with: locale))
+                            ? .commitText(text.keyboardUppercased(with: locale))
                             : nil
                         bindings[gesture] = KeyBinding(
                             label: text, action: .commitText(text),

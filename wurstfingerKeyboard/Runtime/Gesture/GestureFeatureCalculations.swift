@@ -192,7 +192,7 @@ enum GestureCalculations {
     /// Calculates oriented compactness (width/length along principal axis)
     /// 1.0 = square, 0 = narrow line
     static func orientedCompactness(of points: [CGPoint], principalAngle: CGFloat) -> CGFloat {
-        guard let start = points.first, !points.isEmpty else { return 0 }
+        guard let start = points.first else { return 0 }
 
         let cosA = cos(principalAngle)
         let sinA = sin(principalAngle)

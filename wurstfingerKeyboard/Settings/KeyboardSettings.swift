@@ -129,7 +129,7 @@ final class LayoutSettings: ObservableObject {
         didSet { persistIfNeeded(utilityColumnLeading, forKey: .utilityColumnLeading) }
     }
 
-    /// Key aspect ratio (height/width). Range: 1.0 (square) to 1.62 (golden ratio)
+    /// Key aspect ratio (width/height). Range: 1.0 (square) to 1.62 (golden ratio)
     @Published var keyAspectRatio: Double {
         didSet {
             let clamped = Self.clampAspectRatio(keyAspectRatio)
