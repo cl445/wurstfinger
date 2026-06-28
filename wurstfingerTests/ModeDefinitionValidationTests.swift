@@ -243,6 +243,40 @@ struct ValidationTests {
         #expect(errors.contains(.missingMode("nonexistent")))
     }
 
+    @Test func missingSwitchModeTargetInReturnAction() {
+        let key = KeyConfig(
+            id: "shift",
+            bindings: [.tap: KeyBinding(
+                label: "⇧",
+                action: .commitText("x"),
+                category: nil,
+                returnAction: .switchMode("nonexistent"),
+                accessibilityLabel: nil
+            )],
+            swipeMode: .none, slideType: .none, style: .utility, tapCycleActions: nil
+        )
+        let arrangement = GridArrangement(columns: 1, rows: [[KeyPlacement(keyId: "shift")]])
+        let mode = KeyboardMode(name: "main", keys: ["shift": key], arrangements: [.portrait: arrangement], autoTransitions: [:], doubleTapMode: nil)
+        let def = minimalDefinition(modes: [ModeNames.main: mode])
+        #expect(def.validate().contains(.missingMode("nonexistent")))
+    }
+
+    @Test func missingSwitchModeTargetInTapCycleActions() {
+        let key = KeyConfig(
+            id: "cycle",
+            bindings: [.tap: KeyBinding(
+                label: "c", action: .commitText("c"), category: nil,
+                returnAction: nil, accessibilityLabel: nil
+            )],
+            swipeMode: .none, slideType: .none, style: .primary,
+            tapCycleActions: [.commitText("c"), .switchMode("nonexistent")]
+        )
+        let arrangement = GridArrangement(columns: 1, rows: [[KeyPlacement(keyId: "cycle")]])
+        let mode = KeyboardMode(name: "main", keys: ["cycle": key], arrangements: [.portrait: arrangement], autoTransitions: [:], doubleTapMode: nil)
+        let def = minimalDefinition(modes: [ModeNames.main: mode])
+        #expect(def.validate().contains(.missingMode("nonexistent")))
+    }
+
     @Test func missingAutoTransitionTarget() {
         let mode = minimalMode(autoTransitions: [.letter: "nonexistent"])
         let def = minimalDefinition(modes: [ModeNames.main: mode])
