@@ -30,6 +30,9 @@ struct AppStoreScreenshotView: View {
             // Keyboard at the bottom
             DataDrivenKeyboardRootView(viewModel: viewModel)
                 .frame(maxWidth: .infinity)
+                // `.contain` promotes the per-key accessibilityIdentifiers into
+                // a queryable container so UI tests can find keys by slot id.
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("screenshotKeyboard")
         }
         .ignoresSafeArea(edges: [.top, .bottom])

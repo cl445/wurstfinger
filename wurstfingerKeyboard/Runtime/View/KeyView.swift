@@ -54,6 +54,7 @@ struct KeyView: View {
         .frame(height: effectiveKeyHeight)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
+        .accessibilityIdentifier(key.id)
         .accessibilityAddTraits(.isButton)
         .contentShape(Rectangle().inset(by: -KeyboardTouchArea.padding))
 

@@ -31,7 +31,10 @@ final class ScreenshotTests: XCTestCase {
     func testGenerateScreenshots() {
         app.launchArguments = ["SCREENSHOT_MODE"]
 
-        let keyboard = app.otherElements["showcaseKeyboard"]
+        // Detect the rendered keyboard via a stable key identifier (the
+        // center grid slot) rather than the container element, which SwiftUI
+        // does not reliably expose as a queryable `otherElement`.
+        let keyboard = app.buttons["center"]
 
         let layouts = ["lower", "numbers"]
         let appearances = ["light", "dark"]
@@ -141,7 +144,10 @@ final class ScreenshotTests: XCTestCase {
     func testGenerateKeyboardShowcaseScreenshots() {
         app.launchArguments = ["SCREENSHOT_MODE"]
 
-        let keyboard = app.otherElements["showcaseKeyboard"]
+        // Detect the rendered keyboard via a stable key identifier (the
+        // center grid slot) rather than the container element, which SwiftUI
+        // does not reliably expose as a queryable `otherElement`.
+        let keyboard = app.buttons["center"]
 
         // Get device identifier for naming
         let deviceName = UIDevice.current.name
@@ -180,7 +186,7 @@ final class ScreenshotTests: XCTestCase {
     func testGenerateAppStoreKeyboardScreenshots() {
         app.launchArguments = ["APPSTORE_SCREENSHOT_MODE"]
 
-        let keyboard = app.otherElements["screenshotKeyboard"]
+        let keyboard = app.buttons["center"]
 
         // Get device identifier for naming
         let deviceName = UIDevice.current.name

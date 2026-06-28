@@ -60,40 +60,44 @@ final class DeadZoneTests: XCTestCase {
         )
     }
 
-    /// Finds a button by accessibility label in the app.
+    /// Finds a button by its stable accessibility identifier (the key's slot id).
+    ///
+    /// Slot ids (`topLeft`, `center`, `return`, …) are layout- and
+    /// language-independent, so these tests stay valid when the letter layout
+    /// changes. See `GridSlot` / `UtilitySlot` for the canonical ids.
     private func findKey(
-        _ keyLabel: String,
+        _ keyId: String,
         file: StaticString = #filePath,
         line: UInt = #line
     ) -> XCUIElement? {
-        let key = app.buttons[keyLabel]
+        let key = app.buttons[keyId]
         if !key.waitForExistence(timeout: 2) {
-            XCTFail("Key '\(keyLabel)' not found", file: file, line: line)
+            XCTFail("Key '\(keyId)' not found", file: file, line: line)
             return nil
         }
         return key
     }
 
     private func waitForKeyboard() {
-        let keyA = app.buttons["a"]
-        XCTAssertTrue(keyA.waitForExistence(timeout: 5), "Keyboard not loaded")
+        let centerKey = app.buttons["center"]
+        XCTAssertTrue(centerKey.waitForExistence(timeout: 5), "Keyboard not loaded")
         let counter = app.staticTexts.matching(identifier: "actionCount").firstMatch
         XCTAssertTrue(counter.waitForExistence(timeout: 2), "Action counter not found")
     }
 
-    // MARK: - Grid key labels (German lower layout)
+    // MARK: - Grid key slots (layout-independent positions)
 
     //
-    //   Col 0   Col 1   Col 2   |  Col 3 (utility, right side)
-    //     a       n       i     |    🌐  (row 0)
-    //     h       d       r     |   123  (row 1)
-    //     t       e       s     |    ⌫   (row 2)
-    //         [ Space ]         |    ⏎   (row 3)
+    //   Col 0       Col 1         Col 2       |  Col 3 (utility, right side)
+    //   topLeft     topCenter     topRight    |    🌐  (row 0)
+    //   midLeft     center        midRight    |   123  (row 1)
+    //   bottomLeft  bottomCenter  bottomRight |    ⌫   (row 2)
+    //            [ Space ]                    |    ⏎ (return)  (row 3)
 
-    private let gridKeys: [[String]] = [
-        ["a", "n", "i"],
-        ["h", "d", "r"],
-        ["t", "e", "s"],
+    private let gridSlots: [[String]] = [
+        ["topLeft", "topCenter", "topRight"],
+        ["midLeft", "center", "midRight"],
+        ["bottomLeft", "bottomCenter", "bottomRight"],
     ]
 
     // MARK: - Tests
@@ -103,7 +107,7 @@ final class DeadZoneTests: XCTestCase {
     func testHorizontalGapsBetweenGridKeys() {
         waitForKeyboard()
 
-        for (rowIdx, row) in gridKeys.enumerated() {
+        for (rowIdx, row) in gridSlots.enumerated() {
             for colIdx in 0 ..< (row.count - 1) {
                 guard let left = findKey(row[colIdx]),
                       let right = findKey(row[colIdx + 1])
@@ -126,24 +130,24 @@ final class DeadZoneTests: XCTestCase {
         waitForKeyboard()
 
         // Between grid rows 0–1 and 1–2
-        for rowIdx in 0 ..< (gridKeys.count - 1) {
-            for colIdx in 0 ..< gridKeys[rowIdx].count {
-                guard let top = findKey(gridKeys[rowIdx][colIdx]),
-                      let bottom = findKey(gridKeys[rowIdx + 1][colIdx])
+        for rowIdx in 0 ..< (gridSlots.count - 1) {
+            for colIdx in 0 ..< gridSlots[rowIdx].count {
+                guard let top = findKey(gridSlots[rowIdx][colIdx]),
+                      let bottom = findKey(gridSlots[rowIdx + 1][colIdx])
                 else { continue }
 
                 let x = (top.frame.midX + bottom.frame.midX) / 2
                 let y = (top.frame.maxY + bottom.frame.minY) / 2
                 tapAndAssert(
                     x: x, y: y,
-                    label: "v-gap: \(gridKeys[rowIdx][colIdx])-\(gridKeys[rowIdx + 1][colIdx])"
+                    label: "v-gap: \(gridSlots[rowIdx][colIdx])-\(gridSlots[rowIdx + 1][colIdx])"
                 )
             }
         }
 
         // Between row 2 and space bar row: use Return key as row 3 anchor
-        guard let ret = findKey("Return") else { return }
-        for letter in gridKeys[2] {
+        guard let ret = findKey("return") else { return }
+        for letter in gridSlots[2] {
             guard let top = findKey(letter) else { continue }
             let x = top.frame.midX
             let y = (top.frame.maxY + ret.frame.minY) / 2
@@ -156,21 +160,21 @@ final class DeadZoneTests: XCTestCase {
     func testDiagonalGapIntersections() {
         waitForKeyboard()
 
-        for rowIdx in 0 ..< (gridKeys.count - 1) {
-            for colIdx in 0 ..< (gridKeys[rowIdx].count - 1) {
-                guard let topLeft = findKey(gridKeys[rowIdx][colIdx]),
-                      let topRight = findKey(gridKeys[rowIdx][colIdx + 1]),
-                      let botLeft = findKey(gridKeys[rowIdx + 1][colIdx])
+        for rowIdx in 0 ..< (gridSlots.count - 1) {
+            for colIdx in 0 ..< (gridSlots[rowIdx].count - 1) {
+                guard let topLeft = findKey(gridSlots[rowIdx][colIdx]),
+                      let topRight = findKey(gridSlots[rowIdx][colIdx + 1]),
+                      let botLeft = findKey(gridSlots[rowIdx + 1][colIdx])
                 else { continue }
 
                 let x = (topLeft.frame.maxX + topRight.frame.minX) / 2
                 let y = (topLeft.frame.maxY + botLeft.frame.minY) / 2
                 tapAndAssert(
                     x: x, y: y,
-                    label: "intersection: \(gridKeys[rowIdx][colIdx])/" +
-                        "\(gridKeys[rowIdx][colIdx + 1])/" +
-                        "\(gridKeys[rowIdx + 1][colIdx])/" +
-                        "\(gridKeys[rowIdx + 1][colIdx + 1])"
+                    label: "intersection: \(gridSlots[rowIdx][colIdx])/" +
+                        "\(gridSlots[rowIdx][colIdx + 1])/" +
+                        "\(gridSlots[rowIdx + 1][colIdx])/" +
+                        "\(gridSlots[rowIdx + 1][colIdx + 1])"
                 )
             }
         }
@@ -181,7 +185,7 @@ final class DeadZoneTests: XCTestCase {
     func testSpaceBarAndUtilityGaps() {
         waitForKeyboard()
 
-        guard let ret = findKey("Return") else { return }
+        guard let ret = findKey("return") else { return }
 
         // Gap between Space bar and Return key (horizontal)
         // Tap between space bar's right side and Return
@@ -193,7 +197,7 @@ final class DeadZoneTests: XCTestCase {
         )
 
         // Gap between grid key 's' and Delete (row 2, grid to utility)
-        if let keyS = findKey("s") {
+        if let keyS = findKey("bottomRight") {
             let hOffset = keyS.frame.width * 0.3
             tapAndAssert(
                 x: keyS.frame.maxX + hOffset,
@@ -203,7 +207,7 @@ final class DeadZoneTests: XCTestCase {
         }
 
         // Gap between Delete and Return (vertical, utility column)
-        if let keyS = findKey("s") {
+        if let keyS = findKey("bottomRight") {
             let hOffset = keyS.frame.width * 0.5
             tapAndAssert(
                 x: keyS.frame.maxX + hOffset,
@@ -219,7 +223,7 @@ final class DeadZoneTests: XCTestCase {
         waitForKeyboard()
 
         // Left edge — well to the left of the leftmost grid key
-        if let keyA = findKey("a") {
+        if let keyA = findKey("topLeft") {
             let edgeInset = keyA.frame.width * 0.15
             tapAndAssert(
                 x: keyA.frame.minX - edgeInset,
@@ -227,7 +231,7 @@ final class DeadZoneTests: XCTestCase {
                 label: "left edge near 'a'"
             )
         }
-        if let keyT = findKey("t") {
+        if let keyT = findKey("bottomLeft") {
             let edgeInset = keyT.frame.width * 0.15
             tapAndAssert(
                 x: keyT.frame.minX - edgeInset,
@@ -237,7 +241,7 @@ final class DeadZoneTests: XCTestCase {
         }
 
         // Right edge — outside the utility column (true keyboard boundary)
-        if let ret = findKey("Return") {
+        if let ret = findKey("return") {
             let edgeInset = ret.frame.width * 0.15
             tapAndAssert(
                 x: ret.frame.maxX + edgeInset,
@@ -247,7 +251,7 @@ final class DeadZoneTests: XCTestCase {
         }
 
         // Top edge — above the top row
-        if let keyA = findKey("a") {
+        if let keyA = findKey("topLeft") {
             let edgeInset = keyA.frame.height * 0.15
             tapAndAssert(
                 x: keyA.frame.midX,
@@ -255,7 +259,7 @@ final class DeadZoneTests: XCTestCase {
                 label: "top edge above 'a'"
             )
         }
-        if let keyN = findKey("n") {
+        if let keyN = findKey("topCenter") {
             let edgeInset = keyN.frame.height * 0.15
             tapAndAssert(
                 x: keyN.frame.midX,
@@ -263,7 +267,7 @@ final class DeadZoneTests: XCTestCase {
                 label: "top edge above 'n'"
             )
         }
-        if let keyI = findKey("i") {
+        if let keyI = findKey("topRight") {
             let edgeInset = keyI.frame.height * 0.15
             tapAndAssert(
                 x: keyI.frame.midX,
@@ -273,14 +277,14 @@ final class DeadZoneTests: XCTestCase {
         }
 
         // Bottom edge — below the space bar / return row
-        if let ret = findKey("Return") {
+        if let ret = findKey("return") {
             let edgeInset = ret.frame.height * 0.1
             tapAndAssert(
                 x: ret.frame.midX,
                 y: ret.frame.maxY + edgeInset,
                 label: "bottom edge below Return"
             )
-            if let keyE = findKey("e") {
+            if let keyE = findKey("bottomCenter") {
                 tapAndAssert(
                     x: keyE.frame.midX,
                     y: ret.frame.maxY + edgeInset,
