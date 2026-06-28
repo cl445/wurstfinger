@@ -130,7 +130,7 @@ struct HapticSettingsView: View {
                 Text(title)
                     .font(.headline)
                 Spacer()
-                TextField("Value", value: value, formatter: NumberFormatter.decimalFormatter)
+                TextField("Value", value: value, formatter: NumberFormatter.decimalFormatter(minimum: 0, maximum: 1))
                     .keyboardType(.decimalPad)
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 80)
