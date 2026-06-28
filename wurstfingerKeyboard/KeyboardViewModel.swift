@@ -130,6 +130,9 @@ final class KeyboardViewModel: ObservableObject {
     let shouldPersistSettings: Bool
     var isSpaceDragging = false
     var spaceDragResidual: CGFloat = 0
+    /// Peak signed displacement during the current space drag. Used by the
+    /// discrete cursor-movement mode to classify regular vs. return swipes.
+    var spaceDragPeak: CGFloat = 0
     var isDeleteDragging = false
     var deleteDragResidual: CGFloat = 0
     private var userDefaultsObserver: NSObjectProtocol?
