@@ -149,6 +149,11 @@ enum KeyboardConstants {
         /// Distance to activate slide-delete (continuous deletion).
         static let slideActivationThreshold: CGFloat = 28
 
+        /// Distance per deletion step during slide-delete (one character).
+        /// Decoupled from `SpaceGestures.dragStep` so delete and cursor
+        /// sensitivity can be tuned independently.
+        static let dragStep: CGFloat = 14
+
         /// Distance for word-at-a-time deletion gesture.
         static let wordSwipeThreshold: CGFloat = 40
 

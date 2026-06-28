@@ -294,15 +294,16 @@ extension KeyboardViewModel {
         case let .changed(deltaX):
             guard isDeleteDragging, deltaX != 0 else { return }
             deleteDragResidual += deltaX
-            while deleteDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
+            let step = KeyboardConstants.DeleteGestures.dragStep
+            while deleteDragResidual <= -step {
                 dispatchAction(.deleteBackward)
                 feedbackDrag()
-                deleteDragResidual += KeyboardConstants.SpaceGestures.dragStep
+                deleteDragResidual += step
             }
-            while deleteDragResidual >= KeyboardConstants.SpaceGestures.dragStep {
+            while deleteDragResidual >= step {
                 dispatchAction(.deleteForward)
                 feedbackDrag()
-                deleteDragResidual -= KeyboardConstants.SpaceGestures.dragStep
+                deleteDragResidual -= step
             }
         case .ended:
             isDeleteDragging = false

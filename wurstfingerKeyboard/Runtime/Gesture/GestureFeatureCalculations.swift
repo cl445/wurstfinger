@@ -165,7 +165,13 @@ enum GestureCalculations {
 
     /// Calculates turn consistency (how consistently the path turns in one direction)
     /// 1.0 = all turns same direction (circle), ~0.5 = mixed directions (return swipe)
-    static func turnConsistency(of points: [CGPoint], turnThreshold: CGFloat = 0.5) -> CGFloat {
+    ///
+    /// `turnThreshold` is the minimum turn **angle** in radians (default ~8.6°)
+    /// for a segment pair to count as a turn. Using the angle keeps the cutoff
+    /// scale-invariant; a raw cross product has magnitude `|v1||v2|sin θ` (px²),
+    /// so a fixed cross threshold would make the effective angle depend on
+    /// segment length (large gestures count nearly every wobble, tiny ones none).
+    static func turnConsistency(of points: [CGPoint], turnThreshold: CGFloat = 0.15) -> CGFloat {
         guard points.count >= 3 else { return 1.0 }
 
         var cwCount = 0
@@ -174,11 +180,13 @@ enum GestureCalculations {
         for i in 1 ..< (points.count - 1) {
             let v1 = Vector2D(from: points[i - 1], to: points[i])
             let v2 = Vector2D(from: points[i], to: points[i + 1])
-            let cross = v1.cross(v2)
+            // Skip degenerate segments — turn angle is undefined for zero length.
+            guard v1.magnitudeSquared > 0, v2.magnitudeSquared > 0 else { continue }
+            let turn = v1.angle(to: v2) // signed radians: + = CCW, - = CW
 
-            if cross > turnThreshold {
+            if turn > turnThreshold {
                 ccwCount += 1
-            } else if cross < -turnThreshold {
+            } else if turn < -turnThreshold {
                 cwCount += 1
             }
         }

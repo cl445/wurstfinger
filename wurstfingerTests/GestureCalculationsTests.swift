@@ -301,6 +301,26 @@ struct GestureCalculationsTests {
         #expect(consistency < 0.7)
     }
 
+    @Test func turnConsistencyIsScaleInvariant() {
+        // Same zig-zag shape at two scales. With the old px²-cross threshold the
+        // small version registered no turns (→ 1.0, falsely "consistent");
+        // angle-based it matches the large one and is correctly inconsistent.
+        let large: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 10, y: 10),
+            CGPoint(x: 20, y: 0),
+            CGPoint(x: 30, y: 10),
+            CGPoint(x: 40, y: 0)
+        ]
+        let small = large.map { CGPoint(x: $0.x / 10, y: $0.y / 10) }
+
+        let largeConsistency = GestureCalculations.turnConsistency(of: large)
+        let smallConsistency = GestureCalculations.turnConsistency(of: small)
+
+        #expect(abs(largeConsistency - smallConsistency) < 0.001)
+        #expect(smallConsistency < 0.7)
+    }
+
     // MARK: - Oriented Compactness Tests
 
     @Test func orientedCompactnessOfSquare() {
