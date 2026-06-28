@@ -302,9 +302,9 @@ struct GestureCalculationsTests {
     }
 
     @Test func turnConsistencyIsScaleInvariant() {
-        // Same zig-zag shape at two scales. With the old px²-cross threshold the
-        // small version registered no turns (→ 1.0, falsely "consistent");
-        // angle-based it matches the large one and is correctly inconsistent.
+        // Same zig-zag shape at two scales. An angle-based turn threshold is
+        // scale-invariant, so both versions register the turns and read as
+        // correctly inconsistent.
         let large: [CGPoint] = [
             CGPoint(x: 0, y: 0),
             CGPoint(x: 10, y: 10),
