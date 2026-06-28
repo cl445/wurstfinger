@@ -201,7 +201,7 @@ struct AutoShiftedTests {
         let key = KeyConfig.letter("bottomLeft", tap: "ß")
         let shifted = key.autoShifted(locale: Locale(identifier: "de_DE"))
 
-        // German ß maps to the capital sharp S ẞ (U+1E9E), not the legacy "SS".
+        // German ß maps to the capital sharp S ẞ (U+1E9E), not the two-letter "SS".
         #expect(shifted.bindings[.tap]?.label == "ẞ")
         #expect(shifted.bindings[.tap]?.action == .commitText("ẞ"))
     }
