@@ -66,12 +66,27 @@ struct KeyGestureRecognizer: ViewModifier {
                             )
                         )
                         let classification = Self.classify(
-                            positions: positions.elements,
+                            positions: Self.anchoringOrigin(positions.elements),
                             aspectRatio: aspectRatio
                         )
                         onGestureRecognized(classification)
                     }
             )
+    }
+
+    /// Guarantees the touch-down origin `(0,0)` is the first sample.
+    ///
+    /// Every recorded point is a translation relative to touch-down, so the
+    /// true gesture origin is always `(0,0)` — appended first in `onChanged`.
+    /// On a long gesture (more samples than the position buffer's capacity)
+    /// the ring buffer evicts that origin, leaving a mid-gesture point as
+    /// `elements[0]`. Since all start-relative features (maxDisplacement,
+    /// returnRatio, dominant angle, circularity) measure from `points.first`,
+    /// a lost origin mis-classifies the gesture. When the origin was evicted
+    /// (`elements[0] != .zero`), re-anchor it.
+    static func anchoringOrigin(_ points: [CGPoint]) -> [CGPoint] {
+        guard let first = points.first, first != .zero else { return points }
+        return [.zero] + points
     }
 
     // MARK: - Classification (Pure Function)
