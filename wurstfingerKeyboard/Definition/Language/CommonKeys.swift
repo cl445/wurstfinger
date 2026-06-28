@@ -15,7 +15,7 @@ enum CommonKeys {
     static let globe: KeyConfig = {
         var bindings: [GestureType: KeyBinding] = [:]
         bindings[.tap] = KeyBinding(
-            label: "", action: .advanceToNextInputMode,
+            label: "🌐", action: .advanceToNextInputMode,
             category: .utility, returnAction: nil,
             accessibilityLabel: "Tastatur wechseln"
         )
