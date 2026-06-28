@@ -14,8 +14,11 @@ enum CommonKeys {
 
     static let globe: KeyConfig = {
         var bindings: [GestureType: KeyBinding] = [:]
+        // Tap is intentionally inert: switching the input method lives on the
+        // swipe-left gesture below. The empty `.none` slot keeps the key's
+        // accessibility label without re-triggering the globe on a plain tap.
         bindings[.tap] = KeyBinding(
-            label: "🌐", action: .advanceToNextInputMode,
+            label: "", action: .none,
             category: .utility, returnAction: nil,
             accessibilityLabel: "Tastatur wechseln"
         )
