@@ -27,7 +27,7 @@ struct KeyboardSizePositionSettingsView: View {
                         .font(.headline)
                     Spacer()
                     Spacer()
-                    TextField("Value", value: $scale, formatter: NumberFormatter.decimalFormatter(minimum: 0.25, maximum: 1.0))
+                    TextField("Value", value: $scale, formatter: NumberFormatter.decimalFormatter(minimum: 0.3, maximum: 1.0))
                         .keyboardType(.decimalPad)
                         .textFieldStyle(.roundedBorder)
                         .frame(width: 80)

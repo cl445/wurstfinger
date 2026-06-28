@@ -75,16 +75,21 @@ final class KeyboardViewController: UIInputViewController {
     /// Loads the keyboard definition only when the inputs that determine it
     /// (selected language, numpad style) have changed since the last load.
     private func loadDefinitionIfNeeded() {
-        let languageId = SharedDefaults.store.string(
+        let requestedLanguageId = SharedDefaults.store.string(
             forKey: SettingsKey.selectedLanguageId.rawValue
         ) ?? LanguageSettings.detectSystemLanguage()
+        // Resolve to a known language so a stale/invalid persisted id falls back
+        // to English instead of leaving loadDefinition a no-op.
+        let languageId = LanguageConfig.language(withId: requestedLanguageId)?.id ?? LanguageConfig.english.id
         let numpadStyle = SharedDefaults.store.string(
             forKey: SettingsKey.numpadStyle.rawValue
         ) ?? ""
         let signature = "\(languageId)|\(numpadStyle)"
         guard signature != loadedDefinitionSignature else { return }
-        loadedDefinitionSignature = signature
+        // Cache the signature only after a successful load so a failed lookup
+        // does not suppress future reload attempts.
         viewModel.loadDefinition(for: languageId)
+        loadedDefinitionSignature = signature
     }
 
     private func updateKeyboardHeight() {
