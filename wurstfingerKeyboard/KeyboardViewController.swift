@@ -15,18 +15,32 @@ final class KeyboardViewController: UIInputViewController {
     private var heightConstraint: NSLayoutConstraint?
     private var documentProxyTarget: DocumentProxyTarget?
 
+    /// Signature of the definition currently loaded into the pipeline. Used to
+    /// skip the expensive rebuild (two resolver chains + 8 middlewares) on every
+    /// `viewWillAppear` when nothing that affects the definition changed.
+    private var loadedDefinitionSignature: String?
+
     /// Reports the active keyboard language to iOS (shown in Settings > Keyboards).
     /// Reads directly from SharedDefaults to pick up language changes made in the host app,
     /// since the LanguageSettings singleton may hold a stale value from its init.
     override var primaryLanguage: String? {
         get {
-            let languageId = SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
-            let config = languageId.flatMap { LanguageConfig.language(withId: $0) } ?? .english
-            return config.locale.identifier
+            resolvedLanguage.locale.identifier
         }
         set {
             super.primaryLanguage = newValue
         }
+    }
+
+    /// The active language, resolved identically for both `primaryLanguage`
+    /// (reported to iOS) and definition loading. Reads the selected id, falls
+    /// back to the detected system language, then to English for an unknown id —
+    /// so the rendered layout and the locale shown by iOS never diverge.
+    private var resolvedLanguage: LanguageConfig {
+        let requestedId = SharedDefaults.store.string(
+            forKey: SettingsKey.selectedLanguageId.rawValue
+        ) ?? LanguageSettings.detectSystemLanguage()
+        return LanguageConfig.language(withId: requestedId) ?? .english
     }
 
     override func viewDidLoad() {
@@ -45,10 +59,7 @@ final class KeyboardViewController: UIInputViewController {
         )
 
         // Load the keyboard definition for the selected language
-        let languageId = SharedDefaults.store.string(
-            forKey: SettingsKey.selectedLanguageId.rawValue
-        ) ?? LanguageSettings.detectSystemLanguage()
-        viewModel.loadDefinition(for: languageId)
+        loadDefinitionIfNeeded()
 
         // Configure hosting synchronously so the SwiftUI view exists
         // before viewWillAppear sets the height constraint. Deferring via
@@ -64,12 +75,28 @@ final class KeyboardViewController: UIInputViewController {
         SharedDefaults.store.set(hasFullAccess, forKey: SettingsKey.keyboardFullAccess.rawValue)
         // Reload settings every time keyboard appears
         viewModel.reloadSettings()
-        // Reload definition if language changed while keyboard was backgrounded
-        let languageId = SharedDefaults.store.string(
-            forKey: SettingsKey.selectedLanguageId.rawValue
-        ) ?? LanguageSettings.detectSystemLanguage()
-        viewModel.loadDefinition(for: languageId)
+        // Reload definition only if language (or numpad style) changed while the
+        // keyboard was backgrounded — avoids rebuilding the pipeline every time.
+        loadDefinitionIfNeeded()
         updateKeyboardHeight()
+    }
+
+    /// Loads the keyboard definition only when the inputs that determine it
+    /// (selected language, numpad style) have changed since the last load.
+    private func loadDefinitionIfNeeded() {
+        // Resolve via the shared helper so a stale/invalid persisted id falls
+        // back the same way `primaryLanguage` does (system language, then
+        // English) instead of leaving loadDefinition a no-op.
+        let languageId = resolvedLanguage.id
+        let numpadStyle = SharedDefaults.store.string(
+            forKey: SettingsKey.numpadStyle.rawValue
+        ) ?? ""
+        let signature = "\(languageId)|\(numpadStyle)"
+        guard signature != loadedDefinitionSignature else { return }
+        // Cache the signature only after a successful load so a failed lookup
+        // does not suppress future reload attempts.
+        viewModel.loadDefinition(for: languageId)
+        loadedDefinitionSignature = signature
     }
 
     private func updateKeyboardHeight() {

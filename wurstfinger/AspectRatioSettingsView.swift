@@ -28,7 +28,7 @@ struct AspectRatioSettingsView: View {
                     Text("Aspect Ratio")
                         .font(.headline)
                     Spacer()
-                    TextField("Value", value: $aspectRatio, formatter: NumberFormatter.decimalFormatter)
+                    TextField("Value", value: $aspectRatio, formatter: NumberFormatter.decimalFormatter(minimum: 1.0, maximum: 1.62))
                         .keyboardType(.decimalPad)
                         .textFieldStyle(.roundedBorder)
                         .frame(width: 80)
