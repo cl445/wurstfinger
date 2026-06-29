@@ -35,6 +35,18 @@ class LanguageSettings: ObservableObject {
         }
     }
 
+    /// Resolves a raw/stored language id to one guaranteed to exist in the
+    /// registry. If the stored value is missing or stale (e.g. a language
+    /// removed in a later version), falls back to the detected system language
+    /// — which itself falls back to English. Callers therefore always receive a
+    /// renderable language id, so the keyboard never comes up blank.
+    static func resolvedLanguageId(_ storedId: String?) -> String {
+        if let storedId, LanguageConfig.language(withId: storedId) != nil {
+            return storedId
+        }
+        return detectSystemLanguage()
+    }
+
     /// Detects the system language and returns matching language ID, or English as fallback
     static func detectSystemLanguage(preferredLanguages: [String]? = nil) -> String {
         let preferredLanguages = preferredLanguages ?? Locale.preferredLanguages

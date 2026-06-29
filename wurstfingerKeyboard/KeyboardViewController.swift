@@ -19,11 +19,13 @@ final class KeyboardViewController: UIInputViewController {
     /// redundant definition reloads when the keyboard reappears unchanged.
     private var loadedLanguageId: String?
 
-    /// The language selected in the host app, falling back to the detected
-    /// system language. Determines which definition is loaded.
+    /// The language selected in the host app, normalised to an id that is
+    /// guaranteed to exist in the registry (falling back to the system language,
+    /// then English). Determines which definition is loaded.
     private var selectedLanguageId: String {
-        SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
-            ?? LanguageSettings.detectSystemLanguage()
+        LanguageSettings.resolvedLanguageId(
+            SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
+        )
     }
 
     /// Reports the active keyboard language to iOS (shown in Settings > Keyboards).
@@ -33,9 +35,8 @@ final class KeyboardViewController: UIInputViewController {
         get {
             // Resolve the locale from lightweight registry metadata only. iOS may
             // query this eagerly/repeatedly, so it must never build a layout.
-            let languageId = SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
-            return languageId
-                .flatMap { id in KeyboardRegistry.available.first { $0.id == id }?.localeIdentifier }
+            let id = selectedLanguageId
+            return (KeyboardRegistry.available.first { $0.id == id }?.localeIdentifier)
                 ?? LanguageConfig.english.locale.identifier
         }
         set {
