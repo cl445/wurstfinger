@@ -23,9 +23,11 @@ class LanguageSettings: ObservableObject {
     private init() {
         userDefaults = SharedDefaults.store
 
-        // Load saved language or detect from system, then normalize
-        let storedLanguageId = userDefaults.string(forKey: languageKey) ?? Self.detectSystemLanguage()
-        let resolvedLanguageId = LanguageConfig.language(withId: storedLanguageId)?.id ?? LanguageConfig.english.id
+        // Normalize the saved language through the shared resolver (stale/nil →
+        // system language → English) so the host app and the keyboard extension
+        // always resolve the same active language.
+        let storedLanguageId = userDefaults.string(forKey: languageKey)
+        let resolvedLanguageId = Self.resolvedLanguageId(storedLanguageId)
         selectedLanguageId = resolvedLanguageId
 
         // Persist the resolved ID so other readers (e.g. KeyboardViewModel.reloadLanguage)
@@ -33,6 +35,18 @@ class LanguageSettings: ObservableObject {
         if resolvedLanguageId != storedLanguageId {
             userDefaults.set(resolvedLanguageId, forKey: languageKey)
         }
+    }
+
+    /// Resolves a raw/stored language id to one guaranteed to exist in the
+    /// registry. If the stored value is missing or stale (e.g. a language
+    /// removed in a later version), falls back to the detected system language
+    /// — which itself falls back to English. Callers therefore always receive a
+    /// renderable language id, so the keyboard never comes up blank.
+    static func resolvedLanguageId(_ storedId: String?) -> String {
+        if let storedId, LanguageConfig.language(withId: storedId) != nil {
+            return storedId
+        }
+        return detectSystemLanguage()
     }
 
     /// Detects the system language and returns matching language ID, or English as fallback

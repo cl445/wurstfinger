@@ -287,3 +287,23 @@ struct InfoPlistLanguageTests {
         )
     }
 }
+
+// MARK: - resolvedLanguageId
+
+struct ResolvedLanguageIdTests {
+    @Test("Keeps a valid stored id")
+    func keepsValidId() {
+        #expect(LanguageSettings.resolvedLanguageId("de_DE") == "de_DE")
+    }
+
+    @Test("Falls back for a stale/unknown id")
+    func fallsBackForUnknownId() {
+        // Contract: stale/unknown → detected system language (not just "any valid id").
+        #expect(LanguageSettings.resolvedLanguageId("xx_XX") == LanguageSettings.detectSystemLanguage())
+    }
+
+    @Test("Falls back for nil")
+    func fallsBackForNil() {
+        #expect(LanguageSettings.resolvedLanguageId(nil) == LanguageSettings.detectSystemLanguage())
+    }
+}

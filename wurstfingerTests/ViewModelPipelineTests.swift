@@ -273,12 +273,14 @@ struct ViewModelDefinitionTests {
         #expect(vm.currentArrangement != nil)
     }
 
-    @Test func unknownLanguageIdDoesNotCrash() throws {
+    @Test func unknownLanguageIdFallsBackToEnglish() throws {
         let defaults = try #require(UserDefaults(suiteName: "test.\(UUID().uuidString)"))
         let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
         vm.loadDefinition(for: "nonexistent_XX")
-        #expect(vm.currentDefinition == nil)
-        #expect(vm.activeModeFromDefinition == nil)
+        // Must never leave the keyboard blank — falls back to a renderable layout.
+        #expect(vm.currentDefinition != nil)
+        #expect(vm.currentDefinition?.id == LanguageConfig.english.id)
+        #expect(vm.activeModeFromDefinition != nil)
     }
 
     @Test func allLanguagesLoadSuccessfully() {
