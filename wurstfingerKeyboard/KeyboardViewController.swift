@@ -20,29 +20,29 @@ final class KeyboardViewController: UIInputViewController {
     /// `viewWillAppear` when nothing that affects the definition changed.
     private var loadedDefinitionSignature: String?
 
+    /// The language selected in the host app, normalised to an id that is
+    /// guaranteed to exist in the registry (falling back to the system language,
+    /// then English). Determines which definition is loaded.
+    private var selectedLanguageId: String {
+        LanguageSettings.resolvedLanguageId(
+            SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
+        )
+    }
+
     /// Reports the active keyboard language to iOS (shown in Settings > Keyboards).
     /// Reads directly from SharedDefaults to pick up language changes made in the host app,
     /// since the LanguageSettings singleton may hold a stale value from its init.
     override var primaryLanguage: String? {
         get {
-            // `resolvedLanguage` reads lightweight registry/config metadata only
-            // (it never builds a layout), so it is safe for iOS to query eagerly.
-            resolvedLanguage.locale.identifier
+            // Resolve the locale from lightweight registry metadata only. iOS may
+            // query this eagerly/repeatedly, so it must never build a layout.
+            let id = selectedLanguageId
+            return (KeyboardRegistry.available.first { $0.id == id }?.localeIdentifier)
+                ?? LanguageConfig.english.locale.identifier
         }
         set {
             super.primaryLanguage = newValue
         }
-    }
-
-    /// The active language, resolved identically for both `primaryLanguage`
-    /// (reported to iOS) and definition loading. Reads the selected id, falls
-    /// back to the detected system language, then to English for an unknown id —
-    /// so the rendered layout and the locale shown by iOS never diverge.
-    private var resolvedLanguage: LanguageConfig {
-        let requestedId = SharedDefaults.store.string(
-            forKey: SettingsKey.selectedLanguageId.rawValue
-        ) ?? LanguageSettings.detectSystemLanguage()
-        return LanguageConfig.language(withId: requestedId) ?? .english
     }
 
     override func viewDidLoad() {
@@ -91,7 +91,7 @@ final class KeyboardViewController: UIInputViewController {
         // Resolve via the shared helper so a stale/invalid persisted id falls
         // back the same way `primaryLanguage` does (system language, then
         // English) instead of leaving loadDefinition a no-op.
-        let languageId = resolvedLanguage.id
+        let languageId = selectedLanguageId
         let numpadStyle = SharedDefaults.store.string(
             forKey: SettingsKey.numpadStyle.rawValue
         ) ?? ""
@@ -109,7 +109,7 @@ final class KeyboardViewController: UIInputViewController {
         // Free cached layouts for languages other than the active one. The
         // active definition stays resident (the view model holds a strong
         // reference) and remains cached for fast reuse.
-        KeyboardRegistry.evictAll(except: resolvedLanguage.id)
+        KeyboardRegistry.evictAll(except: selectedLanguageId)
     }
 
     private func updateKeyboardHeight() {

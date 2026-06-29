@@ -15,7 +15,12 @@ extension KeyboardViewModel {
     /// Loads a keyboard definition by ID from the registry and sets up the
     /// resolver chain and action pipeline.
     func loadDefinition(for id: String) {
-        guard let base = KeyboardRegistry.load(id: id) else { return }
+        // Fall back to English if the requested language can't be resolved (e.g.
+        // a stale stored id for a language removed in a later version) so the
+        // keyboard always renders a layout instead of coming up blank.
+        guard let base = KeyboardRegistry.load(id: id)
+            ?? KeyboardRegistry.load(id: LanguageConfig.english.id)
+        else { return }
         let definition = applyNumpadStyle(to: base)
         currentDefinition = definition
         activeModeName = definition.defaultMode
