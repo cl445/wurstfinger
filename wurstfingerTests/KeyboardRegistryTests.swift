@@ -12,12 +12,12 @@ import Testing
 // MARK: - KeyboardInfo
 
 struct KeyboardInfoTests {
-    @Test func initFromDefinition() {
-        let definition = LanguageDefinitions.german
-        let info = KeyboardInfo(from: definition)
-        #expect(info.id == definition.id)
-        #expect(info.title == definition.title)
-        #expect(info.localeIdentifier == definition.localeIdentifier)
+    @Test func initFromDescriptor() {
+        let descriptor = LanguageDefinitions.german
+        let info = KeyboardInfo(from: descriptor)
+        #expect(info.id == descriptor.id)
+        #expect(info.title == descriptor.title)
+        #expect(info.localeIdentifier == descriptor.localeIdentifier)
     }
 
     @Test func identifiable() {

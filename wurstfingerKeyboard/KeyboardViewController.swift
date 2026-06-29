@@ -15,14 +15,28 @@ final class KeyboardViewController: UIInputViewController {
     private var heightConstraint: NSLayoutConstraint?
     private var documentProxyTarget: DocumentProxyTarget?
 
+    /// The language id currently loaded into the view model. Used to skip
+    /// redundant definition reloads when the keyboard reappears unchanged.
+    private var loadedLanguageId: String?
+
+    /// The language selected in the host app, falling back to the detected
+    /// system language. Determines which definition is loaded.
+    private var selectedLanguageId: String {
+        SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
+            ?? LanguageSettings.detectSystemLanguage()
+    }
+
     /// Reports the active keyboard language to iOS (shown in Settings > Keyboards).
     /// Reads directly from SharedDefaults to pick up language changes made in the host app,
     /// since the LanguageSettings singleton may hold a stale value from its init.
     override var primaryLanguage: String? {
         get {
+            // Resolve the locale from lightweight registry metadata only. iOS may
+            // query this eagerly/repeatedly, so it must never build a layout.
             let languageId = SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
-            let config = languageId.flatMap { LanguageConfig.language(withId: $0) } ?? .english
-            return config.locale.identifier
+            return languageId
+                .flatMap { id in KeyboardRegistry.available.first { $0.id == id }?.localeIdentifier }
+                ?? LanguageConfig.english.locale.identifier
         }
         set {
             super.primaryLanguage = newValue
@@ -31,6 +45,7 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        KeyboardMemoryLog.record("viewDidLoad.start")
 
         // Set background immediately to avoid flash
         view.backgroundColor = .clear
@@ -45,10 +60,9 @@ final class KeyboardViewController: UIInputViewController {
         )
 
         // Load the keyboard definition for the selected language
-        let languageId = SharedDefaults.store.string(
-            forKey: SettingsKey.selectedLanguageId.rawValue
-        ) ?? LanguageSettings.detectSystemLanguage()
+        let languageId = selectedLanguageId
         viewModel.loadDefinition(for: languageId)
+        loadedLanguageId = languageId
 
         // Configure hosting synchronously so the SwiftUI view exists
         // before viewWillAppear sets the height constraint. Deferring via
@@ -56,6 +70,7 @@ final class KeyboardViewController: UIInputViewController {
         // viewWillAppear ran before configureHosting, leaving the extension
         // with a height constraint but no content.
         configureHosting()
+        KeyboardMemoryLog.record("viewDidLoad.end")
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -64,12 +79,24 @@ final class KeyboardViewController: UIInputViewController {
         SharedDefaults.store.set(hasFullAccess, forKey: SettingsKey.keyboardFullAccess.rawValue)
         // Reload settings every time keyboard appears
         viewModel.reloadSettings()
-        // Reload definition if language changed while keyboard was backgrounded
-        let languageId = SharedDefaults.store.string(
-            forKey: SettingsKey.selectedLanguageId.rawValue
-        ) ?? LanguageSettings.detectSystemLanguage()
-        viewModel.loadDefinition(for: languageId)
+        // Reload the definition only if the language changed while the keyboard
+        // was backgrounded. Rebuilding the resolver chain and pipeline on every
+        // appearance is wasted work when nothing changed.
+        let languageId = selectedLanguageId
+        if languageId != loadedLanguageId {
+            viewModel.loadDefinition(for: languageId)
+            loadedLanguageId = languageId
+        }
         updateKeyboardHeight()
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        KeyboardMemoryLog.record("didReceiveMemoryWarning")
+        // Free cached layouts for languages other than the active one. The
+        // active definition stays resident (the view model holds a strong
+        // reference) and remains cached for fast reuse.
+        KeyboardRegistry.evictAll(except: selectedLanguageId)
     }
 
     private func updateKeyboardHeight() {
