@@ -9,7 +9,7 @@ import Foundation
 
 /// References a key by ID and determines its size in the grid.
 /// The same key can be placed differently in different arrangements.
-struct KeyPlacement: Codable, Equatable {
+struct KeyPlacement: Codable, Equatable, Hashable {
     /// Reference to a KeyConfig.id
     let keyId: String
 

@@ -75,6 +75,21 @@ enum GridLayoutSolver {
         return cells
     }
 
+    /// Cache of solved arrangements. There are only a handful of distinct
+    /// arrangements (4 contexts × alpha/numeric), so this stays tiny and is
+    /// effectively permanent. Main-actor isolated because only the SwiftUI view
+    /// reads it; tests call the pure `solve(_:)` directly.
+    @MainActor private static var cache: [GridArrangement: [SolvedCell]] = [:]
+
+    /// `solve(_:)` memoised for the render path, avoiding the occupancy-matrix
+    /// and cell-array allocations on every `body` evaluation.
+    @MainActor static func solveCached(_ arrangement: GridArrangement) -> [SolvedCell] {
+        if let cached = cache[arrangement] { return cached }
+        let solved = solve(arrangement)
+        cache[arrangement] = solved
+        return solved
+    }
+
     /// Total number of grid rows the arrangement occupies, accounting for spans.
     static func rowCount(_ arrangement: GridArrangement) -> Int {
         solve(arrangement).map { $0.row + $0.rowSpan }.max() ?? arrangement.rows.count
