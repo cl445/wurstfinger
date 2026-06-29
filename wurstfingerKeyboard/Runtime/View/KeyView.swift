@@ -75,7 +75,10 @@ struct KeyView: View {
                     onGesture(key, classification.gesture, classification.isReturn)
                 },
                 onTouchDown: { onTouchDown?() },
-                aspectRatio: keyAspectRatio,
+                // Account for the spanned cell: a multi-row/-column key is not
+                // 1×1, so scale the base aspect ratio by columnSpan/rowSpan
+                // (spanRatio) to classify swipes against the real geometry.
+                aspectRatio: CGFloat(keyAspectRatio) * spanRatio,
                 isActive: $isActive
             ))
         }

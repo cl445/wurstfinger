@@ -68,7 +68,9 @@ struct GridLayoutSolverInvariantTests {
         let name = item.name
         let arrangement = item.arrangement
         let cells = GridLayoutSolver.solve(arrangement)
-        let rows = GridLayoutSolver.rowCount(arrangement)
+        // Derive expected rows from the fixture, not the function under test,
+        // so a rowCount regression can't also lower the expected tiled area.
+        let rows = arrangement.rows.count
         var covered = Set<[Int]>()
         for cell in cells {
             for row in cell.row ..< (cell.row + cell.rowSpan) {
