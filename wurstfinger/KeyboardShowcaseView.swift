@@ -7,15 +7,35 @@
 
 import SwiftUI
 
-/// Counts pipeline actions for dead zone testing.
+/// Captures pipeline actions for UI testing.
+///
+/// Always counts actions (for dead-zone testing). When `capturesText` is set
+/// it models a minimal document — text split into `before` and `after` the
+/// cursor — so typing UI tests can assert the actual output, including
+/// cursor-aware behaviour (space-drag moves the insertion point) and
+/// context-dependent actions (compose / capitalize).
 private class ActionCountTarget: TextInputTarget, ObservableObject {
     @Published var count: Int = 0
+    @Published private var before: String = ""
+    @Published private var after: String = ""
+
+    private let capturesText: Bool
+
+    init(capturesText: Bool = false) {
+        self.capturesText = capturesText
+    }
+
+    /// Full captured text (before + after the cursor).
+    var typedText: String {
+        before + after
+    }
+
     var documentContextBeforeInput: String? {
-        nil
+        capturesText ? before : nil
     }
 
     var documentContextAfterInput: String? {
-        nil
+        capturesText ? after : nil
     }
 
     var selectedText: String? {
@@ -26,26 +46,41 @@ private class ActionCountTarget: TextInputTarget, ObservableObject {
         false
     }
 
-    func insertText(_: String) {
+    func insertText(_ text: String) {
         count += 1
+        if capturesText { before += text }
     }
 
     func deleteBackward() {
         count += 1
+        if capturesText, !before.isEmpty { before.removeLast() }
     }
 
-    func adjustTextPosition(byCharacterOffset _: Int) {
+    func adjustTextPosition(byCharacterOffset offset: Int) {
         count += 1
+        guard capturesText, offset != 0 else { return }
+        if offset > 0 {
+            let n = min(offset, after.count)
+            before += after.prefix(n)
+            after.removeFirst(n)
+        } else {
+            let n = min(-offset, before.count)
+            after = String(before.suffix(n)) + after
+            before.removeLast(n)
+        }
     }
 }
 
 struct KeyboardShowcaseView: View {
     @StateObject private var viewModel = KeyboardViewModel(shouldPersistSettings: false)
     @StateObject private var languageSettings = LanguageSettings.shared
-    @StateObject private var actionTarget = ActionCountTarget()
+    @StateObject private var actionTarget = ActionCountTarget(
+        capturesText: ProcessInfo.processInfo.environment["TYPING_TEST"] != nil
+    )
     @State private var colorScheme: ColorScheme?
 
     private let isDeadZoneTest = ProcessInfo.processInfo.environment["DEAD_ZONE_TEST"] != nil
+    private let isTypingTest = ProcessInfo.processInfo.environment["TYPING_TEST"] != nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -64,6 +99,17 @@ struct KeyboardShowcaseView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
+
+            if isTypingTest {
+                // Visible placeholder keeps the element present when empty;
+                // the exact text (incl. empty / trailing spaces) is exposed
+                // via accessibilityValue and read by tests as `.value`.
+                Text(actionTarget.typedText.isEmpty ? "—" : actionTarget.typedText)
+                    .accessibilityIdentifier("typedText")
+                    .accessibilityValue(actionTarget.typedText)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
         }
         .background(Color(.systemBackground))
         .preferredColorScheme(colorScheme)
@@ -74,8 +120,8 @@ struct KeyboardShowcaseView: View {
                 languageSettings.selectedLanguageId = forcedLanguage
             }
 
-            // Wire up dead zone counter
-            if isDeadZoneTest {
+            // Wire up the capturing target for dead-zone and typing tests
+            if isDeadZoneTest || isTypingTest {
                 viewModel.bindTextInputTarget(actionTarget)
             }
 
