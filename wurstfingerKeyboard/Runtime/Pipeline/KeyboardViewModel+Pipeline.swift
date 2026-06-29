@@ -273,10 +273,13 @@ extension KeyboardViewModel {
             isSpaceDragging = true
             spaceDragResidual = 0
             spaceDragPeak = 0
+            // Snapshot the style once so a mid-drag settings change can't switch
+            // this gesture between discrete and continuous classification.
+            spaceDragCursorStyle = cursorMovementStyle
         case let .changed(deltaX):
             guard isSpaceDragging, deltaX != 0 else { return }
             spaceDragResidual += deltaX
-            if cursorMovementStyle == .discrete {
+            if spaceDragCursorStyle == .discrete {
                 // Track the peak; movement is deferred to `.ended` so the whole
                 // swipe counts as a single discrete step.
                 if abs(spaceDragResidual) > abs(spaceDragPeak) {
@@ -286,7 +289,7 @@ extension KeyboardViewModel {
                 stepContinuousCursor()
             }
         case .ended:
-            if cursorMovementStyle == .discrete {
+            if spaceDragCursorStyle == .discrete {
                 finishDiscreteSpaceSlide()
             }
             isSpaceDragging = false

@@ -93,16 +93,13 @@ struct DiscreteCursorMovementTests {
         return (vm, target)
     }
 
-    private func spaceKey(_ vm: KeyboardViewModel) -> KeyConfig {
-        guard let key = vm.activeModeFromDefinition?.key(for: UtilitySlot.space) else {
-            fatalError("Space key not found in definition")
-        }
-        return key
+    private func spaceKey(_ vm: KeyboardViewModel) throws -> KeyConfig {
+        try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))
     }
 
-    @Test func regularSwipeForwardMovesExactlyOneCharacter() {
+    @Test func regularSwipeForwardMovesExactlyOneCharacter() throws {
         let (vm, target) = makeDiscreteViewModel()
-        let key = spaceKey(vm)
+        let key = try spaceKey(vm)
         let step = KeyboardConstants.SpaceGestures.dragStep
         vm.handleSlide(key, phase: .began)
         // Travels two full steps, but discrete moves a single character.
@@ -111,9 +108,9 @@ struct DiscreteCursorMovementTests {
         #expect(target.events == [.adjustCursor(1)])
     }
 
-    @Test func regularSwipeBackwardMovesExactlyOneCharacter() {
+    @Test func regularSwipeBackwardMovesExactlyOneCharacter() throws {
         let (vm, target) = makeDiscreteViewModel()
-        let key = spaceKey(vm)
+        let key = try spaceKey(vm)
         let step = KeyboardConstants.SpaceGestures.dragStep
         vm.handleSlide(key, phase: .began)
         vm.handleSlide(key, phase: .changed(deltaX: -step * 2))
@@ -121,9 +118,9 @@ struct DiscreteCursorMovementTests {
         #expect(target.events == [.adjustCursor(-1)])
     }
 
-    @Test func returnSwipeForwardMovesOneWord() {
+    @Test func returnSwipeForwardMovesOneWord() throws {
         let (vm, target) = makeDiscreteViewModel()
-        let key = spaceKey(vm)
+        let key = try spaceKey(vm)
         target.documentContextAfterInput = "foo bar"
         vm.handleSlide(key, phase: .began)
         // Out far, then back toward the origin → return swipe.
@@ -134,9 +131,9 @@ struct DiscreteCursorMovementTests {
         #expect(target.events == [.adjustCursor(3)])
     }
 
-    @Test func returnSwipeBackwardMovesOneWord() {
+    @Test func returnSwipeBackwardMovesOneWord() throws {
         let (vm, target) = makeDiscreteViewModel()
-        let key = spaceKey(vm)
+        let key = try spaceKey(vm)
         target.documentContextBeforeInput = "hello world"
         vm.handleSlide(key, phase: .began)
         vm.handleSlide(key, phase: .changed(deltaX: -40))
@@ -146,11 +143,11 @@ struct DiscreteCursorMovementTests {
         #expect(target.events == [.adjustCursor(-5)])
     }
 
-    @Test func tinyDragDoesNotMove() {
+    @Test func tinyDragDoesNotMove() throws {
         let (vm, target) = makeDiscreteViewModel()
-        let key = spaceKey(vm)
+        let key = try spaceKey(vm)
         vm.handleSlide(key, phase: .began)
-        vm.handleSlide(key, phase: .changed(deltaX: 3))
+        vm.handleSlide(key, phase: .changed(deltaX: KeyboardConstants.SpaceGestures.dragStep / 2))
         vm.handleSlide(key, phase: .ended)
         #expect(target.events.isEmpty)
     }
