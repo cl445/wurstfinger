@@ -48,6 +48,25 @@ private func loadCatalog(_ relativePath: String) throws -> (source: String, stri
     return (source, strings)
 }
 
+/// Collects every `stringUnit` reachable from a single localization value,
+/// descending through `variations` (plural / device, possibly nested), so that
+/// variation-based translations are validated like plain string units.
+private func stringUnits(in localization: [String: Any]) -> [[String: Any]] {
+    if let unit = localization["stringUnit"] as? [String: Any] {
+        return [unit]
+    }
+    guard let variations = localization["variations"] as? [String: Any] else {
+        return []
+    }
+    var units: [[String: Any]] = []
+    for case let category as [String: Any] in variations.values {
+        for case let nested as [String: Any] in category.values {
+            units.append(contentsOf: stringUnits(in: nested))
+        }
+    }
+    return units
+}
+
 struct LocalizationCompletenessTests {
     @Test("Catalog source language is English", arguments: localizationCatalogs)
     func sourceLanguageIsEnglish(_ relativePath: String) throws {
@@ -70,20 +89,22 @@ struct LocalizationCompletenessTests {
 
             for lang in requiredLanguages.intersection(present).sorted() {
                 guard let loc = localizations[lang] as? [String: Any] else { continue }
-                // Plural/device "variations" are an accepted shape; only validate plain string units.
-                guard let unit = loc["stringUnit"] as? [String: Any] else {
-                    if loc["variations"] == nil {
-                        problems.append("[\(lang)] malformed entry: \"\(key)\"")
-                    }
+                // Collect every string unit, descending into plural/device
+                // "variations" so nested translations are validated too.
+                let units = stringUnits(in: loc)
+                if units.isEmpty {
+                    problems.append("[\(lang)] malformed entry: \"\(key)\"")
                     continue
                 }
-                let value = (unit["value"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-                let state = unit["state"] as? String ?? ""
-                if value.isEmpty {
-                    problems.append("[\(lang)] empty value: \"\(key)\"")
-                }
-                if state != "translated" {
-                    problems.append("[\(lang)] state '\(state)' (expected 'translated'): \"\(key)\"")
+                for unit in units {
+                    let value = (unit["value"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                    let state = unit["state"] as? String ?? ""
+                    if value.isEmpty {
+                        problems.append("[\(lang)] empty value: \"\(key)\"")
+                    }
+                    if state != "translated" {
+                        problems.append("[\(lang)] state '\(state)' (expected 'translated'): \"\(key)\"")
+                    }
                 }
             }
         }
