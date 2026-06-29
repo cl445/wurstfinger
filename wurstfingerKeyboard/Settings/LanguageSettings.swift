@@ -23,9 +23,11 @@ class LanguageSettings: ObservableObject {
     private init() {
         userDefaults = SharedDefaults.store
 
-        // Load saved language or detect from system, then normalize
-        let storedLanguageId = userDefaults.string(forKey: languageKey) ?? Self.detectSystemLanguage()
-        let resolvedLanguageId = LanguageConfig.language(withId: storedLanguageId)?.id ?? LanguageConfig.english.id
+        // Normalize the saved language through the shared resolver (stale/nil →
+        // system language → English) so the host app and the keyboard extension
+        // always resolve the same active language.
+        let storedLanguageId = userDefaults.string(forKey: languageKey)
+        let resolvedLanguageId = Self.resolvedLanguageId(storedLanguageId)
         selectedLanguageId = resolvedLanguageId
 
         // Persist the resolved ID so other readers (e.g. KeyboardViewModel.reloadLanguage)

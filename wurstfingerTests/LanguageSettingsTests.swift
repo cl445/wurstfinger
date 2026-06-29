@@ -298,14 +298,12 @@ struct ResolvedLanguageIdTests {
 
     @Test("Falls back for a stale/unknown id")
     func fallsBackForUnknownId() {
-        let resolved = LanguageSettings.resolvedLanguageId("xx_XX")
-        // Must resolve to a language that actually exists in the registry.
-        #expect(LanguageConfig.language(withId: resolved) != nil)
+        // Contract: stale/unknown → detected system language (not just "any valid id").
+        #expect(LanguageSettings.resolvedLanguageId("xx_XX") == LanguageSettings.detectSystemLanguage())
     }
 
     @Test("Falls back for nil")
     func fallsBackForNil() {
-        let resolved = LanguageSettings.resolvedLanguageId(nil)
-        #expect(LanguageConfig.language(withId: resolved) != nil)
+        #expect(LanguageSettings.resolvedLanguageId(nil) == LanguageSettings.detectSystemLanguage())
     }
 }
