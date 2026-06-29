@@ -266,6 +266,12 @@ final class TypingTests: XCTestCase {
         let center = key("center")
         XCTAssertTrue(center.waitForExistence(timeout: 2), "Center key missing after layer switch")
         let label = center.label
+        // Verify the switch actually landed on the numeric layer (a digit),
+        // not just any echoable key (e.g. a punctuation/symbols layer).
+        XCTAssertTrue(
+            !label.isEmpty && label.allSatisfy(\.isNumber),
+            "Expected a digit on the numeric layer after the symbols key, got '\(label)'"
+        )
         center.tap()
 
         assertTypedText(equals: label)

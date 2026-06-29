@@ -25,7 +25,9 @@ struct MultiLanguageTypingTests {
             guard let center = vm.activeModeFromDefinition?.key(for: GridSlot.center),
                   case let .commitText(expected) = center.bindings[.tap]?.action
             else {
-                // Center without a plain commit-text tap — nothing to assert here.
+                // Every language's center key is expected to commit a literal
+                // character; a missing/changed binding is a layout regression.
+                Issue.record("Language \(info.id): center key has no commit-text tap binding")
                 continue
             }
 
