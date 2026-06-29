@@ -192,9 +192,20 @@ struct AdvancedTextCapitalizeWordTests {
 // MARK: - Clipboard
 
 // Serialized: these tests share the process-wide `UIPasteboard.general`
-// singleton, so they must not run concurrently with one another.
+// singleton, so they must not run concurrently with one another. A fresh
+// instance is created per test, so capturing the pasteboard in `init` and
+// restoring it in `deinit` reverts any clipboard writes and prevents leaking
+// process-global state into later tests.
 @Suite(.serialized)
-struct AdvancedTextMiddlewareClipboardTests {
+final class AdvancedTextMiddlewareClipboardTests {
+    private let originalPasteboard: String?
+
+    init() {
+        originalPasteboard = UIPasteboard.general.string
+    }
+
+    deinit { UIPasteboard.general.string = originalPasteboard }
+
     @Test func copyWritesSelectionToPasteboardWithFullAccess() {
         let target = MockTextTarget()
         target.hasFullAccess = true
@@ -261,6 +272,9 @@ struct AdvancedTextMiddlewareClipboardTests {
     }
 
     @Test func cutIsNoopWithoutFullAccess() {
+        let marker = "untouched-\(UUID().uuidString)"
+        UIPasteboard.general.string = marker
+
         let target = MockTextTarget()
         target.hasFullAccess = false
         target.selectedText = "secret"
@@ -269,9 +283,13 @@ struct AdvancedTextMiddlewareClipboardTests {
         middleware.process(AdvancedTextFixtures.context(.cut)) { _ in }
 
         #expect(target.events.isEmpty)
+        #expect(UIPasteboard.general.string == marker) // pasteboard untouched
     }
 
     @Test func cutIsNoopWhenNothingSelected() {
+        let marker = "untouched-\(UUID().uuidString)"
+        UIPasteboard.general.string = marker
+
         let target = MockTextTarget()
         target.hasFullAccess = true
         target.selectedText = nil
@@ -280,5 +298,6 @@ struct AdvancedTextMiddlewareClipboardTests {
         middleware.process(AdvancedTextFixtures.context(.cut)) { _ in }
 
         #expect(target.events.isEmpty)
+        #expect(UIPasteboard.general.string == marker) // pasteboard untouched
     }
 }
