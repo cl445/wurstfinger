@@ -24,14 +24,14 @@ struct KeyView: View {
 
     @State private var isActive = false
 
-    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
-    private var keyboardStyle: KeyboardStyle = .classic
-
-    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
-    private var keyboardScale: Double = DeviceLayoutUtils.defaultKeyboardScale
-
-    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
-    private var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
+    /// Visual style, row height and aspect ratio are passed down from
+    /// `KeyboardGridView` rather than each key observing UserDefaults itself.
+    /// That collapses ~3 observers per key (dozens per keyboard) into one set of
+    /// observers on the parent, so a settings change re-renders the grid once
+    /// instead of fanning out across every key.
+    var keyboardStyle: KeyboardStyle = .classic
+    var rowHeight: CGFloat = KeyboardConstants.KeyDimensions.height
+    var aspectRatio: CGFloat = DeviceLayoutUtils.defaultKeyAspectRatio
 
     /// Maps emoji labels to SF Symbol names for utility keys.
     private static let sfSymbolMap: [String: String] = [
@@ -76,9 +76,10 @@ struct KeyView: View {
                 },
                 onTouchDown: { onTouchDown?() },
                 // Account for the spanned cell: a multi-row/-column key is not
-                // 1×1, so scale the base aspect ratio by columnSpan/rowSpan
-                // (spanRatio) to classify swipes against the real geometry.
-                aspectRatio: CGFloat(keyAspectRatio) * spanRatio,
+                // 1×1, so scale the (re-render-cached) base aspect ratio by
+                // columnSpan/rowSpan (spanRatio) to classify swipes against the
+                // real geometry.
+                aspectRatio: aspectRatio * spanRatio,
                 isActive: $isActive
             ))
         }
@@ -118,22 +119,17 @@ struct KeyView: View {
         }
     }
 
-    /// Effective key height accounting for both keyboard scale and aspect ratio.
-    private var effectiveKeyHeight: CGFloat {
-        KeyboardConstants.Calculations.keyHeight(aspectRatio: keyAspectRatio) * keyboardScale
-    }
-
-    /// Scaled font size proportional to effective key height.
+    /// Scaled font size proportional to the row height.
     private var scaledFontSize: CGFloat {
         let base = Self.baseFontSize(for: key.style)
-        let scaled = base * (effectiveKeyHeight / KeyboardConstants.FontSizes.mainLabelReferenceHeight)
+        let scaled = base * (rowHeight / KeyboardConstants.FontSizes.mainLabelReferenceHeight)
         return min(max(scaled, KeyboardConstants.FontSizes.mainLabelMinSize), KeyboardConstants.FontSizes.mainLabelMaxSize)
     }
 
-    /// Scaled hint font size proportional to effective key height.
+    /// Scaled hint font size proportional to the row height.
     private var scaledHintFontSize: CGFloat {
         let base = KeyboardConstants.FontSizes.hintBaseSize
-        let scaled = base * (effectiveKeyHeight / KeyboardConstants.FontSizes.hintReferenceHeight)
+        let scaled = base * (rowHeight / KeyboardConstants.FontSizes.hintReferenceHeight)
         return min(max(scaled, KeyboardConstants.FontSizes.hintMinSize), KeyboardConstants.FontSizes.hintMaxSize)
     }
 

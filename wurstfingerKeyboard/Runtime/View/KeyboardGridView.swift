@@ -27,6 +27,11 @@ struct KeyboardGridView: View {
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
 
+    // Observed once for the whole grid and passed down to each KeyView, instead
+    // of every key observing this key itself.
+    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
+    private var keyboardStyle: KeyboardStyle = .classic
+
     /// Height of a single grid row, matching `KeyView`'s effective key height so
     /// portrait layouts are unchanged and a 2-row key is exactly twice as tall
     /// (plus the inter-row spacing).
@@ -35,7 +40,7 @@ struct KeyboardGridView: View {
     }
 
     var body: some View {
-        let cells = GridLayoutSolver.solve(arrangement)
+        let cells = GridLayoutSolver.solveCached(arrangement)
         KeyboardGridLayout(
             cells: cells,
             columns: arrangement.columns,
@@ -57,7 +62,10 @@ struct KeyboardGridView: View {
                 onGesture: onGesture,
                 onTouchDown: onTouchDown,
                 onSlide: onSlide,
-                spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan)
+                spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan),
+                keyboardStyle: keyboardStyle,
+                rowHeight: rowHeight,
+                aspectRatio: keyAspectRatio
             )
             .id(cell.keyId)
         } else {
