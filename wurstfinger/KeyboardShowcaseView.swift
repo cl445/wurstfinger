@@ -52,6 +52,9 @@ struct KeyboardShowcaseView: View {
             DataDrivenKeyboardRootView(viewModel: viewModel)
                 .frame(maxWidth: .infinity)
                 .background(Color(.systemBackground))
+                // `.contain` promotes the per-key accessibilityIdentifiers into
+                // a queryable container so UI tests can find keys by slot id.
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("showcaseKeyboard")
                 .padding(.vertical, 8)
 
