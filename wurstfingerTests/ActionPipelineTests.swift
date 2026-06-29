@@ -320,6 +320,56 @@ struct ComposeMiddlewareTests {
 
         #expect(sink.received.first?.action == .commitText("!"))
     }
+
+    // MARK: - cycleAccents
+
+    @Test func cyclesAccentWhenCycleExists() {
+        var deleted = 0
+        let middleware = ComposeMiddleware(
+            compose: { _, _ in Issue.record("compose must not run for cycleAccents"); return nil },
+            cycleAccent: { $0 == "ä" ? "â" : nil },
+            previousCharacter: { "ä" },
+            deletePreviousCharacter: { deleted += 1 }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .cycleAccents))
+
+        #expect(sink.received.first?.action == .commitText("â"))
+        #expect(deleted == 1, "Previous character must be consumed when a cycle exists")
+    }
+
+    @Test func cycleAccentsPassesThroughWhenNoPreviousCharacter() {
+        let middleware = ComposeMiddleware(
+            compose: { _, _ in nil },
+            cycleAccent: { _ in Issue.record("cycleAccent must not run without a previous char"); return nil },
+            previousCharacter: { "" },
+            deletePreviousCharacter: { Issue.record("Must not delete without previous char") }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .cycleAccents))
+
+        // No previous character → action forwarded unchanged.
+        #expect(sink.received.first?.action == .cycleAccents)
+    }
+
+    @Test func cycleAccentsPassesThroughWhenNoCycleExists() {
+        let middleware = ComposeMiddleware(
+            compose: { _, _ in nil },
+            cycleAccent: { _ in nil }, // no cycle for this character
+            previousCharacter: { "x" },
+            deletePreviousCharacter: { Issue.record("Must not delete when no cycle exists") }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .cycleAccents))
+
+        #expect(sink.received.first?.action == .cycleAccents)
+    }
 }
 
 // MARK: - TextInputMiddleware
