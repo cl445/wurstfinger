@@ -15,13 +15,27 @@ extension KeyboardViewModel {
     /// Loads a keyboard definition by ID from the registry and sets up the
     /// resolver chain and action pipeline.
     func loadDefinition(for id: String) {
-        guard let definition = KeyboardRegistry.load(id: id) else { return }
+        guard let base = KeyboardRegistry.load(id: id) else { return }
+        let definition = applyNumpadStyle(to: base)
         currentDefinition = definition
         activeModeName = definition.defaultMode
         pipelineLocale = definition.locale
         currentMode = definition.mode(activeModeName)
         rebuildResolverChain()
         rebuildPipeline()
+    }
+
+    /// Swaps the numeric layer to the classic (7-8-9) ordering when the user
+    /// selected it. The registry caches the phone-style definition, so this
+    /// always derives from the canonical phone layout and never mutates the cache.
+    private func applyNumpadStyle(to definition: KeyboardDefinition) -> KeyboardDefinition {
+        let raw = sharedDefaults.string(forKey: SettingsKey.numpadStyle.rawValue)
+        let style = raw.flatMap(NumpadStyle.init(rawValue:)) ?? .phone
+        guard style == .classic else { return definition }
+        let classicNumeric = NumericLayouts.classic(
+            backToAlphaLabel: definition.numericBackToAlphaLabel
+        )
+        return definition.replacingMode(ModeNames.numeric, with: classicNumeric)
     }
 
     /// Injects the text input target (typically a `DocumentProxyTarget`).

@@ -35,7 +35,7 @@ struct KeyboardSizePositionSettingsView: View {
                 }
 
                 VStack(spacing: 8) {
-                    Slider(value: $scale, in: 0.3 ... 1.0, step: 0.01)
+                    Slider(value: $scale, in: 0.25 ... 1.0, step: 0.01)
                         .onChange(of: scale) { oldValue, newValue in
                             // Reset position to center when scale reaches 100%
                             if newValue >= 1.0 && oldValue < 1.0 {
@@ -44,7 +44,7 @@ struct KeyboardSizePositionSettingsView: View {
                         }
 
                     HStack {
-                        Text("30%")
+                        Text("25%")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -62,7 +62,7 @@ struct KeyboardSizePositionSettingsView: View {
                     }
                 }
 
-                Text("Scale the keyboard to make it smaller. At 100% it fills the full width, at 30% it's much more compact.")
+                Text("Scale the keyboard to make it smaller. At 100% it fills the full width, at 25% it's much more compact.")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)

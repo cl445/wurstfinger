@@ -24,9 +24,10 @@ enum KeyboardConstants {
         /// Matches iOS 15+ system keyboard style.
         static let cornerRadius: CGFloat = 8
 
-        /// Default key aspect ratio (width/height).
-        /// 1.5 provides a comfortable rectangular key shape similar to standard keyboards.
-        static let defaultAspectRatio: CGFloat = 1.5
+        /// Reference key aspect ratio (width/height) at which `height` is defined.
+        /// Used only as the baseline in `Calculations.keyHeight`; it is NOT the
+        /// user-facing default setting (that is `DeviceLayoutUtils.defaultKeyAspectRatio`).
+        static let referenceAspectRatio: CGFloat = 1.5
 
         /// Total number of rows in the keyboard layout.
         /// 3 rows for main keys + 1 row for space bar = 4 rows.
@@ -176,7 +177,7 @@ enum KeyboardConstants {
     enum Calculations {
         /// Calculates the adjusted key height based on aspect ratio
         static func keyHeight(aspectRatio: CGFloat) -> CGFloat {
-            KeyDimensions.height * (KeyDimensions.defaultAspectRatio / aspectRatio)
+            KeyDimensions.height * (KeyDimensions.referenceAspectRatio / aspectRatio)
         }
 
         /// Calculates the total keyboard base height (without scaling)
