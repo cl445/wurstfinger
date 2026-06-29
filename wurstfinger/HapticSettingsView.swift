@@ -84,9 +84,8 @@ struct HapticSettingsView: View {
 
                             Label {
                                 Text(
-                                    "Haptic feedback requires Full Access. Enable it in " +
-                                        "**Settings \u{203A} Wurstfinger \u{203A} Keyboards " +
-                                        "\u{203A} Wurstfinger \u{203A} Allow Full Access**."
+                                    // swiftlint:disable:next line_length
+                                    "Haptic feedback requires Full Access. Enable it in **Settings › Wurstfinger › Keyboards › Wurstfinger › Allow Full Access**."
                                 )
                                 .font(.caption)
                             } icon: {
@@ -121,9 +120,9 @@ struct HapticSettingsView: View {
     private let sliderStep: Double = 0.05
 
     private func hapticControl(
-        title: String,
+        title: LocalizedStringKey,
         value: Binding<Double>,
-        description: String
+        description: LocalizedStringKey
     ) -> some View {
         VStack(spacing: 16) {
             HStack {

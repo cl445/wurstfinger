@@ -95,7 +95,7 @@ struct TestAreaView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("Fertig") {
+                    Button("Done") {
                         isTextFieldFocused = false
                     }
                     .fontWeight(.semibold)

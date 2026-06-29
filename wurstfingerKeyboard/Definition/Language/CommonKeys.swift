@@ -20,7 +20,7 @@ enum CommonKeys {
         bindings[.tap] = KeyBinding(
             label: "", action: .none,
             category: .utility, returnAction: nil,
-            accessibilityLabel: "Tastatur wechseln"
+            accessibilityLabel: String(localized: "Switch keyboard")
         )
         bindings[.swipeLeft] = KeyBinding(
             label: "", action: .advanceToNextInputMode,
@@ -29,7 +29,7 @@ enum CommonKeys {
         bindings[.swipeDown] = KeyBinding(
             label: "", action: .dismissKeyboard,
             category: .utility, returnAction: nil,
-            accessibilityLabel: "Tastatur ausblenden"
+            accessibilityLabel: String(localized: "Hide keyboard")
         )
         return KeyConfig(
             id: UtilitySlot.globe, bindings: bindings,
@@ -41,27 +41,27 @@ enum CommonKeys {
     static let delete = KeyConfig.utility(
         UtilitySlot.delete, label: "⌫", action: .deleteBackward,
         swipeMode: .twoWayHorizontal, slideType: .delete,
-        accessibilityLabel: "Löschen"
+        accessibilityLabel: String(localized: "Delete")
     )
 
     static let `return` = KeyConfig.utility(
         UtilitySlot.return, label: "↵", action: .newline,
-        accessibilityLabel: "Zeilenumbruch"
+        accessibilityLabel: String(localized: "New line")
     )
 
     /// Clipboard swipe bindings shared between the symbols key and numeric back-to-main key.
     static let clipboardSwipes: [GestureType: KeyBinding] = [
         .swipeUp: KeyBinding(
             label: "", action: .copy, category: .utility,
-            returnAction: nil, accessibilityLabel: "Kopieren"
+            returnAction: nil, accessibilityLabel: String(localized: "Copy")
         ),
         .swipeUpRight: KeyBinding(
             label: "", action: .cut, category: .utility,
-            returnAction: nil, accessibilityLabel: "Ausschneiden"
+            returnAction: nil, accessibilityLabel: String(localized: "Cut")
         ),
         .swipeDown: KeyBinding(
             label: "", action: .paste, category: .utility,
-            returnAction: nil, accessibilityLabel: "Einsetzen"
+            returnAction: nil, accessibilityLabel: String(localized: "Paste")
         ),
     ]
 
@@ -76,7 +76,7 @@ enum CommonKeys {
         bindings: [
             .tap: KeyBinding(
                 label: "␣", action: .space, category: .utility,
-                returnAction: nil, accessibilityLabel: "Leerzeichen"
+                returnAction: nil, accessibilityLabel: String(localized: "Space")
             ),
         ],
         swipeMode: .none,
