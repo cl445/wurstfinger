@@ -25,13 +25,22 @@ final class KeyboardViewController: UIInputViewController {
     /// since the LanguageSettings singleton may hold a stale value from its init.
     override var primaryLanguage: String? {
         get {
-            let languageId = SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
-            let config = languageId.flatMap { LanguageConfig.language(withId: $0) } ?? .english
-            return config.locale.identifier
+            resolvedLanguage.locale.identifier
         }
         set {
             super.primaryLanguage = newValue
         }
+    }
+
+    /// The active language, resolved identically for both `primaryLanguage`
+    /// (reported to iOS) and definition loading. Reads the selected id, falls
+    /// back to the detected system language, then to English for an unknown id —
+    /// so the rendered layout and the locale shown by iOS never diverge.
+    private var resolvedLanguage: LanguageConfig {
+        let requestedId = SharedDefaults.store.string(
+            forKey: SettingsKey.selectedLanguageId.rawValue
+        ) ?? LanguageSettings.detectSystemLanguage()
+        return LanguageConfig.language(withId: requestedId) ?? .english
     }
 
     override func viewDidLoad() {
@@ -75,12 +84,10 @@ final class KeyboardViewController: UIInputViewController {
     /// Loads the keyboard definition only when the inputs that determine it
     /// (selected language, numpad style) have changed since the last load.
     private func loadDefinitionIfNeeded() {
-        let requestedLanguageId = SharedDefaults.store.string(
-            forKey: SettingsKey.selectedLanguageId.rawValue
-        ) ?? LanguageSettings.detectSystemLanguage()
-        // Resolve to a known language so a stale/invalid persisted id falls back
-        // to English instead of leaving loadDefinition a no-op.
-        let languageId = LanguageConfig.language(withId: requestedLanguageId)?.id ?? LanguageConfig.english.id
+        // Resolve via the shared helper so a stale/invalid persisted id falls
+        // back the same way `primaryLanguage` does (system language, then
+        // English) instead of leaving loadDefinition a no-op.
+        let languageId = resolvedLanguage.id
         let numpadStyle = SharedDefaults.store.string(
             forKey: SettingsKey.numpadStyle.rawValue
         ) ?? ""
