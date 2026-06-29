@@ -54,16 +54,22 @@ struct SlideGestureHandler: ViewModifier {
                             if abs(currentX) >= threshold {
                                 isSliding = true
                                 isActive = true
-                                lastTranslationX = currentX
+                                // Anchor at the threshold crossing (not the full
+                                // translation) so the travel beyond the threshold
+                                // is reported on the same tick instead of being
+                                // dropped — otherwise the first `threshold` points
+                                // are a dead zone.
+                                lastTranslationX = currentX < 0 ? -threshold : threshold
                                 onSlide(.began)
-                                return
                             }
                         }
 
                         if isSliding {
                             let deltaX = currentX - lastTranslationX
-                            lastTranslationX = currentX
-                            onSlide(.changed(deltaX: deltaX))
+                            if deltaX != 0 {
+                                lastTranslationX = currentX
+                                onSlide(.changed(deltaX: deltaX))
+                            }
                         }
 
                         isActive = true
