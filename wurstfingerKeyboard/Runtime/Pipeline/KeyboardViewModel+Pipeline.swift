@@ -260,30 +260,121 @@ extension KeyboardViewModel {
         }
     }
 
+    /// Cursor-movement style for the space-bar drag. Read per gesture (stable
+    /// for the duration of a drag); defaults to `.continuous`.
+    var cursorMovementStyle: CursorMovementStyle {
+        let raw = sharedDefaults.string(forKey: SettingsKey.cursorMovementStyle.rawValue)
+        return raw.flatMap(CursorMovementStyle.init(rawValue:)) ?? .continuous
+    }
+
     func handleSpaceSlide(phase: SlidePhase, key: KeyConfig) {
         switch phase {
         case .began:
             isSpaceDragging = true
             spaceDragResidual = 0
+            spaceDragPeak = 0
+            // Snapshot the style once so a mid-drag settings change can't switch
+            // this gesture between discrete and continuous classification.
+            spaceDragCursorStyle = cursorMovementStyle
         case let .changed(deltaX):
             guard isSpaceDragging, deltaX != 0 else { return }
             spaceDragResidual += deltaX
-            while spaceDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
-                dispatchAction(.moveCursor(offset: -1))
-                feedbackDrag()
-                spaceDragResidual += KeyboardConstants.SpaceGestures.dragStep
-            }
-            while spaceDragResidual >= KeyboardConstants.SpaceGestures.dragStep {
-                dispatchAction(.moveCursor(offset: 1))
-                feedbackDrag()
-                spaceDragResidual -= KeyboardConstants.SpaceGestures.dragStep
+            if spaceDragCursorStyle == .discrete {
+                // Track the peak; movement is deferred to `.ended` so the whole
+                // swipe counts as a single discrete step.
+                if abs(spaceDragResidual) > abs(spaceDragPeak) {
+                    spaceDragPeak = spaceDragResidual
+                }
+            } else {
+                stepContinuousCursor()
             }
         case .ended:
+            if spaceDragCursorStyle == .discrete {
+                finishDiscreteSpaceSlide()
+            }
             isSpaceDragging = false
             spaceDragResidual = 0
+            spaceDragPeak = 0
         case .tap:
             handleGesture(.tap, keyId: key.id, isReturn: false)
         }
+    }
+
+    /// Continuous (joystick) mode: emit one character move per `dragStep` of
+    /// accumulated travel.
+    private func stepContinuousCursor() {
+        while spaceDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
+            dispatchAction(.moveCursor(offset: -1))
+            feedbackDrag()
+            spaceDragResidual += KeyboardConstants.SpaceGestures.dragStep
+        }
+        while spaceDragResidual >= KeyboardConstants.SpaceGestures.dragStep {
+            dispatchAction(.moveCursor(offset: 1))
+            feedbackDrag()
+            spaceDragResidual -= KeyboardConstants.SpaceGestures.dragStep
+        }
+    }
+
+    /// Discrete (MessagEase) mode: classify the completed swipe.
+    /// A regular swipe moves one character; a return swipe (finger returns
+    /// toward the origin) moves one whole word in the swipe's direction.
+    private func finishDiscreteSpaceSlide() {
+        let peak = spaceDragPeak
+        let finalX = spaceDragResidual
+        // Ignore taps / tiny jitters that never travelled a full step.
+        guard abs(peak) >= KeyboardConstants.SpaceGestures.dragStep else { return }
+
+        let direction = peak < 0 ? -1 : 1
+        let ratio = abs(finalX) / abs(peak)
+        if ratio < KeyboardConstants.SpaceGestures.returnSwipeThreshold {
+            moveCursorByWord(direction: direction)
+        } else {
+            dispatchAction(.moveCursor(offset: direction))
+        }
+        feedbackDrag()
+    }
+
+    /// Moves the cursor by one word in `direction` (+1 forward, -1 backward)
+    /// by computing the character offset to the nearest word boundary from the
+    /// surrounding document context.
+    private func moveCursorByWord(direction: Int) {
+        let offset: Int = direction > 0
+            ? Self.forwardWordOffset(in: textInputTarget?.documentContextAfterInput ?? "")
+            : -Self.backwardWordOffset(in: textInputTarget?.documentContextBeforeInput ?? "")
+        guard offset != 0 else { return }
+        dispatchAction(.moveCursor(offset: offset))
+    }
+
+    /// Characters from the cursor to the end of the next word: skip leading
+    /// whitespace, then the word itself.
+    static func forwardWordOffset(in text: String) -> Int {
+        var count = 0
+        var seenWord = false
+        for char in text {
+            if char.isWhitespace {
+                if seenWord { break }
+            } else {
+                seenWord = true
+            }
+            count += 1
+        }
+        return count
+    }
+
+    /// Characters from the cursor back to the start of the previous word: skip
+    /// trailing whitespace, then the word itself.
+    static func backwardWordOffset(in text: String) -> Int {
+        var count = 0
+        var seenWord = false
+        for char in text.reversed() {
+            if char.isWhitespace {
+                if seenWord { break }
+            } else {
+                seenWord = true
+            }
+            count += 1
+        }
+        return count
     }
 
     func handleDeleteSlide(phase: SlidePhase, key: KeyConfig) {
