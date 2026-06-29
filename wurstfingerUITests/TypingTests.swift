@@ -50,6 +50,14 @@ final class TypingTests: XCTestCase {
         )
     }
 
+    /// Relaunches the app forcing a specific keyboard language.
+    private func relaunch(language: String) {
+        app.terminate()
+        app.launchEnvironment["FORCE_LANGUAGE"] = language
+        app.launch()
+        waitForKeyboard()
+    }
+
     /// Polls until the captured text equals `expected` (UI updates are async).
     private func assertTypedText(
         equals expected: String,
@@ -157,6 +165,38 @@ final class TypingTests: XCTestCase {
         swipe(on: "topCenter", dx: 40, dy: -40)
 
         assertTypedText(equals: "á")
+    }
+
+    /// The return key inserts a line break between characters.
+    @MainActor
+    func testReturnKeyInsertsSeparator() {
+        let first = tapKey("topLeft") // "a"
+        tapKey("return")
+        let second = tapKey("topCenter") // "b"
+
+        // Accessibility may render the newline as "\n" or normalize it to a
+        // space; either way there must be a separator between the two letters.
+        // The exact "\n" is asserted in ReturnSwipePipelineTests.
+        let value = typedText()
+        XCTAssertEqual(value.count, 3, "Expected 3 characters with a separator, got '\(value)'")
+        XCTAssertEqual(value.first.map(String.init), first)
+        XCTAssertEqual(value.last.map(String.init), second)
+        XCTAssertNotEqual(value, first + second, "Return should insert a separator")
+    }
+
+    /// Typing works across different scripts/layouts, not just German.
+    @MainActor
+    func testTypingWorksAcrossLanguages() {
+        for language in ["fr_FR", "ru_RU"] {
+            relaunch(language: language)
+
+            let center = key("center")
+            XCTAssertTrue(center.waitForExistence(timeout: 3), "center key missing for \(language)")
+            let label = center.label
+            center.tap()
+
+            assertTypedText(equals: label)
+        }
     }
 
     /// Switching to the numeric layer via the symbols key lets digits be typed.

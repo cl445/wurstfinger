@@ -76,4 +76,31 @@ struct ReturnSwipePipelineTests {
 
         #expect(inserts(target).last == expected)
     }
+
+    // MARK: - Newline
+
+    /// The newline swipe (topRight ↗) inserts a line break.
+    @Test func newlineSwipeInsertsLineBreak() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        guard let key = vm.activeModeFromDefinition?.key(for: GridSlot.topRight),
+              case .commitText("\n") = key.bindings[.swipeUpRight]?.action
+        else {
+            Issue.record("Expected topRight ↗ to commit a newline")
+            return
+        }
+
+        vm.handleGesture(.swipeUpRight, keyId: GridSlot.topRight, isReturn: false)
+
+        #expect(inserts(target).last == "\n")
+    }
+
+    /// Tapping the return utility key inserts a line break.
+    @Test func returnKeyInsertsLineBreak() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        vm.handleGesture(.tap, keyId: UtilitySlot.return, isReturn: false)
+
+        #expect(inserts(target).last == "\n")
+    }
 }
