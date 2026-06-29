@@ -2,21 +2,18 @@
 //  KeyboardGridView.swift
 //  Wurstfinger
 //
-//  Generic SwiftUI Grid renderer for any GridArrangement + key pool.
+//  Generic SwiftUI grid renderer for any GridArrangement + key pool.
 //
 
 import SwiftUI
 
-/// Generic grid renderer that lays out a `GridArrangement` using SwiftUI's
-/// `Grid` view (iOS 16+). Width multipliers map directly onto
-/// `gridCellColumns`, so multi-column keys (e.g. space) are supported
-/// without hardcoding any positions.
+/// Generic grid renderer for a `GridArrangement` and key pool.
 ///
-/// **Height-spanning keys.** SwiftUI's `Grid` does not expose a built-in
-/// `gridCellRows` modifier. Multi-row placements (e.g. landscape return key)
-/// are tracked in the model via `KeyPlacement.heightMultiplier` but the
-/// rendering is not yet implemented here. Currently all placements fed to
-/// this view must have `heightMultiplier == 1`.
+/// Uses `GridLayoutSolver` to resolve the arrangement into absolutely
+/// positioned cells and `KeyboardGridLayout` to place them, so keys can span
+/// multiple columns **and** rows (e.g. the landscape return key with
+/// `heightMultiplier == 2`). Width/height multipliers map directly onto the
+/// cell's column/row span, without hardcoding any positions.
 struct KeyboardGridView: View {
     let arrangement: GridArrangement
     let keys: [String: KeyConfig]
@@ -24,45 +21,47 @@ struct KeyboardGridView: View {
     var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
 
+    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
+    private var keyboardScale: Double = DeviceLayoutUtils.defaultKeyboardScale
+
+    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
+    private var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
+
+    /// Height of a single grid row, matching `KeyView`'s effective key height so
+    /// portrait layouts are unchanged and a 2-row key is exactly twice as tall
+    /// (plus the inter-row spacing).
+    private var rowHeight: CGFloat {
+        KeyboardConstants.Calculations.keyHeight(aspectRatio: keyAspectRatio) * keyboardScale
+    }
+
     var body: some View {
-        Grid(
+        let cells = GridLayoutSolver.solve(arrangement)
+        KeyboardGridLayout(
+            cells: cells,
+            columns: arrangement.columns,
+            rowHeight: rowHeight,
             horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
             verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
         ) {
-            ForEach(Array(arrangement.rows.enumerated()), id: \.offset) { _, row in
-                GridRow {
-                    ForEach(Array(row.enumerated()), id: \.offset) { _, placement in
-                        cell(for: placement)
-                    }
-                }
+            ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
+                cellContent(for: cell)
             }
         }
     }
 
-    private func cell(for placement: KeyPlacement) -> some View {
-        assert(
-            placement.heightMultiplier == 1,
-            "Multi-row rendering is not yet implemented in KeyboardGridView"
-        )
-        return cellContent(for: placement)
-    }
-
     @ViewBuilder
-    private func cellContent(for placement: KeyPlacement) -> some View {
-        if let key = keys[placement.keyId] {
+    private func cellContent(for cell: SolvedCell) -> some View {
+        if let key = keys[cell.keyId] {
             KeyView(
                 key: key,
                 onGesture: onGesture,
                 onTouchDown: onTouchDown,
                 onSlide: onSlide,
-                spanRatio: CGFloat(placement.widthMultiplier) / CGFloat(placement.heightMultiplier)
+                spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan)
             )
-            .gridCellColumns(placement.widthMultiplier)
-            .gridCellAnchor(.top)
-            .id(placement.keyId)
+            .id(cell.keyId)
         } else {
             Color.clear
-                .gridCellColumns(placement.widthMultiplier)
         }
     }
 

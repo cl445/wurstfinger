@@ -51,7 +51,11 @@ struct KeyView: View {
             label
             hintOverlay
         }
-        .frame(height: effectiveKeyHeight)
+        // Fill the cell frame imposed by KeyboardGridLayout. The layout sizes
+        // rows from the same effective key height, so single-row keys are
+        // unchanged while a spanning key (e.g. landscape return) grows to cover
+        // multiple rows.
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier(key.id)
