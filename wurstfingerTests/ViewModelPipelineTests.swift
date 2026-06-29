@@ -238,7 +238,7 @@ struct ViewModelSlideTests {
             return
         }
         vm.handleSlide(deleteKey, phase: .began)
-        let step = KeyboardConstants.SpaceGestures.dragStep
+        let step = KeyboardConstants.DeleteGestures.dragStep
         vm.handleSlide(deleteKey, phase: .changed(deltaX: -step * 2))
         vm.handleSlide(deleteKey, phase: .ended)
         #expect(target.events.contains(.deleteBackward))

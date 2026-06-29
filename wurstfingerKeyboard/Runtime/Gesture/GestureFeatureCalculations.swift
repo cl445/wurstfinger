@@ -172,14 +172,21 @@ enum GestureCalculations {
     /// so a fixed cross threshold would make the effective angle depend on
     /// segment length (large gestures count nearly every wobble, tiny ones none).
     static func turnConsistency(of points: [CGPoint], turnThreshold: CGFloat = 0.15) -> CGFloat {
-        guard points.count >= 3 else { return 1.0 }
+        // Drop consecutive duplicate samples first; a repeated point (A→B→B→C)
+        // would otherwise split the real A→B / B→C turn across two zero-length
+        // segments and never count it.
+        var pts: [CGPoint] = []
+        for p in points where pts.last != p {
+            pts.append(p)
+        }
+        guard pts.count >= 3 else { return 1.0 }
 
         var cwCount = 0
         var ccwCount = 0
 
-        for i in 1 ..< (points.count - 1) {
-            let v1 = Vector2D(from: points[i - 1], to: points[i])
-            let v2 = Vector2D(from: points[i], to: points[i + 1])
+        for i in 1 ..< (pts.count - 1) {
+            let v1 = Vector2D(from: pts[i - 1], to: pts[i])
+            let v2 = Vector2D(from: pts[i], to: pts[i + 1])
             // Skip degenerate segments — turn angle is undefined for zero length.
             guard v1.magnitudeSquared > 0, v2.magnitudeSquared > 0 else { continue }
             let turn = v1.angle(to: v2) // signed radians: + = CCW, - = CW

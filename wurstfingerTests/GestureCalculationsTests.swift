@@ -312,7 +312,10 @@ struct GestureCalculationsTests {
             CGPoint(x: 30, y: 10),
             CGPoint(x: 40, y: 0)
         ]
-        let small = large.map { CGPoint(x: $0.x / 10, y: $0.y / 10) }
+        // Scale far down so a raw px²-cross threshold would no longer register
+        // these turns (proving the test guards the angle-based, scale-invariant
+        // implementation rather than passing trivially).
+        let small = large.map { CGPoint(x: $0.x / 100, y: $0.y / 100) }
 
         let largeConsistency = GestureCalculations.turnConsistency(of: large)
         let smallConsistency = GestureCalculations.turnConsistency(of: small)
