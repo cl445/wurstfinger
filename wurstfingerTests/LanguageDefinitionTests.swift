@@ -12,14 +12,19 @@ import Testing
 // MARK: - All Layouts Validate
 
 struct LanguageDefinitionValidationTests {
-    @Test(arguments: LanguageDefinitions.all.map { $0.makeDefinition() })
-    func layoutValidatesWithoutErrors(layout: KeyboardDefinition) {
+    // Pass descriptors and build inside each test so the argument list doesn't
+    // materialize every layout up front (keeps peak test memory aligned with
+    // the lazy-loading contract this PR introduces).
+    @Test(arguments: LanguageDefinitions.all)
+    func layoutValidatesWithoutErrors(descriptor: LanguageDescriptor) {
+        let layout = descriptor.makeDefinition()
         let errors = layout.validate()
         #expect(errors.isEmpty, "Validation errors for \(layout.id): \(errors)")
     }
 
-    @Test(arguments: LanguageDefinitions.all.map { $0.makeDefinition() })
-    func layoutHasRequiredModes(layout: KeyboardDefinition) {
+    @Test(arguments: LanguageDefinitions.all)
+    func layoutHasRequiredModes(descriptor: LanguageDescriptor) {
+        let layout = descriptor.makeDefinition()
         #expect(layout.modes[ModeNames.main] != nil, "\(layout.id) missing main mode")
         #expect(layout.modes[ModeNames.shifted] != nil, "\(layout.id) missing shifted mode")
         #expect(layout.modes[ModeNames.capsLock] != nil, "\(layout.id) missing capsLock mode")

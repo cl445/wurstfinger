@@ -55,9 +55,17 @@ struct LanguageDescriptorTests {
     /// is derived from descriptors and must list every language without building
     /// any of them.
     @Test func registryAvailableExposesEveryDescriptor() {
-        let descriptorIDs = Set(LanguageDefinitions.all.map(\.id))
-        let availableIDs = Set(KeyboardRegistry.available.map(\.id))
+        let descriptors = LanguageDefinitions.all
+        let available = KeyboardRegistry.available
+        let descriptorIDs = Set(descriptors.map(\.id))
+        let availableIDs = Set(available.map(\.id))
         #expect(availableIDs == descriptorIDs)
+        // Counts must equal the unique-id counts: a duplicate id would be
+        // silently collapsed by the registry (indexed by id) and masked by the
+        // Set comparison above.
+        #expect(descriptors.count == descriptorIDs.count, "duplicate descriptor id")
+        #expect(available.count == availableIDs.count, "duplicate registry id")
+        #expect(available.count == descriptors.count)
     }
 
     /// Each built definition must carry exactly the metadata declared on its
