@@ -144,21 +144,25 @@ enum NumericLayouts {
 
     /// Phone layout: digits 1-2-3 sit in the top row (physical position of
     /// 7-8-9 in classic), so circular gestures follow the digit, not the
-    /// position, not the grid slot.
-    private static let phoneCircularOverrides: [String: KeyBinding] = [
-        // Top row (digits 1-2-3 here, circular from classic bottom row)
-        GridSlot.topLeft: classicCircularOverrides[GridSlot.bottomLeft]!,
-        GridSlot.topCenter: classicCircularOverrides[GridSlot.bottomCenter]!,
-        GridSlot.topRight: classicCircularOverrides[GridSlot.bottomRight]!,
-        // Middle row unchanged
-        GridSlot.midLeft: classicCircularOverrides[GridSlot.midLeft]!,
-        GridSlot.center: classicCircularOverrides[GridSlot.center]!,
-        GridSlot.midRight: classicCircularOverrides[GridSlot.midRight]!,
-        // Bottom row (digits 7-8-9 here, circular from classic top row)
-        GridSlot.bottomLeft: classicCircularOverrides[GridSlot.topLeft]!,
-        GridSlot.bottomCenter: classicCircularOverrides[GridSlot.topCenter]!,
-        GridSlot.bottomRight: classicCircularOverrides[GridSlot.topRight]!,
-    ]
+    /// position, not the grid slot. The top and bottom rows therefore swap
+    /// their classic bindings; the middle row is unchanged.
+    private static let phoneCircularOverrides: [String: KeyBinding] = {
+        let slotRemap: [String: String] = [
+            // Top row pulls from the classic bottom row, and vice versa.
+            GridSlot.topLeft: GridSlot.bottomLeft,
+            GridSlot.topCenter: GridSlot.bottomCenter,
+            GridSlot.topRight: GridSlot.bottomRight,
+            GridSlot.midLeft: GridSlot.midLeft,
+            GridSlot.center: GridSlot.center,
+            GridSlot.midRight: GridSlot.midRight,
+            GridSlot.bottomLeft: GridSlot.topLeft,
+            GridSlot.bottomCenter: GridSlot.topCenter,
+            GridSlot.bottomRight: GridSlot.topRight,
+        ]
+        return slotRemap.reduce(into: [:]) { result, pair in
+            result[pair.key] = classicCircularOverrides[pair.value]
+        }
+    }()
 
     // MARK: - Builder
 

@@ -71,6 +71,22 @@ struct AutoCapitalizationTests {
         #expect(!AutoCapitalization.shouldCapitalize(context: "123 "))
     }
 
+    @Test func noCapitalizeAfterWesternEnderWithoutTrailingSpace() {
+        // The ender must actually be followed by whitespace; abbreviations and
+        // decimals (no trailing space) must not capitalize the next letter.
+        #expect(!AutoCapitalization.shouldCapitalize(context: "e."))
+        #expect(!AutoCapitalization.shouldCapitalize(context: "e.g"))
+        #expect(!AutoCapitalization.shouldCapitalize(context: "Mr."))
+        #expect(!AutoCapitalization.shouldCapitalize(context: "3.14"))
+    }
+
+    @Test func capitalizeAfterCjkEnderWithoutSpace() {
+        // CJK has no inter-sentence spaces, so the ender alone triggers.
+        #expect(AutoCapitalization.shouldCapitalize(context: "你好。"))
+        #expect(AutoCapitalization.shouldCapitalize(context: "什么！"))
+        #expect(AutoCapitalization.shouldCapitalize(context: "吗？"))
+    }
+
     // MARK: - shouldCapitalizeImmediately tests (pure logic)
 
     @Test func immediateCapitalizeAfterSpanishOpeningQuestion() {

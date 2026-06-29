@@ -15,6 +15,12 @@ enum AutoCapitalization {
         "。", "！", "？", // CJK punctuation
     ]
 
+    /// CJK sentence-ending punctuation. CJK text has no inter-sentence spaces,
+    /// so these trigger capitalization even without trailing whitespace.
+    static let cjkSentenceEnders: Set<Character> = [
+        "。", "！", "？",
+    ]
+
     /// Punctuation that opens a sentence and triggers immediate capitalization.
     static let sentenceOpeners: Set<Character> = [
         "¿", "¡", // Spanish inverted punctuation
@@ -28,12 +34,21 @@ enum AutoCapitalization {
         if context.isEmpty { return true }
 
         // Only whitespace means start of input
-        let trimmed = context.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty { return true }
+        if context.allSatisfy(\.isWhitespace) { return true }
 
-        // Check if last non-whitespace character is a sentence ender
-        guard let lastChar = trimmed.last else { return false }
-        return sentenceEnders.contains(lastChar)
+        guard let lastChar = context.last else { return false }
+
+        if lastChar.isWhitespace {
+            // A Western ender only triggers when actually followed by whitespace,
+            // so "e.g" does not capitalize the "g" (the ender has no trailing
+            // space) while "Hello. " does.
+            guard let lastNonWhitespace = context.reversed().first(where: { !$0.isWhitespace })
+            else { return true }
+            return sentenceEnders.contains(lastNonWhitespace)
+        }
+
+        // No trailing whitespace: only CJK enders (which need no space) trigger.
+        return cjkSentenceEnders.contains(lastChar)
     }
 
     /// Determines if the next character should be capitalized immediately (without space).
