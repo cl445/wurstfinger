@@ -20,9 +20,10 @@ struct KeyboardInfo: Codable, Identifiable, Equatable {
         self.localeIdentifier = localeIdentifier
     }
 
-    init(from definition: KeyboardDefinition) {
-        id = definition.id
-        title = definition.title
-        localeIdentifier = definition.localeIdentifier
+    /// Builds metadata from a descriptor without materialising its layout.
+    init(from descriptor: LanguageDescriptor) {
+        id = descriptor.id
+        title = descriptor.title
+        localeIdentifier = descriptor.localeIdentifier
     }
 }
