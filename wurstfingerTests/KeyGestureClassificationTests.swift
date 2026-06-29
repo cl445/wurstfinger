@@ -15,11 +15,25 @@ import Testing
 // MARK: - Helpers
 
 private enum GestureFixtures {
+    /// Thresholds pinned for these tests, independent of the production
+    /// defaults. Inputs below are derived from these so retuning the shipped
+    /// classifier can't silently move a value across a branch boundary.
+    static let thresholds = GestureClassificationThresholds(
+        minSwipeLength: 20,
+        maxReturnRatio: 0.5,
+        returnDisplacementRange: 0.2 ... 0.8,
+        minCircularity: 0.3,
+        minAngularSpan: .pi * 1.5,
+        minPathSeparation: 0.5,
+        minTurnConsistency: 0.8,
+        minOrientedCompactness: 0.4
+    )
+
     /// Builds a `GestureFeatures` that classifies as a plain rightward swipe
     /// (not a tap, not circular, not a return). Override individual fields to
     /// target a specific branch of `classify(features:)`.
     static func features(
-        thresholds: GestureClassificationThresholds = .default,
+        thresholds: GestureClassificationThresholds = GestureFixtures.thresholds,
         maxDisplacement: CGFloat = 100,
         maxDisplacementProgress: CGFloat = 1.0,
         returnRatio: CGFloat = 1.0,
@@ -81,7 +95,8 @@ struct AngleToGestureTypeTests {
 
 struct KeyGestureClassifyFeaturesTests {
     @Test func tapWhenDisplacementBelowSwipeThreshold() {
-        let features = GestureFixtures.features(maxDisplacement: 10) // < minSwipeLength (20)
+        // Below the swipe threshold → tap.
+        let features = GestureFixtures.features(maxDisplacement: GestureFixtures.thresholds.minSwipeLength / 2)
         let result = KeyGestureRecognizer.classify(features: features)
 
         #expect(result.gesture == .tap)
@@ -90,7 +105,7 @@ struct KeyGestureClassifyFeaturesTests {
 
     @Test func clockwiseCircle() {
         let features = GestureFixtures.features(
-            angularSpan: 5, // > minAngularSpan (≈4.71), positive → CW
+            angularSpan: GestureFixtures.thresholds.minAngularSpan + 0.5, // above threshold, positive → CW
             circularity: 1,
             turnConsistency: 1,
             orientedCompactness: 1,
@@ -104,7 +119,7 @@ struct KeyGestureClassifyFeaturesTests {
 
     @Test func counterclockwiseCircle() {
         let features = GestureFixtures.features(
-            angularSpan: -5, // negative → CCW
+            angularSpan: -(GestureFixtures.thresholds.minAngularSpan + 0.5), // above threshold, negative → CCW
             circularity: 1,
             turnConsistency: 1,
             orientedCompactness: 1,
@@ -128,8 +143,10 @@ struct KeyGestureClassifyFeaturesTests {
 
     @Test func directionalReturnSwipeSetsReturnFlag() {
         let features = GestureFixtures.features(
-            maxDisplacementProgress: 0.5, // peak mid-path, inside 0.2...0.8
-            returnRatio: 0.2, // returned to start (< maxReturnRatio 0.5)
+            // peak mid-path, inside the return-displacement range
+            maxDisplacementProgress: (GestureFixtures.thresholds.returnDisplacementRange.lowerBound
+                + GestureFixtures.thresholds.returnDisplacementRange.upperBound) / 2,
+            returnRatio: GestureFixtures.thresholds.maxReturnRatio / 2, // returned to start (< maxReturnRatio)
             maxDisplacementAngle: .pi // leftward
         )
         let result = KeyGestureRecognizer.classify(features: features)
