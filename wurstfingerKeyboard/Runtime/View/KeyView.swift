@@ -250,8 +250,13 @@ struct KeyView: View {
             let vPad = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
 
             ForEach(Array(key.bindings.keys), id: \.self) { gesture in
+                // Render a hint when it has a text label, or when the action
+                // maps to an icon (globe, dismiss, copy/cut/paste). Utility
+                // icon hints carry an empty label on purpose — their glyph is
+                // derived from the action, so gating on the label alone would
+                // hide them entirely.
                 if let binding = key.bindings[gesture],
-                   !binding.label.isEmpty,
+                   !binding.label.isEmpty || Self.hintIcon(for: binding.action) != nil,
                    let alignment = Self.hintAlignments[gesture] {
                     hintContent(for: binding)
                         .fixedSize()
