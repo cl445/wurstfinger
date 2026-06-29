@@ -27,7 +27,9 @@ struct CircularGesturePipelineTests {
 
         vm.handleGesture(.circularClockwise, keyId: GridSlot.topLeft, isReturn: false)
 
-        #expect(target.events.contains(.insertText(letter.uppercased())))
+        // Match production: tryCircularUppercase uppercases with the pipeline
+        // locale, so locale-sensitive letters can't drift from the assertion.
+        #expect(target.events.contains(.insertText(letter.uppercased(with: vm.pipelineLocale ?? .current))))
     }
 
     /// Counterclockwise uses the same uppercase fallback (exercises the
@@ -44,7 +46,9 @@ struct CircularGesturePipelineTests {
 
         vm.handleGesture(.circularCounterclockwise, keyId: GridSlot.topLeft, isReturn: false)
 
-        #expect(target.events.contains(.insertText(letter.uppercased())))
+        // Match production: tryCircularUppercase uppercases with the pipeline
+        // locale, so locale-sensitive letters can't drift from the assertion.
+        #expect(target.events.contains(.insertText(letter.uppercased(with: vm.pipelineLocale ?? .current))))
     }
 
     /// Path 1: numeric layer keys carry an explicit circular binding
