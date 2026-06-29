@@ -7,11 +7,25 @@
 
 import SwiftUI
 
-/// Counts pipeline actions for dead zone testing.
+/// Captures pipeline actions for UI testing.
+///
+/// Always counts actions (for dead-zone testing). When `capturesText` is set
+/// it additionally accumulates the produced text into `typedText` and exposes
+/// it as `documentContextBeforeInput`, so typing UI tests can assert the
+/// actual output (and context-dependent actions like compose / capitalize
+/// behave realistically).
 private class ActionCountTarget: TextInputTarget, ObservableObject {
     @Published var count: Int = 0
+    @Published var typedText: String = ""
+
+    private let capturesText: Bool
+
+    init(capturesText: Bool = false) {
+        self.capturesText = capturesText
+    }
+
     var documentContextBeforeInput: String? {
-        nil
+        capturesText ? typedText : nil
     }
 
     var documentContextAfterInput: String? {
@@ -26,12 +40,14 @@ private class ActionCountTarget: TextInputTarget, ObservableObject {
         false
     }
 
-    func insertText(_: String) {
+    func insertText(_ text: String) {
         count += 1
+        if capturesText { typedText += text }
     }
 
     func deleteBackward() {
         count += 1
+        if capturesText, !typedText.isEmpty { typedText.removeLast() }
     }
 
     func adjustTextPosition(byCharacterOffset _: Int) {
@@ -42,10 +58,13 @@ private class ActionCountTarget: TextInputTarget, ObservableObject {
 struct KeyboardShowcaseView: View {
     @StateObject private var viewModel = KeyboardViewModel(shouldPersistSettings: false)
     @StateObject private var languageSettings = LanguageSettings.shared
-    @StateObject private var actionTarget = ActionCountTarget()
+    @StateObject private var actionTarget = ActionCountTarget(
+        capturesText: ProcessInfo.processInfo.environment["TYPING_TEST"] != nil
+    )
     @State private var colorScheme: ColorScheme?
 
     private let isDeadZoneTest = ProcessInfo.processInfo.environment["DEAD_ZONE_TEST"] != nil
+    private let isTypingTest = ProcessInfo.processInfo.environment["TYPING_TEST"] != nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -64,6 +83,17 @@ struct KeyboardShowcaseView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
+
+            if isTypingTest {
+                // Visible placeholder keeps the element present when empty;
+                // the exact text (incl. empty / trailing spaces) is exposed
+                // via accessibilityValue and read by tests as `.value`.
+                Text(actionTarget.typedText.isEmpty ? "—" : actionTarget.typedText)
+                    .accessibilityIdentifier("typedText")
+                    .accessibilityValue(actionTarget.typedText)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
         }
         .background(Color(.systemBackground))
         .preferredColorScheme(colorScheme)
@@ -74,8 +104,8 @@ struct KeyboardShowcaseView: View {
                 languageSettings.selectedLanguageId = forcedLanguage
             }
 
-            // Wire up dead zone counter
-            if isDeadZoneTest {
+            // Wire up the capturing target for dead-zone and typing tests
+            if isDeadZoneTest || isTypingTest {
                 viewModel.bindTextInputTarget(actionTarget)
             }
 
