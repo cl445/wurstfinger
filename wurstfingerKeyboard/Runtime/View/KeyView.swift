@@ -51,7 +51,11 @@ struct KeyView: View {
             label
             hintOverlay
         }
-        .frame(height: effectiveKeyHeight)
+        // Fill the cell frame imposed by KeyboardGridLayout. The layout sizes
+        // rows from the same effective key height, so single-row keys are
+        // unchanged while a spanning key (e.g. landscape return) grows to cover
+        // multiple rows.
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier(key.id)
@@ -71,7 +75,10 @@ struct KeyView: View {
                     onGesture(key, classification.gesture, classification.isReturn)
                 },
                 onTouchDown: { onTouchDown?() },
-                aspectRatio: keyAspectRatio,
+                // Account for the spanned cell: a multi-row/-column key is not
+                // 1×1, so scale the base aspect ratio by columnSpan/rowSpan
+                // (spanRatio) to classify swipes against the real geometry.
+                aspectRatio: CGFloat(keyAspectRatio) * spanRatio,
                 isActive: $isActive
             ))
         }
