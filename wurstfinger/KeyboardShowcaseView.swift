@@ -125,6 +125,13 @@ struct KeyboardShowcaseView: View {
                 viewModel.bindTextInputTarget(actionTarget)
             }
 
+            // Force orientation if specified (for landscape screenshots / UI tests).
+            // The host app never drives orientation into the view model the way the
+            // keyboard extension does, so without this the showcase is always portrait.
+            if ProcessInfo.processInfo.environment["FORCE_ORIENTATION"] == "landscape" {
+                viewModel.updateOrientation(isLandscape: true)
+            }
+
             // Load definition
             viewModel.loadDefinition(for: languageSettings.selectedLanguageId)
 
