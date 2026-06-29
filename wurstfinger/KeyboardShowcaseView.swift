@@ -10,13 +10,14 @@ import SwiftUI
 /// Captures pipeline actions for UI testing.
 ///
 /// Always counts actions (for dead-zone testing). When `capturesText` is set
-/// it additionally accumulates the produced text into `typedText` and exposes
-/// it as `documentContextBeforeInput`, so typing UI tests can assert the
-/// actual output (and context-dependent actions like compose / capitalize
-/// behave realistically).
+/// it models a minimal document — text split into `before` and `after` the
+/// cursor — so typing UI tests can assert the actual output, including
+/// cursor-aware behaviour (space-drag moves the insertion point) and
+/// context-dependent actions (compose / capitalize).
 private class ActionCountTarget: TextInputTarget, ObservableObject {
     @Published var count: Int = 0
-    @Published var typedText: String = ""
+    @Published private var before: String = ""
+    @Published private var after: String = ""
 
     private let capturesText: Bool
 
@@ -24,12 +25,17 @@ private class ActionCountTarget: TextInputTarget, ObservableObject {
         self.capturesText = capturesText
     }
 
+    /// Full captured text (before + after the cursor).
+    var typedText: String {
+        before + after
+    }
+
     var documentContextBeforeInput: String? {
-        capturesText ? typedText : nil
+        capturesText ? before : nil
     }
 
     var documentContextAfterInput: String? {
-        nil
+        capturesText ? after : nil
     }
 
     var selectedText: String? {
@@ -42,16 +48,26 @@ private class ActionCountTarget: TextInputTarget, ObservableObject {
 
     func insertText(_ text: String) {
         count += 1
-        if capturesText { typedText += text }
+        if capturesText { before += text }
     }
 
     func deleteBackward() {
         count += 1
-        if capturesText, !typedText.isEmpty { typedText.removeLast() }
+        if capturesText, !before.isEmpty { before.removeLast() }
     }
 
-    func adjustTextPosition(byCharacterOffset _: Int) {
+    func adjustTextPosition(byCharacterOffset offset: Int) {
         count += 1
+        guard capturesText, offset != 0 else { return }
+        if offset > 0 {
+            let n = min(offset, after.count)
+            before += after.prefix(n)
+            after.removeFirst(n)
+        } else {
+            let n = min(-offset, before.count)
+            after = String(before.suffix(n)) + after
+            before.removeLast(n)
+        }
     }
 }
 

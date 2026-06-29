@@ -96,6 +96,16 @@ final class TypingTests: XCTestCase {
         start.press(forDuration: 0.05, thenDragTo: end)
     }
 
+    /// Horizontal drag across the space bar (moves the cursor). Negative dx
+    /// is left. The press duration lets the slide gesture engage before the
+    /// drag, so XCUITest emits interpolated move events.
+    private func dragSpace(dx: CGFloat) {
+        let space = key("space")
+        let start = space.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        let end = start.withOffset(CGVector(dx: dx, dy: 0))
+        start.press(forDuration: 0.2, thenDragTo: end)
+    }
+
     // MARK: - Tests
 
     /// Tapping letter keys appends each key's character in order.
@@ -197,6 +207,54 @@ final class TypingTests: XCTestCase {
 
             assertTypedText(equals: label)
         }
+    }
+
+    /// Swiping up on the shift key (midRight) switches to the shifted layer,
+    /// so the next letter is uppercase.
+    @MainActor
+    func testShiftSwipeProducesUppercaseLetter() {
+        swipe(on: "midRight", dx: 0, dy: -45) // ⇧ → shifted
+
+        let typed = tapKey("topLeft")
+        assertTypedText(equals: typed)
+        XCTAssertFalse(typed.isEmpty)
+        XCTAssertEqual(typed, typed.uppercased(), "Shifted layer should produce an uppercase letter")
+    }
+
+    /// A double swipe-up on the shift key engages caps-lock, so several
+    /// letters in a row are uppercase (no auto-transition back to lower).
+    @MainActor
+    func testCapsLockProducesUppercaseSequence() {
+        swipe(on: "midRight", dx: 0, dy: -45) // ⇧ → shifted
+        swipe(on: "midRight", dx: 0, dy: -45) // ⇧⇧ → caps-lock
+
+        let first = tapKey("topLeft")
+        let second = tapKey("topCenter")
+        assertTypedText(equals: first + second)
+        XCTAssertEqual(first, first.uppercased())
+        XCTAssertEqual(second, second.uppercased(), "Caps-lock should keep producing uppercase letters")
+    }
+
+    /// Dragging left on the space bar moves the cursor, so the next character
+    /// is inserted before the end rather than appended.
+    @MainActor
+    func testSpaceDragMovesCursorForMidTextInsertion() {
+        let c1 = tapKey("topLeft")
+        let c2 = tapKey("topCenter")
+        let c3 = tapKey("topRight")
+        assertTypedText(equals: c1 + c2 + c3)
+
+        dragSpace(dx: -120) // move cursor left (several steps)
+
+        let inserted = tapKey("midLeft")
+
+        let result = typedText()
+        XCTAssertEqual(result.count, 4, "Expected four characters, got '\(result)'")
+        XCTAssertTrue(result.contains(inserted), "Inserted character missing from '\(result)'")
+        XCTAssertNotEqual(
+            result, c1 + c2 + c3 + inserted,
+            "Cursor should have moved left, so '\(inserted)' is not appended at the end"
+        )
     }
 
     /// Switching to the numeric layer via the symbols key lets digits be typed.
