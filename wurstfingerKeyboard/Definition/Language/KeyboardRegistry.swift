@@ -11,23 +11,31 @@ import Foundation
 /// Exposes lightweight metadata via `available` and loads full definitions on demand.
 enum KeyboardRegistry {
     /// All available keyboard layouts (lightweight metadata only).
+    ///
+    /// Reads descriptor metadata only — no `KeyboardDefinition` is built, so
+    /// listing languages (and the extension's `primaryLanguage` lookup) stays
+    /// cheap at launch.
     static let available: [KeyboardInfo] = LanguageDefinitions.all.map { KeyboardInfo(from: $0) }
 
-    /// Precomputed index for O(1) definition lookup by id.
-    private static let definitionsByID: [String: KeyboardDefinition] =
-        LanguageDefinitions.all.reduce(into: [:]) { dict, def in
-            dict[def.id] = def
+    /// Precomputed index for O(1) descriptor lookup by id. Holds descriptors
+    /// (metadata + lazy builders), not built definitions.
+    private static let descriptorsByID: [String: LanguageDescriptor] =
+        LanguageDefinitions.all.reduce(into: [:]) { dict, descriptor in
+            dict[descriptor.id] = descriptor
         }
 
-    /// Cache for loaded definitions.
+    /// Cache for loaded definitions. Only languages actually loaded via
+    /// `load(id:)` are built and held here.
     private static var cache: [String: KeyboardDefinition] = [:]
 
-    /// Loads the full definition for a keyboard ID, caching the result.
+    /// Loads the full definition for a keyboard ID, building it lazily on first
+    /// use and caching the result.
     static func load(id: String) -> KeyboardDefinition? {
         if let cached = cache[id] { return cached }
-        guard let definition = definitionsByID[id] else {
+        guard let descriptor = descriptorsByID[id] else {
             return nil
         }
+        let definition = descriptor.makeDefinition()
         cache[id] = definition
         return definition
     }
@@ -37,9 +45,16 @@ enum KeyboardRegistry {
         cache.removeValue(forKey: id)
     }
 
-    /// Clears the entire cache.
+    /// Clears the entire cache. Active definitions are rebuilt lazily on next
+    /// `load(id:)`.
     static func evictAll() {
         cache.removeAll()
+    }
+
+    /// Evicts every cached definition except the given id. Used on memory
+    /// warnings to free inactive layouts while keeping the active one resident.
+    static func evictAll(except keepID: String) {
+        cache = cache.filter { $0.key == keepID }
     }
 
     /// Whether a definition is currently cached (for testing).

@@ -12,13 +12,13 @@ import Testing
 // MARK: - All Layouts Validate
 
 struct LanguageDefinitionValidationTests {
-    @Test(arguments: LanguageDefinitions.all)
+    @Test(arguments: LanguageDefinitions.all.map { $0.makeDefinition() })
     func layoutValidatesWithoutErrors(layout: KeyboardDefinition) {
         let errors = layout.validate()
         #expect(errors.isEmpty, "Validation errors for \(layout.id): \(errors)")
     }
 
-    @Test(arguments: LanguageDefinitions.all)
+    @Test(arguments: LanguageDefinitions.all.map { $0.makeDefinition() })
     func layoutHasRequiredModes(layout: KeyboardDefinition) {
         #expect(layout.modes[ModeNames.main] != nil, "\(layout.id) missing main mode")
         #expect(layout.modes[ModeNames.shifted] != nil, "\(layout.id) missing shifted mode")
@@ -43,7 +43,7 @@ struct LanguageDefinitionValidationTests {
 // MARK: - German Layout Tests
 
 struct GermanLayoutTests {
-    static let german = LanguageDefinitions.german
+    static let german = LanguageDefinitions.german.makeDefinition()
 
     @Test func centerCharacters() throws {
         let main = try #require(Self.german.modes[ModeNames.main])
@@ -158,13 +158,13 @@ struct NumericLayoutTests {
     }
 
     @Test func hebrewLayoutUsesHebrewBackToAlphaLabel() throws {
-        let hebrew = LanguageDefinitions.hebrew
+        let hebrew = LanguageDefinitions.hebrew.makeDefinition()
         let numeric = try #require(hebrew.modes[ModeNames.numeric])
         #expect(numeric.keys[UtilitySlot.symbols]?.bindings[.tap]?.label == "אבג")
     }
 
     @Test func russianLayoutUsesCyrillicBackToAlphaLabel() throws {
-        let russian = LanguageDefinitions.russian
+        let russian = LanguageDefinitions.russian.makeDefinition()
         let numeric = try #require(russian.modes[ModeNames.numeric])
         #expect(numeric.keys[UtilitySlot.symbols]?.bindings[.tap]?.label == "абв")
     }

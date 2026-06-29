@@ -25,6 +25,8 @@ final class KeyboardViewController: UIInputViewController {
     /// since the LanguageSettings singleton may hold a stale value from its init.
     override var primaryLanguage: String? {
         get {
+            // `resolvedLanguage` reads lightweight registry/config metadata only
+            // (it never builds a layout), so it is safe for iOS to query eagerly.
             resolvedLanguage.locale.identifier
         }
         set {
@@ -45,6 +47,7 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        KeyboardMemoryLog.record("viewDidLoad.start")
 
         // Set background immediately to avoid flash
         view.backgroundColor = .clear
@@ -67,6 +70,7 @@ final class KeyboardViewController: UIInputViewController {
         // viewWillAppear ran before configureHosting, leaving the extension
         // with a height constraint but no content.
         configureHosting()
+        KeyboardMemoryLog.record("viewDidLoad.end")
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -97,6 +101,15 @@ final class KeyboardViewController: UIInputViewController {
         // does not suppress future reload attempts.
         viewModel.loadDefinition(for: languageId)
         loadedDefinitionSignature = signature
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        KeyboardMemoryLog.record("didReceiveMemoryWarning")
+        // Free cached layouts for languages other than the active one. The
+        // active definition stays resident (the view model holds a strong
+        // reference) and remains cached for fast reuse.
+        KeyboardRegistry.evictAll(except: resolvedLanguage.id)
     }
 
     private func updateKeyboardHeight() {
