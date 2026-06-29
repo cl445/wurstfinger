@@ -41,13 +41,70 @@ final class MockTextTarget: TextInputTarget {
     }
 }
 
+/// Isolated, in-memory `UserDefaults` for tests.
+///
+/// Replaces the previous `UserDefaults(suiteName: "test.<UUID>")!` pattern,
+/// which created a fresh on-disk suite per call. Under parallel test
+/// execution that spammed the prefs directory and could return `nil`,
+/// crashing on the force-unwrap. This backing store never touches disk,
+/// never returns `nil`, and is fully isolated per instance.
+///
+/// `KeyboardSettings` reads/writes the injected store only via
+/// `object(forKey:)` / `set(_:forKey:)` / `removeObject(forKey:)`; the typed
+/// accessors are overridden too as a safety net.
+final class InMemoryUserDefaults: UserDefaults {
+    private var storage: [String: Any] = [:]
+    private let lock = NSLock()
+
+    convenience init() {
+        // suiteName nil backs `super` with the standard domain, but every
+        // accessor below is overridden so that domain is never consulted.
+        self.init(suiteName: nil)!
+    }
+
+    override func object(forKey defaultName: String) -> Any? {
+        lock.lock(); defer { lock.unlock() }
+        return storage[defaultName]
+    }
+
+    override func set(_ value: Any?, forKey defaultName: String) {
+        lock.lock(); defer { lock.unlock() }
+        storage[defaultName] = value
+    }
+
+    override func removeObject(forKey defaultName: String) {
+        lock.lock(); defer { lock.unlock() }
+        storage[defaultName] = nil
+    }
+
+    override func string(forKey defaultName: String) -> String? {
+        object(forKey: defaultName) as? String
+    }
+
+    override func bool(forKey defaultName: String) -> Bool {
+        (object(forKey: defaultName) as? NSNumber)?.boolValue ?? false
+    }
+
+    override func integer(forKey defaultName: String) -> Int {
+        (object(forKey: defaultName) as? NSNumber)?.intValue ?? 0
+    }
+
+    override func double(forKey defaultName: String) -> Double {
+        (object(forKey: defaultName) as? NSNumber)?.doubleValue ?? 0
+    }
+
+    override func float(forKey defaultName: String) -> Float {
+        (object(forKey: defaultName) as? NSNumber)?.floatValue ?? 0
+    }
+}
+
 /// Creates a KeyboardViewModel wired to a MockTextTarget for testing.
 func makeViewModel(
     languageId: String = "de_DE",
     advanceToNextInputMode: @escaping () -> Void = {},
     dismissKeyboard: @escaping () -> Void = {}
 ) -> (KeyboardViewModel, MockTextTarget) {
-    let defaults = UserDefaults(suiteName: "test.\(UUID().uuidString)")!
+    let defaults = InMemoryUserDefaults()
     let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
     let target = MockTextTarget()
     vm.bindTextInputTarget(target)
