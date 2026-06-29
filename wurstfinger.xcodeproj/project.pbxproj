@@ -74,6 +74,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Localizable.xcstrings,
 				PrivacyInfo.xcprivacy,
 				Settings/SharedDefaults.swift,
 			);
@@ -291,6 +292,18 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				fr,
+				es,
+				it,
+				ru,
+				pl,
+				sv,
+				fi,
+				hr,
+				he,
+				vi,
+				fil,
 			);
 			mainGroup = 427511892EAAF62000C5635A;
 			minimizedProjectReferenceProxies = 1;

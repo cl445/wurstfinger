@@ -68,8 +68,8 @@ import SwiftUI
 
     private struct SetupStepView: View {
         let number: Int
-        let title: String
-        let description: String
+        let title: LocalizedStringKey
+        let description: LocalizedStringKey
         @Binding var isCompleted: Bool
 
         var body: some View {

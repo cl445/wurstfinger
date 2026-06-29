@@ -70,7 +70,7 @@ struct SettingsView: View {
                 SettingsRow(
                     icon: "keyboard.badge.ellipsis", color: .indigo,
                     title: "Utility Keys on Left",
-                    subtitle: "Places globe, symbols, delete and return on the left"
+                    subtitle: String(localized: "Places globe, symbols, delete and return on the left")
                 )
             }
 
@@ -78,7 +78,7 @@ struct SettingsView: View {
                 SettingsRow(
                     icon: "textformat.size.larger", color: .teal,
                     title: "Auto-Capitalize",
-                    subtitle: "Capitalize after sentence-ending punctuation"
+                    subtitle: String(localized: "Capitalize after sentence-ending punctuation")
                 )
             }
 
@@ -256,10 +256,10 @@ struct SettingsView: View {
 struct SettingsRow: View {
     let icon: String
     let color: Color
-    let title: String
+    let title: LocalizedStringKey
     let subtitle: String?
 
-    init(icon: String, color: Color, title: String, subtitle: String? = nil) {
+    init(icon: String, color: Color, title: LocalizedStringKey, subtitle: String? = nil) {
         self.icon = icon
         self.color = color
         self.title = title
