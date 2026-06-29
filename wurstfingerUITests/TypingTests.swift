@@ -79,6 +79,15 @@ final class TypingTests: XCTestCase {
         return label
     }
 
+    /// Drags from a key's center by (dx, dy) points — long enough to register
+    /// as a directional swipe. Negative dy is up; positive dx is right.
+    private func swipe(on id: String, dx: CGFloat, dy: CGFloat) {
+        let element = key(id)
+        let start = element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        let end = start.withOffset(CGVector(dx: dx, dy: dy))
+        start.press(forDuration: 0.05, thenDragTo: end)
+    }
+
     // MARK: - Tests
 
     /// Tapping letter keys appends each key's character in order.
@@ -133,6 +142,21 @@ final class TypingTests: XCTestCase {
             result, .completed,
             "Swipe up should produce a character other than the tap label '\(tapLabel)', got '\(typedText())'"
         )
+    }
+
+    /// Compose: typing a base letter, then swiping the acute-accent trigger
+    /// (topCenter ↗, `.compose(trigger: "´")`), composes the accented letter
+    /// (´ + a → á).
+    @MainActor
+    func testComposeAcuteAccentProducesAccentedLetter() {
+        let base = tapKey("topLeft") // "a" in de_DE
+        XCTAssertEqual(base, "a", "Test assumes topLeft is 'a' on the de_DE lower layer")
+        assertTypedText(equals: "a")
+
+        // Swipe up-right on topCenter → emits .compose(trigger: "´").
+        swipe(on: "topCenter", dx: 40, dy: -40)
+
+        assertTypedText(equals: "á")
     }
 
     /// Switching to the numeric layer via the symbols key lets digits be typed.
