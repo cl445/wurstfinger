@@ -34,7 +34,7 @@ else
 fi
 
 DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
-TEST_TARGET="WurstfingerUITests/ScreenshotTests"
+TEST_TARGET="WurstfingerUITests/ScreenshotTests/testGenerateScreenshots"
 DOCS_DIR="$PROJECT_ROOT/docs/images"
 DERIVED_DATA="/tmp/WurstfingerScreenshots"
 
@@ -273,10 +273,7 @@ if [ $COPIED -gt 0 ]; then
   echo -e "${GREEN}✅ Success! Created $COPIED WebP screenshot(s) in $DOCS_DIR${NC}"
   echo ""
   echo -e "${BLUE}📝 Generated screenshots:${NC}"
-  echo "    - keyboard-lower-light.webp"
-  echo "    - keyboard-lower-dark.webp"
-  echo "    - keyboard-numbers-light.webp"
-  echo "    - keyboard-numbers-dark.webp"
+  ls -1 "$DOCS_DIR"/*.webp 2>/dev/null | while read -r f; do echo "    - $(basename "$f")"; done
 else
   echo -e "${RED}❌ No screenshots found${NC}"
   echo ""
