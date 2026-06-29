@@ -47,10 +47,11 @@ struct OriginAnchoringTests {
         }
 
         // Re-anchoring restores (0,0) as the origin, so the gesture reads as a
-        // rightward return swipe again.
+        // rightward return swipe again — checked through the production
+        // classify(positions:) pipeline rather than a hand-rolled extraction.
         let anchored = KeyGestureRecognizer.anchoringOrigin(evicted)
-        let features = GestureFeatures.extract(from: anchored)
-        #expect(features.isReturn)
-        #expect(KeyGestureRecognizer.angleToGestureType(features.maxDisplacementAngle) == .swipeRight)
+        let classification = KeyGestureRecognizer.classify(positions: anchored)
+        #expect(classification.isReturn)
+        #expect(classification.gesture == .swipeRight)
     }
 }
