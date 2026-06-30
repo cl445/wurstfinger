@@ -22,6 +22,12 @@ struct KeyView: View {
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
     var spanRatio: CGFloat = 1.0
 
+    /// Inset between the full touch cell and the key's visible bounds. The cell
+    /// supplied by `KeyboardGridLayout` extends halfway into the gap toward each
+    /// neighbour so there are no dead zones; insetting the drawn content by the
+    /// same amount keeps the visible key exactly where it was. Defaults to zero.
+    var visualInset: EdgeInsets = .init()
+
     @State private var isActive = false
 
     @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
@@ -51,6 +57,10 @@ struct KeyView: View {
             label
             hintOverlay
         }
+        // Inset the drawn key from the touch cell by `visualInset`, so the
+        // visible key keeps its position/size while the cell itself extends into
+        // the inter-key gaps (see KeyboardGridLayout.gapInsets).
+        .padding(visualInset)
         // Fill the cell frame imposed by KeyboardGridLayout. The layout sizes
         // rows from the same effective key height, so single-row keys are
         // unchanged while a spanning key (e.g. landscape return) grows to cover
@@ -60,7 +70,9 @@ struct KeyView: View {
         .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier(key.id)
         .accessibilityAddTraits(.isButton)
-        .contentShape(Rectangle().inset(by: -KeyboardTouchArea.padding))
+        // The whole cell is the touch target. Adjacent cells tile the surface
+        // with no gaps, so a plain rectangle covers it fully.
+        .contentShape(Rectangle())
 
         if usesSlideGesture {
             base.modifier(SlideGestureHandler(

@@ -34,22 +34,94 @@ struct KeyboardGridLayout: Layout {
     }
 
     func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
-        guard columns > 0 else { return }
+        let frames = Self.cellFrames(
+            cells: cells,
+            columns: columns,
+            bounds: bounds,
+            rowHeight: rowHeight,
+            horizontalSpacing: horizontalSpacing,
+            verticalSpacing: verticalSpacing
+        )
+        for (index, frame) in frames.enumerated() where index < subviews.count {
+            subviews[index].place(
+                at: CGPoint(x: frame.minX, y: frame.minY),
+                anchor: .topLeading,
+                proposal: ProposedViewSize(width: frame.width, height: frame.height)
+            )
+        }
+    }
+
+    /// Computes the frame assigned to every cell — the pure geometry behind
+    /// `placeSubviews`, exposed so touch coverage can be unit tested without a
+    /// SwiftUI host. Frames are returned in the same order as `cells`.
+    ///
+    /// A cell's frame is the key's **effective touch target**: SwiftUI delivers
+    /// touches to a Layout-placed subview within this frame. Each frame is grown
+    /// by `gapInsets` so it meets its neighbours in the **middle** of the
+    /// inter-key spacing, leaving no uncovered strip. The visible key is inset
+    /// back by the same amount in `KeyView`, so the drawn layout is unchanged
+    /// while the touch frames tile the surface with no gaps — see
+    /// `KeyboardGridLayoutTouchCoverageTests`.
+    static func cellFrames(
+        cells: [SolvedCell],
+        columns: Int,
+        bounds: CGRect,
+        rowHeight: CGFloat,
+        horizontalSpacing: CGFloat,
+        verticalSpacing: CGFloat
+    ) -> [CGRect] {
+        guard columns > 0 else { return [] }
         let totalHorizontalSpacing = CGFloat(columns - 1) * horizontalSpacing
         let columnWidth = max((bounds.width - totalHorizontalSpacing) / CGFloat(columns), 0)
+        let totalRows = cells.map { $0.row + $0.rowSpan }.max() ?? 0
 
-        for (index, cell) in cells.enumerated() where index < subviews.count {
+        return cells.map { cell in
+            // Visible frame: the key's drawn bounds (geometry unchanged).
             let originX = bounds.minX + CGFloat(cell.column) * (columnWidth + horizontalSpacing)
             let originY = bounds.minY + CGFloat(cell.row) * (rowHeight + verticalSpacing)
             let width = CGFloat(cell.columnSpan) * columnWidth
                 + CGFloat(cell.columnSpan - 1) * horizontalSpacing
             let height = CGFloat(cell.rowSpan) * rowHeight
                 + CGFloat(cell.rowSpan - 1) * verticalSpacing
-            subviews[index].place(
-                at: CGPoint(x: originX, y: originY),
-                anchor: .topLeading,
-                proposal: ProposedViewSize(width: width, height: height)
+
+            // Touch frame: grow into the surrounding gaps so adjacent frames meet.
+            let insets = gapInsets(
+                for: cell,
+                columns: columns,
+                totalRows: totalRows,
+                horizontalSpacing: horizontalSpacing,
+                verticalSpacing: verticalSpacing
+            )
+            return CGRect(
+                x: originX - insets.leading,
+                y: originY - insets.top,
+                width: width + insets.leading + insets.trailing,
+                height: height + insets.top + insets.bottom
             )
         }
+    }
+
+    /// Per-side amount by which a cell's touch frame grows into the gap toward
+    /// its neighbours: half the spacing on each interior side, and zero at the
+    /// keyboard's outer edges (so the grid still ends exactly at `bounds`).
+    ///
+    /// Single source of truth shared by `cellFrames` — which expands the touch
+    /// frame — and `KeyView`, which insets the **visible** key by the same
+    /// values so growing the touch target changes nothing the user sees.
+    static func gapInsets(
+        for cell: SolvedCell,
+        columns: Int,
+        totalRows: Int,
+        horizontalSpacing: CGFloat,
+        verticalSpacing: CGFloat
+    ) -> (top: CGFloat, leading: CGFloat, bottom: CGFloat, trailing: CGFloat) {
+        let halfH = horizontalSpacing / 2
+        let halfV = verticalSpacing / 2
+        return (
+            top: cell.row == 0 ? 0 : halfV,
+            leading: cell.column == 0 ? 0 : halfH,
+            bottom: cell.row + cell.rowSpan >= totalRows ? 0 : halfV,
+            trailing: cell.column + cell.columnSpan >= columns ? 0 : halfH
+        )
     }
 }
