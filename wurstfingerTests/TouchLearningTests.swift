@@ -160,4 +160,24 @@ struct TouchLearningViewModelTests {
         let off = vm.touchLearning.model(for: vm.currentTouchRegime).offset(forKeyId: GridSlot.topLeft)
         #expect(magnitude(off) < 1e-9)
     }
+
+    /// The apply-gate (§4.4): correction is exposed only when enabled AND the
+    /// regime has matured.
+    @Test func applyGateRequiresEnabledAndMature() {
+        let (vm, _) = makeViewModel()
+        #expect(vm.currentTouchCorrectionOffsets().isEmpty) // off
+
+        vm.sharedDefaults.set(true, forKey: SettingsKey.touchOffsetEnabled.rawValue)
+        #expect(vm.currentTouchCorrectionOffsets().isEmpty) // enabled but no data
+
+        for _ in 0 ..< 60 {
+            vm.handleGesture(
+                .tap, keyId: GridSlot.topLeft, isReturn: false,
+                touchdown: CGPoint(x: 0.66, y: 0.5)
+            )
+        }
+        let offsets = vm.currentTouchCorrectionOffsets()
+        #expect(!offsets.isEmpty)
+        #expect((offsets[GridSlot.topLeft]?.dx ?? 0) > 0.05)
+    }
 }

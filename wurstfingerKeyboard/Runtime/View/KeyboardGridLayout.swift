@@ -127,7 +127,11 @@ struct KeyboardGridLayout: Layout {
     /// captured; per-key residual is partially realized). Outer lines stay at 0.
     /// This guarantees a disjoint, gapless partition for arbitrary 2D offsets,
     /// which independent per-edge shifts cannot (diagonal-corner mismatch).
-    private static func lineShifts(
+    /// Per-line touch-grid shifts (points), exposed so `KeyboardGridView` can
+    /// derive the matching **visible** compensation (keep the drawn key fixed
+    /// while the touch frame moves, §5.5). Both callers must use the same
+    /// `columnWidth`/`rowHeight` for the shifts to agree.
+    static func lineShifts(
         cells: [SolvedCell], columns: Int, totalRows: Int,
         offsets: [String: CGVector], clamp: CGFloat, columnWidth: CGFloat, rowHeight: CGFloat
     ) -> (vertical: [CGFloat], horizontal: [CGFloat]) {
