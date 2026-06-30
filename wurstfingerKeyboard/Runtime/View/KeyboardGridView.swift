@@ -43,7 +43,9 @@ struct KeyboardGridView: View {
             columns: arrangement.columns,
             rowHeight: metrics.rowHeight,
             horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
-            verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
+            verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing,
+            offsets: spikeOffsets,
+            offsetClamp: spikeClamp
         ) {
             ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
                 cellContent(for: cell, totalRows: totalRows)
@@ -90,6 +92,41 @@ struct KeyboardGridView: View {
             trailing: insets.trailing
         )
     }
+
+    // MARK: - P3.5 Device Spike (TEMPORARY — remove after validation)
+
+    #if DEBUG
+        /// Flip to `true`, build & run **on device** to validate Key-Target-
+        /// Resizing: the whole **center column** (`topCenter`/`center`/
+        /// `bottomCenter`) shifts its hit cells ~0.18 column to the right (into
+        /// the `…Right` column), so a tap on the *left edge* of the drawn right
+        /// column produces the center column's character. Proves the touch frame
+        /// — not the drawn key — decides assignment (§5.5/§11.6). The visible
+        /// keys shift too here (invisible compensation is P7). The whole column
+        /// is offset so the per-line averaging (§5.4) does not dilute it.
+        private static let spikeActive = false
+        private var spikeOffsets: [String: CGVector] {
+            guard Self.spikeActive else { return [:] }
+            let shift = CGVector(dx: 0.7, dy: 0) // clamped to 0.35 → ~0.18 col line shift
+            return [
+                GridSlot.topCenter: shift,
+                GridSlot.center: shift,
+                GridSlot.bottomCenter: shift,
+            ]
+        }
+
+        private var spikeClamp: CGFloat {
+            0.35
+        }
+    #else
+        private var spikeOffsets: [String: CGVector] {
+            [:]
+        }
+
+        private var spikeClamp: CGFloat {
+            0.35
+        }
+    #endif
 
     // MARK: - Span Inspection (Test Hooks)
 
