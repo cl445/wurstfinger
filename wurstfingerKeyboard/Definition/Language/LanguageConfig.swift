@@ -30,6 +30,14 @@ extension LanguageConfig {
         id: "en_US", name: "English", locale: Locale(identifier: "en_US")
     )
 
+    static let german = LanguageConfig(
+        id: "de_DE", name: "Deutsch", locale: Locale(identifier: "de_DE")
+    )
+
+    static let russian = LanguageConfig(
+        id: "ru_RU", name: "Русский", locale: Locale(identifier: "ru_RU")
+    )
+
     /// All supported languages, derived from `KeyboardRegistry.available` and
     /// sorted alphabetically by name. This is the single source of truth --
     /// adding a new `KeyboardDefinition` to `LanguageDefinitions.all`

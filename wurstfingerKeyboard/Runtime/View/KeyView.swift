@@ -39,6 +39,14 @@ struct KeyView: View {
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
 
+    /// Short language label (e.g. "DE") shown on the switch key, and whether to
+    /// show it. Driven by the active keyboard locale via `KeyboardViewModel`
+    /// (threaded through `KeyboardGridView`) rather than re-derived from shared
+    /// defaults, so the hint stays correct even when startup loads a pinned
+    /// language whose id differs from the stored selection.
+    var languageLabel: String = ""
+    var showLanguageLabel: Bool = false
+
     @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
     private var hideLetters = false
 
@@ -297,17 +305,31 @@ struct KeyView: View {
                 // derived from the action, so gating on the label alone would
                 // hide them entirely.
                 if let binding = key.bindings[gesture],
-                   !binding.label.isEmpty || Self.hintIcon(for: binding.action) != nil,
-                   isLabelVisible(binding),
                    let alignment = Self.hintAlignments[gesture] {
-                    hintContent(for: binding)
-                        .fixedSize()
-                        .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
-                        .frame(
-                            width: size.width,
-                            height: size.height,
-                            alignment: alignment
-                        )
+                    if binding.action == .switchToNextLanguage {
+                        if showLanguageLabel {
+                            Text(languageLabel)
+                                .font(.system(size: scaledHintFontSize * 0.75, weight: .semibold, design: .rounded))
+                                .foregroundStyle(Color.primary.opacity(0.5))
+                                .fixedSize()
+                                .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
+                                .frame(
+                                    width: size.width,
+                                    height: size.height,
+                                    alignment: alignment
+                                )
+                        }
+                    } else if !binding.label.isEmpty || Self.hintIcon(for: binding.action) != nil,
+                              isLabelVisible(binding) {
+                        hintContent(for: binding)
+                            .fixedSize()
+                            .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
+                            .frame(
+                                width: size.width,
+                                height: size.height,
+                                alignment: alignment
+                            )
+                    }
                 }
             }
         }

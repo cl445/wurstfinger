@@ -61,6 +61,11 @@ final class KeyboardViewController: UIInputViewController {
             dismissKeyboard: { [weak self] in self?.dismissKeyboard() }
         )
 
+        // Honor a pinned startup language on cold start so the keyboard always
+        // opens with it. In-keyboard cycling afterwards updates the selection
+        // normally (subsequent reloads follow selectedLanguageId, not the pin).
+        LanguageSettings(userDefaults: SharedDefaults.store).applyStartupLanguage()
+
         // Load the keyboard definition for the selected language
         loadDefinitionIfNeeded()
 

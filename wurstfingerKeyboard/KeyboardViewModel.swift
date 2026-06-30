@@ -75,6 +75,10 @@ final class KeyboardViewModel: ObservableObject {
     var onDismissKeyboard: (() -> Void)?
     /// Locale used by the pipeline (set from the keyboard definition).
     var pipelineLocale: Locale?
+    /// Published so the globe hint (`hasMultipleLanguages`) re-renders when the
+    /// enabled-language set changes in Settings without the active language
+    /// changing. `private(set)` keeps the normalisation invariants intact.
+    @Published private(set) var enabledLanguageIds: [String] = []
 
     // MARK: - Settings (delegated to extracted classes)
 
@@ -150,6 +154,8 @@ final class KeyboardViewModel: ObservableObject {
         layoutSettings = LayoutSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
         hapticManager = HapticFeedbackManager(settings: hapticSettings)
 
+        enabledLanguageIds = LanguageSettings.normalizedEnabledLanguageIds(from: defaults)
+
         // Forward settings changes to trigger objectWillChange on this ViewModel
         hapticSettings.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
@@ -217,6 +223,35 @@ final class KeyboardViewModel: ObservableObject {
         // Delegate to extracted settings classes - eliminates duplicate code
         hapticSettings.reload()
         layoutSettings.reload()
+
+        enabledLanguageIds = LanguageSettings.normalizedEnabledLanguageIds(from: sharedDefaults)
+    }
+
+    func switchToNextLanguage() {
+        guard enabledLanguageIds.count > 1 else { return }
+
+        // Cycle from the layout that is actually on screen. Startup can load a
+        // pinned language whose id differs from the stored selection, so the
+        // active definition — not shared defaults — is the source of truth;
+        // otherwise the first swipe would just reload the current layout.
+        let currentId = currentDefinition?.id
+            ?? sharedDefaults.string(forKey: SettingsKey.selectedLanguageId.rawValue)
+            ?? "en_US"
+        let nextId = LanguageSettings(userDefaults: sharedDefaults).nextLanguageId(after: currentId)
+
+        if nextId != currentId {
+            sharedDefaults.set(nextId, forKey: SettingsKey.selectedLanguageId.rawValue)
+            loadDefinition(for: nextId)
+        }
+    }
+
+    var hasMultipleLanguages: Bool {
+        enabledLanguageIds.count > 1
+    }
+
+    var currentLanguageLabel: String {
+        guard let locale = pipelineLocale else { return "" }
+        return LanguageSettings.label(for: locale)
     }
 
     // MARK: - Haptic Feedback (delegated to HapticFeedbackManager)

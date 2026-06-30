@@ -28,6 +28,8 @@ struct CommonKeysTests {
         // Switching the input method lives on swipe-left; tap is intentionally inert.
         #expect(globe.bindings[.tap]?.action == KeyAction.none)
         #expect(globe.bindings[.swipeLeft]?.action == .advanceToNextInputMode)
+        // Cycling the in-keyboard language lives on swipe-right.
+        #expect(globe.bindings[.swipeRight]?.action == .switchToNextLanguage)
         #expect(globe.style == .utility)
     }
 

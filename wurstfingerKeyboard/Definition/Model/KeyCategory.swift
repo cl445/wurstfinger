@@ -35,7 +35,7 @@ extension KeyAction {
         case .capitalizeWord: return .modifier
         case .space, .newline: return .whitespace
         case .deleteBackward, .deleteForward, .moveCursor,
-             .advanceToNextInputMode, .dismissKeyboard:
+             .advanceToNextInputMode, .dismissKeyboard, .switchToNextLanguage:
             return .utility
         case .copy, .paste, .cut: return .utility
         case .none: return .utility

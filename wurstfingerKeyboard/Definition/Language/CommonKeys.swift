@@ -31,6 +31,10 @@ enum CommonKeys {
             category: .utility, returnAction: nil,
             accessibilityLabel: String(localized: "Hide keyboard")
         )
+        bindings[.swipeRight] = KeyBinding(
+            label: "", action: .switchToNextLanguage,
+            category: .utility, returnAction: nil, accessibilityLabel: nil
+        )
         return KeyConfig(
             id: UtilitySlot.globe, bindings: bindings,
             swipeMode: .fourWayCross, slideType: .none,
