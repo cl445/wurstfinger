@@ -68,16 +68,12 @@ struct DataDrivenKeyboardRootView: View {
             Color(.systemBackground)
         case .liquidGlass:
             // A keyboard extension's input view only delivers touches that land
-            // on an actually-rendered surface; fully transparent regions pass
-            // through (iOS 26 Liquid Glass keyboards are semi-transparent). With
-            // a pure `Color.clear` root the inter-key gaps render nothing, so
-            // taps there never reach SwiftUI — dead zones that appear only in the
-            // real extension + Liquid Glass (Classic's opaque fill is immune).
-            // A `contentShape` alone is not enough (it is a hit region, not a
-            // rendered surface), so paint a near-invisible fill: the whole
-            // keyboard becomes a real surface that delivers gap touches, while
-            // the keys on top still win the hit-test. ~2% opacity over the
-            // system glass backdrop is visually indistinguishable from clear.
+            // on a rendered surface; fully transparent regions pass through. A
+            // `Color.clear` root would drop taps that fall in the gaps between
+            // keys, so paint a near-invisible fill instead: the whole keyboard
+            // becomes a real surface that receives those touches while the keys
+            // on top still win the hit-test. ~2% over the glass backdrop reads
+            // as clear.
             Color(.systemBackground).opacity(0.02)
         }
     }

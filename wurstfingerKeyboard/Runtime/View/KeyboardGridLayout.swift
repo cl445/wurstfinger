@@ -60,7 +60,7 @@ struct KeyboardGridLayout: Layout {
     /// by `gapInsets` so it meets its neighbours in the **middle** of the
     /// inter-key spacing, leaving no uncovered strip. The visible key is inset
     /// back by the same amount in `KeyView`, so the drawn layout is unchanged
-    /// while the dead zones between keys disappear — see
+    /// while the touch frames tile the surface with no gaps — see
     /// `KeyboardGridLayoutTouchCoverageTests`.
     static func cellFrames(
         cells: [SolvedCell],

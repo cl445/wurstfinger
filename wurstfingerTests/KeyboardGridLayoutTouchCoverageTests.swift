@@ -2,20 +2,10 @@
 //  KeyboardGridLayoutTouchCoverageTests.swift
 //  wurstfingerTests
 //
-//  Guards against the inter-key "dead zone" bug.
-//
-//  A key's reliably-hittable touch target is the frame `KeyboardGridLayout`
-//  assigns it: SwiftUI delivers touches to a Layout-placed subview within its
-//  frame, and a `.contentShape` larger than that frame does not extend hit
-//  delivery past it on device (a clean tap in the inter-key spacing produced no
-//  character, reproducibly ~4 of 5 times). Touch coverage must therefore hold at
-//  the *frame* level — so this test models the effective touch target as the
-//  placed frame and asserts the keyboard surface is tiled with no gaps.
-//
-//  Originally written red: it failed while the layout placed keys with a
-//  `gridSpacing` strip between their frames. It passes once `cellFrames` grows
-//  each frame to meet its neighbour in the middle of the gap (the visible key is
-//  inset back by the same amount, so the layout looks unchanged).
+//  Verifies that `KeyboardGridLayout` assigns each key a touch frame and that
+//  adjacent frames tile the keyboard surface with no gaps — every interior
+//  point belongs to some key's frame. Pure geometry, so it runs without a
+//  SwiftUI host.
 //
 
 import CoreGraphics
@@ -81,9 +71,8 @@ struct KeyboardGridLayoutTouchCoverageTests {
         )
     }
 
-    /// Pinpoints the failure: horizontally adjacent keys must leave no uncovered
-    /// strip between them. With `gridHorizontalSpacing > 0` the right edge of a
-    /// key falls short of its neighbour's left edge by exactly the spacing.
+    /// Horizontally adjacent keys must leave no uncovered strip between their
+    /// touch frames: each key's right edge meets its neighbour's left edge.
     @Test("Horizontally adjacent keys leave no gap between their touch frames")
     func adjacentKeysAreContiguousHorizontally() throws {
         let (frames, _) = try framesForPortrait()

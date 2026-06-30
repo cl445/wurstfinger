@@ -70,10 +70,8 @@ struct KeyView: View {
         .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier(key.id)
         .accessibilityAddTraits(.isButton)
-        // The whole cell is the touch target. Because adjacent cells tile the
-        // surface with no gaps, a plain rectangle leaves no dead zones — no need
-        // to bleed the hit area past the frame (which did not work reliably and
-        // left dead strips between keys on device).
+        // The whole cell is the touch target. Adjacent cells tile the surface
+        // with no gaps, so a plain rectangle covers it fully.
         .contentShape(Rectangle())
 
         if usesSlideGesture {
