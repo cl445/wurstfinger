@@ -1,0 +1,27 @@
+Wurstfinger: tangentbordet för tjocka fingrar
+
+Trött på skrivfel? Wurstfinger är ett integritetsvänligt tangentbord med stora tangenter och svepgester. Baserat på den beprövade MessagEase-layouten ersätter det det trånga QWERTY-rutnätet med en 3x3-layout optimerad för att skriva med tummarna.
+
+Till skillnad från vanliga tangentbord förlitar sig Wurstfinger inte på påträngande ordprediktion – det uppnår precision genom ergonomisk design. Stora, väl åtskilda tangenter ger färre felträffar, och gestsystemet ger åtkomst till alla tecken utan att leta efter pyttesmå knappar.
+
+FUNKTIONER:
+
+• 3x3-rutnät med tangenter – gjort för tummar, inte för precisionspekare
+• Svepgester – kom åt 8 extra tecken per tangent genom att svepa
+• 15 språk – katalanska, kroatiska, engelska, estnisk-finska, finska, franska, tyska, hebreiska, italienska, polska, ryska, spanska, svenska, tagalog och vietnamesiska (med Telex-inmatning)
+• Kompositionsregler – skapa accenter via kombinationer (t.ex. ' + a = á)
+• Cirkelgester – rita en cirkel för versaler
+• Markörkontroll – dra på mellanslagstangenten för att flytta markören; håll in för att markera text
+• Haptisk respons – justerbar vibrationsstyrka
+• Helt justerbart – skala tangentbordets storlek efter eget tycke
+
+INTEGRITET FÖRST:
+
+• Ingen datainsamling
+• Ingen nätverksåtkomst
+• Ingen spårning via ordprediktion
+• All bearbetning sker lokalt på din enhet
+
+Wurstfinger kräver träning – räkna med några dagar för att bygga muskelminne. Men när du väl passerat den tröskeln vill du aldrig tillbaka till ett vanligt tangentbord. Gesterna blir en andra natur och du skriver snabbare och med färre fel än någonsin.
+
+Dina fingrar kommer att tacka dig!

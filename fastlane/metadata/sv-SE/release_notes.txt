@@ -1,0 +1,13 @@
+Version 1.2.0
+
+Höjdpunkter:
+• Inga fler döda zoner – varje pixel på tangentbordet reagerar nu på beröring
+• Snabbare haptisk respons – vibrationen utlöses vid beröring i stället för efter åtgärden
+• Tangentbordet förblir korrekt justerat efter rotation i bakgrunden
+
+Rättningar:
+• Fransk layout: åtgärdat retursvep på mittentangenten
+• Automatisk versalisering efter radering fungerar igen
+• Apostrofen utlöser inte längre accent-/kompositionsläget
+• iOS rapporterar nu rätt tangentbordsspråk
+• Diverse andra rättningar för gester och inställningar

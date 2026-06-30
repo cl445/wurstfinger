@@ -1,0 +1,13 @@
+Versio 1.2.0
+
+Kohokohdat:
+• Ei enää katvealueita – jokainen näppäimistön pikseli reagoi nyt kosketukseen
+• Nopeampi haptinen palaute – värinä laukeaa kosketuksesta eikä toiminnon jälkeen
+• Näppäimistö pysyy oikein kohdistettuna, kun laitetta käännetään taustalla
+
+Korjaukset:
+• Ranskalainen asettelu: korjattu keskinäppäimen paluupyyhkäisy
+• Automaattinen isojen alkukirjainten käyttö poiston jälkeen toimii taas
+• Heittomerkki ei enää käynnistä aksentti-/yhdistämistilaa
+• iOS ilmoittaa nyt oikean näppäimistön kielen
+• Useita muita korjauksia eleisiin ja asetuksiin
