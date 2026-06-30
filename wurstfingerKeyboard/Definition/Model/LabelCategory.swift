@@ -62,8 +62,9 @@ extension LabelCategory {
         switch binding.resolvedCategory {
         case .letter: .letter
         case .digit: .number
-        case .compose: .extraSymbol
-        case .modifier, .utility, .whitespace: .functional
+        // Compose/accent triggers are treated like other control keys (shift,
+        // symbols toggle): always visible, never hidden by the toggles.
+        case .modifier, .utility, .whitespace, .compose: .functional
         case .symbol: classify(binding.label)
         }
     }

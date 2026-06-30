@@ -52,14 +52,12 @@ struct LabelCategoryTests {
         #expect(LabelCategory.of(binding("$", .commitText("$"))) == .extraSymbol)
     }
 
-    @Test func mapsComposeToExtraSymbol() {
-        #expect(LabelCategory.of(binding("´", .compose(trigger: "´"))) == .extraSymbol)
-    }
-
     @Test func mapsControlKeysToFunctional() {
         #expect(LabelCategory.of(binding("", .switchMode("symbols"))) == .functional) // modifier
         #expect(LabelCategory.of(binding("⌫", .deleteBackward)) == .functional) // utility
         #expect(LabelCategory.of(binding(" ", .space)) == .functional) // whitespace
+        // Compose/accent triggers stay visible like other control keys.
+        #expect(LabelCategory.of(binding("´", .compose(trigger: "´"))) == .functional)
     }
 
     // MARK: - isVisible(...)
