@@ -311,9 +311,26 @@ extension KeyboardViewModel {
     /// The long-press path uses this to decide whether the touch is consumed:
     /// a key without a long-press binding (e.g. return, globe) must keep its
     /// normal tap on release instead of being swallowed by the failed hold.
+    ///
+    /// - Parameters:
+    ///   - touchdown: the touchdown normalized to the key's frame (`[0,1]²`),
+    ///     plumbed for offset learning (§4.1). `nil` from callers that don't
+    ///     supply it (tests, internal slide-driven taps). Consumed in P5.
+    ///   - features: discriminating gesture features for telemetry (§13).
     @discardableResult
-    func handleGesture(_ gesture: GestureType, keyId: String, isReturn: Bool) -> Bool {
+    func handleGesture(
+        _ gesture: GestureType,
+        keyId: String,
+        isReturn: Bool,
+        touchdown: CGPoint? = nil,
+        features: GestureFeatures? = nil
+    ) -> Bool {
         guard let mode = activeModeFromDefinition else { return false }
+
+        // P5: forward (keyId, gesture, isReturn, touchdown, features) to the
+        // touch-learning middleware here once it exists. For now the data is
+        // plumbed end-to-end but not yet consumed.
+        _ = (touchdown, features)
 
         // Circular gestures: try requested direction, fall back to opposite.
         if gesture == .circularClockwise || gesture == .circularCounterclockwise {

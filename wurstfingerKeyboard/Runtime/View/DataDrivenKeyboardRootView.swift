@@ -40,8 +40,14 @@ struct DataDrivenKeyboardRootView: View {
                 KeyboardGridView(
                     arrangement: arrangement,
                     keys: mode.keys,
-                    onGesture: { key, gesture, isReturn in
-                        viewModel.handleGesture(gesture, keyId: key.id, isReturn: isReturn)
+                    onGesture: { key, classification in
+                        viewModel.handleGesture(
+                            classification.gesture,
+                            keyId: key.id,
+                            isReturn: classification.isReturn,
+                            touchdown: classification.touchdown,
+                            features: classification.features
+                        )
                     },
                     onTouchDown: {
                         viewModel.feedbackTap()
