@@ -45,6 +45,15 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.expertModeEnabled.rawValue, store: SharedDefaults.store)
     private var expertModeEnabled = false
 
+    @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
+    private var hideLetters = false
+
+    @AppStorage(SettingsKey.hideStandardSymbols.rawValue, store: SharedDefaults.store)
+    private var hideStandardSymbols = false
+
+    @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
+    private var hideExtraSymbols = false
+
     var body: some View {
         NavigationStack {
             Form {
@@ -101,6 +110,14 @@ struct SettingsView: View {
         Section {
             NavigationLink(destination: StyleSettingsView()) {
                 SettingsRow(icon: "paintbrush", color: .cyan, title: "Style", subtitle: keyboardStyleDescription)
+            }
+
+            NavigationLink(destination: LabelVisibilitySettingsView()) {
+                SettingsRow(
+                    icon: "eye.slash", color: .indigo,
+                    title: "Label Visibility",
+                    subtitle: labelVisibilityDescription
+                )
             }
 
             NavigationLink(destination: AspectRatioSettingsView(aspectRatio: $keyAspectRatio)) {
@@ -220,6 +237,15 @@ struct SettingsView: View {
     private var keyboardStyleDescription: String {
         let style = KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic
         return style.displayName
+    }
+
+    private var labelVisibilityDescription: String {
+        let hidden = [
+            hideLetters ? "letters" : nil,
+            hideStandardSymbols ? "standard symbols" : nil,
+            hideExtraSymbols ? "extra symbols" : nil,
+        ].compactMap(\.self)
+        return hidden.isEmpty ? "All labels visible" : "Hiding " + hidden.joined(separator: ", ")
     }
 
     private var cursorMovementStyleDescription: String {
