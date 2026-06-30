@@ -93,40 +93,43 @@ struct KeyboardGridView: View {
         )
     }
 
-    // MARK: - P3.5 Device Spike (TEMPORARY — remove after validation)
+    // MARK: - Resizing Spike (validation hook — TEMPORARY)
+
+    /// Active when the resizing validation spike is enabled. The whole **center
+    /// column** (`topCenter`/`center`/`bottomCenter`) shifts its hit cells
+    /// ~0.18 column right (into the `…Right` column). A fixed screen point just
+    /// right of the nominal center|right boundary is then reassigned from the
+    /// right key to the center key — provable by coordinate taps (the visible
+    /// keys shift too; invisible compensation is P7). Enabled via the
+    /// `TOUCH_OFFSET_SPIKE=1` launch environment (UI tests) or, in DEBUG, the
+    /// manual constant (device runs).
+    private static var spikeEnabled: Bool {
+        if ProcessInfo.processInfo.environment["TOUCH_OFFSET_SPIKE"] == "1" { return true }
+        #if DEBUG
+            return manualSpikeActive
+        #else
+            return false
+        #endif
+    }
 
     #if DEBUG
-        /// Flip to `true`, build & run **on device** to validate Key-Target-
-        /// Resizing: the whole **center column** (`topCenter`/`center`/
-        /// `bottomCenter`) shifts its hit cells ~0.18 column to the right (into
-        /// the `…Right` column), so a tap on the *left edge* of the drawn right
-        /// column produces the center column's character. Proves the touch frame
-        /// — not the drawn key — decides assignment (§5.5/§11.6). The visible
-        /// keys shift too here (invisible compensation is P7). The whole column
-        /// is offset so the per-line averaging (§5.4) does not dilute it.
-        private static let spikeActive = false
-        private var spikeOffsets: [String: CGVector] {
-            guard Self.spikeActive else { return [:] }
-            let shift = CGVector(dx: 0.7, dy: 0) // clamped to 0.35 → ~0.18 col line shift
-            return [
-                GridSlot.topCenter: shift,
-                GridSlot.center: shift,
-                GridSlot.bottomCenter: shift,
-            ]
-        }
-
-        private var spikeClamp: CGFloat {
-            0.35
-        }
-    #else
-        private var spikeOffsets: [String: CGVector] {
-            [:]
-        }
-
-        private var spikeClamp: CGFloat {
-            0.35
-        }
+        /// Manual device toggle (P3.5): flip to `true`, build & run on device.
+        private static let manualSpikeActive = false
     #endif
+
+    private var spikeOffsets: [String: CGVector] {
+        guard Self.spikeEnabled else { return [:] }
+        let shift = CGVector(dx: 0.7, dy: 0) // clamped to 0.35 → ~0.18 col line shift
+        return [
+            GridSlot.topCenter: shift,
+            GridSlot.center: shift,
+            GridSlot.bottomCenter: shift,
+        ]
+    }
+
+    private var spikeClamp: CGFloat {
+        0.35
+    }
 
     // MARK: - Span Inspection (Test Hooks)
 
