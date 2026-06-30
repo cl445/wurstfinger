@@ -243,6 +243,12 @@ extension KeyboardViewModel {
             }
         ))
 
+        // Touch-offset learning: observe user `.deleteBackward` for the
+        // acceptance-filter veto (§4.1). Inert unless the feature is on.
+        middlewares.append(TouchLearningMiddleware(onUserDelete: { [weak self] in
+            self?.touchLearning.recordUserDelete()
+        }))
+
         pipeline = ActionPipeline(middlewares: middlewares)
     }
 
@@ -303,6 +309,44 @@ extension KeyboardViewModel {
         switchToMode(ModeNames.main)
     }
 
+    // MARK: - Touch-Offset Learning Context
+
+    /// Whether the learned touch-offset correction is enabled (§6.1).
+    var isTouchOffsetEnabled: Bool {
+        sharedDefaults.bool(forKey: SettingsKey.touchOffsetEnabled.rawValue)
+    }
+
+    /// The active learning regime: orientation × derived posture (§3.1).
+    ///
+    /// On this branch the keyboard renders a portrait arrangement in all
+    /// orientations and the view model does not expose the physical orientation,
+    /// so orientation is fixed to `.portrait` for v1. Add the orientation axis
+    /// once the controller plumbs physical orientation through.
+    var currentTouchRegime: TouchRegime {
+        let scale = sharedDefaults.object(forKey: SettingsKey.keyboardScale.rawValue) as? Double
+            ?? DeviceLayoutUtils.defaultKeyboardScale
+        let position = sharedDefaults.object(forKey: SettingsKey.keyboardHorizontalPosition.rawValue) as? Double
+            ?? DeviceLayoutUtils.defaultKeyboardPosition
+        return TouchRegime(
+            orientation: .portrait,
+            posture: PostureResolver.derivePosture(scale: scale, position: position)
+        )
+    }
+
+    /// Normalized center position of a key in the current arrangement (`[0,1]²`),
+    /// used as the reach-surface input (§5.2). `nil` if the key is not placed.
+    func normalizedKeyPosition(_ keyId: String) -> CGPoint? {
+        guard let arrangement = currentArrangement else { return nil }
+        let cells = GridLayoutSolver.solve(arrangement)
+        guard let cell = cells.first(where: { $0.keyId == keyId }) else { return nil }
+        let columns = max(arrangement.columns, 1)
+        let rows = max(GridLayoutSolver.rowCount(arrangement), 1)
+        return CGPoint(
+            x: (Double(cell.column) + Double(cell.columnSpan) / 2) / Double(columns),
+            y: (Double(cell.row) + Double(cell.rowSpan) / 2) / Double(rows)
+        )
+    }
+
     // MARK: - Gesture Dispatch
 
     /// Central entry point for the data-driven gesture path.
@@ -327,11 +371,6 @@ extension KeyboardViewModel {
     ) -> Bool {
         guard let mode = activeModeFromDefinition else { return false }
 
-        // P5: forward (keyId, gesture, isReturn, touchdown, features) to the
-        // touch-learning middleware here once it exists. For now the data is
-        // plumbed end-to-end but not yet consumed.
-        _ = (touchdown, features)
-
         // Circular gestures: try requested direction, fall back to opposite.
         if gesture == .circularClockwise || gesture == .circularCounterclockwise {
             handleCircular(keyId: keyId, in: mode, gesture: gesture)
@@ -340,6 +379,14 @@ extension KeyboardViewModel {
 
         let chain = isReturn ? returnSwipeResolverChain : resolverChain
         guard let binding = chain?.resolve(keyId: keyId, gesture: gesture, in: mode) else { return false }
+
+        // Touch-offset learning (§4.1): record real taps (with a touchdown) for
+        // the acceptance filter. Swipes/returns are excluded; user deletes are
+        // observed by TouchLearningMiddleware. Inert unless the feature is on.
+        if gesture == .tap, !isReturn, let touchdown {
+            touchLearning.recordTap(keyId: keyId, touchdown: touchdown)
+        }
+        _ = features // P6: feed gesture telemetry here.
 
         // Mode and language switches bypass the pipeline, so their
         // confirmation tick fires here instead of in the haptic middleware —
