@@ -36,6 +36,7 @@ struct KeyboardGridView: View {
 
     var body: some View {
         let cells = GridLayoutSolver.solve(arrangement)
+        let totalRows = cells.map { $0.row + $0.rowSpan }.max() ?? 0
         KeyboardGridLayout(
             cells: cells,
             columns: arrangement.columns,
@@ -44,25 +45,45 @@ struct KeyboardGridView: View {
             verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
         ) {
             ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
-                cellContent(for: cell)
+                cellContent(for: cell, totalRows: totalRows)
             }
         }
     }
 
     @ViewBuilder
-    private func cellContent(for cell: SolvedCell) -> some View {
+    private func cellContent(for cell: SolvedCell, totalRows: Int) -> some View {
         if let key = keys[cell.keyId] {
             KeyView(
                 key: key,
                 onGesture: onGesture,
                 onTouchDown: onTouchDown,
                 onSlide: onSlide,
-                spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan)
+                spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan),
+                visualInset: visualInset(for: cell, totalRows: totalRows)
             )
             .id(cell.keyId)
         } else {
             Color.clear
         }
+    }
+
+    /// Inset that keeps the key's drawn bounds unchanged while its touch cell
+    /// fills the gaps to neighbouring keys. Mirrors `KeyboardGridLayout`, which
+    /// grows the cell frame by the same amount.
+    private func visualInset(for cell: SolvedCell, totalRows: Int) -> EdgeInsets {
+        let insets = KeyboardGridLayout.gapInsets(
+            for: cell,
+            columns: arrangement.columns,
+            totalRows: totalRows,
+            horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
+            verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
+        )
+        return EdgeInsets(
+            top: insets.top,
+            leading: insets.leading,
+            bottom: insets.bottom,
+            trailing: insets.trailing
+        )
     }
 
     // MARK: - Span Inspection (Test Hooks)
