@@ -9,6 +9,7 @@
 //  pinning, the pure cycling logic — is covered by `LanguageSettingsTests`.
 //
 
+import Combine
 import Foundation
 import Testing
 @testable import WurstfingerApp
@@ -61,5 +62,40 @@ struct LanguageSwitchingTests {
 
         #expect(vm.currentDefinition?.id == "de_DE")
         #expect(target.events.isEmpty)
+    }
+
+    @Test("Disabling a language in the host app updates the globe-hint state")
+    func enabledSetChangeReflectedAfterReload() {
+        let (vm, _) = makeViewModel(enabled: ["de_DE", "en_US"], selected: "de_DE")
+        #expect(vm.hasMultipleLanguages)
+
+        // `enabledLanguageIds` is @Published, so a SwiftUI view observing the
+        // view model re-renders when the set changes — assert the emission fires.
+        var emitted = false
+        let cancellable = vm.objectWillChange.sink { emitted = true }
+        defer { cancellable.cancel() }
+
+        // Simulate the host app disabling the second language, then the
+        // viewWillAppear → reloadSettings path the extension runs on re-entry.
+        LanguageSettings.saveEnabledLanguageIds(["de_DE"], to: vm.sharedDefaults)
+        vm.reloadSettings()
+
+        #expect(!vm.hasMultipleLanguages)
+        #expect(emitted)
+    }
+
+    @Test("reloadSettings drops stale enabled IDs instead of cycling to them")
+    func reloadNormalizesStaleEnabledIds() {
+        let (vm, _) = makeViewModel(enabled: ["de_DE", "en_US"], selected: "de_DE")
+
+        // A language removed in a later version lingers in stored defaults.
+        LanguageSettings.saveEnabledLanguageIds(["de_DE", "zz_ZZ"], to: vm.sharedDefaults)
+        vm.reloadSettings()
+
+        // Only the valid language remains, so the globe is correctly inert.
+        #expect(!vm.hasMultipleLanguages)
+
+        vm.handleGesture(.swipeRight, keyId: UtilitySlot.globe, isReturn: false)
+        #expect(vm.currentDefinition?.id == "de_DE")
     }
 }

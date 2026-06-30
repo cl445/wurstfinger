@@ -579,6 +579,31 @@ struct PinnedLanguageTests {
         #expect(settings.startupLanguageId == "en_US")
     }
 
+    @Test("applyStartupLanguage makes the pinned language the active selection")
+    func applyStartupHonorsPin() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
+        settings.applyStartupLanguage()
+
+        // The cold-start selection — and the persisted value the extension reads —
+        // now reflect the pin, so the keyboard boots in the pinned language.
+        #expect(settings.selectedLanguageId == "ru_RU")
+        #expect(defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue) == "ru_RU")
+    }
+
+    @Test("applyStartupLanguage leaves the selection unchanged when no pin")
+    func applyStartupNoPinKeepsSelection() {
+        let (defaults, suite) = createTestDefaults()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
+        settings.applyStartupLanguage()
+
+        #expect(settings.selectedLanguageId == "en_US")
+    }
+
     @Test("Stale pinned ID is cleared on load")
     func stalePinnedIdCleared() {
         let (defaults, suite) = createTestDefaults()
@@ -702,5 +727,52 @@ struct ResolvedLanguageIdTests {
     @Test("Falls back for nil")
     func fallsBackForNil() {
         #expect(LanguageSettings.resolvedLanguageId(nil) == LanguageSettings.detectSystemLanguage())
+    }
+}
+
+// MARK: - normalizedEnabledLanguageIds
+
+struct NormalizedEnabledLanguageIdsTests {
+    private func makeDefaults(selected: String, enabled: [String]?) -> (UserDefaults, String) {
+        let suite = "test.normalized.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.set(selected, forKey: SettingsKey.selectedLanguageId.rawValue)
+        if let enabled {
+            LanguageSettings.saveEnabledLanguageIds(enabled, to: defaults)
+        }
+        return (defaults, suite)
+    }
+
+    @Test("Filters out stale/unknown enabled IDs")
+    func filtersStaleIds() {
+        let (defaults, suite) = makeDefaults(selected: "de_DE", enabled: ["de_DE", "zz_ZZ", "en_US"])
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        #expect(LanguageSettings.normalizedEnabledLanguageIds(from: defaults) == ["de_DE", "en_US"])
+    }
+
+    @Test("Falls back to the selected language when the stored list is empty")
+    func emptyFallsBackToSelected() {
+        let (defaults, suite) = makeDefaults(selected: "ru_RU", enabled: [])
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        #expect(LanguageSettings.normalizedEnabledLanguageIds(from: defaults) == ["ru_RU"])
+    }
+
+    @Test("Includes the selected language even when missing from the stored list")
+    func includesSelectedWhenAbsent() {
+        let (defaults, suite) = makeDefaults(selected: "de_DE", enabled: ["en_US"])
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        #expect(LanguageSettings.normalizedEnabledLanguageIds(from: defaults) == ["de_DE", "en_US"])
+    }
+
+    @Test("Does not persist — leaves the stored list untouched")
+    func doesNotPersist() {
+        let (defaults, suite) = makeDefaults(selected: "de_DE", enabled: ["de_DE", "zz_ZZ"])
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        _ = LanguageSettings.normalizedEnabledLanguageIds(from: defaults)
+        #expect(LanguageSettings.loadEnabledLanguageIds(from: defaults) == ["de_DE", "zz_ZZ"])
     }
 }

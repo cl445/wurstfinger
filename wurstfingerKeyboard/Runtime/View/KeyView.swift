@@ -39,18 +39,13 @@ struct KeyView: View {
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
 
-    @AppStorage(SettingsKey.selectedLanguageId.rawValue, store: SharedDefaults.store)
-    private var selectedLanguageId: String = "en_US"
-
-    private var languageLabel: String {
-        let locale = Locale(identifier: selectedLanguageId)
-        return locale.language.languageCode?.identifier.uppercased() ?? ""
-    }
-
-    private var hasMultipleLanguages: Bool {
-        let ids = SharedDefaults.store.stringArray(forKey: SettingsKey.enabledLanguageIds.rawValue)
-        return (ids?.count ?? 0) > 1
-    }
+    /// Short language label (e.g. "DE") shown on the switch key, and whether to
+    /// show it. Driven by the active keyboard locale via `KeyboardViewModel`
+    /// (threaded through `KeyboardGridView`) rather than re-derived from shared
+    /// defaults, so the hint stays correct even when startup loads a pinned
+    /// language whose id differs from the stored selection.
+    var languageLabel: String = ""
+    var showLanguageLabel: Bool = false
 
     /// Maps emoji labels to SF Symbol names for utility keys.
     private static let sfSymbolMap: [String: String] = [
@@ -290,7 +285,7 @@ struct KeyView: View {
                 if let binding = key.bindings[gesture],
                    let alignment = Self.hintAlignments[gesture] {
                     if binding.action == .switchToNextLanguage {
-                        if hasMultipleLanguages {
+                        if showLanguageLabel {
                             Text(languageLabel)
                                 .font(.system(size: scaledHintFontSize * 0.75, weight: .semibold, design: .rounded))
                                 .foregroundStyle(Color.primary.opacity(0.5))

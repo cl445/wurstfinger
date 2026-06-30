@@ -30,7 +30,9 @@ class LanguageSettings: ObservableObject {
 
     /// Optional pinned default language. When set, the keyboard always opens
     /// with this language. When nil, it opens with the last-used language.
-    @Published var pinnedLanguageId: String? {
+    /// `private(set)` so writes funnel through `pinLanguage(_:)`, preserving the
+    /// "pin implies enabled" invariant.
+    @Published private(set) var pinnedLanguageId: String? {
         didSet {
             userDefaults.set(pinnedLanguageId, forKey: SettingsKey.pinnedLanguageId.rawValue)
         }
@@ -87,6 +89,12 @@ class LanguageSettings: ObservableObject {
             defaults.set(resolvedLanguageId, forKey: SettingsKey.selectedLanguageId.rawValue)
         }
         Self.saveEnabledLanguageIds(enabledLanguageIds, to: defaults)
+        // Clearing a stale pin above happened inside `init`, where `didSet` does
+        // not fire — so remove the now-invalid key from storage explicitly,
+        // otherwise it would be re-read on the next launch.
+        if pinnedLanguageId == nil {
+            defaults.removeObject(forKey: SettingsKey.pinnedLanguageId.rawValue)
+        }
     }
 
     /// Resolves a raw/stored language id to one guaranteed to exist in the
@@ -142,8 +150,16 @@ class LanguageSettings: ObservableObject {
 
     /// Short uppercase label for the current language, e.g. "EN", "RU", "DE"
     var currentLanguageLabel: String {
-        let lang = selectedLanguage.locale.language.languageCode?.identifier ?? selectedLanguageId
-        return lang.uppercased(with: selectedLanguage.locale)
+        Self.label(for: selectedLanguage.locale, fallback: selectedLanguageId)
+    }
+
+    /// Locale-aware short uppercase label (e.g. "EN", "DE") for a locale.
+    /// Centralised so every call site uses the same casing rules (German de_DE,
+    /// Turkish dotted/dotless i, …) instead of recreating the casing drift that
+    /// caused the original label bug.
+    static func label(for locale: Locale, fallback: String = "") -> String {
+        let lang = locale.language.languageCode?.identifier ?? fallback
+        return lang.uppercased(with: locale)
     }
 
     var pinnedLanguage: LanguageConfig? {
@@ -158,6 +174,16 @@ class LanguageSettings: ObservableObject {
             return pinned
         }
         return selectedLanguageId
+    }
+
+    /// Applies the startup language preference to the active selection. The
+    /// keyboard extension calls this on cold start so a pinned language always
+    /// wins; in-keyboard cycling afterwards updates the selection normally.
+    func applyStartupLanguage() {
+        let startup = startupLanguageId
+        if startup != selectedLanguageId {
+            selectedLanguageId = startup
+        }
     }
 
     /// Pin a language as the default startup language. If already pinned, unpin it.
@@ -233,5 +259,19 @@ class LanguageSettings: ObservableObject {
 
     static func loadEnabledLanguageIds(from defaults: UserDefaults) -> [String]? {
         defaults.stringArray(forKey: SettingsKey.enabledLanguageIds.rawValue)
+    }
+
+    /// Returns the enabled language IDs filtered to known languages, guaranteed
+    /// non-empty and with the active language included — mirroring the
+    /// normalisation the initializer performs, but **without persisting**. Safe
+    /// to call repeatedly (e.g. from the keyboard extension's `reloadSettings`)
+    /// so a stale or empty stored list can never leave the runtime cycling to an
+    /// unknown id.
+    static func normalizedEnabledLanguageIds(from defaults: UserDefaults) -> [String] {
+        let selected = resolvedLanguageId(defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue))
+        let stored = loadEnabledLanguageIds(from: defaults) ?? []
+        let valid = stored.filter { LanguageConfig.language(withId: $0) != nil }
+        if valid.isEmpty { return [selected] }
+        return valid.contains(selected) ? valid : [selected] + valid
     }
 }

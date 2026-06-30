@@ -20,6 +20,10 @@ struct KeyboardGridView: View {
     let onGesture: (KeyConfig, GestureType, Bool) -> Void
     var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
+    /// Active-language hint for the switch key, supplied by `KeyboardViewModel`
+    /// so it reflects the loaded definition rather than re-derived storage.
+    var languageLabel: String = ""
+    var showLanguageLabel: Bool = false
 
     @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
     private var keyboardScale: Double = DeviceLayoutUtils.defaultKeyboardScale
@@ -59,7 +63,9 @@ struct KeyboardGridView: View {
                 onTouchDown: onTouchDown,
                 onSlide: onSlide,
                 spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan),
-                visualInset: visualInset(for: cell, totalRows: totalRows)
+                visualInset: visualInset(for: cell, totalRows: totalRows),
+                languageLabel: languageLabel,
+                showLanguageLabel: showLanguageLabel
             )
             .id(cell.keyId)
         } else {
