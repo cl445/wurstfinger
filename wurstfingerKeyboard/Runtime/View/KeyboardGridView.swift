@@ -26,6 +26,12 @@ struct KeyboardGridView: View {
     /// so it reflects the loaded definition rather than re-derived storage.
     var languageLabel: String = ""
     var showLanguageLabel: Bool = false
+    /// Learned per-key offsets in pitch fractions, driving Key-Target-Resizing
+    /// (§5.4). Empty = no correction.
+    var offsets: [String: CGVector] = [:]
+    /// The width available to the grid (= the layout's `bounds.width`), needed to
+    /// compute the visible compensation in points so drawn keys stay put (§5.5).
+    var availableWidth: CGFloat = 0
 
     /// Resolved layout metrics injected by `DataDrivenKeyboardRootView` from
     /// the view model rather than read via `@AppStorage`: the root view
@@ -35,26 +41,50 @@ struct KeyboardGridView: View {
     /// showcase modes with `shouldPersistSettings: false`).
     let metrics: KeyboardLayoutMetrics
 
+    /// The offsets that actually drive resizing: the validation spike when
+    /// enabled (UI tests / device), otherwise the learned `offsets`.
+    private var effectiveOffsets: [String: CGVector] {
+        Self.spikeEnabled ? spikeOffsets : offsets
+    }
+
+    private var columnWidth: CGFloat {
+        let columns = max(arrangement.columns, 1)
+        let spacing = CGFloat(columns - 1) * KeyboardConstants.Layout.gridHorizontalSpacing
+        return max((availableWidth - spacing) / CGFloat(columns), 0)
+    }
+
     var body: some View {
         let cells = GridLayoutSolver.solve(arrangement)
         let totalRows = cells.map { $0.row + $0.rowSpan }.max() ?? 0
+        let offs = effectiveOffsets
+        // Same per-line shifts the layout applies to the touch frames; used here
+        // to produce the matching *inverse* visible compensation (§5.5).
+        let lines: (vertical: [CGFloat], horizontal: [CGFloat]) =
+            offs.isEmpty || columnWidth <= 0
+                ? (Array(repeating: 0, count: arrangement.columns + 1), Array(repeating: 0, count: totalRows + 1))
+                : KeyboardGridLayout.lineShifts(
+                    cells: cells, columns: arrangement.columns, totalRows: totalRows,
+                    offsets: offs, clamp: 0.35, columnWidth: columnWidth, rowHeight: metrics.rowHeight
+                )
         KeyboardGridLayout(
             cells: cells,
             columns: arrangement.columns,
             rowHeight: metrics.rowHeight,
             horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
             verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing,
-            offsets: spikeOffsets,
-            offsetClamp: spikeClamp
+            offsets: offs,
+            offsetClamp: 0.35
         ) {
             ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
-                cellContent(for: cell, totalRows: totalRows)
+                cellContent(for: cell, totalRows: totalRows, lines: lines)
             }
         }
     }
 
     @ViewBuilder
-    private func cellContent(for cell: SolvedCell, totalRows: Int) -> some View {
+    private func cellContent(
+        for cell: SolvedCell, totalRows: Int, lines: (vertical: [CGFloat], horizontal: [CGFloat])
+    ) -> some View {
         if let key = keys[cell.keyId] {
             KeyView(
                 key: key,
@@ -63,7 +93,7 @@ struct KeyboardGridView: View {
                 onSlide: onSlide,
                 onLongPress: onLongPress,
                 spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan),
-                visualInset: visualInset(for: cell, totalRows: totalRows),
+                visualInset: visualInset(for: cell, totalRows: totalRows, lines: lines),
                 metrics: metrics,
                 languageLabel: languageLabel,
                 showLanguageLabel: showLanguageLabel
@@ -74,11 +104,15 @@ struct KeyboardGridView: View {
         }
     }
 
-    /// Inset that keeps the key's drawn bounds unchanged while its touch cell
-    /// fills the gaps to neighbouring keys. Mirrors `KeyboardGridLayout`, which
-    /// grows the cell frame by the same amount.
-    private func visualInset(for cell: SolvedCell, totalRows: Int) -> EdgeInsets {
-        let insets = KeyboardGridLayout.gapInsets(
+    /// Inset that keeps the key's drawn bounds unchanged. Base part fills the
+    /// inter-key gaps (mirrors the touch frame's gap growth); the offset part
+    /// **cancels** the Key-Target-Resizing line shift so the visible key stays
+    /// put while the touch frame moves (§5.5). May go negative (content draws
+    /// outside the touch frame) — SwiftUI allows this and KeyView does not clip.
+    private func visualInset(
+        for cell: SolvedCell, totalRows: Int, lines: (vertical: [CGFloat], horizontal: [CGFloat])
+    ) -> EdgeInsets {
+        let g = KeyboardGridLayout.gapInsets(
             for: cell,
             columns: arrangement.columns,
             totalRows: totalRows,
@@ -86,10 +120,10 @@ struct KeyboardGridView: View {
             verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
         )
         return EdgeInsets(
-            top: insets.top,
-            leading: insets.leading,
-            bottom: insets.bottom,
-            trailing: insets.trailing
+            top: g.top - lines.horizontal[cell.row],
+            leading: g.leading - lines.vertical[cell.column],
+            bottom: g.bottom + lines.horizontal[cell.row + cell.rowSpan],
+            trailing: g.trailing + lines.vertical[cell.column + cell.columnSpan]
         )
     }
 
@@ -125,10 +159,6 @@ struct KeyboardGridView: View {
             GridSlot.center: shift,
             GridSlot.bottomCenter: shift,
         ]
-    }
-
-    private var spikeClamp: CGFloat {
-        0.35
     }
 
     // MARK: - Span Inspection (Test Hooks)

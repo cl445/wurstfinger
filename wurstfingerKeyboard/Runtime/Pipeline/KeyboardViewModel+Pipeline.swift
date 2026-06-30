@@ -333,6 +333,16 @@ extension KeyboardViewModel {
         )
     }
 
+    /// The per-key offsets to apply right now (§4.4, §5.4): the learned model's
+    /// offsets for the current regime, gated by the toggle and the regime's
+    /// maturity. Empty when off or not yet mature → no correction.
+    func currentTouchCorrectionOffsets() -> [String: CGVector] {
+        guard isTouchOffsetEnabled else { return [:] }
+        let model = touchLearning.model(for: currentTouchRegime)
+        guard model.maturity >= TouchOffsetConfig.default.applyOn else { return [:] }
+        return model.allOffsets()
+    }
+
     /// Normalized center position of a key in the current arrangement (`[0,1]²`),
     /// used as the reach-surface input (§5.2). `nil` if the key is not placed.
     func normalizedKeyPosition(_ keyId: String) -> CGPoint? {
