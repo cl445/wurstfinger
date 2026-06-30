@@ -39,6 +39,25 @@ struct KeyView: View {
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
 
+    @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
+    private var hideLetters = false
+
+    @AppStorage(SettingsKey.hideStandardSymbols.rawValue, store: SharedDefaults.store)
+    private var hideStandardSymbols = false
+
+    @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
+    private var hideExtraSymbols = false
+
+    /// Whether the label of `binding` should be drawn, honouring the user's
+    /// label-visibility toggles (numbers and functional keys always show).
+    private func isLabelVisible(_ binding: KeyBinding) -> Bool {
+        LabelCategory.of(binding).isVisible(
+            hideLetters: hideLetters,
+            hideStandardSymbols: hideStandardSymbols,
+            hideExtraSymbols: hideExtraSymbols
+        )
+    }
+
     /// Maps emoji labels to SF Symbol names for utility keys.
     private static let sfSymbolMap: [String: String] = [
         "🌐": "globe",
@@ -191,6 +210,9 @@ struct KeyView: View {
         if key.style == .spacebar {
             // Spacebar renders blank — label is purely for accessibility.
             EmptyView()
+        } else if let tap = key.bindings[.tap], !isLabelVisible(tap) {
+            // The centre label is hidden by the label-visibility setting.
+            EmptyView()
         } else {
             let font = Font.system(size: scaledFontSize, weight: .semibold, design: .rounded)
             if let sfName = Self.sfSymbolMap[primaryLabel] {
@@ -276,6 +298,7 @@ struct KeyView: View {
                 // hide them entirely.
                 if let binding = key.bindings[gesture],
                    !binding.label.isEmpty || Self.hintIcon(for: binding.action) != nil,
+                   isLabelVisible(binding),
                    let alignment = Self.hintAlignments[gesture] {
                     hintContent(for: binding)
                         .fixedSize()
