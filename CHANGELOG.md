@@ -2,6 +2,37 @@
 
 ## Unreleased
 
+## v1.3.0 — 2026-06-30
+
+### Added
+
+- In-keyboard language switching — cycle through enabled languages with a swipe on the globe key (#199, #135)
+- Label visibility practice mode — independently hide letters, standard symbols, and extra symbols to learn the layout from memory (#200)
+- App localization in 12 languages (#189)
+- Vietnamese Telex input method (#134)
+- Cursor movement style setting — continuous or step-by-step, with word-wise movement (#173)
+- Numpad style setting — phone or classic layout (#172)
+- Extensive new test coverage: gesture classification, action pipeline, middlewares, compose integrity, accessibility, and end-to-end typing UI tests (#181, #182, #183, #186, #188)
+
+### Fixed
+
+- Fix Liquid Glass inter-key dead zones — taps in the gaps between keys now register in the real keyboard extension (#198)
+- Fix landscape keyboard crash with multi-row key rendering (#193)
+- Guarantee the keyboard always renders a layout and never comes up blank (#196)
+- Harden the keyboard extension against memory jetsam so it opens more reliably (#190)
+- Restore missing utility-key hint icons (globe, dismiss, clipboard) (#184)
+- Re-anchor the gesture origin on ring-buffer overflow for reliable long gestures (#174)
+- Fix auto-capitalization whitespace handling, layout validation, and force-unwrap risks (#177)
+- Harden settings loading against UserDefaults suite crashes (#185)
+
+### Changed
+
+- Restructure the keyboard extension into a data-driven architecture (Definition/Runtime/Settings): layouts are declared as data and executed by a generic runtime (#169, plus the #155–#168 series)
+- Keep the portrait key arrangement in landscape orientation (#197)
+- Gesture tuning: delete-step, turn angle, and slide dead-zone thresholds (#175)
+- Settings robustness: pipeline cache and text-field input clamps (#176)
+- Run CI unit tests serially to avoid flaky simulator-clone failures (#192)
+
 ## v1.2.0 — 2026-04-04
 
 ### Fixed
