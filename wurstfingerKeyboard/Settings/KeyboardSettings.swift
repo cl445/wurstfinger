@@ -52,6 +52,12 @@ enum SettingsKey: String {
     /// Opt-in: the action is destructive and unaided by undo, so it stays off
     /// until asked for rather than surprising anyone who circles the key.
     case cutAllEnabled
+    /// Master toggle for the learned touch-offset correction feature (default off).
+    /// See `docs/touch-offset-correction.md` §6.1.
+    case touchOffsetEnabled
+    /// Schema version of the persisted touch-offset model; bump invalidates
+    /// incompatible stored state. See §7.
+    case touchModelSchemaVersion
 }
 
 // MARK: - Haptic Settings
