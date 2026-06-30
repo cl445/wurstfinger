@@ -5,9 +5,11 @@
 //  Created by Claas Flint on 06.11.25.
 //
 
+import Combine
 import Foundation
 
-/// Manages keyboard language settings shared between host app and keyboard extension
+/// Manages keyboard language settings shared between host app and keyboard extension.
+/// Supports multiple enabled languages with in-keyboard cycling.
 class LanguageSettings: ObservableObject {
     static let shared = LanguageSettings()
 
@@ -17,24 +19,74 @@ class LanguageSettings: ObservableObject {
         }
     }
 
+    @Published private(set) var enabledLanguageIds: [String] {
+        didSet {
+            saveEnabledLanguages()
+            if let pinned = pinnedLanguageId, !enabledLanguageIds.contains(pinned) {
+                pinnedLanguageId = nil
+            }
+        }
+    }
+
+    /// Optional pinned default language. When set, the keyboard always opens
+    /// with this language. When nil, it opens with the last-used language.
+    @Published var pinnedLanguageId: String? {
+        didSet {
+            userDefaults.set(pinnedLanguageId, forKey: SettingsKey.pinnedLanguageId.rawValue)
+        }
+    }
+
     private let userDefaults: UserDefaults
     private let languageKey = SettingsKey.selectedLanguageId.rawValue
+    private let enabledKey = SettingsKey.enabledLanguageIds.rawValue
 
-    private init() {
-        userDefaults = SharedDefaults.store
+    init(userDefaults: UserDefaults? = nil) {
+        let defaults = userDefaults ?? SharedDefaults.store
+        self.userDefaults = defaults
 
         // Normalize the saved language through the shared resolver (stale/nil →
         // system language → English) so the host app and the keyboard extension
         // always resolve the same active language.
-        let storedLanguageId = userDefaults.string(forKey: languageKey)
-        let resolvedLanguageId = Self.resolvedLanguageId(storedLanguageId)
-        selectedLanguageId = resolvedLanguageId
+        let resolvedLanguageId = Self.resolvedLanguageId(
+            defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue)
+        )
 
-        // Persist the resolved ID so other readers (e.g. KeyboardViewModel.reloadLanguage)
-        // see the same normalized value
-        if resolvedLanguageId != storedLanguageId {
-            userDefaults.set(resolvedLanguageId, forKey: languageKey)
+        // Load enabled languages, migrating from a single-language setup if needed
+        let storedEnabled = Self.loadEnabledLanguageIds(from: defaults)
+        let resolvedEnabled: [String]
+        if let stored = storedEnabled, !stored.isEmpty {
+            // Filter out any stale/unknown IDs
+            let valid = stored.filter { LanguageConfig.language(withId: $0) != nil }
+            resolvedEnabled = valid.isEmpty ? [resolvedLanguageId] : valid
+        } else {
+            // Migration: no enabled list stored yet, seed with current selection
+            resolvedEnabled = [resolvedLanguageId]
         }
+
+        // Load pinned language (before enabledLanguageIds didSet can fire)
+        let storedPinned = defaults.string(forKey: SettingsKey.pinnedLanguageId.rawValue)
+
+        selectedLanguageId = resolvedLanguageId
+        enabledLanguageIds = resolvedEnabled
+        pinnedLanguageId = storedPinned
+
+        // Ensure selected language is in the enabled list
+        if !resolvedEnabled.contains(resolvedLanguageId) {
+            enabledLanguageIds.insert(resolvedLanguageId, at: 0)
+        }
+
+        // Clear stale pinned ID
+        if let pinned = pinnedLanguageId {
+            if !enabledLanguageIds.contains(pinned) || LanguageConfig.language(withId: pinned) == nil {
+                pinnedLanguageId = nil
+            }
+        }
+
+        // Persist normalized values
+        if resolvedLanguageId != defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue) {
+            defaults.set(resolvedLanguageId, forKey: SettingsKey.selectedLanguageId.rawValue)
+        }
+        Self.saveEnabledLanguageIds(enabledLanguageIds, to: defaults)
     }
 
     /// Resolves a raw/stored language id to one guaranteed to exist in the
@@ -49,24 +101,22 @@ class LanguageSettings: ObservableObject {
         return detectSystemLanguage()
     }
 
+    // MARK: - Public API
+
     /// Detects the system language and returns matching language ID, or English as fallback
     static func detectSystemLanguage(preferredLanguages: [String]? = nil) -> String {
         let preferredLanguages = preferredLanguages ?? Locale.preferredLanguages
 
-        // Try to find a matching language config for the user's preferred languages
         for languageCode in preferredLanguages {
-            // Extract language and region (e.g., "de-DE", "en-US", "fr")
             let locale = Locale(identifier: languageCode)
             let language = locale.language.languageCode?.identifier ?? ""
             let region = locale.region?.identifier ?? ""
 
-            // Try exact match first (e.g., "de_DE")
             let exactId = "\(language)_\(region)"
             if let match = LanguageConfig.allLanguages.first(where: { $0.id == exactId }) {
                 return match.id
             }
 
-            // Try language-only match (e.g., any German variant for "de")
             if let match = LanguageConfig.allLanguages.first(where: {
                 $0.locale.language.languageCode?.identifier == language
             }) {
@@ -74,7 +124,6 @@ class LanguageSettings: ObservableObject {
             }
         }
 
-        // Fallback to English
         return LanguageConfig.english.id
     }
 
@@ -82,11 +131,107 @@ class LanguageSettings: ObservableObject {
         LanguageConfig.language(withId: selectedLanguageId) ?? .english
     }
 
+    /// Resolved LanguageConfig objects for enabled IDs, preserving order
+    var enabledLanguages: [LanguageConfig] {
+        enabledLanguageIds.compactMap { LanguageConfig.language(withId: $0) }
+    }
+
+    var hasMultipleLanguages: Bool {
+        enabledLanguageIds.count > 1
+    }
+
+    /// Short uppercase label for the current language, e.g. "EN", "RU", "DE"
+    var currentLanguageLabel: String {
+        let lang = selectedLanguage.locale.language.languageCode?.identifier ?? selectedLanguageId
+        return lang.uppercased(with: selectedLanguage.locale)
+    }
+
+    var pinnedLanguage: LanguageConfig? {
+        pinnedLanguageId.flatMap { LanguageConfig.language(withId: $0) }
+    }
+
+    /// Returns the language the keyboard should open with: pinned if set and
+    /// valid, otherwise the last-used selected language.
+    var startupLanguageId: String {
+        if let pinned = pinnedLanguageId, enabledLanguageIds.contains(pinned),
+           LanguageConfig.language(withId: pinned) != nil {
+            return pinned
+        }
+        return selectedLanguageId
+    }
+
+    /// Pin a language as the default startup language. If already pinned, unpin it.
+    func pinLanguage(_ language: LanguageConfig) {
+        if pinnedLanguageId == language.id {
+            pinnedLanguageId = nil
+        } else {
+            if !enabledLanguageIds.contains(language.id) {
+                enabledLanguageIds.append(language.id)
+            }
+            pinnedLanguageId = language.id
+        }
+    }
+
     func selectLanguage(_ language: LanguageConfig) {
+        if !enabledLanguageIds.contains(language.id) {
+            enabledLanguageIds.append(language.id)
+        }
         selectedLanguageId = language.id
     }
 
+    /// Toggle a language on/off in the enabled list. Returns false if trying to
+    /// disable the last remaining language (operation is rejected).
+    @discardableResult
+    func toggleLanguage(_ language: LanguageConfig) -> Bool {
+        if let index = enabledLanguageIds.firstIndex(of: language.id) {
+            guard enabledLanguageIds.count > 1 else { return false }
+            if selectedLanguageId == language.id {
+                let fallbackId = enabledLanguageIds[index == 0 ? 1 : 0]
+                selectedLanguageId = fallbackId
+            }
+            enabledLanguageIds.remove(at: index)
+        } else {
+            enabledLanguageIds.append(language.id)
+        }
+        return true
+    }
+
+    func isLanguageEnabled(_ language: LanguageConfig) -> Bool {
+        enabledLanguageIds.contains(language.id)
+    }
+
+    /// Returns the next language ID after the current one, wrapping around.
+    /// If only one language is enabled, returns that same language.
+    func nextLanguageId(after currentId: String) -> String {
+        Self.nextLanguageId(after: currentId, in: enabledLanguageIds)
+    }
+
+    static func nextLanguageId(after currentId: String, in enabledIds: [String]) -> String {
+        guard enabledIds.count > 1 else {
+            return enabledIds.first ?? currentId
+        }
+        guard let currentIndex = enabledIds.firstIndex(of: currentId) else {
+            return enabledIds[0]
+        }
+        let nextIndex = (currentIndex + 1) % enabledIds.count
+        return enabledIds[nextIndex]
+    }
+
+    // MARK: - Persistence
+
     private func save() {
         userDefaults.set(selectedLanguageId, forKey: languageKey)
+    }
+
+    private func saveEnabledLanguages() {
+        Self.saveEnabledLanguageIds(enabledLanguageIds, to: userDefaults)
+    }
+
+    static func saveEnabledLanguageIds(_ ids: [String], to defaults: UserDefaults) {
+        defaults.set(ids, forKey: SettingsKey.enabledLanguageIds.rawValue)
+    }
+
+    static func loadEnabledLanguageIds(from defaults: UserDefaults) -> [String]? {
+        defaults.stringArray(forKey: SettingsKey.enabledLanguageIds.rawValue)
     }
 }

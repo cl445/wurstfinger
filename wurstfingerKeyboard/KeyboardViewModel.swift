@@ -75,6 +75,7 @@ final class KeyboardViewModel: ObservableObject {
     var onDismissKeyboard: (() -> Void)?
     /// Locale used by the pipeline (set from the keyboard definition).
     var pipelineLocale: Locale?
+    private var enabledLanguageIds: [String] = []
 
     // MARK: - Settings (delegated to extracted classes)
 
@@ -150,6 +151,9 @@ final class KeyboardViewModel: ObservableObject {
         layoutSettings = LayoutSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
         hapticManager = HapticFeedbackManager(settings: hapticSettings)
 
+        enabledLanguageIds = LanguageSettings.loadEnabledLanguageIds(from: defaults)
+            ?? [SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue) ?? "en_US"]
+
         // Forward settings changes to trigger objectWillChange on this ViewModel
         hapticSettings.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
@@ -217,6 +221,32 @@ final class KeyboardViewModel: ObservableObject {
         // Delegate to extracted settings classes - eliminates duplicate code
         hapticSettings.reload()
         layoutSettings.reload()
+
+        enabledLanguageIds = LanguageSettings.loadEnabledLanguageIds(from: sharedDefaults)
+            ?? enabledLanguageIds
+    }
+
+    func switchToNextLanguage() {
+        guard enabledLanguageIds.count > 1 else { return }
+
+        let currentId = sharedDefaults.string(forKey: SettingsKey.selectedLanguageId.rawValue)
+            ?? currentDefinition?.id
+            ?? "en_US"
+        let nextId = LanguageSettings(userDefaults: sharedDefaults).nextLanguageId(after: currentId)
+
+        if nextId != currentId {
+            sharedDefaults.set(nextId, forKey: SettingsKey.selectedLanguageId.rawValue)
+            loadDefinition(for: nextId)
+        }
+    }
+
+    var hasMultipleLanguages: Bool {
+        enabledLanguageIds.count > 1
+    }
+
+    var currentLanguageLabel: String {
+        let lang = pipelineLocale?.language.languageCode?.identifier ?? ""
+        return lang.uppercased()
     }
 
     // MARK: - Haptic Feedback (delegated to HapticFeedbackManager)

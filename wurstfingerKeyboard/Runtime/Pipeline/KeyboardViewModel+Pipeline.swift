@@ -193,6 +193,11 @@ extension KeyboardViewModel {
             return
         }
 
+        if case .switchToNextLanguage = binding.action {
+            switchToNextLanguage()
+            return
+        }
+
         let context = ActionContext(
             action: binding.action,
             binding: binding,
