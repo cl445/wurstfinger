@@ -59,11 +59,6 @@ final class KeyboardViewModel: ObservableObject {
     /// Updated by the controller in `viewWillLayoutSubviews()` so that
     /// SwiftUI re-evaluates layout after orientation changes.
     @Published private(set) var viewWidth: CGFloat = UIScreen.main.bounds.width
-    /// Whether the device is currently in a landscape orientation.
-    /// Driven by the controller via `updateOrientation(isLandscape:)`, since
-    /// the keyboard's own bounds are always shorter than tall and cannot
-    /// reliably distinguish portrait from landscape on their own.
-    @Published private(set) var isLandscape: Bool = false
     /// The currently active keyboard mode.
     @Published var currentMode: KeyboardMode?
     /// Name of the currently active mode in the data-driven definition.
@@ -189,26 +184,17 @@ final class KeyboardViewModel: ObservableObject {
         viewWidth = width
     }
 
-    /// Updates the tracked orientation. Called by the controller from
-    /// `viewWillLayoutSubviews()` (which inspects its `traitCollection`) so
-    /// `currentContext` can pick portrait/landscape arrangements correctly.
-    func updateOrientation(isLandscape: Bool) {
-        guard isLandscape != self.isLandscape else { return }
-        self.isLandscape = isLandscape
-    }
-
     // MARK: - Arrangement Selection
 
-    /// Determines the active arrangement context based on orientation and
-    /// the user's utility-column preference.
+    /// Determines the active arrangement context from the user's utility-column
+    /// preference.
+    ///
+    /// The keyboard intentionally keeps the portrait arrangement in **all**
+    /// orientations so the key positions stay constant when the device rotates
+    /// (muscle memory). The data model still defines dedicated `.landscape`
+    /// arrangements, but the runtime does not select them.
     var currentContext: ArrangementContext {
-        let utilityLeft = layoutSettings.utilityColumnLeading
-        switch (isLandscape, utilityLeft) {
-        case (false, false): return .portrait
-        case (false, true): return .portraitUtilityLeft
-        case (true, false): return .landscape
-        case (true, true): return .landscapeUtilityLeft
-        }
+        layoutSettings.utilityColumnLeading ? .portraitUtilityLeft : .portrait
     }
 
     /// The grid arrangement for `currentMode` and `currentContext`.

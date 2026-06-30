@@ -15,51 +15,40 @@ import Testing
 
 @Suite(.serialized)
 struct KeyboardViewModelContextTests {
-    /// Builds a ViewModel with a deterministic orientation and utility-column
-    /// setting. We use an in-memory UserDefaults so the suite never touches
-    /// the shared store.
-    private func makeViewModel(isLandscape: Bool, utilityLeft: Bool) -> KeyboardViewModel {
+    /// Builds a ViewModel with a deterministic utility-column setting. We use an
+    /// in-memory UserDefaults so the suite never touches the shared store.
+    private func makeViewModel(utilityLeft: Bool) -> KeyboardViewModel {
         let defaults = UserDefaults(suiteName: "test.\(UUID().uuidString)")!
         let viewModel = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
         viewModel.utilityColumnLeading = utilityLeft
-        viewModel.updateOrientation(isLandscape: isLandscape)
         return viewModel
     }
 
-    @Test func portraitUtilityRight() {
-        let viewModel = makeViewModel(isLandscape: false, utilityLeft: false)
+    @Test func utilityRightSelectsPortrait() {
+        let viewModel = makeViewModel(utilityLeft: false)
         #expect(viewModel.currentContext == .portrait)
     }
 
-    @Test func portraitUtilityLeft() {
-        let viewModel = makeViewModel(isLandscape: false, utilityLeft: true)
+    @Test func utilityLeftSelectsPortraitUtilityLeft() {
+        let viewModel = makeViewModel(utilityLeft: true)
         #expect(viewModel.currentContext == .portraitUtilityLeft)
     }
 
-    @Test func landscapeUtilityRight() {
-        let viewModel = makeViewModel(isLandscape: true, utilityLeft: false)
-        #expect(viewModel.currentContext == .landscape)
-    }
-
-    @Test func landscapeUtilityLeft() {
-        let viewModel = makeViewModel(isLandscape: true, utilityLeft: true)
-        #expect(viewModel.currentContext == .landscapeUtilityLeft)
-    }
-
     @Test func currentArrangementIsNilWithoutMode() {
-        let viewModel = makeViewModel(isLandscape: false, utilityLeft: false)
+        let viewModel = makeViewModel(utilityLeft: false)
         #expect(viewModel.currentMode == nil)
         #expect(viewModel.currentArrangement == nil)
     }
 
     @Test func currentArrangementUsesContextLookup() {
         // Build a minimal mode with distinct arrangements per context so
-        // we can verify currentArrangement chases the right one.
-        let portraitArrangement = GridArrangement(
+        // we can verify currentArrangement chases the right one as the
+        // utility-column preference changes.
+        let utilityRightArrangement = GridArrangement(
             columns: 1,
             rows: [[KeyPlacement(keyId: "a")]]
         )
-        let landscapeArrangement = GridArrangement(
+        let utilityLeftArrangement = GridArrangement(
             columns: 2,
             rows: [[KeyPlacement(keyId: "a"), KeyPlacement(keyId: "a")]]
         )
@@ -80,18 +69,18 @@ struct KeyboardViewModelContextTests {
                 tapCycleActions: nil
             )],
             arrangements: [
-                .portrait: portraitArrangement,
-                .landscape: landscapeArrangement,
+                .portrait: utilityRightArrangement,
+                .portraitUtilityLeft: utilityLeftArrangement,
             ],
             autoTransitions: [:],
             doubleTapMode: nil
         )
 
-        let viewModel = makeViewModel(isLandscape: false, utilityLeft: false)
+        let viewModel = makeViewModel(utilityLeft: false)
         viewModel.currentMode = mode
         #expect(viewModel.currentArrangement?.columns == 1)
 
-        viewModel.updateOrientation(isLandscape: true)
+        viewModel.utilityColumnLeading = true
         #expect(viewModel.currentArrangement?.columns == 2)
     }
 }
