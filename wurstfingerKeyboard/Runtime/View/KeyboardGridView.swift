@@ -17,7 +17,7 @@ import SwiftUI
 struct KeyboardGridView: View {
     let arrangement: GridArrangement
     let keys: [String: KeyConfig]
-    let onGesture: (KeyConfig, GestureType, Bool) -> Void
+    let onGesture: (KeyConfig, GestureClassification) -> Void
     var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
     /// Forwarded to `KeyView`; returns whether the long press was handled.

@@ -162,7 +162,7 @@ struct KeyViewStyleTests {
         )
         let view = KeyView(
             key: key,
-            onGesture: { _, _, _ in },
+            onGesture: { _, _ in },
             onTouchDown: {},
             settings: KeyRenderSettings(),
             metrics: .reference
@@ -187,7 +187,7 @@ struct KeyViewStyleTests {
         )
         let view = KeyView(
             key: key,
-            onGesture: { _, _, _ in },
+            onGesture: { _, _ in },
             onTouchDown: {},
             settings: KeyRenderSettings(),
             metrics: .reference
@@ -212,7 +212,7 @@ struct KeyViewStyleTests {
         )
         let view = KeyView(
             key: key,
-            onGesture: { _, _, _ in },
+            onGesture: { _, _ in },
             onTouchDown: {},
             settings: KeyRenderSettings(),
             metrics: .reference

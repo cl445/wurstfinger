@@ -15,6 +15,13 @@ import SwiftUI
 struct GestureClassification {
     let gesture: GestureType
     let isReturn: Bool
+    /// Touchdown location normalized to the key's frame (`[0,1]²`, 0.5 = center).
+    /// Feeds offset learning (`e = touchdown − center`, §4.1). Defaults to center
+    /// (used by callers that don't supply a real touchdown, e.g. tests).
+    var touchdown: CGPoint = .init(x: 0.5, y: 0.5)
+    /// Discriminating gesture features for telemetry (§13); `nil` when the
+    /// classification was built from synthetic features without plumbing.
+    var features: GestureFeatures?
 }
 
 /// Touch-sequence state backing `KeyGestureRecognizer`.
@@ -109,6 +116,12 @@ struct KeyGestureRecognizer: ViewModifier {
     @State private var longPress: LongPressScheduler
     /// Identifies this key's touch sequence to the shared trail recorder.
     @StateObject private var trailToken = GestureTrailToken()
+    /// The key's rendered cell, measured in the same coordinate space the drag
+    /// gesture reports its locations in. Used to normalize the touchdown to
+    /// `[0,1]²`; the gesture runs in the shared trail space (the trail needs
+    /// grid-wide points), so a cell-local `startLocation` is not available and
+    /// the cell's own frame in that space supplies the origin and the size.
+    @State private var cellFrame: CGRect = .zero
     @Binding var isActive: Bool
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
@@ -145,6 +158,14 @@ struct KeyGestureRecognizer: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .background(
+                GeometryReader { proxy in
+                    let frame = proxy.frame(in: GestureTrailRecorder.coordinateSpace)
+                    Color.clear
+                        .onAppear { cellFrame = frame }
+                        .onChange(of: frame) { _, newFrame in cellFrame = newFrame }
+                }
+            )
             .gesture(
                 // The coordinate space affects only `value.location`, which the
                 // trail records. `value.translation` is a delta, so the
@@ -188,10 +209,15 @@ struct KeyGestureRecognizer: ViewModifier {
                             isActive = false
                             return
                         }
-                        let classification = sequence.handleEnded(
+                        var classification = sequence.handleEnded(
                             translation: value.translation,
                             aspectRatio: aspectRatio
                         )
+                        // The touchdown arrives in the shared gesture space
+                        // (see the coordinate space above); normalize it against
+                        // this cell so the learner can compute `e = touchdown −
+                        // center` in pitch fractions (§4.1, §5.5).
+                        classification.touchdown = Self.normalizedTouchdown(value.startLocation, inCell: cellFrame)
                         trail?.finish(from: trailToken)
                         isActive = false
                         onGestureRecognized(classification)
@@ -266,6 +292,27 @@ struct KeyGestureRecognizer: ViewModifier {
         }
     }
 
+    /// Normalizes a cell-local point to `[0,1]²` (0.5 = cell center). Falls back
+    /// to the center if the size is not yet known.
+    static func normalizedTouchdown(_ point: CGPoint, in size: CGSize) -> CGPoint {
+        guard size.width > 0, size.height > 0 else { return CGPoint(x: 0.5, y: 0.5) }
+        return CGPoint(
+            x: min(max(point.x / size.width, 0), 1),
+            y: min(max(point.y / size.height, 0), 1)
+        )
+    }
+
+    /// Normalizes a point reported in the shared gesture coordinate space to
+    /// `[0,1]²` inside `cell`, the key's frame measured in that same space.
+    /// A distinct argument label rather than an overload, so the cell-local
+    /// form above stays unambiguous at its call sites.
+    static func normalizedTouchdown(_ point: CGPoint, inCell cell: CGRect) -> CGPoint {
+        normalizedTouchdown(
+            CGPoint(x: point.x - cell.minX, y: point.y - cell.minY),
+            in: cell.size
+        )
+    }
+
     /// Guarantees the touch-down origin `(0,0)` is the first sample.
     ///
     /// Every recorded point is a translation relative to touch-down, so the
@@ -310,7 +357,9 @@ struct KeyGestureRecognizer: ViewModifier {
         let processed = preprocessor.preprocess(positions)
         let features = GestureFeatures.extract(from: processed, thresholds: thresholds)
 
-        return classify(features: features)
+        var classification = classify(features: features)
+        classification.features = features
+        return classification
     }
 
     /// Classifies already-extracted features. Useful for testing with

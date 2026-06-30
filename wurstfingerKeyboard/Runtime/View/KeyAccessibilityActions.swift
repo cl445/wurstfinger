@@ -18,15 +18,23 @@ import SwiftUI
 /// callback as a real touch, so they share the resolver chain and pipeline.
 struct KeyAccessibilityActions: ViewModifier {
     let key: KeyConfig
-    let onGesture: (KeyConfig, GestureType, Bool) -> Void
+    let onGesture: (KeyConfig, GestureClassification) -> Void
 
     func body(content: Content) -> some View {
         withActivation(content)
             .accessibilityActions {
                 ForEach(key.accessibilityActions, id: \.gesture) { action in
-                    Button(action.name) { onGesture(key, action.gesture, false) }
+                    Button(action.name) { onGesture(key, Self.classification(action.gesture)) }
                 }
             }
+    }
+
+    /// A synthesized activation carries no real touch, so it reports the
+    /// centre of the key as its touchdown and no feature vector — it must not
+    /// feed the touch-offset learner a made-up sample (a centred touchdown
+    /// carries zero error and moves no offset).
+    static func classification(_ gesture: GestureType) -> GestureClassification {
+        GestureClassification(gesture: gesture, isReturn: false)
     }
 
     /// Applied only where it is needed: a key whose tap already acts keeps the
@@ -34,7 +42,7 @@ struct KeyAccessibilityActions: ViewModifier {
     @ViewBuilder
     private func withActivation(_ content: Content) -> some View {
         if let gesture = key.accessibilityActivationOverride {
-            content.accessibilityAction { onGesture(key, gesture, false) }
+            content.accessibilityAction { onGesture(key, Self.classification(gesture)) }
         } else {
             content
         }
