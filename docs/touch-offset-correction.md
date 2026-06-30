@@ -478,24 +478,34 @@ Zelle nie ihre Nachbarn „überrennt". `cellFrames` ist rein → in
 `KeyboardGridLayoutTouchCoverageTests` direkt testbar: nach Resizing weiterhin **vollständige,
 disjunkte** Überdeckung.
 
-### 5.4 Resizing-Geometrie (exakt)
+### 5.4 Resizing-Geometrie (exakt) — Korrektur: separables Linien-Verschieben
 
-Jede Taste K hat einen geclampten 2D-Offset `offset_K = (ox_K, oy_K)` (Pitch-Anteile, §4.2);
-Interpretation: das *effektive* Zentrum ist `center(K) + offset_K`. Die Zell-Grenzen folgen den
-Mittelsenkrechten zwischen effektiven Zentren — in einem achsparallelen Gitter exakt so:
+> **Korrektur (durch Implementierungs-Test gefunden):** Die ursprüngliche Idee, *jede Zelle ihre
+> vier Kanten unabhängig* verschieben zu lassen (`Kante += (o_A+o_B)/2`), **kachelt bei *2D*-Offsets
+> nicht**: verschiebt eine Zelle gleichzeitig horizontal *und* vertikal, klafft an ihren Ecken eine
+> Lücke/Überlappung zum **Diagonalnachbarn**, der die Verschiebung nicht mitmacht. Auf einem
+> Rechteck-Gitter ist eine gültige, achsparallele Partition nur über **gemeinsame Gitterlinien**
+> möglich (Eckpunkte müssen von allen vier angrenzenden Zellen geteilt werden).
 
-- **Innere vertikale Kante** (geteilt von A links, B rechts): Position `+= (ox_A + ox_B) / 2`.
-- **Innere horizontale Kante** (geteilt von A oben, B unten): Position `+= (oy_A + oy_B) / 2`.
-- **Äußere/Rand-Kanten** (kein Nachbar): **bleiben fix** — die Tastatur-Außengrenzen ändern sich
-  nicht (kein Overflow).
-- **Eine Kante = ein Wert**, von beiden Zellen geteilt → lückenlose, überlappungsfreie Partition
-  bleibt automatisch erhalten (§5.3).
-- **Diagonale Nachbarn** brauchen keine Behandlung: im Rechteck-Gitter gibt es nur H/V-Kanten; der
-  2D-Offset ist über die x-/y-Komponenten vollständig erfasst.
-- **Nicht-Degeneriertheit:** Bei Offset-Clamp ≤ 0,35 Pitch (§4.3) bewegt sich jede Kante ≤ 0,35
-  Pitch; eine Zelle behält Breite/Höhe ≥ `1 − 2·0,35 = 0,3` Pitch → nie invertiert/verschwunden.
-- **Spannende Tasten** (row/col-span): nutzen ihren sichtbaren Mittelpunkt; jede ihrer geteilten
-  Kanten wird mit der jeweils angrenzenden Nachbartaste nach derselben Regel verschoben.
+Korrektes Verfahren — **separable Perturbation der Gitterlinien**:
+
+- Jede **innere vertikale Linie** (zwischen Spalte c−1 und c) verschiebt sich um **einen** Wert
+  `δ_x[c]`; jede **innere horizontale Linie** um `δ_y[r]`. **Äußere Linien bleiben fix** (Außengrenze).
+- Eine Linie ist von *allen* Zellen entlang ihr geteilt → die per-Tasten-Offsets links/rechts (bzw.
+  oben/unten) der Linie werden **auf die Linie gemittelt**:
+  `δ_x[c] = mittel_r ( (ox(r,c−1) + ox(r,c)) / 2 ) · Spaltenbreite`.
+- Jede Zelle = `[xLinie[col], xLinie[col+span]] × [yLinie[row], yLinie[row+span]]` → **immer** eine
+  disjunkte, lückenlose Partition (Teleskopsumme der Intervalle = feste Außenbreite), auch in 2D.
+- **Konsequenz/Trade-off:** Der **glatte Reach-Bias** (Hauptsignal, §3.2) wird voll abgebildet; reine
+  **Per-Tasten-Residuen** werden durch die Linien-Mittelung nur *teilweise* realisiert. Das ist der
+  Preis einer achsparallelen Rechteck-Partition (eine pro-Zelle-exakte Lösung bräuchte
+  nicht-rechteckige Zellen, die SwiftUI nicht platzieren kann).
+- **Nicht-Degeneriertheit:** Bei Clamp ≤ 0,35 Pitch bewegt sich jede Linie ≤ 0,35 Spaltenbreite;
+  benachbarte Spalten behalten Breite ≥ 0,3 → nie invertiert.
+- **Spannende Tasten:** spannen einfach mehrere Linien-Intervalle; keine Sonderbehandlung nötig.
+
+(Implementiert in `KeyboardGridLayout.lineShifts`; verifiziert in `KeyboardGridResizingTests` —
+2D-Offsets erhalten die exakte Kachelung.)
 
 ### 5.5 Faktische Umsetzung / Routing
 
