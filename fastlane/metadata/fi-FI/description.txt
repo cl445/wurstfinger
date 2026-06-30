@@ -1,0 +1,27 @@
+Wurstfinger: näppäimistö paksuille sormille
+
+Väsynyt kirjoitusvirheisiin? Wurstfinger on yksityisyyttä kunnioittava näppäimistö, jossa on isot näppäimet ja pyyhkäisyeleet. Se perustuu hyväksi havaittuun MessagEase-asetteluun ja korvaa ahtaan QWERTY-ruudukon 3x3-asettelulla, joka on optimoitu peukaloilla kirjoittamiseen.
+
+Toisin kuin tavalliset näppäimistöt, Wurstfinger ei nojaa tungettelevaan sanaennustukseen – se saavuttaa tarkkuuden ergonomisella suunnittelulla. Isot ja väljästi sijoitellut näppäimet vähentävät ohi menneitä painalluksia, ja elejärjestelmä antaa pääsyn kaikkiin merkkeihin ilman pikkuruisten painikkeiden etsimistä.
+
+OMINAISUUDET:
+
+• 3x3-näppäinruudukko – tehty peukaloille, ei tarkkuusosoittimille
+• Pyyhkäisyeleet – käytä 8:aa lisämerkkiä näppäintä kohden pyyhkäisemällä
+• 15 kieltä – katalaani, kroatia, englanti, viro-suomi, suomi, ranska, saksa, heprea, italia, puola, venäjä, espanja, ruotsi, tagalog ja vietnam (Telex-syöttö)
+• Yhdistämissäännöt – luo aksentteja yhdistelmillä (esim. ' + a = á)
+• Ympyräeleet – piirrä ympyrä isoja kirjaimia varten
+• Kohdistimen hallinta – vedä välilyöntinäppäintä siirtääksesi kohdistinta; pidä painettuna valitaksesi tekstiä
+• Haptinen palaute – säädettävä värinän voimakkuus
+• Täysin säädettävä – skaalaa näppäimistön koko mieleiseksesi
+
+YKSITYISYYS ENSIN:
+
+• Ei tiedonkeruuta
+• Ei verkkoyhteyttä
+• Ei seurantaa sanaennustuksen kautta
+• Kaikki käsittely tapahtuu paikallisesti laitteellasi
+
+Wurstfinger vaatii harjoittelua – varaa muutama päivä lihasmuistin rakentamiseen. Mutta kun olet ylittänyt sen kynnyksen, et halua enää takaisin tavalliseen näppäimistöön. Eleistä tulee selkäytimestä lähteviä, ja kirjoitat nopeammin ja vähemmin virhein kuin koskaan.
+
+Sormesi kiittävät sinua!

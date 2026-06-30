@@ -1,0 +1,27 @@
+Wurstfinger: la tastiera per dita grosse
+
+Stanco di errori di battitura? Wurstfinger è una tastiera attenta alla privacy, con tasti grandi e gesti di scorrimento. Basata sul collaudato schema MessagEase, sostituisce la stretta griglia QWERTY con una disposizione 3x3 ottimizzata per la digitazione con i pollici.
+
+A differenza delle tastiere tradizionali, Wurstfinger non si affida a una predizione delle parole invasiva: ottiene la precisione grazie a un design ergonomico. Tasti grandi e ben distanziati riducono i tocchi mancati e il sistema di gesti consente di accedere a tutti i caratteri senza cercare minuscoli pulsanti.
+
+FUNZIONI:
+
+• Griglia di tasti 3x3 — pensata per i pollici, non per la precisione di un pennino
+• Gesti di scorrimento — accedi a 8 caratteri aggiuntivi per tasto scorrendo
+• 15 lingue — catalano, croato, inglese, estone-finlandese, finlandese, francese, tedesco, ebraico, italiano, polacco, russo, spagnolo, svedese, tagalog e vietnamita (con input Telex)
+• Regole di composizione — crea accenti tramite combinazioni (es. ' + a = á)
+• Gesti circolari — disegna un cerchio per le maiuscole
+• Controllo del cursore — trascina sulla barra spaziatrice per spostare il cursore, tieni premuto per selezionare il testo
+• Feedback aptico — intensità della vibrazione personalizzabile
+• Completamente regolabile — adatta le dimensioni della tastiera alle tue preferenze
+
+PRIMA DI TUTTO LA PRIVACY:
+
+• Nessuna raccolta di dati
+• Nessun accesso alla rete
+• Nessun tracciamento tramite predizione delle parole
+• Tutta l'elaborazione avviene localmente sul tuo dispositivo
+
+Wurstfinger richiede un po' di pratica: metti in conto qualche giorno per costruire la memoria muscolare. Ma una volta superata quella soglia, non vorrai più tornare a una tastiera standard. I gesti diventano naturali e digiterai più velocemente e con meno errori che mai.
+
+Le tue dita ti ringrazieranno!

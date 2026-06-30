@@ -1,0 +1,13 @@
+Versão 1.2.0
+
+Destaques:
+• Adeus zonas mortas: agora cada pixel do teclado responde ao toque
+• Resposta tátil mais ágil: a vibração ocorre ao tocar, não depois da ação
+• O teclado mantém-se alinhado corretamente após rodar o dispositivo em segundo plano
+
+Correções:
+• Esquema francês: corrigido o deslize de retorno na tecla central
+• A capitalização automática após apagar voltou a funcionar
+• O apóstrofo já não ativa o modo de acentos/composição
+• O iOS indica agora corretamente o idioma do teclado
+• Várias outras correções em gestos e definições

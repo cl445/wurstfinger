@@ -1,0 +1,27 @@
+Wurstfinger: klawiatura dla grubych palców
+
+Masz dość literówek? Wurstfinger to dbająca o prywatność klawiatura z dużymi klawiszami i gestami przesuwania. Oparta na sprawdzonym układzie MessagEase zastępuje ciasną siatkę QWERTY układem 3x3 zoptymalizowanym do pisania kciukami.
+
+W przeciwieństwie do popularnych klawiatur Wurstfinger nie opiera się na inwazyjnym przewidywaniu słów – precyzję osiąga dzięki ergonomicznej konstrukcji. Duże, dobrze rozmieszczone klawisze ograniczają chybione dotknięcia, a system gestów daje dostęp do wszystkich znaków bez szukania maleńkich przycisków.
+
+FUNKCJE:
+
+• Siatka klawiszy 3x3 – stworzona dla kciuków, nie dla precyzyjnych wskaźników
+• Gesty przesuwania – uzyskaj dostęp do 8 dodatkowych znaków na klawisz, przesuwając
+• 15 języków – kataloński, chorwacki, angielski, estońsko-fiński, fiński, francuski, niemiecki, hebrajski, włoski, polski, rosyjski, hiszpański, szwedzki, tagalski i wietnamski (z wprowadzaniem Telex)
+• Reguły składania – twórz znaki diakrytyczne przez kombinacje (np. ' + a = á)
+• Gesty kołowe – narysuj okrąg, aby uzyskać wielkie litery
+• Sterowanie kursorem – przeciągnij po spacji, aby przesunąć kursor; przytrzymaj, aby zaznaczyć tekst
+• Sprzężenie haptyczne – regulowana siła wibracji
+• W pełni konfigurowalna – dostosuj rozmiar klawiatury do swoich preferencji
+
+PRYWATNOŚĆ PRZEDE WSZYSTKIM:
+
+• Brak zbierania danych
+• Brak dostępu do sieci
+• Brak śledzenia przez przewidywanie słów
+• Całe przetwarzanie odbywa się lokalnie na Twoim urządzeniu
+
+Wurstfinger wymaga treningu – licz się z kilkoma dniami na zbudowanie pamięci mięśniowej. Ale gdy już przekroczysz ten próg, nie zechcesz wracać do zwykłej klawiatury. Gesty wchodzą w nawyk, a Ty piszesz szybciej i z mniejszą liczbą błędów niż kiedykolwiek.
+
+Twoje palce Ci podziękują!
