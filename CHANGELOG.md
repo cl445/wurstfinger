@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+## v1.3.0 — 2026-06-30
+
+### Added
+
+- In-keyboard language switching — cycle through enabled languages with a swipe on the globe key (#199, #135)
+- Label visibility — hide letters, standard symbols, or extra symbols independently to choose which labels appear on the keys (#200)
+- App localization in 12 languages (#189)
+- Vietnamese Telex input method (#134)
+- Cursor movement style setting — continuous or step-by-step, with word-wise movement (#173)
+- Extensive new test coverage: gesture classification, action pipeline, middlewares, compose integrity, accessibility, and end-to-end typing UI tests (#181, #182, #183, #186, #188)
+
+### Fixed
+
+- Fix Liquid Glass inter-key dead zones — taps in the gaps between keys now register in the real keyboard extension (#198)
+- Harden the keyboard extension against memory jetsam so it opens more reliably (#190)
+- Re-anchor the gesture origin on ring-buffer overflow for reliable long gestures (#174)
+- Fix auto-capitalization whitespace handling, layout validation, and force-unwrap risks (#177)
+
+### Changed
+
+- Restructure the keyboard extension into a data-driven architecture (Definition/Runtime/Settings): layouts are declared as data and executed by a generic runtime (#169, plus the #155–#168 series)
+- Keep the portrait key arrangement in landscape orientation (#197)
+- Gesture tuning: delete-step, turn angle, and slide dead-zone thresholds (#175)
+- Settings robustness: pipeline cache and text-field input clamps (#176)
+- Run CI unit tests serially to avoid flaky simulator-clone failures (#192)
+
 ## v1.2.0 — 2026-04-04
 
 ### Fixed

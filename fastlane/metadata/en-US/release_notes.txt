@@ -1,13 +1,12 @@
-Version 1.2.0
+Version 1.3.0
 
-Highlights:
-• No more dead zones — every pixel on the keyboard now responds to touch
-• Snappier haptic feedback — vibration fires on touch-down instead of after the action
-• Keyboard stays correctly aligned after rotating while backgrounded
+New:
+• Switch languages right from the keyboard — cycle through your enabled languages with a swipe on the globe key
+• Cursor control — choose how the space-bar cursor moves: continuous drag or step-by-step, including word-by-word
+• Label visibility — hide letters, standard symbols, or extra symbols independently
+• The app is now available in 12 languages
+• New Vietnamese Telex input
 
-Bug fixes:
-• French layout: fixed return swipe on center key
-• Auto-capitalization after delete works correctly again
-• Apostrophe no longer triggers accent/compose mode
-• iOS now reports the correct keyboard language
-• Various other fixes for gestures and settings
+Reliability:
+• The keyboard now opens more reliably
+• Fixed dead zones between keys in the Liquid Glass style
