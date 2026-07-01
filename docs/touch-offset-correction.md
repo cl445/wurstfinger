@@ -618,11 +618,23 @@ Echtes Live nur in der Extension möglich. Hinter Debug-Flag. **Speicher-Vorsich
 
 ## 8. Validierung & Abnahme
 
-- **Proxy-Metrik rein lokal** mitloggen (Backspace-Rate, Anteil grenznaher Taps) — verlässt das
-  Gerät nicht, dient nur Debug/Selbstkontrolle.
-- **Abnahmekriterium v1 (Vorschlag):** in einem A/B-Selbstversuch (Feature an vs. aus über je
-  N Sitzungen) sinkt die Backspace-/Korrektur-Rate messbar, **ohne** dass die Rate in irgendeinem
-  Regime steigt. Solange das nicht belegt ist, bleibt das Feature Default-aus.
+- **Proxy-Metrik rein lokal** mitloggen — verlässt das Gerät nicht, dient nur
+  Debug/Selbstkontrolle.
+- **Kontrafaktische Nutzen-Metrik (primär, self-populating).** Ein toggle-basiertes A/B
+  („Feature an vs. aus über je N Sitzungen") füllt in der Praxis nie die Aus-Gruppe — niemand
+  schaltet die Korrektur freiwillig ab. Stattdessen wird der Nutzen **kontrafaktisch** aus der
+  Geometrie bestimmt: Bei eingeschaltetem Feature kennen wir pro Tap sowohl die zugewiesene
+  Taste (`K_on`) als auch die, die der rohe Touchdown **unverschoben** getroffen hätte (`K_off`).
+  Der unkorrigierte Punkt ist `p = touchdown + offset` (Touchdown normalisiert in der verschobenen
+  Zelle); verlässt `p` je Achse `[0,1]`, hat die Korrektur die Taste **umgebogen** (ein „Flip").
+  Über dasselbe Akzeptanz-Veto-Fenster wie das Lernen (§4.1):
+  - Flip akzeptiert (kein Backspace) → **caught** (wahrscheinlich abgefangener Fehler),
+  - Flip verworfen (Backspace) → **caused** (wahrscheinlich verursachter Fehler),
+  - kein Flip → korrektur-irrelevant (kein Signal, korrekt ignoriert).
+  „Net = caught − caused". Selbst-etikettiert (Akzeptanz ≠ Ground Truth, gleiche Annahme wie das
+  Lernen); Näherung: eigener Tasten-Offset für beide Zellkanten (glattes Reach-Feld dominiert).
+- **Abnahmekriterium v1:** `net` deutlich positiv über die Regime, **ohne** dass die
+  per-Klasse-Korrekturrate (§13) in irgendeinem Regime steigt. Solange nicht belegt: Default-aus.
 - Debug-View zeigt Samples/Regime, max. Korrektur, `s_k` zur Plausibilisierung.
 
 ## 9. Phasierung

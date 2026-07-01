@@ -6,9 +6,11 @@
 //  - P6 (§13): per-(regime, gesture-class) running feature statistics + a
 //    correction counter, for the future adaptive gesture-parameter track. Only
 //    collected when the feature is enabled.
-//  - P9 (§8): an A/B proxy metric — gestures and corrections split by whether
-//    the correction feature was active, so the benefit can be measured before
-//    ever defaulting the feature on. Always collected (local counts only).
+//  - P9 (§8): a **counterfactual** benefit metric. For each tap where the
+//    applied correction changed which key was hit (a "flip"), whether the
+//    changed key was kept (a likely caught error) or deleted (a likely caused
+//    one). Self-populating while the feature is on — no A/B toggle dance — since
+//    the uncorrected outcome is recoverable from geometry (§8 counterfactual).
 //
 //  Only aggregates are stored — never raw trajectories (privacy, §7).
 //
@@ -50,13 +52,22 @@ struct ClassTelemetry: Codable, Equatable {
     }
 }
 
-/// A/B proxy metric for one condition (feature on / off).
-struct ABMetric: Codable, Equatable {
-    var total = 0
-    var corrections = 0
+/// Counterfactual benefit of the correction (§8): among taps where the applied
+/// correction changed which key was hit (a "flip"), how many the user kept
+/// (`caught` — a likely prevented error) vs deleted (`caused` — a likely
+/// introduced one). Self-labeled via the same acceptance window as learning
+/// (§4.1): not ground truth, but it isolates exactly the taps the correction
+/// actually touched, which the toggle-based A/B could not.
+struct CounterfactualMetric: Codable, Equatable {
+    var caught = 0
+    var caused = 0
 
-    var correctionRate: Double {
-        total > 0 ? Double(corrections) / Double(total) : 0
+    var net: Int {
+        caught - caused
+    }
+
+    var total: Int {
+        caught + caused
     }
 }
 
@@ -64,10 +75,8 @@ struct TelemetrySnapshot: Codable, Equatable {
     var schemaVersion: Int
     /// `regimeKey` → `classKey` → telemetry (P6, feature-gated).
     var classes: [String: [String: ClassTelemetry]] = [:]
-    /// P9: correction feature active.
-    var abEnabled = ABMetric()
-    /// P9: correction feature inactive (control).
-    var abDisabled = ABMetric()
+    /// P9: counterfactual correction benefit per `regimeKey`.
+    var counterfactual: [String: CounterfactualMetric] = [:]
 
     static func empty(schemaVersion: Int) -> TelemetrySnapshot {
         TelemetrySnapshot(schemaVersion: schemaVersion)
@@ -77,7 +86,7 @@ struct TelemetrySnapshot: Codable, Equatable {
 /// Persists the telemetry snapshot (App-Group `SharedDefaults`; tests inject a
 /// throwaway suite).
 final class GestureTelemetryStore {
-    static let currentSchemaVersion = 1
+    static let currentSchemaVersion = 2
     static let storageKey = "gestureTelemetry.snapshot"
 
     private let defaults: UserDefaults
