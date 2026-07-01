@@ -2,11 +2,11 @@ Version 1.3.0
 
 Neu:
 • Sprache direkt auf der Tastatur wechseln — mit einem Wisch über die Globus-Taste durch deine aktivierten Sprachen
+• Cursor-Steuerung — wählen, wie sich der Cursor per Leertaste bewegt: stufenlos oder schrittweise, auch wortweise
 • Label-Sichtbarkeit — Buchstaben, Standard- oder Extra-Symbole einzeln ausblenden
 • Die App ist jetzt in 12 Sprachen verfügbar
 • Neue vietnamesische Telex-Eingabe
 
 Zuverlässigkeit:
 • Die Tastatur öffnet jetzt zuverlässiger
-• Absturz beim Drehen ins Querformat behoben
 • Tote Bereiche zwischen den Tasten im Liquid-Glass-Stil behoben
