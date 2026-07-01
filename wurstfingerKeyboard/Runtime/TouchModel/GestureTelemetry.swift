@@ -52,22 +52,38 @@ struct ClassTelemetry: Codable, Equatable {
     }
 }
 
-/// Counterfactual benefit of the correction (§8): among taps where the applied
-/// correction changed which key was hit (a "flip"), how many the user kept
-/// (`caught` — a likely prevented error) vs deleted (`caused` — a likely
-/// introduced one). Self-labeled via the same acceptance window as learning
-/// (§4.1): not ground truth, but it isolates exactly the taps the correction
-/// actually touched, which the toggle-based A/B could not.
+/// Counterfactual benefit of the correction (§8). For every resolved tap we know
+/// the observed outcome (kept / deleted) and — when the correction changed which
+/// key was hit (a "flip") — what the uncorrected outcome would have been. From
+/// `caught` (flip kept → error the correction prevented) and `caused` (flip
+/// deleted → error it introduced) plus the raw tap/delete counts, both **error
+/// rates** follow: the observed one (correction on) and the counterfactual one
+/// (had no correction been applied). Self-labeled via the same acceptance window
+/// as learning (§4.1) — not ground truth, but it isolates exactly the taps the
+/// correction actually touched, which the toggle-based A/B could not.
 struct CounterfactualMetric: Codable, Equatable {
+    /// Total resolved taps (confirmed or vetoed) recorded with correction on.
+    var taps = 0
+    /// Taps the user deleted — the observed error signal with correction on.
+    var deletes = 0
+    /// Flip kept → an error the correction prevented (error only without it).
     var caught = 0
+    /// Flip deleted → an error the correction introduced (error only with it).
     var caused = 0
+
+    /// Observed backspace rate with the correction on.
+    var errorRateWith: Double {
+        taps > 0 ? Double(deletes) / Double(taps) : 0
+    }
+
+    /// Counterfactual backspace rate had no correction been applied: caught
+    /// flips would have been errors, caused flips would not (§8).
+    var errorRateWithout: Double {
+        taps > 0 ? Double(deletes + caught - caused) / Double(taps) : 0
+    }
 
     var net: Int {
         caught - caused
-    }
-
-    var total: Int {
-        caught + caused
     }
 }
 
@@ -86,7 +102,7 @@ struct TelemetrySnapshot: Codable, Equatable {
 /// Persists the telemetry snapshot (App-Group `SharedDefaults`; tests inject a
 /// throwaway suite).
 final class GestureTelemetryStore {
-    static let currentSchemaVersion = 2
+    static let currentSchemaVersion = 3
     static let storageKey = "gestureTelemetry.snapshot"
 
     private let defaults: UserDefaults

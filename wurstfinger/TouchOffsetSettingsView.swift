@@ -136,21 +136,22 @@ private struct TouchOffsetStatsView: View {
     var body: some View {
         Form {
             Section {
-                if counterfactual.total == 0 {
-                    Text("No corrections have changed a key yet — keep typing with this posture.")
+                if counterfactual.taps == 0 {
+                    Text("No taps recorded yet — keep typing with this posture.")
                         .foregroundStyle(.secondary)
                 } else {
-                    countRow("Errors caught", counterfactual.caught, tint: .green)
-                    countRow("Corrections reverted", counterfactual.caused, tint: .red)
-                    countRow("Net benefit", counterfactual.net, tint: counterfactual.net >= 0 ? .green : .red, signed: true)
+                    let helping = counterfactual.errorRateWith <= counterfactual.errorRateWithout
+                    rateRow("With correction", counterfactual.errorRateWith, tint: helping ? .green : .red)
+                    rateRow("Without correction", counterfactual.errorRateWithout, tint: .secondary)
                 }
             } header: {
-                Text("Does it help?")
+                Text("Error rate")
             } footer: {
-                Text("Counts taps where the correction moved the key under your finger. If you "
-                    + "kept the result it likely **caught** a misfire; if you deleted it right "
-                    + "after, the correction likely **caused** one. Measured live while the "
-                    + "feature is on.")
+                Text("Estimated backspace rate **with** the correction vs. what it would have "
+                    + "been **without** it — inferred per tap from whether correction changed a "
+                    + "key you then kept or deleted. Lower with correction means it's helping. "
+                    + "(\(counterfactual.taps) taps · \(counterfactual.caught) caught · "
+                    + "\(counterfactual.caused) caused)")
             }
 
             if let classes = telemetry.classes[regimeKey], !classes.isEmpty {
@@ -182,9 +183,9 @@ private struct TouchOffsetStatsView: View {
         .onAppear { telemetry = telemetryStore.load() }
     }
 
-    private func countRow(_ title: LocalizedStringKey, _ value: Int, tint: Color, signed: Bool = false) -> some View {
+    private func rateRow(_ title: LocalizedStringKey, _ rate: Double, tint: Color) -> some View {
         LabeledContent(title) {
-            Text(signed && value >= 0 ? "+\(value)" : "\(value)")
+            Text(percent(rate))
                 .foregroundStyle(tint)
                 .monospacedDigit()
         }

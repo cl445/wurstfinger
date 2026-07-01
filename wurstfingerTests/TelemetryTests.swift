@@ -101,31 +101,52 @@ struct TelemetryControllerTests {
         c.recordTapOutcome(regimeKey: regime.key, isFlip: true)
         // A later tap ages the flipped one out of the veto window (unvetoed).
         c.recordTapOutcome(regimeKey: regime.key, isFlip: false)
-        #expect(c.snapshot.counterfactual[regime.key]?.caught == 1)
-        #expect(c.snapshot.counterfactual[regime.key]?.caused == 0)
+        let m = c.snapshot.counterfactual[regime.key]
+        #expect(m?.taps == 1)
+        #expect(m?.caught == 1)
+        #expect(m?.caused == 0)
+        #expect(m?.deletes == 0)
     }
 
     @Test func vetoedFlipCountsAsCaused() {
         let c = make("test.telemetry.caused", enabled: true, window: 1)
         c.recordTapOutcome(regimeKey: regime.key, isFlip: true)
         c.recordUserDelete() // vetoes the still-pending flip
-        #expect(c.snapshot.counterfactual[regime.key]?.caused == 1)
-        #expect(c.snapshot.counterfactual[regime.key]?.caught == nil || c.snapshot.counterfactual[regime.key]?.caught == 0)
+        let m = c.snapshot.counterfactual[regime.key]
+        #expect(m?.taps == 1)
+        #expect(m?.deletes == 1)
+        #expect(m?.caused == 1)
+        #expect(m?.caught == 0)
     }
 
-    @Test func nonFlipTapContributesNothing() {
+    @Test func nonFlipKeptTapCountsButAddsNoError() {
         let c = make("test.telemetry.noflip", enabled: true, window: 1)
         c.recordTapOutcome(regimeKey: regime.key, isFlip: false)
-        c.recordTapOutcome(regimeKey: regime.key, isFlip: false)
-        #expect(c.snapshot.counterfactual[regime.key] == nil)
+        c.recordTapOutcome(regimeKey: regime.key, isFlip: false) // ages the first out
+        let m = c.snapshot.counterfactual[regime.key]
+        #expect(m?.taps == 1)
+        #expect(m?.deletes == 0)
+        #expect(m?.caught == 0)
+        #expect(m?.caused == 0)
     }
 
-    @Test func netIsCaughtMinusCaused() {
+    // MARK: - Error-rate math (§8)
+
+    @Test func errorRatesReflectCounterfactual() {
         var m = CounterfactualMetric()
-        m.caught = 5
-        m.caused = 2
-        #expect(m.net == 3)
-        #expect(m.total == 7)
+        m.taps = 10
+        m.deletes = 3 // observed backspaces with correction on
+        m.caught = 2 // would-have-been errors the correction prevented
+        m.caused = 1 // errors the correction introduced
+        #expect(abs(m.errorRateWith - 0.3) < 1e-9) // 3 / 10
+        #expect(abs(m.errorRateWithout - 0.4) < 1e-9) // (3 + 2 - 1) / 10
+        #expect(m.net == 1)
+    }
+
+    @Test func emptyMetricHasZeroRates() {
+        let m = CounterfactualMetric()
+        #expect(m.errorRateWith == 0)
+        #expect(m.errorRateWithout == 0)
     }
 
     // MARK: - Persistence
@@ -141,5 +162,6 @@ struct TelemetryControllerTests {
         let reloaded = GestureTelemetryStore(defaults: d).load()
         #expect(reloaded.classes[regime.key]?["tap"]?.total == 1)
         #expect(reloaded.counterfactual[regime.key]?.caught == 1)
+        #expect(reloaded.counterfactual[regime.key]?.taps == 1)
     }
 }

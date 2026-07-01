@@ -76,24 +76,33 @@ final class TelemetryController {
 
     /// Records a tap's counterfactual outcome (§8): `isFlip` = the applied
     /// correction changed which key was hit. Taps aging out of the veto window
-    /// unvetoed are credited as `caught` (a kept flip = likely prevented error).
+    /// unvetoed resolve as *kept*: they add to `taps`, and a kept flip adds to
+    /// `caught` (a likely prevented error).
     func recordTapOutcome(regimeKey: String, isFlip: Bool) {
         pendingTaps.append((regimeKey, isFlip))
         guard pendingTaps.count > window else { return }
         let overflow = pendingTaps.count - window
         let confirmed = pendingTaps.prefix(overflow)
         pendingTaps.removeFirst(overflow)
-        for tap in confirmed where tap.isFlip {
-            snapshot.counterfactual[tap.regime, default: CounterfactualMetric()].caught += 1
-            markDirty()
+        for tap in confirmed {
+            var metric = snapshot.counterfactual[tap.regime] ?? CounterfactualMetric()
+            metric.taps += 1
+            if tap.isFlip { metric.caught += 1 }
+            snapshot.counterfactual[tap.regime] = metric
         }
+        if !confirmed.isEmpty { markDirty() }
     }
 
     func recordUserDelete() {
-        // Counterfactual: veto the most recent pending tap. A vetoed flip means
-        // the correction changed the key to one the user rejected → caused (§8).
-        if let vetoed = pendingTaps.popLast(), vetoed.isFlip {
-            snapshot.counterfactual[vetoed.regime, default: CounterfactualMetric()].caused += 1
+        // Counterfactual: veto the most recent pending tap — it resolves as
+        // *deleted* (an observed error). A vetoed flip means the correction
+        // changed the key to one the user rejected → caused (§8).
+        if let vetoed = pendingTaps.popLast() {
+            var metric = snapshot.counterfactual[vetoed.regime] ?? CounterfactualMetric()
+            metric.taps += 1
+            metric.deletes += 1
+            if vetoed.isFlip { metric.caused += 1 }
+            snapshot.counterfactual[vetoed.regime] = metric
         }
         // P6: charge the correction to the last gesture's class.
         if isFeatureEnabled(), let last = lastGesture {

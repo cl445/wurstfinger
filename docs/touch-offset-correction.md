@@ -631,9 +631,15 @@ Echtes Live nur in der Extension möglich. Hinter Debug-Flag. **Speicher-Vorsich
   - Flip akzeptiert (kein Backspace) → **caught** (wahrscheinlich abgefangener Fehler),
   - Flip verworfen (Backspace) → **caused** (wahrscheinlich verursachter Fehler),
   - kein Flip → korrektur-irrelevant (kein Signal, korrekt ignoriert).
-  „Net = caught − caused". Selbst-etikettiert (Akzeptanz ≠ Ground Truth, gleiche Annahme wie das
-  Lernen); Näherung: eigener Tasten-Offset für beide Zellkanten (glattes Reach-Feld dominiert).
-- **Abnahmekriterium v1:** `net` deutlich positiv über die Regime, **ohne** dass die
+- **Relative Fehlerraten (primäre Anzeige).** Aus denselben Zählern folgen beide Backspace-Raten
+  über die Gesamt-Taps `n` und die beobachteten Löschungen `d` (pro Regime):
+  - **mit** Korrektur (beobachtet): `d / n`,
+  - **ohne** Korrektur (kontrafaktisch): `(d + caught − caused) / n` — caught-Flips wären Fehler
+    gewesen, caused-Flips nicht. Beide Raten ∈ [0,1] (caught/Löschungen disjunkt).
+  „Net = caught − caused" = absolute Fehler-Differenz. Selbst-etikettiert (Akzeptanz ≠ Ground
+  Truth, gleiche Annahme wie das Lernen); Näherung: eigener Tasten-Offset für beide Zellkanten
+  (glattes Reach-Feld dominiert).
+- **Abnahmekriterium v1:** Rate **mit** < Rate **ohne** deutlich über die Regime, **ohne** dass die
   per-Klasse-Korrekturrate (§13) in irgendeinem Regime steigt. Solange nicht belegt: Default-aus.
 - Debug-View zeigt Samples/Regime, max. Korrektur, `s_k` zur Plausibilisierung.
 

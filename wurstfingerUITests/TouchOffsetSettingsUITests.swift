@@ -51,8 +51,8 @@ final class TouchOffsetSettingsUITests: XCTestCase {
         XCTAssertTrue(statsLink.waitForExistence(timeout: 3), "Statistics link missing")
         statsLink.tap()
         XCTAssertTrue(
-            app.staticTexts["Does it help?"].waitForExistence(timeout: 3),
-            "A/B statistics missing on the subpage"
+            app.staticTexts["Error rate"].waitForExistence(timeout: 3),
+            "Error-rate statistics missing on the subpage"
         )
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
