@@ -3,8 +3,8 @@
 //  wurstfingerUITests
 //
 //  Verifies the Touch Correction settings page (spec §6) is reachable and
-//  shows its core controls: the toggle, the learned-offset visualization and
-//  the reset controls.
+//  shows its core controls: the toggle, the explicit hand-posture choice
+//  (§6.3), the learned-offset visualization and the reset controls.
 //
 
 import XCTest
@@ -39,6 +39,16 @@ final class TouchOffsetSettingsUITests: XCTestCase {
             app.buttons["Reset everything"].waitForExistence(timeout: 3),
             "Reset control missing"
         )
+
+        // The posture is an explicit choice, not a view filter: the three
+        // options are present and selectable (order: right, left, both).
+        let rightThumb = app.staticTexts["One hand — right thumb"]
+        XCTAssertTrue(rightThumb.waitForExistence(timeout: 3), "Posture choice missing")
+        XCTAssertTrue(app.staticTexts["One hand — left thumb"].exists, "Left-thumb option missing")
+        let twoThumbs = app.staticTexts["Two thumbs"]
+        XCTAssertTrue(twoThumbs.exists, "Two-thumbs option missing")
+        // Selecting a different posture must be possible.
+        twoThumbs.tap()
 
         // The toggle is interactive.
         app.switches["Correct my typing"].tap()

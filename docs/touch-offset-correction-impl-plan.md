@@ -29,7 +29,7 @@ SwiftFormat/SwiftLint `--strict` lint-clean halten.
 **Neu** (`wurstfingerKeyboard/Runtime/TouchModel/`):
 | Datei | Inhalt | Spec |
 |---|---|---|
-| `TouchRegime.swift` | Regime-Typ + `derivePosture(scale, position)` + Orientierung | §3.1 |
+| `TouchRegime.swift` | Regime-Typ + `PostureClass(settingValue:)` (explizite Wahl) + Orientierung | §3.1 |
 | `ReachSurface.swift` | Ridge-WLS-Fit (bilinear/linear), Auswertung, Rang-Guard | §3.2, §4.2-S2 |
 | `TouchOffsetModel.swift` | Per-Taste `{m_k,n_k,s_k}`, Update (Huber/Running-Mean/EW-MAD), Shrinkage+Clamp → Offset | §4.2 |
 | `TouchOffsetStore.swift` | Codable-Schema, `SharedDefaults`-Persistenz, Versionierung, Reset, debounced write | §7 |
@@ -70,9 +70,11 @@ Worktree, Verzeichnis, `SettingsKey.touchOffsetEnabled` + `touchModelSchemaVersi
 Modul-Dateien mit Doc-Headern. **Exit:** Build grün, Toggle-Key existiert (noch ohne Wirkung).
 
 ### P1 — Regime-Auflösung (S, rein)
-`TouchRegime` + `derivePosture` exakt nach der Partition §3.1 (inkl. „schmal & mittig → twoThumb",
-Floating = keine v1-Klasse). Hysterese-Hook (Schwellen als Parameter).
-**Tests:** Partition an allen Ecken + Schwellen-Grenzfällen; Hysterese verhindert Flackern.
+`TouchRegime` + explizite Posture-Wahl `PostureClass(settingValue:)` (§3.1/§6.3); Default
+`oneThumbRight`, Fallback bei fehlendem/unbekanntem Wert. Floating = keine v1-Klasse.
+**Tests:** Setting-Mapping (Default/Fallback/Round-Trip), Split-Flag, stabiler Regime-Key.
+*(Historisch: eine `derivePosture(scale, position)`-Heuristik wurde verworfen — im Praxistest
+fehlklassifiziert, 11.1.)*
 **Exit:** `(orientation, scale, position) → Regime` deterministisch, 100 % getestet.
 
 ### P2 — TouchOffsetModel-Kern (L, rein) — *algorithmisches Herz*
@@ -168,7 +170,7 @@ Schnitt ist hinter dem Toggle inert, also gefahrlos in `develop` integrierbar.
 - **P3.5-Spike** klärt das einzige verbliebene praktische Risiko (Resizing am Gerät) früh.
 - **P4** ist der Bestandscode-Eingriff → Regressionsschutz der Gesten-Tests ist Pflicht.
 - **P7** muss die lückenlose Kachelung (#198) wahren → Coverage-Tests sind das Sicherheitsnetz.
-- **Kalibrierung** (κ, n_max, m_interior, derivePosture-/Dwell-Schwellen, Histogramm-Bins) erfolgt
+- **Kalibrierung** (κ, n_max, m_interior, Dwell-Schwelle, Histogramm-Bins) erfolgt
   in P5–P9 am Gerät, nicht vorab (§10).
 
 ## Nicht in v1 (Verweise)

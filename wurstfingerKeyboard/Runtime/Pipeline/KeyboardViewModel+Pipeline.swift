@@ -319,21 +319,19 @@ extension KeyboardViewModel {
         sharedDefaults.bool(forKey: SettingsKey.touchOffsetEnabled.rawValue)
     }
 
-    /// The active learning regime: orientation × derived posture (§3.1).
+    /// The active learning regime: orientation × the user's declared posture
+    /// (§3.1/§6.3). Posture is read fresh from `SharedDefaults` so a change in
+    /// the host app takes effect on the next gesture without a keyboard restart.
     ///
     /// On this branch the keyboard renders a portrait arrangement in all
     /// orientations and the view model does not expose the physical orientation,
     /// so orientation is fixed to `.portrait` for v1. Add the orientation axis
     /// once the controller plumbs physical orientation through.
     var currentTouchRegime: TouchRegime {
-        let scale = sharedDefaults.object(forKey: SettingsKey.keyboardScale.rawValue) as? Double
-            ?? DeviceLayoutUtils.defaultKeyboardScale
-        let position = sharedDefaults.object(forKey: SettingsKey.keyboardHorizontalPosition.rawValue) as? Double
-            ?? DeviceLayoutUtils.defaultKeyboardPosition
-        return TouchRegime(
-            orientation: .portrait,
-            posture: PostureResolver.derivePosture(scale: scale, position: position)
+        let posture = PostureClass(
+            settingValue: sharedDefaults.string(forKey: SettingsKey.touchOffsetPosture.rawValue)
         )
+        return TouchRegime(orientation: .portrait, posture: posture)
     }
 
     /// The per-key offsets to apply right now (§4.4, §5.4): the learned model's
