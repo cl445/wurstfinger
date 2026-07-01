@@ -1,14 +1,12 @@
 Version 1.3.0
 
-Highlights:
+New:
 • Switch languages right from the keyboard — cycle through your enabled languages with a swipe on the globe key
-• New practice mode — hide letters or symbols to learn the layout from memory
+• Label visibility — hide letters, standard symbols, or extra symbols independently
 • The app is now available in 12 languages
 • New Vietnamese Telex input
 
 Reliability:
+• The keyboard now opens more reliably
 • Fixed a crash when rotating to landscape
 • Fixed dead zones between keys in the Liquid Glass style
-• The keyboard now opens more reliably and no longer comes up blank
-• Restored missing icons on the globe, dismiss, and clipboard keys
-• Many gesture and settings improvements under the hood

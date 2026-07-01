@@ -7,7 +7,7 @@
 ### Added
 
 - In-keyboard language switching — cycle through enabled languages with a swipe on the globe key (#199, #135)
-- Label visibility practice mode — independently hide letters, standard symbols, and extra symbols to learn the layout from memory (#200)
+- Label visibility — hide letters, standard symbols, or extra symbols independently to choose which labels appear on the keys (#200)
 - App localization in 12 languages (#189)
 - Vietnamese Telex input method (#134)
 - Cursor movement style setting — continuous or step-by-step, with word-wise movement (#173)
@@ -20,7 +20,6 @@
 - Fix landscape keyboard crash with multi-row key rendering (#193)
 - Guarantee the keyboard always renders a layout and never comes up blank (#196)
 - Harden the keyboard extension against memory jetsam so it opens more reliably (#190)
-- Restore missing utility-key hint icons (globe, dismiss, clipboard) (#184)
 - Re-anchor the gesture origin on ring-buffer overflow for reliable long gestures (#174)
 - Fix auto-capitalization whitespace handling, layout validation, and force-unwrap risks (#177)
 - Harden settings loading against UserDefaults suite crashes (#185)
