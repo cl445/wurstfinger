@@ -3,10 +3,11 @@
 //  wurstfinger
 //
 //  Settings subpage for the learned touch-offset correction (spec §6):
-//  the master toggle, an explicit hand-posture choice that selects the active
-//  learning regime (§6.3), a visualization of the learned per-key offsets read
-//  from the persisted snapshot, diagnostics, and reset controls. All data is
-//  local; the visualization shows the last persisted snapshot (§5.1).
+//  the master toggle, a compact explicit hand-posture choice that selects the
+//  active learning regime (§6.3), a visualization of the learned per-key offsets
+//  read from the persisted snapshot, a link to the statistics subpage, and reset
+//  controls. All data is local; the visualization shows the last persisted
+//  snapshot (§5.1).
 //
 
 import CoreGraphics
@@ -21,7 +22,6 @@ struct TouchOffsetSettingsView: View {
     @AppStorage(SettingsKey.touchOffsetPosture.rawValue, store: SharedDefaults.store)
     private var posture: PostureClass = .oneThumbRight
     @State private var snapshot: TouchOffsetSnapshot = .empty(schemaVersion: TouchOffsetStore.currentSchemaVersion)
-    @State private var telemetry: TelemetrySnapshot = .empty(schemaVersion: GestureTelemetryStore.currentSchemaVersion)
     @State private var showResetDialog = false
 
     private let store = TouchOffsetStore(defaults: SharedDefaults.store)
@@ -56,14 +56,10 @@ struct TouchOffsetSettingsView: View {
                     Text("One hand — left thumb").tag(PostureClass.oneThumbLeft)
                     Text("Two thumbs").tag(PostureClass.twoThumb)
                 }
-                .pickerStyle(.inline)
-            } header: {
-                Text("How do you type?")
             } footer: {
-                Text("Pick the way you actually hold the phone. Wurstfinger keeps a "
-                    + "**separate** profile per posture, because a thumb reaching across "
-                    + "the keyboard lands differently than two thumbs. A wrong choice can "
-                    + "nudge keys the wrong way, so this isn't auto-detected.")
+                Text("Wurstfinger keeps a **separate** profile per posture, because a thumb "
+                    + "reaching across the keyboard lands differently than two thumbs. A wrong "
+                    + "choice can nudge keys the wrong way, so this isn't auto-detected.")
             }
 
             Section {
@@ -80,32 +76,11 @@ struct TouchOffsetSettingsView: View {
             }
 
             Section {
-                abRow("With correction", telemetry.abEnabled)
-                abRow("Without correction", telemetry.abDisabled)
-            } header: {
-                Text("Does it help?")
-            } footer: {
-                Text("Your correction (backspace) rate while the feature is on vs off, "
-                    + "measured locally. A lower rate with it on means it's helping.")
-            }
-
-            if let classes = telemetry.classes[regime.key], !classes.isEmpty {
-                Section {
-                    ForEach(classes.keys.sorted(), id: \.self) { key in
-                        if let stats = classes[key] {
-                            LabeledContent(key) {
-                                Text("\(percent(stats.correctionRate)) · \(stats.total)")
-                                    .foregroundStyle(.secondary)
-                                    .monospacedDigit()
-                            }
-                        }
-                    }
-                } header: {
-                    Text("Gesture correction rates")
-                } footer: {
-                    Text("How often each gesture class gets corrected (rate · sample count). "
-                        + "A high rate hints at a mis-tuned threshold for that gesture.")
+                NavigationLink("Statistics") {
+                    TouchOffsetStatsView(regimeKey: regime.key)
                 }
+            } footer: {
+                Text("See whether correction is helping and the per-gesture correction rates.")
             }
 
             Section {
@@ -132,18 +107,6 @@ struct TouchOffsetSettingsView: View {
         }
     }
 
-    private func abRow(_ title: String, _ metric: ABMetric) -> some View {
-        LabeledContent(title) {
-            Text(metric.total > 0 ? "\(percent(metric.correctionRate)) · \(metric.total)" : "no data")
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
-        }
-    }
-
-    private func percent(_ rate: Double) -> String {
-        String(format: "%.1f%%", rate * 100)
-    }
-
     private var appliedOffsets: [String: CGVector] {
         TouchOffsetModel(regime: regime, snapshot: snapshot).allOffsets()
     }
@@ -154,7 +117,69 @@ struct TouchOffsetSettingsView: View {
 
     private func reload() {
         snapshot = store.load()
-        telemetry = telemetryStore.load()
+    }
+}
+
+/// Read-only statistics subpage (§8/§13): the A/B proxy metric and the
+/// per-gesture correction rates for the active posture. Loaded fresh from the
+/// persisted telemetry snapshot on appear.
+private struct TouchOffsetStatsView: View {
+    let regimeKey: String
+
+    @State private var telemetry: TelemetrySnapshot = .empty(schemaVersion: GestureTelemetryStore.currentSchemaVersion)
+    private let telemetryStore = GestureTelemetryStore(defaults: SharedDefaults.store)
+
+    var body: some View {
+        Form {
+            Section {
+                abRow("With correction", telemetry.abEnabled)
+                abRow("Without correction", telemetry.abDisabled)
+            } header: {
+                Text("Does it help?")
+            } footer: {
+                Text("Your correction (backspace) rate while the feature is on vs off, "
+                    + "measured locally. A lower rate with it on means it's helping.")
+            }
+
+            if let classes = telemetry.classes[regimeKey], !classes.isEmpty {
+                Section {
+                    ForEach(classes.keys.sorted(), id: \.self) { key in
+                        if let stats = classes[key] {
+                            LabeledContent(key) {
+                                Text("\(percent(stats.correctionRate)) · \(stats.total)")
+                                    .foregroundStyle(.secondary)
+                                    .monospacedDigit()
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Gesture correction rates")
+                } footer: {
+                    Text("How often each gesture class gets corrected (rate · sample count). "
+                        + "A high rate hints at a mis-tuned threshold for that gesture.")
+                }
+            } else {
+                Section {
+                    Text("No gesture data yet for this posture.")
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .navigationTitle("Statistics")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear { telemetry = telemetryStore.load() }
+    }
+
+    private func abRow(_ title: LocalizedStringKey, _ metric: ABMetric) -> some View {
+        LabeledContent(title) {
+            Text(metric.total > 0 ? "\(percent(metric.correctionRate)) · \(metric.total)" : "no data")
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+        }
+    }
+
+    private func percent(_ rate: Double) -> String {
+        String(format: "%.1f%%", rate * 100)
     }
 }
 
