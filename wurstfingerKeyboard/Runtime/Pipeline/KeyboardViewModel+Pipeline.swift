@@ -245,9 +245,12 @@ extension KeyboardViewModel {
         ))
 
         // Touch-offset learning: observe user `.deleteBackward` for the
-        // acceptance-filter veto (§4.1). Inert unless the feature is on.
+        // acceptance-filter veto (§4.1) and the telemetry/A/B correction
+        // counters (§13/§8). Inert unless the feature is on (telemetry A/B
+        // counts always).
         middlewares.append(TouchLearningMiddleware(onUserDelete: { [weak self] in
             self?.touchLearning.recordUserDelete()
+            self?.telemetry.recordUserDelete()
         }))
 
         pipeline = ActionPipeline(middlewares: middlewares)
@@ -382,6 +385,10 @@ extension KeyboardViewModel {
     ) -> Bool {
         guard let mode = activeModeFromDefinition else { return false }
 
+        // Telemetry (§13) + A/B proxy metric (§8): record every classified
+        // gesture (all classes, incl. circular below).
+        telemetry.recordGesture(gesture, isReturn: isReturn, features: features)
+
         // Circular gestures: try requested direction, fall back to opposite.
         if gesture == .circularClockwise || gesture == .circularCounterclockwise {
             handleCircular(keyId: keyId, in: mode, gesture: gesture)
@@ -397,7 +404,6 @@ extension KeyboardViewModel {
         if gesture == .tap, !isReturn, let touchdown {
             touchLearning.recordTap(keyId: keyId, touchdown: touchdown)
         }
-        _ = features // P6: feed gesture telemetry here.
 
         // Mode and language switches bypass the pipeline, so their
         // confirmation tick fires here instead of in the haptic middleware —
