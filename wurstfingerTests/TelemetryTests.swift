@@ -2,9 +2,10 @@
 //  TelemetryTests.swift
 //  WurstfingerTests
 //
-//  Tests for gesture telemetry (§13) and the A/B proxy metric (§8).
+//  Tests for gesture telemetry (§13) and the counterfactual benefit metric (§8).
 //
 
+import CoreGraphics
 import Foundation
 import Testing
 @testable import WurstfingerApp
@@ -28,63 +29,117 @@ struct FeatureStatTests {
     }
 }
 
+struct FlipDetectionTests {
+    @Test func centeredTapWithNoOffsetIsNotAFlip() {
+        #expect(!TelemetryController.isFlip(touchdown: CGPoint(x: 0.5, y: 0.5), offset: .zero))
+    }
+
+    @Test func offsetPushingPastEdgeIsAFlip() {
+        // touchdown + offset leaves [0,1] → an unshifted neighbor owned the tap.
+        #expect(TelemetryController.isFlip(touchdown: CGPoint(x: 0.9, y: 0.5), offset: CGVector(dx: 0.2, dy: 0)))
+        #expect(TelemetryController.isFlip(touchdown: CGPoint(x: 0.1, y: 0.5), offset: CGVector(dx: -0.2, dy: 0)))
+        #expect(TelemetryController.isFlip(touchdown: CGPoint(x: 0.5, y: 0.95), offset: CGVector(dx: 0, dy: 0.1)))
+    }
+
+    @Test func offsetStayingInsideIsNotAFlip() {
+        #expect(!TelemetryController.isFlip(touchdown: CGPoint(x: 0.6, y: 0.6), offset: CGVector(dx: 0.1, dy: 0.1)))
+    }
+}
+
 struct TelemetryControllerTests {
     private let regime = TouchRegime(orientation: .portrait, posture: .twoThumb)
 
-    private func make(_ suite: String, enabled: Bool) -> TelemetryController {
+    private func make(_ suite: String, enabled: Bool, window: Int = 3) -> TelemetryController {
         let d = UserDefaults(suiteName: suite)!
         d.removePersistentDomain(forName: suite)
         return TelemetryController(
             store: GestureTelemetryStore(defaults: d),
             saveEvery: 1,
+            window: window,
             isFeatureEnabled: { enabled },
             currentRegime: { regime }
         )
     }
 
-    @Test func recordsClassStatsAndABWhenEnabled() {
+    // MARK: - Per-class feature stats (§13)
+
+    @Test func recordsClassStatsWhenEnabled() {
         let c = make("test.telemetry.enabled", enabled: true)
         c.recordGesture(.tap, isReturn: false, features: .empty())
         c.recordGesture(.tap, isReturn: false, features: .empty())
         let tap = c.snapshot.classes[regime.key]?["tap"]
         #expect(tap?.total == 2)
         #expect(tap?.features["maxDisplacement"]?.count == 2)
-        #expect(c.snapshot.abEnabled.total == 2)
-        #expect(c.snapshot.abDisabled.total == 0)
     }
 
-    @Test func disabledSkipsClassStatsButCountsAB() {
+    @Test func disabledSkipsClassStats() {
         let c = make("test.telemetry.disabled", enabled: false)
         c.recordGesture(.swipeUp, isReturn: false, features: .empty())
         #expect(c.snapshot.classes.isEmpty)
-        #expect(c.snapshot.abDisabled.total == 1)
-        #expect(c.snapshot.abEnabled.total == 0)
     }
 
-    @Test func deleteChargesLastClassAndAB() {
+    @Test func deleteChargesLastClass() {
         let c = make("test.telemetry.delete", enabled: true)
         c.recordGesture(.swipeUp, isReturn: false, features: .empty())
         c.recordUserDelete()
         #expect(c.snapshot.classes[regime.key]?["swipe.swipeUp"]?.corrections == 1)
-        #expect(c.snapshot.abEnabled.corrections == 1)
     }
 
-    @Test func correctionRateComputes() {
+    @Test func classCorrectionRateComputes() {
         let c = make("test.telemetry.rate", enabled: true)
         for _ in 0 ..< 10 {
             c.recordGesture(.tap, isReturn: false, features: .empty())
         }
         c.recordUserDelete()
-        #expect(abs((c.snapshot.abEnabled.correctionRate) - 1.0 / 10.0) < 1e-9)
+        #expect(abs((c.snapshot.classes[regime.key]?["tap"]?.correctionRate ?? 0) - 1.0 / 10.0) < 1e-9)
     }
+
+    // MARK: - Counterfactual benefit (§8)
+
+    @Test func keptFlipCountsAsCaught() {
+        let c = make("test.telemetry.caught", enabled: true, window: 1)
+        c.recordTapOutcome(regimeKey: regime.key, isFlip: true)
+        // A later tap ages the flipped one out of the veto window (unvetoed).
+        c.recordTapOutcome(regimeKey: regime.key, isFlip: false)
+        #expect(c.snapshot.counterfactual[regime.key]?.caught == 1)
+        #expect(c.snapshot.counterfactual[regime.key]?.caused == 0)
+    }
+
+    @Test func vetoedFlipCountsAsCaused() {
+        let c = make("test.telemetry.caused", enabled: true, window: 1)
+        c.recordTapOutcome(regimeKey: regime.key, isFlip: true)
+        c.recordUserDelete() // vetoes the still-pending flip
+        #expect(c.snapshot.counterfactual[regime.key]?.caused == 1)
+        #expect(c.snapshot.counterfactual[regime.key]?.caught == nil || c.snapshot.counterfactual[regime.key]?.caught == 0)
+    }
+
+    @Test func nonFlipTapContributesNothing() {
+        let c = make("test.telemetry.noflip", enabled: true, window: 1)
+        c.recordTapOutcome(regimeKey: regime.key, isFlip: false)
+        c.recordTapOutcome(regimeKey: regime.key, isFlip: false)
+        #expect(c.snapshot.counterfactual[regime.key] == nil)
+    }
+
+    @Test func netIsCaughtMinusCaused() {
+        var m = CounterfactualMetric()
+        m.caught = 5
+        m.caused = 2
+        #expect(m.net == 3)
+        #expect(m.total == 7)
+    }
+
+    // MARK: - Persistence
 
     @Test func persistsAcrossReload() throws {
         let suite = "test.telemetry.persist"
-        let c = make(suite, enabled: true)
+        let c = make(suite, enabled: true, window: 1)
         c.recordGesture(.tap, isReturn: false, features: .empty())
+        c.recordTapOutcome(regimeKey: regime.key, isFlip: true)
+        c.recordTapOutcome(regimeKey: regime.key, isFlip: false) // flush → caught
         c.persist()
         let d = try #require(UserDefaults(suiteName: suite))
         let reloaded = GestureTelemetryStore(defaults: d).load()
         #expect(reloaded.classes[regime.key]?["tap"]?.total == 1)
+        #expect(reloaded.counterfactual[regime.key]?.caught == 1)
     }
 }

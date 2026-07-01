@@ -129,16 +129,28 @@ private struct TouchOffsetStatsView: View {
     @State private var telemetry: TelemetrySnapshot = .empty(schemaVersion: GestureTelemetryStore.currentSchemaVersion)
     private let telemetryStore = GestureTelemetryStore(defaults: SharedDefaults.store)
 
+    private var counterfactual: CounterfactualMetric {
+        telemetry.counterfactual[regimeKey] ?? CounterfactualMetric()
+    }
+
     var body: some View {
         Form {
             Section {
-                abRow("With correction", telemetry.abEnabled)
-                abRow("Without correction", telemetry.abDisabled)
+                if counterfactual.total == 0 {
+                    Text("No corrections have changed a key yet — keep typing with this posture.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    countRow("Errors caught", counterfactual.caught, tint: .green)
+                    countRow("Corrections reverted", counterfactual.caused, tint: .red)
+                    countRow("Net benefit", counterfactual.net, tint: counterfactual.net >= 0 ? .green : .red, signed: true)
+                }
             } header: {
                 Text("Does it help?")
             } footer: {
-                Text("Your correction (backspace) rate while the feature is on vs off, "
-                    + "measured locally. A lower rate with it on means it's helping.")
+                Text("Counts taps where the correction moved the key under your finger. If you "
+                    + "kept the result it likely **caught** a misfire; if you deleted it right "
+                    + "after, the correction likely **caused** one. Measured live while the "
+                    + "feature is on.")
             }
 
             if let classes = telemetry.classes[regimeKey], !classes.isEmpty {
@@ -170,10 +182,10 @@ private struct TouchOffsetStatsView: View {
         .onAppear { telemetry = telemetryStore.load() }
     }
 
-    private func abRow(_ title: LocalizedStringKey, _ metric: ABMetric) -> some View {
+    private func countRow(_ title: LocalizedStringKey, _ value: Int, tint: Color, signed: Bool = false) -> some View {
         LabeledContent(title) {
-            Text(metric.total > 0 ? "\(percent(metric.correctionRate)) · \(metric.total)" : "no data")
-                .foregroundStyle(.secondary)
+            Text(signed && value >= 0 ? "+\(value)" : "\(value)")
+                .foregroundStyle(tint)
                 .monospacedDigit()
         }
     }

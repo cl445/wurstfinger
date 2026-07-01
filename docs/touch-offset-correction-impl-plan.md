@@ -149,8 +149,9 @@ Zähler, grobe Histogramme (Bins um Default-Schwelle), Persistenz (§13), Gating
 **Exit:** Nutzer kann aktivieren, sehen, zurücksetzen; Autor kann debuggen.
 
 ### P9 — Validierung & Abnahme (M)
-Lokale Proxy-Metrik (Backspace-/Korrektur-Rate) + **A/B-Toggle-Mechanismus** (§8). Abnahme:
-messbare Senkung **ohne** Anstieg in irgendeinem Regime → erst dann ggf. Default-an erwägen.
+Lokale **kontrafaktische** Nutzen-Metrik (caught/caused/net aus Flip-Erkennung, self-populating —
+kein Toggle-A/B, das die Aus-Gruppe nie füllt) + per-Klasse-Korrekturraten (§8/§13). Abnahme:
+`net` positiv **ohne** Anstieg der Korrekturrate in irgendeinem Regime → erst dann Default-an erwägen.
 **Exit:** Belegbarer Nutzen (oder dokumentierter Nicht-Nutzen) → Datengrundlage für die
 Default-Entscheidung.
 

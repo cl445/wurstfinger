@@ -400,6 +400,15 @@ extension KeyboardViewModel {
         // observed by TouchLearningMiddleware. Inert unless the feature is on.
         if gesture == .tap, !isReturn, let touchdown {
             touchLearning.recordTap(keyId: keyId, touchdown: touchdown)
+            // Counterfactual benefit (§8): did the applied correction change which
+            // key this tap hit? Uses the same offset that drove the assignment.
+            if isTouchOffsetEnabled {
+                let offset = currentTouchCorrectionOffsets()[keyId] ?? .zero
+                telemetry.recordTapOutcome(
+                    regimeKey: currentTouchRegime.key,
+                    isFlip: TelemetryController.isFlip(touchdown: touchdown, offset: offset)
+                )
+            }
         }
 
         // Mode and language switches bypass the pipeline, so their
