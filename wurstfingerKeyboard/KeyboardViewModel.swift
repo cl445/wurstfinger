@@ -180,6 +180,16 @@ final class KeyboardViewModel: ObservableObject {
         keyPosition: { [weak self] in self?.normalizedKeyPosition($0) }
     )
 
+    /// Collects gesture telemetry (§13) and the A/B proxy metric (§8). Lazy so
+    /// its closures can capture `self`.
+    lazy var telemetry: TelemetryController = .init(
+        store: GestureTelemetryStore(defaults: sharedDefaults),
+        isFeatureEnabled: { [weak self] in self?.isTouchOffsetEnabled ?? false },
+        currentRegime: { [weak self] in
+            self?.currentTouchRegime ?? TouchRegime(orientation: .portrait, posture: .twoThumb)
+        }
+    )
+
     init(
         userDefaults: UserDefaults? = nil,
         shouldPersistSettings: Bool = true

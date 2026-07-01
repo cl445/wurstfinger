@@ -17,9 +17,11 @@ struct TouchOffsetSettingsView: View {
 
     @State private var posture: PostureClass = .twoThumb
     @State private var snapshot: TouchOffsetSnapshot = .empty(schemaVersion: TouchOffsetStore.currentSchemaVersion)
+    @State private var telemetry: TelemetrySnapshot = .empty(schemaVersion: GestureTelemetryStore.currentSchemaVersion)
     @State private var showResetDialog = false
 
     private let store = TouchOffsetStore(defaults: SharedDefaults.store)
+    private let telemetryStore = GestureTelemetryStore(defaults: SharedDefaults.store)
     private let arrangement = StandardArrangements.grid3x3[.portrait]
 
     private var regime: TouchRegime {
@@ -65,6 +67,35 @@ struct TouchOffsetSettingsView: View {
             }
 
             Section {
+                abRow("With correction", telemetry.abEnabled)
+                abRow("Without correction", telemetry.abDisabled)
+            } header: {
+                Text("Does it help?")
+            } footer: {
+                Text("Your correction (backspace) rate while the feature is on vs off, "
+                    + "measured locally. A lower rate with it on means it's helping.")
+            }
+
+            if let classes = telemetry.classes[regime.key], !classes.isEmpty {
+                Section {
+                    ForEach(classes.keys.sorted(), id: \.self) { key in
+                        if let stats = classes[key] {
+                            LabeledContent(key) {
+                                Text("\(percent(stats.correctionRate)) · \(stats.total)")
+                                    .foregroundStyle(.secondary)
+                                    .monospacedDigit()
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Gesture correction rates")
+                } footer: {
+                    Text("How often each gesture class gets corrected (rate · sample count). "
+                        + "A high rate hints at a mis-tuned threshold for that gesture.")
+                }
+            }
+
+            Section {
                 Button("Reset this posture", role: .destructive) {
                     store.reset(regimeKey: regime.key)
                     reload()
@@ -81,10 +112,23 @@ struct TouchOffsetSettingsView: View {
         .confirmationDialog("Reset all learned corrections?", isPresented: $showResetDialog, titleVisibility: .visible) {
             Button("Reset everything", role: .destructive) {
                 store.resetAll()
+                telemetryStore.reset()
                 reload()
             }
             Button("Cancel", role: .cancel) {}
         }
+    }
+
+    private func abRow(_ title: String, _ metric: ABMetric) -> some View {
+        LabeledContent(title) {
+            Text(metric.total > 0 ? "\(percent(metric.correctionRate)) · \(metric.total)" : "no data")
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+        }
+    }
+
+    private func percent(_ rate: Double) -> String {
+        String(format: "%.1f%%", rate * 100)
     }
 
     private var appliedOffsets: [String: CGVector] {
@@ -97,6 +141,7 @@ struct TouchOffsetSettingsView: View {
 
     private func reload() {
         snapshot = store.load()
+        telemetry = telemetryStore.load()
     }
 }
 
