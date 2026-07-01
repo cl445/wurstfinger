@@ -78,27 +78,27 @@ Laufzeit **ohne Detektion** bekannt (siehe geklärtes Risiko 11.1):
 - **Orientierung:** Portrait / Landscape — zuverlässig vom Controller geliefert
   (`detectIsLandscape()` via `windowScene.interfaceOrientation` → `viewModel.isLandscape`; die
   Keyboard-Bounds selbst taugen dafür *nicht*, da immer höher als breit).
-- **Posture-Klasse:** **abgeleitet aus den bekannten User-Settings**, nicht detektiert. iOS
-  bietet Dritt-Tastaturen keinen Einhand-/Floating-State; stattdessen ist Wurstfingers *eigene*
-  Positionierung der Einhand-Mechanismus:
+- **Posture-Klasse:** **explizit vom Nutzer gewählt** (Einstellung `touchOffsetPosture`), nicht
+  detektiert. iOS bietet Dritt-Tastaturen keinen Einhand-/Floating-State. Eine frühere Ableitung
+  aus `keyboardScale`/`keyboardHorizontalPosition` war unzuverlässig: ein rechts-einhändiger
+  Nutzer mit mittig-breiter Tastatur wurde als „zwei Daumen" klassifiziert — genau der Fall, in
+  dem das Two-Thumb-**Split**-Modell die kontralaterale Hälfte mit einem falschen zweiten Pivot
+  fittet (3.2) und damit **aktiv falsch** korrigiert (nicht nur Pooling-Effizienz kostet). Weil
+  die Fehlklassifikation den Nutzen dort zerstört, wo Einhand-Reach ihn am dringendsten bräuchte,
+  ist die Wahl eine **bewusste Entscheidung**:
 
   ```
-  postureClass = derivePosture(keyboardScale, keyboardHorizontalPosition):
-    narrow = scale < S_thresh
-    left   = position < 0.5 − P_thresh ;  right = position > 0.5 + P_thresh
-    → oneThumbLeft    falls narrow && left     (eine Fläche, Pivot links, 3.2)
-      oneThumbRight   falls narrow && right    (eine Fläche, Pivot rechts)
-      twoThumb        sonst                     (Split-Fläche links/rechts; auch
-                                                 „schmal & mittig" → Default, Hand unbekannt)
+  postureClass ∈ {
+    oneThumbRight   (eine Fläche, Pivot rechts)   — Default: Einhand ist der Normalfall,
+                                                     rechts die häufigste Hand
+    oneThumbLeft    (eine Fläche, Pivot links, 3.2)
+    twoThumb        (Split-Fläche links/rechts, 3.2)
+  }
   ```
-  `S_thresh`/`P_thresh` sind kalibriert + Hysterese (§10). **Floating (iPad)** ist in v1 **keine
-  eigene Klasse** → fällt per `derivePosture` in die passende Klasse; eigene Behandlung ist v2.
-
-  `keyboardScale`, `keyAspectRatio`, `keyboardHorizontalPosition` liegen exakt in
-  `SharedDefaults` und werden bereits über `GesturePreprocessorConfig.fromUserDefaults()`
-  gelesen. `derivePosture` nutzt **nur `scale` + `position`** (`keyAspectRatio` fließt in v1 nicht
-  ein — Aspect-Handling ist v2, 3.5). Die Heuristik läuft über *bekannte* Werte; eine
-  Fehlklassifikation kostet nur Pooling-Effizienz und korrigiert sich selbst.
+  UI-Reihenfolge: **rechts → links → beide** (§6.3). **Floating (iPad)** ist in v1 **keine eigene
+  Klasse**. Die Wahl liegt in `SharedDefaults`; die Extension liest sie **pro Geste frisch**
+  (`currentTouchRegime`), ein Handwechsel in der App wirkt also ab dem nächsten Tap ohne
+  Keyboard-Neustart. `keyAspectRatio` fließt in v1 nicht ein (Aspect-Handling ist v2, 3.5).
 
 Regime-Schlüssel = `(Orientierung, postureClass)`. Kein State zu erraten, kein Spike nötig.
 
@@ -566,11 +566,20 @@ Rendert die Tastatur (Wiederverwendung der daten-getriebenen Darstellung,
   Richtung *und* Betrag.
 - **Konfidenz über Deckkraft/Größe** (wenig Samples → blass). Farbe nur Akzent.
 
-### 6.3 Regime-Selektor (kritisch)
+### 6.3 Posture-Wahl (kritisch, Entscheidung statt Ansicht)
 
-**Segmented Control** für Orientierung × Posture-Klasse (`twoThumb` / `oneThumbLeft` /
-`oneThumbRight`); rendert das gewählte Regime an repräsentativer Geometrie. Ohne Selektor vermischt
-die Anzeige Modelle und führt in die Irre.
+Die Posture-Klasse ist **keine Ansicht, die man umschaltet, sondern eine Entscheidung mit
+Konsequenz**: Sie wählt das aktive Lern-Regime *und* das angewandte Modell (3.1). Deshalb eine
+klar als Entscheidung gerahmte **Auswahl-Liste** („Wie tippst du?"), nicht ein beiläufiger
+Segmented-Filter:
+
+- Optionen in der Reihenfolge **rechts → links → beide**
+  (`oneThumbRight` / `oneThumbLeft` / `twoThumb`), Default `oneThumbRight` (Einhand ist der
+  Normalfall). Persistiert als `touchOffsetPosture`; die Extension liest sie pro Geste frisch.
+- Footer erklärt die Konsequenz: separates Profil je Haltung, falsche Wahl kann Tasten in die
+  *falsche* Richtung schieben — daher **bewusst wählen, nicht auto-detektieren**.
+- Die Offset-Karte darunter zeigt genau das gewählte (= aktive) Regime, ist also für den
+  Normalfall nicht leer und wirkt nicht „kaputt".
 
 ### 6.4 Reset
 
@@ -619,8 +628,8 @@ Echtes Live nur in der Extension möglich. Hinter Debug-Flag. **Speicher-Vorsich
 ## 9. Phasierung
 
 **v1 (schlank geschnitten)**
-- Regime: Orientierung × `derivePosture(scale, position)` — beides detektionsfrei aus
-  Controller-State bzw. `SharedDefaults` (11.1).
+- Regime: Orientierung × `touchOffsetPosture` — Orientierung deterministisch vom Controller,
+  Posture explizit vom Nutzer gewählt (11.1).
 - Modell: Per-Taste `{m_k,n_k,s_k}`; Reach-Fläche abgeleitet (bilinear Einhand, linear je
   Hälfte bei twoThumb; Konstanten-Term = global). Keine separate `keyResidual`-Persistenz.
 - Lernsignal: Self-Labeling auf konfidenten Taps (LM-frei, Interior-Margin `m_interior`), **nur Taps**.
@@ -670,14 +679,13 @@ Alle Symbole referenzieren den Algorithmus in 4.2:
 - Clamp-Grenze (% Pitch) — max. Betrag des Korrekturvektors (Default ≤ 0,35).
 - Dwell-Max — einziger absoluter Plausibilitäts-Filter (Kontaktradius entfällt, 11.4); am Gerät
   messen (Tap-Dauer-Verteilung, ~150–200 ms).
-- `derivePosture`-Schwellen **+ Hysterese** — ab wann scale/position als Einhand klassifiziert wird
-  (3.1); Hysterese verhindert Regime-Flackern (Daten-Split) nahe der Schwelle.
+  (Posture-Schwellen/Hysterese entfallen — Posture wird gewählt, nicht klassifiziert, 3.1/11.1.)
 
 Am Gerät kalibrieren.
 
 ## 11. Offene Risiken — zuerst verifizieren
 
-### 11.1 Regime-Erkennbarkeit — GEKLÄRT (kein Risiko)
+### 11.1 Regime-Erkennbarkeit — GEKLÄRT (Posture wird gewählt, nicht erkannt)
 
 Per Codebase-Untersuchung aufgelöst; das ursprünglich vermutete Show-Stopper-Risiko existiert
 nicht. Befunde:
@@ -685,18 +693,17 @@ nicht. Befunde:
 - **Es gibt keinen zu *erratenden* Handhaltungs-State.** iOS bietet Dritt-Tastaturen keinen
   Einhand-Modus (System-Keyboard-only) und meldet einer Custom-Extension keine Floating-/
   Posture-Info. Die ursprüngliche Annahme zielte auf einen nicht existenten Sensor.
-- **Die relevanten Größen sind explizite, deterministische User-Settings** in `SharedDefaults`
-  (`keyboardScale`, `keyAspectRatio`, `keyboardHorizontalPosition`), zur Laufzeit exakt bekannt
-  und bereits über `GesturePreprocessorConfig.fromUserDefaults()` gelesen. Wurstfingers eigene
-  Positionierung *ist* der Einhand-Mechanismus → die Posture-Klasse wird daraus **abgeleitet**
-  (3.1), nicht detektiert.
 - **Orientierung** kommt zuverlässig vom Controller (`detectIsLandscape()` →
   `viewModel.isLandscape`); aus den Keyboard-Bounds allein ginge es nicht (dokumentiert im Code).
+- **Die Posture wird nicht abgeleitet, sondern vom Nutzer gewählt.** Ein früher Ansatz leitete sie
+  aus `keyboardScale`/`keyboardHorizontalPosition` ab; ein Praxistest zeigte die Fehlklassifikation
+  (rechts-einhändig → fälschlich `twoThumb`), und weil ein falsches Split-Modell **aktiv falsch**
+  korrigiert (3.2), ist eine stille Heuristik hier schädlicher als eine bewusste Wahl. Die Posture
+  ist daher eine explizite Einstellung `touchOffsetPosture` (3.1/6.3).
 
-Konsequenz: Regime-Schlüssel `(Orientierung, derivePosture(scale, position))` ist vollständig
-ohne Detektion bestimmbar. Kein Spike, kein Fallback-auf-Standard nötig. Einzige verbleibende
-Feinarbeit: die `derivePosture`-Schwellen (ab wann „schmal & versetzt genug" = Einhand)
-empirisch festlegen — eine Heuristik über bekannte Werte, kein Plattformrisiko.
+Konsequenz: Regime-Schlüssel `(Orientierung, touchOffsetPosture)` ist vollständig ohne Detektion
+bestimmbar — Orientierung deterministisch vom Controller, Posture direkt vom Nutzer. Kein Spike,
+keine zu kalibrierenden Schwellen, kein Regime-Flackern (Hysterese entfällt).
 
 ### 11.2 Datenarmut seltener Regime
 
@@ -746,8 +753,8 @@ keine Touch-Anzahl**.
   `TextInputTarget.deleteBackward()` beobachten — Compose/Telex rufen es im Normalbetrieb intern auf;
   die Pipeline-Action ist der saubere Nutzer-Signal-Pfad. Slide-Delete (`handleSlide`) zusätzlich
   abdecken. Einzige Restarbeit ist das Touchdown-Plumbing (§5), das v1 ohnehin braucht.
-- **`derivePosture`-Schwellen (#5):** aus den bekannten `scale`/`position`-Ranges ableiten + UX am
-  Gerät; keine Literatur.
+- **Posture-Wahl (#5):** explizite Nutzer-Einstellung `touchOffsetPosture` statt Ableitung —
+  Praxistest zeigte, dass die scale/position-Heuristik fehlklassifiziert (3.1/6.3/11.1).
 - **A/B-Harness (#7):** Eval-Protokoll aus Gboard/Weir adaptieren (gegenbalancierte Sessions, CER/
   Backspace-Rate als Metrik).
 
@@ -781,7 +788,8 @@ wahre Geometrie (§4.1).
   - Reach-Fläche: Closed-Form-WLS-Refit aus Per-Tasten-Statistiken bildet linearen Trend ab,
     Ridge → 0 bei wenigen Datenpunkten; Zwei-Hälften-Split beim `twoThumb`-Regime.
   - Outlier-Gate inkl. Cold-Start (absolute Gates schützen vor Warm-up); `s_k`-Schätzung.
-  - Regime-Trennung: Samples eines Regimes beeinflussen andere nicht; `derivePosture`-Klassifikation.
+  - Regime-Trennung: Samples eines Regimes beeinflussen andere nicht; Posture-Setting-Mapping
+    (`PostureClass(settingValue:)`, Default/Fallback).
   - Persistenz: Round-Trip durch `SharedDefaults`, Schema-Version, partielle Invalidierung.
   - Hit-Testing-Wechselwirkung mit lückenloser Kachelung (#198).
 - Robustheits-/Degenerations-Szenarien als Tests:

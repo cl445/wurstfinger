@@ -3,8 +3,9 @@
 //  wurstfinger
 //
 //  Settings subpage for the learned touch-offset correction (spec §6):
-//  the master toggle, a visualization of the learned per-key offsets read from
-//  the persisted snapshot, a regime selector, and reset controls. All data is
+//  the master toggle, an explicit hand-posture choice that selects the active
+//  learning regime (§6.3), a visualization of the learned per-key offsets read
+//  from the persisted snapshot, diagnostics, and reset controls. All data is
 //  local; the visualization shows the last persisted snapshot (§5.1).
 //
 
@@ -15,7 +16,10 @@ struct TouchOffsetSettingsView: View {
     @AppStorage(SettingsKey.touchOffsetEnabled.rawValue, store: SharedDefaults.store)
     private var enabled = false
 
-    @State private var posture: PostureClass = .twoThumb
+    /// The user's explicit hand posture — a real decision that selects the
+    /// active learning regime, not just a view filter (§3.1/§6.3).
+    @AppStorage(SettingsKey.touchOffsetPosture.rawValue, store: SharedDefaults.store)
+    private var posture: PostureClass = .oneThumbRight
     @State private var snapshot: TouchOffsetSnapshot = .empty(schemaVersion: TouchOffsetStore.currentSchemaVersion)
     @State private var telemetry: TelemetrySnapshot = .empty(schemaVersion: GestureTelemetryStore.currentSchemaVersion)
     @State private var showResetDialog = false
@@ -47,13 +51,22 @@ struct TouchOffsetSettingsView: View {
             }
 
             Section {
-                Picker("Hand posture", selection: $posture) {
+                Picker("How do you type?", selection: $posture) {
+                    Text("One hand — right thumb").tag(PostureClass.oneThumbRight)
+                    Text("One hand — left thumb").tag(PostureClass.oneThumbLeft)
                     Text("Two thumbs").tag(PostureClass.twoThumb)
-                    Text("Left hand").tag(PostureClass.oneThumbLeft)
-                    Text("Right hand").tag(PostureClass.oneThumbRight)
                 }
-                .pickerStyle(.segmented)
+                .pickerStyle(.inline)
+            } header: {
+                Text("How do you type?")
+            } footer: {
+                Text("Pick the way you actually hold the phone. Wurstfinger keeps a "
+                    + "**separate** profile per posture, because a thumb reaching across "
+                    + "the keyboard lands differently than two thumbs. A wrong choice can "
+                    + "nudge keys the wrong way, so this isn't auto-detected.")
+            }
 
+            Section {
                 OffsetMapView(arrangement: arrangement, offsets: appliedOffsets, sampleCount: sampleCount)
                     .frame(height: 230)
                     .padding(.vertical, 4)
@@ -63,7 +76,7 @@ struct TouchOffsetSettingsView: View {
                 Text(totalSamples > 0
                     ? "\(totalSamples) taps learned for this posture. The red arrow shows how far "
                     + "each key's target has moved; fainter means less data."
-                    : "No data yet for this posture — type with the keyboard to teach it.")
+                    : "No data yet for this posture — type this way and the keyboard learns it.")
             }
 
             Section {
