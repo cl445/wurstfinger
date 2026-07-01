@@ -12,22 +12,31 @@ struct ImprintView: View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Claas Flint")
+                    Text("Akator GmbH")
                         .font(.headline)
                     Text("Mozartstr. 13")
                     Text("49740 Haselünne")
                     Text("Germany")
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Managing directors: Claas Flint, Dr. Sven Willner")
+                        Text("Register court: Amtsgericht Osnabrück · HRB 220235")
+                        Text("VAT ID (§ 27a UStG): DE367322752")
+                    }
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 4)
                 }
                 .padding(.vertical, 4)
             } header: {
-                Text("Information according to § 5 TMG")
+                Text("Information according to § 5 DDG")
             }
 
             Section {
-                Link(destination: URL(string: "mailto:claas.flint@gmail.com")!) {
+                Link(destination: URL(string: "mailto:info@akator.de")!) {
                     HStack {
                         Image(systemName: "envelope")
-                        Text("claas.flint@gmail.com")
+                        Text("info@akator.de")
                     }
                 }
             } header: {
