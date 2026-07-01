@@ -40,17 +40,24 @@ final class TouchOffsetSettingsUITests: XCTestCase {
             "Reset control missing"
         )
 
-        // The posture is an explicit choice, not a view filter: the three
-        // options are present and selectable (order: right, left, both).
-        let rightThumb = app.staticTexts["One hand — right thumb"]
-        XCTAssertTrue(rightThumb.waitForExistence(timeout: 3), "Posture choice missing")
-        XCTAssertTrue(app.staticTexts["One hand — left thumb"].exists, "Left-thumb option missing")
-        let twoThumbs = app.staticTexts["Two thumbs"]
-        XCTAssertTrue(twoThumbs.exists, "Two-thumbs option missing")
-        // Selecting a different posture must be possible.
-        twoThumbs.tap()
+        // The posture is an explicit choice presented as a compact picker.
+        XCTAssertTrue(
+            app.staticTexts["How do you type?"].waitForExistence(timeout: 3),
+            "Posture picker missing"
+        )
+
+        // Statistics live on their own subpage now.
+        let statsLink = app.buttons["Statistics"]
+        XCTAssertTrue(statsLink.waitForExistence(timeout: 3), "Statistics link missing")
+        statsLink.tap()
+        XCTAssertTrue(
+            app.staticTexts["Does it help?"].waitForExistence(timeout: 3),
+            "A/B statistics missing on the subpage"
+        )
+        app.navigationBars.buttons.element(boundBy: 0).tap()
 
         // The toggle is interactive.
+        XCTAssertTrue(app.switches["Correct my typing"].waitForExistence(timeout: 3), "Toggle missing after back")
         app.switches["Correct my typing"].tap()
     }
 }
