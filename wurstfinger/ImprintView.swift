@@ -24,10 +24,10 @@ struct ImprintView: View {
             }
 
             Section {
-                Link(destination: URL(string: "mailto:claas.fling@gmail.com")!) {
+                Link(destination: URL(string: "mailto:claas.flint@gmail.com")!) {
                     HStack {
                         Image(systemName: "envelope")
-                        Text("claas.fling@gmail.com")
+                        Text("claas.flint@gmail.com")
                     }
                 }
             } header: {
