@@ -131,6 +131,14 @@ struct ComposeEngine {
 
     // MARK: - Vietnamese Telex
 
+    /// Dedicated engine for Telex tone resolution. The Vietnamese tone
+    /// triggers (`?` and `*`) live in `ComposeRuleSet.vietnameseTones`, not in
+    /// the global rules, so the shared engine never composes them — Telex
+    /// merges them back in for its own lookups.
+    private static let telexEngine = ComposeEngine(
+        ruleSet: ComposeRuleSet.global.merging(overrides: .vietnameseTones)
+    )
+
     private static let telexVowelMap: [String: [String: String]] = [
         "a": ["a": "â"],
         "w": ["a": "ă", "o": "ơ", "u": "ư"],
@@ -156,7 +164,7 @@ struct ComposeEngine {
         "a", "ă", "â", "e", "ê", "i", "o", "ô", "ơ", "u", "ư", "y"
     ]
 
-    /// Reverse tone map built from the global compose rules: toned char -> (base, telex trigger).
+    /// Reverse tone map built from the Telex compose rules: toned char -> (base, telex trigger).
     /// Includes both lowercase and uppercase entries so the caller can pass original case.
     private static let telexToneReverseMap: [String: (base: String, trigger: String)] = {
         let vowels: Set = [
@@ -172,7 +180,7 @@ struct ComposeEngine {
         ]
         var result: [String: (base: String, trigger: String)] = [:]
         for (composeTrigger, telexKey) in reverseTelex {
-            guard let charMap = ComposeRuleSet.global.rules[composeTrigger] else { continue }
+            guard let charMap = telexEngine.ruleSet.rules[composeTrigger] else { continue }
             for (base, toned) in charMap where vowels.contains(base) {
                 result[toned] = (base: base, trigger: telexKey)
             }
@@ -241,7 +249,7 @@ struct ComposeEngine {
                     return base + trigger
                 } else {
                     // 3. Different tone → replace: á+f -> à
-                    return compose(previous: base, trigger: composeTrigger)
+                    return telexEngine.compose(previous: base, trigger: composeTrigger)
                 }
             }
             // 5. Remove tone (z) on already-toned char: á+z -> a, ấ+z -> â
@@ -258,7 +266,7 @@ struct ComposeEngine {
         // 5. Compose tone mark on vowel: a+s -> á, â+j -> ậ
         if let composeTrigger = telexToneMap[lt],
            vietnameseBaseVowels.contains(lp) {
-            return compose(previous: previous, trigger: composeTrigger)
+            return telexEngine.compose(previous: previous, trigger: composeTrigger)
         }
 
         return nil

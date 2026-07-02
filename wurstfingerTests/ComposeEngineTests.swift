@@ -65,14 +65,24 @@ struct ComposeEngineTests {
         #expect(ComposeEngine.compose(previous: "は", trigger: "゛") == "ば")
     }
 
-    @Test func hookAboveCompose() {
-        #expect(ComposeEngine.compose(previous: "a", trigger: "?") == "ả")
-        #expect(ComposeEngine.compose(previous: "o", trigger: "?") == "ỏ")
+    @Test func hookAboveIsNotAGlobalComposeTrigger() {
+        // Vietnamese hỏi tone lives in ComposeRuleSet.vietnameseTones (Telex
+        // only) — the shared engine must not compose it on other layouts.
+        #expect(ComposeEngine.compose(previous: "a", trigger: "?") == nil)
+        #expect(ComposeEngine.compose(previous: "o", trigger: "?") == nil)
+        // The Telex path still resolves the tone.
+        #expect(ComposeEngine.composeTelex(previous: "a", trigger: "r") == "ả")
+        #expect(ComposeEngine.composeTelex(previous: "o", trigger: "r") == "ỏ")
     }
 
-    @Test func dotBelowCompose() {
-        #expect(ComposeEngine.compose(previous: "a", trigger: "*") == "ạ")
-        #expect(ComposeEngine.compose(previous: "e", trigger: "*") == "ẹ")
+    @Test func dotBelowIsNotAGlobalComposeTrigger() {
+        // Vietnamese nặng tone lives in ComposeRuleSet.vietnameseTones (Telex
+        // only) — `a` + `*` must not become `ạ` on non-Vietnamese layouts.
+        #expect(ComposeEngine.compose(previous: "a", trigger: "*") == nil)
+        #expect(ComposeEngine.compose(previous: "e", trigger: "*") == nil)
+        // The Telex path still resolves the tone.
+        #expect(ComposeEngine.composeTelex(previous: "a", trigger: "j") == "ạ")
+        #expect(ComposeEngine.composeTelex(previous: "e", trigger: "j") == "ẹ")
     }
 
     @Test func caronCompose() {
@@ -98,8 +108,6 @@ struct ComposeEngineTests {
         #expect(ComposeEngine.compose(previous: " ", trigger: "°") == "°")
         #expect(ComposeEngine.compose(previous: " ", trigger: "˘") == "˘")
         #expect(ComposeEngine.compose(previous: " ", trigger: "$") == "$")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "?") == "?")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "*") == "*")
         #expect(ComposeEngine.compose(previous: " ", trigger: "ˇ") == "ˇ")
         #expect(ComposeEngine.compose(previous: " ", trigger: "!") == "!")
     }
