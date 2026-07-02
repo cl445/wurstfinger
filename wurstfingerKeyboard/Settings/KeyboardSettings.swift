@@ -258,18 +258,18 @@ enum KeyboardStyle: String, CaseIterable {
     var displayName: String {
         switch self {
         case .classic:
-            "Classic"
+            String(localized: "Classic")
         case .liquidGlass:
-            "Liquid Glass"
+            String(localized: "Liquid Glass")
         }
     }
 
     var description: String {
         switch self {
         case .classic:
-            "Traditional opaque keys"
+            String(localized: "Traditional opaque keys")
         case .liquidGlass:
-            "Transparent glass effect (iOS 26+)"
+            String(localized: "Transparent glass effect (iOS 26+)")
         }
     }
 }
