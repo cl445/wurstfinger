@@ -19,6 +19,10 @@ enum GridKeyboardFactory {
     ///   - localeIdentifier: Locale string for uppercasing (e.g. "de_DE")
     ///   - centerCharacters: 3x3 grid of center tap characters
     ///   - directionalOverrides: Per-slot overrides that replace CommonKeys defaults
+    ///   - returnOverrides: Per-slot return-swipe outputs that replace the
+    ///     auto-generated uppercase return action (e.g. Hebrew final forms:
+    ///     a return swipe on כ produces ך). Each entry must target a gesture
+    ///     that already has a binding on that slot.
     ///   - numericBackToAlphaLabel: Label shown on the symbols key in numeric
     ///     mode that switches back to the main (alphabetic) layer. Defaults to
     ///     the Latin "abc"; non-Latin layouts (Hebrew, Russian, …) should
@@ -32,6 +36,7 @@ enum GridKeyboardFactory {
         localeIdentifier: String,
         centerCharacters: [[String]],
         directionalOverrides: [String: [GestureType: String]] = [:],
+        returnOverrides: [String: [GestureType: String]] = [:],
         numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel,
         inputMethod: InputMethodKind = .direct
     ) -> KeyboardDefinition {
@@ -72,6 +77,24 @@ enum GridKeyboardFactory {
                     label: char, action: .commitText(char),
                     category: nil, returnAction: nil, accessibilityLabel: nil
                 )
+
+                // Apply explicit return-swipe outputs (replace the auto-generated
+                // uppercase return action). Needed for caseless scripts where
+                // uppercasing is the identity, e.g. Hebrew final forms (כ → ך).
+                if let returns = returnOverrides[slotId] {
+                    for (gesture, text) in returns {
+                        guard let base = bindings[gesture] else {
+                            preconditionFailure(
+                                "returnOverrides[\(slotId)][\(gesture)] has no base binding"
+                            )
+                        }
+                        bindings[gesture] = KeyBinding(
+                            label: base.label, action: base.action,
+                            category: base.category, returnAction: .commitText(text),
+                            accessibilityLabel: base.accessibilityLabel
+                        )
+                    }
+                }
 
                 letterKeys[slotId] = KeyConfig(
                     id: slotId, bindings: bindings, swipeMode: .eightWay,
