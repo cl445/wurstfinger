@@ -80,7 +80,6 @@ private enum PipelineFixtures {
             defaultMode: modes.first?.name ?? "main",
             settings: KeyboardDefinitionSettings(
                 autoCapitalize: true,
-                autoCapitalizers: [],
                 composeRuleOverrides: nil
             )
         )

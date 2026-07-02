@@ -64,7 +64,7 @@ private func minimalDefinition(
         title: "Test", id: "test", localeIdentifier: "en_US",
         modes: modes ?? defaultModes,
         defaultMode: defaultMode,
-        settings: KeyboardDefinitionSettings(autoCapitalize: true, autoCapitalizers: [], composeRuleOverrides: nil)
+        settings: KeyboardDefinitionSettings(autoCapitalize: true, composeRuleOverrides: nil)
     )
 }
 
@@ -415,7 +415,6 @@ struct ValidationTests {
             defaultMode: "wrong_key",
             settings: KeyboardDefinitionSettings(
                 autoCapitalize: false,
-                autoCapitalizers: [],
                 composeRuleOverrides: nil
             )
         )
@@ -435,13 +434,6 @@ struct SupportingTypeTests {
         let data = try JSONEncoder().encode(rules)
         let decoded = try JSONDecoder().decode(ComposeRuleSet.self, from: data)
         #expect(decoded == rules)
-    }
-
-    @Test func autoCapitalizerRuleCodable() throws {
-        let rule = AutoCapitalizerRule(pattern: " i ", replacement: " I ")
-        let data = try JSONEncoder().encode(rule)
-        let decoded = try JSONDecoder().decode(AutoCapitalizerRule.self, from: data)
-        #expect(decoded == rule)
     }
 
     @Test func modeNamesConstants() {

@@ -151,7 +151,6 @@ enum GridKeyboardFactory {
             defaultMode: ModeNames.main,
             settings: KeyboardDefinitionSettings(
                 autoCapitalize: true,
-                autoCapitalizers: [],
                 composeRuleOverrides: nil,
                 inputMethod: inputMethod
             ),
