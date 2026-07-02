@@ -3,8 +3,8 @@
 //  WurstfingerTests
 //
 //  Tests for ActionContext, ActionPipeline, and the middleware suite
-//  (HapticMiddleware, ComposeMiddleware, TextInputMiddleware,
-//  AutoCapitalizationMiddleware, ModeTransitionMiddleware).
+//  (ComposeMiddleware, TextInputMiddleware, AutoCapitalizationMiddleware,
+//  ModeTransitionMiddleware).
 //
 
 import Foundation
@@ -182,38 +182,6 @@ struct ActionPipelineTests {
         let pipeline = ActionPipeline(middlewares: [])
         // Should not crash.
         pipeline.process(PipelineFixtures.context(action: .commitText("a")))
-    }
-}
-
-// MARK: - HapticMiddleware
-
-struct HapticMiddlewareTests {
-    @Test func triggersFeedbackForAction() {
-        var triggered: [KeyAction] = []
-        let middleware = HapticMiddleware(trigger: { triggered.append($0) })
-        let sink = RecordingMiddleware()
-        let pipeline = ActionPipeline(middlewares: [middleware, sink])
-
-        pipeline.process(PipelineFixtures.context(action: .commitText("a")))
-
-        #expect(triggered == [.commitText("a")])
-        #expect(sink.received.first?.action == .commitText("a"))
-    }
-
-    @Test func forwardsContextUnchanged() {
-        let middleware = HapticMiddleware(trigger: { _ in })
-        let sink = RecordingMiddleware()
-        let pipeline = ActionPipeline(middlewares: [middleware, sink])
-
-        let original = PipelineFixtures.context(
-            action: .deleteBackward,
-            binding: PipelineFixtures.binding(action: .deleteBackward),
-            mode: "shifted"
-        )
-        pipeline.process(original)
-
-        #expect(sink.received.first?.action == .deleteBackward)
-        #expect(sink.received.first?.mode == "shifted")
     }
 }
 
@@ -837,25 +805,9 @@ struct PipelineIntegrationTests {
         #expect(target.events == [.insertText("ä")])
     }
 
-    @Test func hapticsFireBeforeTextInput() {
-        var order: [String] = []
-        let target = MockTextInputTarget()
-        let haptic = HapticMiddleware(trigger: { _ in order.append("haptic") })
-        let input = TextInputMiddleware(target: { () -> TextInputTarget? in
-            order.append("input")
-            return target
-        })
-        let pipe = ActionPipeline(middlewares: [haptic, input])
-
-        pipe.process(PipelineFixtures.context(action: .commitText("x")))
-
-        #expect(order == ["haptic", "input"])
-    }
-
     @Test func fullPipelineRunsAllMiddlewaresInOrder() {
         var steps: [String] = []
         let target = MockTextInputTarget()
-        let haptic = HapticMiddleware(trigger: { _ in steps.append("haptic") })
         let compose = ComposeMiddleware(
             compose: { _, _ in nil },
             cycleAccent: { _ in nil },
@@ -877,14 +829,14 @@ struct PipelineIntegrationTests {
             ),
             onModeChange: { _ in steps.append("transition") }
         )
-        let pipe = ActionPipeline(middlewares: [haptic, compose, input, autoCap, transition])
+        let pipe = ActionPipeline(middlewares: [compose, input, autoCap, transition])
 
         let binding = PipelineFixtures.binding(action: .commitText("a"), category: .letter)
         pipe.process(ActionContext(action: .commitText("a"), binding: binding, mode: "shifted"))
 
         // autoCap and transition both run post-`next`, so they unwind in
         // reverse order: transition (deepest) fires before autoCap.evaluate.
-        #expect(steps == ["haptic", "input", "transition", "evaluate"])
+        #expect(steps == ["input", "transition", "evaluate"])
         #expect(target.events == [.insertText("a")])
     }
 }

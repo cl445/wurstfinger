@@ -23,11 +23,26 @@ extension KeyboardViewModel {
         else { return }
         let definition = applyNumpadStyle(to: base)
         currentDefinition = definition
+        // Record the signature of what was actually loaded (the id may differ
+        // from the requested one after the English fallback) so the controller
+        // can skip redundant rebuilds on the next appearance.
+        loadedDefinitionSignature = Self.definitionSignature(
+            languageId: definition.id,
+            numpadStyle: sharedDefaults.string(forKey: SettingsKey.numpadStyle.rawValue)
+        )
         activeModeName = definition.defaultMode
         pipelineLocale = definition.locale
         currentMode = definition.mode(activeModeName)
         rebuildResolverChain()
         rebuildPipeline()
+    }
+
+    /// Signature of the inputs that determine a loaded definition (language +
+    /// numpad style). Pure so the desync-free comparison between the
+    /// controller's desired inputs and the view model's loaded state can be
+    /// unit-tested without a UIKit lifecycle.
+    static func definitionSignature(languageId: String, numpadStyle: String?) -> String {
+        "\(languageId)|\(numpadStyle ?? "")"
     }
 
     /// Swaps the numeric layer to the classic (7-8-9) ordering when the user
@@ -85,10 +100,11 @@ extension KeyboardViewModel {
         }
         var middlewares: [ActionMiddleware] = []
 
-        // 1. Haptic feedback
-        middlewares.append(HapticMiddleware(trigger: { [weak self] _ in
-            self?.triggerHapticTap()
-        }))
+        // (Deliberately no haptic middleware: the tap haptic fires once at
+        // touch-down in the view layer — DataDrivenKeyboardRootView's
+        // onTouchDown — and slide steps trigger their own drag haptic. A
+        // per-action haptic here buzzed every key press and every slide step
+        // a second time.)
 
         // 2. Compose + Cycle Accents — per-definition engine so language-specific
         // compose rule overrides are honored (rebuilt on every definition load).
@@ -298,6 +314,15 @@ extension KeyboardViewModel {
         // Any mode change invalidates a pending auto-shift; the auto-cap
         // engage path re-sets the flag right after switching.
         shiftEngagedByAutoCapitalization = false
+    }
+
+    /// Resets the active mode to the definition's default. Called by the
+    /// controller on appearance so a keyboard hidden on the numeric or
+    /// shifted layer reopens on letters. No-op (and publish-free) when the
+    /// default mode is already active.
+    func resetToDefaultMode() {
+        guard let definition = currentDefinition else { return }
+        switchToMode(definition.defaultMode)
     }
 
     // MARK: - Slide Gesture Handling
