@@ -19,6 +19,11 @@ enum SlidePhase: Equatable {
     case ended
     /// Drag ended without exceeding the slide activation threshold → tap.
     case tap
+    /// Vertical up-swipe ended while the horizontal slide never activated.
+    /// `isReturn` is true when the finger came back toward its origin
+    /// (MessagEase: up toggles extra-symbol labels, return-up toggles
+    /// letter + standard-symbol labels).
+    case swipeUp(isReturn: Bool)
     /// Touch sequence was cancelled by the system (incoming call, edge
     /// swipe, keyboard dismissal mid-drag). Consumers must discard drag
     /// state without committing any input.
@@ -33,6 +38,9 @@ struct SlideGestureState {
     private(set) var dragStarted = false
     private(set) var isSliding = false
     private(set) var lastTranslationX: CGFloat = 0
+    /// Most-negative vertical translation seen this gesture (SwiftUI's y axis
+    /// points down, so upward travel is negative). Peak of the up-swipe.
+    private(set) var upwardPeakY: CGFloat = 0
 
     /// Events produced by a single drag update.
     struct Update: Equatable {
@@ -49,6 +57,7 @@ struct SlideGestureState {
         }
 
         let currentX = translation.width
+        upwardPeakY = min(upwardPeakY, translation.height)
 
         if !isSliding, abs(currentX) >= activationThreshold {
             isSliding = true
@@ -72,10 +81,26 @@ struct SlideGestureState {
     }
 
     /// Processes `onEnded`. Returns the phase to report, or nil when the
-    /// gesture qualifies as neither a slide nor a tap.
-    mutating func handleEnded(translation: CGSize, activationThreshold: CGFloat) -> SlidePhase? {
+    /// gesture qualifies as neither a slide, an up-swipe, nor a tap.
+    mutating func handleEnded(
+        translation: CGSize,
+        activationThreshold: CGFloat,
+        swipeUpThreshold: CGFloat = KeyboardConstants.SpaceGestures.swipeUpActivationThreshold
+    ) -> SlidePhase? {
         defer { reset() }
         if isSliding { return .ended }
+        // Vertical classification runs only when the horizontal slide never
+        // activated, so cursor drags with vertical drift are unaffected. It
+        // must precede the tap check: a return-up swipe ends near its origin
+        // and would otherwise be classified as a tap.
+        if -upwardPeakY >= swipeUpThreshold {
+            // Mirror the discrete horizontal classification: a final position
+            // close to the origin relative to the peak means the finger
+            // returned. Downward peaks are never tracked, so down-swipes
+            // still fall through and stay ignored.
+            let ratio = abs(translation.height) / abs(upwardPeakY)
+            return .swipeUp(isReturn: ratio < KeyboardConstants.SpaceGestures.returnSwipeThreshold)
+        }
         // A tap must stay near its origin on *both* axes. Gating on
         // horizontal travel alone would classify a vertical flick (e.g.
         // 80 pt up on the space bar) as a tap and commit its center action.
@@ -96,6 +121,7 @@ struct SlideGestureState {
         dragStarted = false
         isSliding = false
         lastTranslationX = 0
+        upwardPeakY = 0
     }
 }
 

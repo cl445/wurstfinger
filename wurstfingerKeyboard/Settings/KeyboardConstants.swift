@@ -138,6 +138,11 @@ enum KeyboardConstants {
         /// Maximum ratio of final displacement to peak displacement for a return swipe.
         /// Below this threshold, the gesture is classified as a return swipe (word movement).
         static let returnSwipeThreshold: CGFloat = 0.3
+
+        /// Minimum upward travel to classify a vertical space-bar swipe
+        /// (label-visibility toggle). Mirrors `Gesture.minSwipeLength` so the
+        /// space bar demands the same commitment as a key swipe.
+        static let swipeUpActivationThreshold: CGFloat = Gesture.minSwipeLength
     }
 
     // MARK: - Delete Key Gestures
