@@ -248,6 +248,14 @@ enum LanguageDefinitions {
                 GridSlot.bottomCenter: [.swipeUp: "ס"],
                 GridSlot.bottomRight: [.swipeUpLeft: "ט"],
             ],
+            // MessagEase convention: a return swipe on a base letter produces
+            // its final form (ן/ם additionally keep their dedicated swipes).
+            returnOverrides: [
+                GridSlot.topRight: [.swipeDownLeft: "ץ"],
+                GridSlot.center: [
+                    .swipeUpRight: "ף", .swipeDown: "ן", .swipeDownLeft: "ך",
+                ],
+            ],
             numericBackToAlphaLabel: "אבג"
         )
     }
