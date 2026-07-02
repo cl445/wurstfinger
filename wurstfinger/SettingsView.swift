@@ -124,7 +124,7 @@ struct SettingsView: View {
                 SettingsRow(
                     icon: "square.resize", color: .orange,
                     title: "Key Aspect Ratio",
-                    subtitle: "Current: \(String(format: "%.2f", keyAspectRatio)):1"
+                    subtitle: String(localized: "Current: \(String(format: "%.2f", keyAspectRatio)):1")
                 )
             }
 
@@ -133,7 +133,7 @@ struct SettingsView: View {
                     icon: "arrow.up.left.and.arrow.down.right",
                     color: .green,
                     title: "Size & Position",
-                    subtitle: "Scale: \(Int(keyboardScale * 100))%, Position: \(positionLabel(for: keyboardHorizontalPosition))"
+                    subtitle: sizePositionDescription
                 )
             }
 
@@ -167,7 +167,9 @@ struct SettingsView: View {
                     icon: "slider.horizontal.3",
                     color: .orange,
                     title: "Expert",
-                    subtitle: expertModeEnabled ? "Gesture tuning enabled" : "Advanced gesture settings"
+                    subtitle: expertModeEnabled
+                        ? String(localized: "Gesture tuning enabled")
+                        : String(localized: "Advanced gesture settings")
                 )
             }
         } header: {
@@ -226,12 +228,17 @@ struct SettingsView: View {
         let list = if names.count <= 2 {
             names.joined(separator: ", ")
         } else {
-            "\(names[0]) + \(names.count - 1) more"
+            String(localized: "\(names[0]) + \(names.count - 1) more")
         }
         if let pinned = languageSettings.pinnedLanguage {
-            return "\(list) (default: \(pinned.name))"
+            return String(localized: "\(list) (default: \(pinned.name))")
         }
         return list
+    }
+
+    private var sizePositionDescription: String {
+        let scale = "\(Int(keyboardScale * 100))%"
+        return String(localized: "Scale: \(scale), Position: \(positionLabel(for: keyboardHorizontalPosition))")
     }
 
     private var keyboardStyleDescription: String {
@@ -241,20 +248,23 @@ struct SettingsView: View {
 
     private var labelVisibilityDescription: String {
         let hidden = [
-            hideLetters ? "letters" : nil,
-            hideStandardSymbols ? "standard symbols" : nil,
-            hideExtraSymbols ? "extra symbols" : nil,
+            hideLetters ? String(localized: "letters") : nil,
+            hideStandardSymbols ? String(localized: "standard symbols") : nil,
+            hideExtraSymbols ? String(localized: "extra symbols") : nil,
         ].compactMap(\.self)
-        return hidden.isEmpty ? "All labels visible" : "Hiding " + hidden.joined(separator: ", ")
+        if hidden.isEmpty {
+            return String(localized: "All labels visible")
+        }
+        return String(localized: "Hiding \(hidden.joined(separator: ", "))")
     }
 
     private var cursorMovementStyleDescription: String {
         let style = CursorMovementStyle(rawValue: cursorMovementStyleRaw) ?? .continuous
         switch style {
         case .continuous:
-            return "Drag to move cursor"
+            return String(localized: "Drag to move cursor")
         case .discrete:
-            return "Swipe per character, return-swipe per word"
+            return String(localized: "Swipe per character, return-swipe per word")
         }
     }
 
@@ -262,31 +272,31 @@ struct SettingsView: View {
         let style = NumpadStyle(rawValue: numpadStyleRaw) ?? .phone
         switch style {
         case .phone:
-            return "Phone layout (1-2-3)"
+            return String(localized: "Phone layout (1-2-3)")
         case .classic:
-            return "Classic layout (7-8-9)"
+            return String(localized: "Classic layout (7-8-9)")
         }
     }
 
     private func positionLabel(for value: Double) -> String {
         if value < 0.25 {
-            "Left"
+            String(localized: "Left")
         } else if value > 0.75 {
-            "Right"
+            String(localized: "Right")
         } else {
-            "Center"
+            String(localized: "Center")
         }
     }
 
     private func hapticModeDescription() -> String {
         let tap: String = formatIntensity(hapticTapIntensity)
         let drag: String = formatIntensity(hapticDragIntensity)
-        return "Tap: \(tap) • Drag: \(drag)"
+        return String(localized: "Tap: \(tap) • Drag: \(drag)")
     }
 
     private func formatIntensity(_ value: Double) -> String {
         if value <= 0.001 {
-            return "Off"
+            return String(localized: "Off")
         }
         return "\(Int(round(value * 100)))%"
     }

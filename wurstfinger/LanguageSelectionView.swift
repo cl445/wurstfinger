@@ -65,8 +65,12 @@ private struct LanguageRow: View {
                     .imageScale(.large)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("\(isEnabled ? "Disable" : "Enable") \(language.name)")
-            .accessibilityValue(isEnabled ? "Enabled" : "Disabled")
+            .accessibilityLabel(
+                isEnabled
+                    ? String(localized: "Disable \(language.name)")
+                    : String(localized: "Enable \(language.name)")
+            )
+            .accessibilityValue(isEnabled ? String(localized: "Enabled") : String(localized: "Disabled"))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(language.name)
