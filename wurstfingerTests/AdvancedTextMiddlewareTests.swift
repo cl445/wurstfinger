@@ -129,6 +129,7 @@ struct AdvancedTextMiddlewareDeleteForwardTests {
         middleware.process(AdvancedTextFixtures.context(.deleteForward)) { _ in }
 
         #expect(target.events == [.adjustCursor(4), .deleteBackward])
+        #expect(target.documentContextBeforeInput == "")
         #expect(target.documentContextAfterInput == "abc")
     }
 
@@ -141,6 +142,7 @@ struct AdvancedTextMiddlewareDeleteForwardTests {
         middleware.process(AdvancedTextFixtures.context(.deleteForward)) { _ in }
 
         #expect(target.events == [.adjustCursor(11), .deleteBackward])
+        #expect(target.documentContextBeforeInput == "")
         #expect(target.documentContextAfterInput == "!")
     }
 }
