@@ -858,4 +858,19 @@ struct LanguageSettingsStalenessTests {
         #expect(settings.selectedLanguageId == "de_DE")
         #expect(settings.enabledLanguageIds == ["en_US", "de_DE"])
     }
+
+    @Test("Pinning an externally-disabled language re-enables and pins it")
+    func pinReEnablesExternallyDisabledLanguage() {
+        // Deliberate asymmetry to the disable-wins invariant above: a pin is
+        // an explicit "use this language" request, so pin implies enabled —
+        // even when another process disabled the language in the meantime.
+        let defaults = makeStore()
+        let settings = LanguageSettings(userDefaults: defaults)
+
+        LanguageSettings.saveEnabledLanguageIds(["en_US"], to: defaults)
+        settings.pinLanguage(.german)
+
+        #expect(settings.enabledLanguageIds.contains("de_DE"))
+        #expect(settings.pinnedLanguageId == "de_DE")
+    }
 }
