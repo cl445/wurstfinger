@@ -54,4 +54,21 @@ struct OriginAnchoringTests {
         #expect(classification.isReturn)
         #expect(classification.gesture == .swipeRight)
     }
+
+    @Test func longDragWithFarOutRetainedWindowClassifiesAsSwipe() {
+        // A long slow drag overflowed the ring buffer and the retained
+        // window sits entirely beyond maxJumpDistance (50pt) from the
+        // origin. The synthetic (0,0) → first-sample jump must not make
+        // the outlier filter discard the whole gesture (which would
+        // classify the drag as a tap).
+        var evicted: [CGPoint] = []
+        for x in stride(from: 100, through: 160, by: 4) {
+            evicted.append(CGPoint(x: CGFloat(x), y: 0))
+        }
+
+        let anchored = KeyGestureRecognizer.anchoringOrigin(evicted)
+        let classification = KeyGestureRecognizer.classify(positions: anchored)
+        #expect(classification.gesture == .swipeRight)
+        #expect(!classification.isReturn)
+    }
 }

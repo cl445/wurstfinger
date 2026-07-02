@@ -82,6 +82,50 @@ struct GesturePreprocessorTests {
         #expect(!filtered.contains(CGPoint(x: 100, y: 0)))
     }
 
+    @Test func outlierFilterRemovesTrailingGlitchPoint() {
+        let config = GesturePreprocessorConfig(
+            jitterThreshold: 3.0,
+            maxJumpDistance: 30.0,
+            smoothingWindow: 5,
+            smoothingOrder: 2,
+            aspectRatio: 1.0
+        )
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // A glitch as the final sample has no raw successor and must
+        // still be removed.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 10, y: 0),
+            CGPoint(x: 20, y: 0),
+            CGPoint(x: 150, y: 0) // trailing outlier: jump of 130pt
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == Array(points.prefix(3)))
+    }
+
+    @Test func outlierFilterKeepsTailAfterDroppedFrameGap() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // A dropped frame under main-thread load creates one inter-sample
+        // gap > maxJumpDistance in a genuine fast swipe. The points after
+        // the gap are mutually consistent and must not cascade away.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 10, y: 0),
+            CGPoint(x: 20, y: 0),
+            CGPoint(x: 80, y: 0), // 60pt gap: dropped frame, real motion
+            CGPoint(x: 95, y: 0)
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == points)
+    }
+
     // MARK: - Aspect Ratio Normalization Tests
 
     @Test func aspectRatioNormalizationDividesX() {
