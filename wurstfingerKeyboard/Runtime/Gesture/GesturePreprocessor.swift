@@ -41,8 +41,10 @@
 //  1. **Jitter Filter**: Removes points too close together (< jitterThreshold)
 //     - Prevents noise from finger micro-movements
 //
-//  2. **Outlier Filter**: Removes impossible jumps (> maxJumpDistance)
+//  2. **Outlier Filter**: Removes isolated impossible jumps (> maxJumpDistance)
 //     - Handles touch glitches and multitouch interference
+//     - Keeps points consistent with a raw neighbor, so a single dropped-frame
+//       gap cannot cascade and discard the rest of a genuine fast swipe
 //
 //  3. **Aspect Ratio Normalization**: Divides X by aspect ratio
 //     - Makes horizontal and vertical movements comparable on non-square keys
@@ -212,7 +214,16 @@ struct GesturePreprocessor {
 
     // MARK: - Step 2: Outlier Filter
 
-    /// Removes points with physically impossible jumps
+    /// Removes points with physically impossible jumps.
+    ///
+    /// A point is an outlier only when it is farther than `maxJumpDistance`
+    /// from the last accepted point AND from both of its raw neighbors.
+    /// Comparing solely against the last accepted point would cascade: one
+    /// dropped-frame gap leaves the anchor stuck before the gap, so every
+    /// later sample of a genuine fast swipe (or of a re-anchored long drag
+    /// whose retained window sits far from the origin) would be discarded
+    /// too. Consistency with a raw neighbor proves real motion, so only
+    /// isolated glitch points are removed.
     func filterOutliers(_ points: [CGPoint]) -> [CGPoint] {
         guard points.count >= 2 else { return points }
 
@@ -220,18 +231,61 @@ struct GesturePreprocessor {
 
         for i in 1 ..< points.count {
             // Safe: filtered always has at least one element (initialized with points[0])
-            guard let prev = filtered.last else { continue }
+            guard let lastAccepted = filtered.last else { continue }
             let current = points[i]
 
-            let distance = current.distance(to: prev)
+            let distanceToAccepted = current.distance(to: lastAccepted)
+            let nearAccepted = distanceToAccepted <= config.maxJumpDistance
+            let nearRawPrevious = current.distance(to: points[i - 1]) <= config.maxJumpDistance
+            let nearRawNext = i + 1 < points.count &&
+                current.distance(to: points[i + 1]) <= config.maxJumpDistance
 
-            if distance <= config.maxJumpDistance {
+            // Raw-neighbor support alone can be bootstrapped by a clustered
+            // glitch burst: two mutually close ghost points admit each other.
+            // Support therefore only counts while the point stays within a
+            // plausibility ceiling of the accepted path, unless it belongs to
+            // a sustained run of mutually consistent samples (a re-anchored
+            // long drag or a genuine post-gap tail keeps moving; a ghost
+            // cluster does not).
+            let ceiling = config.maxJumpDistance * Self.plausibilityCeilingFactor
+            let supportIsPlausible = distanceToAccepted <= ceiling
+                || consistentRunLength(in: points, at: i) >= Self.sustainedRunMinimumLength
+
+            if nearAccepted || ((nearRawPrevious || nearRawNext) && supportIsPlausible) {
                 filtered.append(current)
             }
-            // Outlier: skip this point
+            // Isolated or clustered outlier: skip
         }
 
         return filtered
+    }
+
+    /// Raw-neighbor support only counts within this multiple of
+    /// `maxJumpDistance` from the accepted path; farther points need a
+    /// sustained run instead.
+    private static let plausibilityCeilingFactor: CGFloat = 3
+
+    /// A run of at least this many mutually consistent samples counts as
+    /// sustained real motion regardless of distance from the accepted path.
+    private static let sustainedRunMinimumLength = 3
+
+    /// Length of the run of mutually consistent raw samples containing
+    /// index `i` (consecutive neighbors within `maxJumpDistance`).
+    private func consistentRunLength(in points: [CGPoint], at i: Int) -> Int {
+        var length = 1
+        var backward = i
+        while backward > 0,
+              points[backward].distance(to: points[backward - 1]) <= config.maxJumpDistance {
+            length += 1
+            backward -= 1
+        }
+        var forward = i
+        while forward + 1 < points.count,
+              points[forward].distance(to: points[forward + 1]) <= config.maxJumpDistance {
+            length += 1
+            forward += 1
+        }
+        return length
     }
 
     // MARK: - Step 3: Aspect Ratio Normalization

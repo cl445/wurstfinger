@@ -82,6 +82,91 @@ struct GesturePreprocessorTests {
         #expect(!filtered.contains(CGPoint(x: 100, y: 0)))
     }
 
+    @Test func outlierFilterRemovesTrailingGlitchPoint() {
+        let config = GesturePreprocessorConfig(
+            jitterThreshold: 3.0,
+            maxJumpDistance: 30.0,
+            smoothingWindow: 5,
+            smoothingOrder: 2,
+            aspectRatio: 1.0
+        )
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // A glitch as the final sample has no raw successor and must
+        // still be removed.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 10, y: 0),
+            CGPoint(x: 20, y: 0),
+            CGPoint(x: 150, y: 0) // trailing outlier: jump of 130pt
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == Array(points.prefix(3)))
+    }
+
+    @Test func outlierFilterKeepsTailAfterDroppedFrameGap() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // A dropped frame under main-thread load creates one inter-sample
+        // gap > maxJumpDistance in a genuine fast swipe. The points after
+        // the gap are mutually consistent and must not cascade away.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 10, y: 0),
+            CGPoint(x: 20, y: 0),
+            CGPoint(x: 80, y: 0), // 60pt gap: dropped frame, real motion
+            CGPoint(x: 95, y: 0)
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == points)
+    }
+
+    @Test func outlierFilterRemovesClusteredGlitchPair() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // Two mutually close ghost points far from the path must not admit
+        // each other via raw-neighbor support: the run is short (2) and the
+        // cluster sits beyond the 3x plausibility ceiling.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 10, y: 0),
+            CGPoint(x: 200, y: 5), // ghost pair, ~190pt off the path
+            CGPoint(x: 205, y: 0),
+            CGPoint(x: 20, y: 0), // real motion resumes
+            CGPoint(x: 30, y: 0)
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == [points[0], points[1], points[4], points[5]])
+    }
+
+    @Test func outlierFilterKeepsSustainedFarRun() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // A run of >= 3 mutually consistent samples beyond the ceiling is
+        // sustained real motion (re-anchored long drag), not a ghost cluster.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 10, y: 0),
+            CGPoint(x: 200, y: 0), // far window, but the motion continues
+            CGPoint(x: 210, y: 0),
+            CGPoint(x: 220, y: 0),
+            CGPoint(x: 230, y: 0)
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == points)
+    }
+
     // MARK: - Aspect Ratio Normalization Tests
 
     @Test func aspectRatioNormalizationDividesX() {
