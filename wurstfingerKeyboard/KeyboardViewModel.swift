@@ -59,6 +59,14 @@ final class KeyboardViewModel: ObservableObject {
     /// Updated by the controller in `viewWillLayoutSubviews()` so that
     /// SwiftUI re-evaluates layout after orientation changes.
     @Published private(set) var viewWidth: CGFloat = UIScreen.main.bounds.width
+    /// Shortest side of the hosting window, used to cap the keyboard width so
+    /// it keeps its portrait width in landscape. Measured from the actual
+    /// window (not the full screen) so sizing stays correct in Split View and
+    /// Stage Manager; falls back to the device screen until a window is
+    /// attached.
+    @Published private(set) var windowShortestSide: CGFloat = min(
+        DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height
+    )
     /// The currently active keyboard mode.
     @Published var currentMode: KeyboardMode?
     /// Name of the currently active mode in the data-driven definition.
@@ -188,6 +196,16 @@ final class KeyboardViewModel: ObservableObject {
     func updateViewWidth(_ width: CGFloat) {
         guard width != viewWidth else { return }
         viewWidth = width
+    }
+
+    /// Updates the tracked window bounds. Called by the controller in
+    /// `viewWillLayoutSubviews()` with the hosting window's bounds; a nil
+    /// window (not yet attached) falls back to the device screen.
+    func updateWindowBounds(_ bounds: CGRect?) {
+        let reference = bounds ?? DeviceLayoutUtils.screenBounds
+        let shortestSide = min(reference.width, reference.height)
+        guard shortestSide > 0, shortestSide != windowShortestSide else { return }
+        windowShortestSide = shortestSide
     }
 
     // MARK: - Arrangement Selection

@@ -139,6 +139,10 @@ final class KeyboardViewController: UIInputViewController {
         // Update viewModel with current width so SwiftUI re-renders after
         // orientation changes that happen while the keyboard is backgrounded.
         viewModel.updateViewWidth(view.bounds.width)
+        // Window (not screen) bounds keep sizing correct in Split View and
+        // Stage Manager; UIApplication.shared is unavailable in extensions,
+        // so the window is reached through the view hierarchy.
+        viewModel.updateWindowBounds(view.window?.bounds)
     }
 
     override var needsInputModeSwitchKey: Bool {
