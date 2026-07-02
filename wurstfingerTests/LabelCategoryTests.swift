@@ -69,6 +69,9 @@ struct LabelCategoryTests {
                 "\(trigger) should hide with extra symbols"
             )
         }
+        // The grave trigger ˋ (U+02CB, a modifier *letter* per Unicode) is
+        // displayed as "`" on the key face — classify by the shipped label.
+        #expect(LabelCategory.of(binding("`", .compose(trigger: "ˋ"))) == .extraSymbol)
         #expect(LabelCategory.of(binding("°", .compose(trigger: "°"))) == .standardSymbol)
         #expect(LabelCategory.of(binding("*", .compose(trigger: "*"))) == .standardSymbol)
     }
