@@ -56,8 +56,47 @@ struct LabelCategoryTests {
         #expect(LabelCategory.of(binding("", .switchMode("symbols"))) == .functional) // modifier
         #expect(LabelCategory.of(binding("⌫", .deleteBackward)) == .functional) // utility
         #expect(LabelCategory.of(binding(" ", .space)) == .functional) // whitespace
-        // Compose/accent triggers stay visible like other control keys.
-        #expect(LabelCategory.of(binding("´", .compose(trigger: "´"))) == .functional)
+        // The accent-cycle key is a control and stays visible.
+        #expect(LabelCategory.of(binding("\u{1F152}", .cycleAccents)) == .functional)
+    }
+
+    @Test func composeTriggersHideLikeSymbols() {
+        // Compose triggers read as symbols on the key face, so they follow the
+        // symbol toggles instead of staying pinned like control keys.
+        for trigger in ["´", "^", "~", "¨", "$"] {
+            #expect(
+                LabelCategory.of(binding(trigger, .compose(trigger: trigger))) == .extraSymbol,
+                "\(trigger) should hide with extra symbols"
+            )
+        }
+        #expect(LabelCategory.of(binding("°", .compose(trigger: "°"))) == .standardSymbol)
+        #expect(LabelCategory.of(binding("*", .compose(trigger: "*"))) == .standardSymbol)
+    }
+
+    @Test func hidingEverythingLeavesOnlyControlLabelsOnLetterGrid() throws {
+        // With all three toggles on, the letter grid of the German layout must
+        // show only the accent-cycle key and the shift modifier; the utility
+        // column is not part of this rule and stays untouched.
+        let definition = KeyboardRegistry.load(id: "de_DE")
+        let mode = try #require(definition?.modes[ModeNames.main])
+
+        var visibleLabels: Set<String> = []
+        for slotRow in GridSlot.allSlots {
+            for slot in slotRow {
+                guard let key = mode.keys[slot] else { continue }
+                for (_, keyBinding) in key.bindings where !keyBinding.label.isEmpty {
+                    let category = LabelCategory.of(keyBinding)
+                    if category.isVisible(hideLetters: true, hideStandardSymbols: true, hideExtraSymbols: true) {
+                        visibleLabels.insert(keyBinding.label)
+                    }
+                }
+            }
+        }
+
+        #expect(
+            visibleLabels == ["\u{1F152}", "⇧"],
+            "Unexpected labels survive hide-all: \(visibleLabels.sorted())"
+        )
     }
 
     // MARK: - isVisible(...)
