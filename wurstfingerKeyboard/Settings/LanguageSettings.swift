@@ -46,54 +46,79 @@ class LanguageSettings: ObservableObject {
         let defaults = userDefaults ?? SharedDefaults.store
         self.userDefaults = defaults
 
+        let state = Self.loadNormalizedState(from: defaults)
+        selectedLanguageId = state.selected
+        enabledLanguageIds = state.enabled
+        pinnedLanguageId = state.pinned
+
+        // `didSet` does not fire inside `init`, so persist the normalized
+        // values explicitly — otherwise a corrected inconsistency (e.g. a
+        // reselected language) would be re-read in its broken form next launch.
+        if state.selected != defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue) {
+            defaults.set(state.selected, forKey: SettingsKey.selectedLanguageId.rawValue)
+        }
+        Self.saveEnabledLanguageIds(state.enabled, to: defaults)
+        if state.pinned == nil {
+            defaults.removeObject(forKey: SettingsKey.pinnedLanguageId.rawValue)
+        }
+    }
+
+    /// Snapshot of the persisted language state after normalization.
+    private struct NormalizedState {
+        let selected: String
+        let enabled: [String]
+        let pinned: String?
+    }
+
+    /// Reads and normalizes the persisted language state.
+    ///
+    /// Invariant: the selected language is always a member of the non-empty,
+    /// known-languages-only enabled list. When the stored selection is not in
+    /// the enabled list — e.g. the keyboard extension cycled to a language that
+    /// the host app subsequently disabled — the selection falls back to the
+    /// first enabled language instead of re-inserting the disabled one, so an
+    /// explicit disable is never silently undone.
+    private static func loadNormalizedState(from defaults: UserDefaults) -> NormalizedState {
         // Normalize the saved language through the shared resolver (stale/nil →
         // system language → English) so the host app and the keyboard extension
         // always resolve the same active language.
-        let resolvedLanguageId = Self.resolvedLanguageId(
+        let resolvedSelected = resolvedLanguageId(
             defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue)
         )
 
-        // Load enabled languages, migrating from a single-language setup if needed
-        let storedEnabled = Self.loadEnabledLanguageIds(from: defaults)
-        let resolvedEnabled: [String]
-        if let stored = storedEnabled, !stored.isEmpty {
-            // Filter out any stale/unknown IDs
-            let valid = stored.filter { LanguageConfig.language(withId: $0) != nil }
-            resolvedEnabled = valid.isEmpty ? [resolvedLanguageId] : valid
-        } else {
-            // Migration: no enabled list stored yet, seed with current selection
-            resolvedEnabled = [resolvedLanguageId]
-        }
+        // Load enabled languages (filtering stale/unknown IDs), migrating from
+        // a single-language setup by seeding with the current selection.
+        let stored = loadEnabledLanguageIds(from: defaults) ?? []
+        let valid = stored.filter { LanguageConfig.language(withId: $0) != nil }
+        let enabled = valid.isEmpty ? [resolvedSelected] : valid
 
-        // Load pinned language (before enabledLanguageIds didSet can fire)
+        let selected = enabled.contains(resolvedSelected) ? resolvedSelected : enabled[0]
+
+        // A pin is only valid while its language is enabled and known.
         let storedPinned = defaults.string(forKey: SettingsKey.pinnedLanguageId.rawValue)
-
-        selectedLanguageId = resolvedLanguageId
-        enabledLanguageIds = resolvedEnabled
-        pinnedLanguageId = storedPinned
-
-        // Ensure selected language is in the enabled list
-        if !resolvedEnabled.contains(resolvedLanguageId) {
-            enabledLanguageIds.insert(resolvedLanguageId, at: 0)
+        let pinned = storedPinned.flatMap { pin in
+            enabled.contains(pin) && LanguageConfig.language(withId: pin) != nil ? pin : nil
         }
 
-        // Clear stale pinned ID
-        if let pinned = pinnedLanguageId {
-            if !enabledLanguageIds.contains(pinned) || LanguageConfig.language(withId: pinned) == nil {
-                pinnedLanguageId = nil
-            }
-        }
+        return NormalizedState(selected: selected, enabled: enabled, pinned: pinned)
+    }
 
-        // Persist normalized values
-        if resolvedLanguageId != defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue) {
-            defaults.set(resolvedLanguageId, forKey: SettingsKey.selectedLanguageId.rawValue)
+    /// Re-reads the language state from the backing store, resolving
+    /// cross-process drift: the keyboard extension persists `selectedLanguageId`
+    /// on every in-keyboard language cycle, so a long-lived instance (the host
+    /// app singleton) must refresh before acting on its in-memory copy. Called
+    /// automatically before every mutating API and when the app foregrounds.
+    func reloadFromStore() {
+        let state = Self.loadNormalizedState(from: userDefaults)
+        // Only reassign on change so @Published does not emit spurious updates.
+        if enabledLanguageIds != state.enabled {
+            enabledLanguageIds = state.enabled
         }
-        Self.saveEnabledLanguageIds(enabledLanguageIds, to: defaults)
-        // Clearing a stale pin above happened inside `init`, where `didSet` does
-        // not fire — so remove the now-invalid key from storage explicitly,
-        // otherwise it would be re-read on the next launch.
-        if pinnedLanguageId == nil {
-            defaults.removeObject(forKey: SettingsKey.pinnedLanguageId.rawValue)
+        if selectedLanguageId != state.selected {
+            selectedLanguageId = state.selected
+        }
+        if pinnedLanguageId != state.pinned {
+            pinnedLanguageId = state.pinned
         }
     }
 
@@ -188,6 +213,7 @@ class LanguageSettings: ObservableObject {
 
     /// Pin a language as the default startup language. If already pinned, unpin it.
     func pinLanguage(_ language: LanguageConfig) {
+        reloadFromStore()
         if pinnedLanguageId == language.id {
             pinnedLanguageId = nil
         } else {
@@ -199,6 +225,7 @@ class LanguageSettings: ObservableObject {
     }
 
     func selectLanguage(_ language: LanguageConfig) {
+        reloadFromStore()
         if !enabledLanguageIds.contains(language.id) {
             enabledLanguageIds.append(language.id)
         }
@@ -209,6 +236,7 @@ class LanguageSettings: ObservableObject {
     /// disable the last remaining language (operation is rejected).
     @discardableResult
     func toggleLanguage(_ language: LanguageConfig) -> Bool {
+        reloadFromStore()
         if let index = enabledLanguageIds.firstIndex(of: language.id) {
             guard enabledLanguageIds.count > 1 else { return false }
             if selectedLanguageId == language.id {
@@ -262,16 +290,14 @@ class LanguageSettings: ObservableObject {
     }
 
     /// Returns the enabled language IDs filtered to known languages, guaranteed
-    /// non-empty and with the active language included — mirroring the
-    /// normalisation the initializer performs, but **without persisting**. Safe
-    /// to call repeatedly (e.g. from the keyboard extension's `reloadSettings`)
-    /// so a stale or empty stored list can never leave the runtime cycling to an
-    /// unknown id.
+    /// non-empty — mirroring the normalisation the initializer performs, but
+    /// **without persisting**. Safe to call repeatedly (e.g. from the keyboard
+    /// extension's `reloadSettings`) so a stale or empty stored list can never
+    /// leave the runtime cycling to an unknown id. A stored selection that is
+    /// not in the enabled list is deliberately **not** added back: that state
+    /// means the host app disabled the language after the keyboard selected it,
+    /// and re-adding it would resurrect a language the user turned off.
     static func normalizedEnabledLanguageIds(from defaults: UserDefaults) -> [String] {
-        let selected = resolvedLanguageId(defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue))
-        let stored = loadEnabledLanguageIds(from: defaults) ?? []
-        let valid = stored.filter { LanguageConfig.language(withId: $0) != nil }
-        if valid.isEmpty { return [selected] }
-        return valid.contains(selected) ? valid : [selected] + valid
+        loadNormalizedState(from: defaults).enabled
     }
 }
