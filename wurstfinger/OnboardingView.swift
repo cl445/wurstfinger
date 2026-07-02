@@ -8,7 +8,18 @@
 import SwiftUI
 
 #if os(iOS)
+    /// Tab-root wrapper that provides its own navigation context. Views that
+    /// are already inside a `NavigationStack` (e.g. Home) must push
+    /// `OnboardingContentView` instead — nesting stacks is unsupported.
     struct OnboardingView: View {
+        var body: some View {
+            NavigationStack {
+                OnboardingContentView()
+            }
+        }
+    }
+
+    struct OnboardingContentView: View {
         @Environment(\.openURL) private var openURL
 
         @AppStorage("onboarding.keyboardInstalled", store: SharedDefaults.store)
@@ -23,46 +34,44 @@ import SwiftUI
         private let settingsURL = URL(string: "app-settings:")!
 
         var body: some View {
-            NavigationStack {
-                List {
-                    Section("Setup") {
-                        SetupStepView(
-                            number: 1,
-                            title: "Enable keyboard",
-                            description: "Open iOS Settings → General → Keyboard → Keyboards and add Wurstfinger.",
-                            isCompleted: $keyboardInstalled
-                        )
+            List {
+                Section("Setup") {
+                    SetupStepView(
+                        number: 1,
+                        title: "Enable keyboard",
+                        description: "Open iOS Settings → General → Keyboard → Keyboards and add Wurstfinger.",
+                        isCompleted: $keyboardInstalled
+                    )
 
-                        Button {
-                            openURL(settingsURL)
-                        } label: {
-                            HStack {
-                                Image(systemName: "gear")
-                                Text("Open Settings")
-                            }
-                            .frame(maxWidth: .infinity)
+                    Button {
+                        openURL(settingsURL)
+                    } label: {
+                        HStack {
+                            Image(systemName: "gear")
+                            Text("Open Settings")
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.accentColor)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-
-                        SetupStepView(
-                            number: 2,
-                            title: "Allow full access",
-                            description: "Activate \"Allow Full Access\" so cursor control and deletion gestures work.",
-                            isCompleted: $fullAccessEnabled
-                        )
-
-                        SetupStepView(
-                            number: 3,
-                            title: "Try the keyboard",
-                            description: "Switch to the Test tab and experiment with gestures.",
-                            isCompleted: $practiced
-                        )
+                        .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.accentColor)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+
+                    SetupStepView(
+                        number: 2,
+                        title: "Allow full access",
+                        description: "Activate \"Allow Full Access\" so cursor control and deletion gestures work.",
+                        isCompleted: $fullAccessEnabled
+                    )
+
+                    SetupStepView(
+                        number: 3,
+                        title: "Try the keyboard",
+                        description: "Switch to the Test tab and experiment with gestures.",
+                        isCompleted: $practiced
+                    )
                 }
-                .navigationTitle("Setup")
             }
+            .navigationTitle("Setup")
         }
     }
 
