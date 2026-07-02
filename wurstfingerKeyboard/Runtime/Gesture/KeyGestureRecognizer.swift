@@ -16,6 +16,55 @@ struct GestureClassification {
     let isReturn: Bool
 }
 
+/// Touch-sequence state backing `KeyGestureRecognizer`.
+///
+/// Extracted as a pure value type so sequence tracking and cancellation
+/// recovery can be unit-tested without rendering SwiftUI views.
+struct KeyGestureSequence {
+    private var positions: RingBuffer<CGPoint>
+
+    init(capacity: Int = KeyboardConstants.Gesture.positionBufferSize) {
+        positions = RingBuffer<CGPoint>(capacity: capacity)
+    }
+
+    /// Whether a touch sequence is currently being recorded.
+    var isTracking: Bool {
+        !positions.isEmpty
+    }
+
+    /// Records one `onChanged` sample. Returns true when this sample is the
+    /// first contact of a new sequence (touch down).
+    mutating func handleChanged(translation: CGSize) -> Bool {
+        let isTouchDown = positions.isEmpty
+        if isTouchDown {
+            positions.append(.zero)
+        }
+        positions.append(CGPoint(x: translation.width, y: translation.height))
+        return isTouchDown
+    }
+
+    /// Records the final sample and classifies the completed sequence.
+    mutating func handleEnded(translation: CGSize, aspectRatio: CGFloat) -> GestureClassification {
+        defer { positions.removeAll() }
+        if positions.isEmpty {
+            positions.append(.zero)
+        }
+        positions.append(CGPoint(x: translation.width, y: translation.height))
+        return KeyGestureRecognizer.classify(
+            positions: KeyGestureRecognizer.anchoringOrigin(positions.elements),
+            aspectRatio: aspectRatio
+        )
+    }
+
+    /// Discards the partial sequence after the system cancelled the touches
+    /// (`onEnded` is never called for cancelled gestures). Without this, the
+    /// next touch would skip touch-down handling and append onto the stale
+    /// path, misclassifying a tap as the previous gesture's swipe.
+    mutating func handleCancelled() {
+        positions.removeAll()
+    }
+}
+
 /// Reusable gesture recognition logic used by `KeyView`.
 ///
 /// Wraps the existing `GesturePreprocessor` + `GestureFeatures` pipeline and
@@ -30,48 +79,46 @@ struct KeyGestureRecognizer: ViewModifier {
     /// Key aspect ratio forwarded to the preprocessor for normalization.
     let aspectRatio: CGFloat
 
-    @State private var positions = RingBuffer<CGPoint>(
-        capacity: KeyboardConstants.Gesture.positionBufferSize
-    )
+    @State private var sequence = KeyGestureSequence()
     @Binding var isActive: Bool
+
+    /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
+    /// guarantees `@GestureState` is reset when the system cancels the
+    /// touches (incoming call, edge swipe, keyboard dismissal), where
+    /// `onEnded` is never called — the reset is our cancellation signal.
+    @GestureState private var sequenceInFlight = false
 
     func body(content: Content) -> some View {
         content
             .gesture(
                 DragGesture(minimumDistance: 0)
+                    .updating($sequenceInFlight) { _, inFlight, _ in
+                        inFlight = true
+                    }
                     .onChanged { value in
-                        if positions.isEmpty {
+                        if sequence.handleChanged(translation: value.translation) {
                             onTouchDown()
-                            positions.append(.zero)
                         }
-                        let point = CGPoint(
-                            x: value.translation.width,
-                            y: value.translation.height
-                        )
-                        positions.append(point)
                         isActive = true
                     }
                     .onEnded { value in
-                        defer {
-                            positions.removeAll()
-                            isActive = false
-                        }
-                        if positions.isEmpty {
-                            positions.append(.zero)
-                        }
-                        positions.append(
-                            CGPoint(
-                                x: value.translation.width,
-                                y: value.translation.height
-                            )
-                        )
-                        let classification = Self.classify(
-                            positions: Self.anchoringOrigin(positions.elements),
+                        let classification = sequence.handleEnded(
+                            translation: value.translation,
                             aspectRatio: aspectRatio
                         )
+                        isActive = false
                         onGestureRecognized(classification)
                     }
             )
+            .onChange(of: sequenceInFlight) { _, inFlight in
+                // A normal end already cleared the sequence in `onEnded`; if
+                // the sequence stops while samples remain, the system
+                // cancelled the touches. Discard the partial gesture without
+                // classifying it.
+                guard !inFlight, sequence.isTracking else { return }
+                sequence.handleCancelled()
+                isActive = false
+            }
     }
 
     /// Guarantees the touch-down origin `(0,0)` is the first sample.

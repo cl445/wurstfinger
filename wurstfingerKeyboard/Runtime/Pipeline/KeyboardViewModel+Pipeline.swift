@@ -305,6 +305,12 @@ extension KeyboardViewModel {
             isSpaceDragging = false
             spaceDragResidual = 0
             spaceDragPeak = 0
+        case .cancelled:
+            // System cancelled the touches mid-drag: discard the drag state
+            // without committing a discrete move or a tap.
+            isSpaceDragging = false
+            spaceDragResidual = 0
+            spaceDragPeak = 0
         case .tap:
             handleGesture(.tap, keyId: key.id, isReturn: false)
         }
@@ -422,7 +428,7 @@ extension KeyboardViewModel {
                 feedbackDrag()
                 deleteDragResidual -= step
             }
-        case .ended:
+        case .ended, .cancelled:
             isDeleteDragging = false
             deleteDragResidual = 0
         case .tap:
