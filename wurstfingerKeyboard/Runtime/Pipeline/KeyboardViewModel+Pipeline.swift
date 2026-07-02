@@ -314,15 +314,29 @@ extension KeyboardViewModel {
     /// accumulated travel.
     private func stepContinuousCursor() {
         while spaceDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
-            dispatchAction(.moveCursor(offset: -1))
+            dispatchAction(.moveCursor(offset: singleGraphemeOffset(direction: -1)))
             feedbackDrag()
             spaceDragResidual += KeyboardConstants.SpaceGestures.dragStep
         }
         while spaceDragResidual >= KeyboardConstants.SpaceGestures.dragStep {
-            dispatchAction(.moveCursor(offset: 1))
+            dispatchAction(.moveCursor(offset: singleGraphemeOffset(direction: 1)))
             feedbackDrag()
             spaceDragResidual -= KeyboardConstants.SpaceGestures.dragStep
         }
+    }
+
+    /// UTF-16 offset that moves the cursor across exactly one grapheme cluster
+    /// in `direction` (+1 forward, -1 backward).
+    ///
+    /// `adjustTextPosition(byCharacterOffset:)` moves by UTF-16 code units, so
+    /// multi-unit clusters (emoji, surrogate pairs, ZWJ sequences) need their
+    /// full UTF-16 width; otherwise the caret lands inside the cluster. Falls
+    /// back to 1 when no document context is available.
+    private func singleGraphemeOffset(direction: Int) -> Int {
+        let cluster: Character? = direction > 0
+            ? textInputTarget?.documentContextAfterInput?.first
+            : textInputTarget?.documentContextBeforeInput?.last
+        return direction * (cluster?.utf16.count ?? 1)
     }
 
     /// Discrete (MessagEase) mode: classify the completed swipe.
@@ -339,13 +353,13 @@ extension KeyboardViewModel {
         if ratio < KeyboardConstants.SpaceGestures.returnSwipeThreshold {
             moveCursorByWord(direction: direction)
         } else {
-            dispatchAction(.moveCursor(offset: direction))
+            dispatchAction(.moveCursor(offset: singleGraphemeOffset(direction: direction)))
         }
         feedbackDrag()
     }
 
     /// Moves the cursor by one word in `direction` (+1 forward, -1 backward)
-    /// by computing the character offset to the nearest word boundary from the
+    /// by computing the UTF-16 offset to the nearest word boundary from the
     /// surrounding document context.
     private func moveCursorByWord(direction: Int) {
         let offset: Int = direction > 0
@@ -355,8 +369,9 @@ extension KeyboardViewModel {
         dispatchAction(.moveCursor(offset: offset))
     }
 
-    /// Characters from the cursor to the end of the next word: skip leading
-    /// whitespace, then the word itself.
+    /// UTF-16 code units from the cursor to the end of the next word: skip
+    /// leading whitespace, then the word itself. Iterates graphemes but sums
+    /// their UTF-16 widths, matching `adjustTextPosition`'s unit.
     static func forwardWordOffset(in text: String) -> Int {
         var count = 0
         var seenWord = false
@@ -366,13 +381,14 @@ extension KeyboardViewModel {
             } else {
                 seenWord = true
             }
-            count += 1
+            count += char.utf16.count
         }
         return count
     }
 
-    /// Characters from the cursor back to the start of the previous word: skip
-    /// trailing whitespace, then the word itself.
+    /// UTF-16 code units from the cursor back to the start of the previous
+    /// word: skip trailing whitespace, then the word itself. Iterates graphemes
+    /// but sums their UTF-16 widths, matching `adjustTextPosition`'s unit.
     static func backwardWordOffset(in text: String) -> Int {
         var count = 0
         var seenWord = false
@@ -382,7 +398,7 @@ extension KeyboardViewModel {
             } else {
                 seenWord = true
             }
-            count += 1
+            count += char.utf16.count
         }
         return count
     }

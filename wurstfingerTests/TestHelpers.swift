@@ -38,6 +38,23 @@ final class MockTextTarget: TextInputTarget {
 
     func adjustTextPosition(byCharacterOffset offset: Int) {
         events.append(.adjustCursor(offset))
+        // Mirror UIKit: `adjustTextPosition(byCharacterOffset:)` moves by
+        // UTF-16 code units, so apply the offset over the UTF-16 view of the
+        // buffer. Landing inside a surrogate pair produces U+FFFD replacement
+        // characters, which makes unit mismatches visible in test assertions.
+        var before = Array((documentContextBeforeInput ?? "").utf16)
+        var after = Array((documentContextAfterInput ?? "").utf16)
+        if offset > 0 {
+            let moved = min(offset, after.count)
+            before.append(contentsOf: after.prefix(moved))
+            after.removeFirst(moved)
+        } else if offset < 0 {
+            let moved = min(-offset, before.count)
+            after.insert(contentsOf: before.suffix(moved), at: 0)
+            before.removeLast(moved)
+        }
+        documentContextBeforeInput = String(decoding: before, as: UTF16.self)
+        documentContextAfterInput = String(decoding: after, as: UTF16.self)
     }
 }
 
