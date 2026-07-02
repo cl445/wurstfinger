@@ -56,15 +56,22 @@ extension LabelCategory {
 
     /// Display category for a binding. The binding's semantic `KeyCategory`
     /// identifies the never-hidden buckets (modifiers, utility, whitespace,
-    /// digits) and compose triggers; letters and symbols are then classified by
+    /// digits); letters, symbols, and compose triggers are then classified by
     /// their label text so the standard/extra split applies.
     static func of(_ binding: KeyBinding) -> LabelCategory {
         switch binding.resolvedCategory {
         case .letter: .letter
         case .digit: .number
-        // Compose/accent triggers are treated like other control keys (shift,
-        // symbols toggle): always visible, never hidden by the toggles.
-        case .modifier, .utility, .whitespace, .compose: .functional
+        case .modifier, .utility, .whitespace: .functional
+        case .compose:
+            // The accent-cycle key (🅒) is a control and stays visible; compose
+            // *triggers* (´ ¨ ~ ° …) read as symbols and hide with the symbol
+            // toggles.
+            if case .cycleAccents = binding.action {
+                .functional
+            } else {
+                classify(binding.label)
+            }
         case .symbol: classify(binding.label)
         }
     }
