@@ -474,4 +474,16 @@ struct ExpertModeGatingTests {
         store.set(true, forKey: SettingsKey.expertModeEnabled.rawValue)
         #expect(GestureClassificationThresholds.fromUserDefaults(store: store).minSwipeLength == 42.0)
     }
+
+    @Test func configValuesSurviveExpertModeRoundTrip() {
+        let store = storeWithCustomValues(expertModeEnabled: true)
+
+        store.set(false, forKey: SettingsKey.expertModeEnabled.rawValue)
+        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).jitterThreshold
+            == GesturePreprocessorConfig.defaultJitterThreshold)
+
+        store.set(true, forKey: SettingsKey.expertModeEnabled.rawValue)
+        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).jitterThreshold == 9.0)
+        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).maxJumpDistance == 120.0)
+    }
 }
