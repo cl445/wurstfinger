@@ -23,6 +23,9 @@ enum GridKeyboardFactory {
     ///     auto-generated uppercase return action (e.g. Hebrew final forms:
     ///     a return swipe on כ produces ך). Each entry must target a gesture
     ///     that already has a binding on that slot.
+    ///   - composeRuleOverrides: Language-specific compose rules merged over the
+    ///     global base rules at runtime (override wins for the same trigger +
+    ///     base character). Defaults to nil (global rules only).
     ///   - numericBackToAlphaLabel: Label shown on the symbols key in numeric
     ///     mode that switches back to the main (alphabetic) layer. Defaults to
     ///     the Latin "abc"; non-Latin layouts (Hebrew, Russian, …) should
@@ -37,6 +40,7 @@ enum GridKeyboardFactory {
         centerCharacters: [[String]],
         directionalOverrides: [String: [GestureType: String]] = [:],
         returnOverrides: [String: [GestureType: String]] = [:],
+        composeRuleOverrides: ComposeRuleSet? = nil,
         numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel,
         inputMethod: InputMethodKind = .direct
     ) -> KeyboardDefinition {
@@ -151,7 +155,7 @@ enum GridKeyboardFactory {
             defaultMode: ModeNames.main,
             settings: KeyboardDefinitionSettings(
                 autoCapitalize: true,
-                composeRuleOverrides: nil,
+                composeRuleOverrides: composeRuleOverrides,
                 inputMethod: inputMethod
             ),
             numericBackToAlphaLabel: numericBackToAlphaLabel

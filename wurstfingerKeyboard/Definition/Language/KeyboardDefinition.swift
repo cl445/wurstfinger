@@ -106,7 +106,9 @@ struct KeyboardDefinitionSettings: Codable, Equatable {
     let autoCapitalize: Bool
 
     /// Language-specific compose rule overrides.
-    /// Merged with global base rules at runtime.
+    /// Merged with global base rules at runtime: an override wins over the
+    /// global rule for the same trigger + base character; all other global
+    /// rules stay available.
     /// nil = only use global rules (sufficient for most languages).
     let composeRuleOverrides: ComposeRuleSet?
 

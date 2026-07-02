@@ -90,13 +90,16 @@ extension KeyboardViewModel {
             self?.triggerHapticTap()
         }))
 
-        // 2. Compose + Cycle Accents
+        // 2. Compose + Cycle Accents — per-definition engine so language-specific
+        // compose rule overrides are honored (rebuilt on every definition load).
+        let composeEngine = definition.settings.composeRuleOverrides
+            .map { ComposeEngine.withGlobalRules(overrides: $0) } ?? .shared
         middlewares.append(ComposeMiddleware(
             compose: { previous, trigger in
-                ComposeEngine.compose(previous: previous, trigger: trigger)
+                composeEngine.compose(previous: previous, trigger: trigger)
             },
             cycleAccent: { character in
-                ComposeEngine.cycleAccent(for: character)
+                composeEngine.cycleAccent(for: character)
             },
             previousCharacter: { [weak self] in
                 self?.textInputTarget?.documentContextBeforeInput?.last.map(String.init) ?? ""
