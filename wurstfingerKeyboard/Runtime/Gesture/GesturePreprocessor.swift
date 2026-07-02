@@ -247,9 +247,9 @@ struct GesturePreprocessor {
             // a sustained run of mutually consistent samples (a re-anchored
             // long drag or a genuine post-gap tail keeps moving; a ghost
             // cluster does not).
-            let ceiling = config.maxJumpDistance * 3
+            let ceiling = config.maxJumpDistance * Self.plausibilityCeilingFactor
             let supportIsPlausible = distanceToAccepted <= ceiling
-                || consistentRunLength(in: points, at: i) >= 3
+                || consistentRunLength(in: points, at: i) >= Self.sustainedRunMinimumLength
 
             if nearAccepted || ((nearRawPrevious || nearRawNext) && supportIsPlausible) {
                 filtered.append(current)
@@ -259,6 +259,15 @@ struct GesturePreprocessor {
 
         return filtered
     }
+
+    /// Raw-neighbor support only counts within this multiple of
+    /// `maxJumpDistance` from the accepted path; farther points need a
+    /// sustained run instead.
+    private static let plausibilityCeilingFactor: CGFloat = 3
+
+    /// A run of at least this many mutually consistent samples counts as
+    /// sustained real motion regardless of distance from the accepted path.
+    private static let sustainedRunMinimumLength = 3
 
     /// Length of the run of mutually consistent raw samples containing
     /// index `i` (consecutive neighbors within `maxJumpDistance`).
