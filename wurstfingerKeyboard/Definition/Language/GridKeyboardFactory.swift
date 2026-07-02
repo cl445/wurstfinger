@@ -83,6 +83,11 @@ enum GridKeyboardFactory {
                 // uppercasing is the identity, e.g. Hebrew final forms (כ → ך).
                 if let returns = returnOverrides[slotId] {
                     for (gesture, text) in returns {
+                        guard gesture.isSwipe else {
+                            preconditionFailure(
+                                "returnOverrides[\(slotId)][\(gesture)] must target a swipe gesture"
+                            )
+                        }
                         guard let base = bindings[gesture] else {
                             preconditionFailure(
                                 "returnOverrides[\(slotId)][\(gesture)] has no base binding"
