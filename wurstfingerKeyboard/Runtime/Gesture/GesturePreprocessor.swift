@@ -234,18 +234,49 @@ struct GesturePreprocessor {
             guard let lastAccepted = filtered.last else { continue }
             let current = points[i]
 
-            let nearAccepted = current.distance(to: lastAccepted) <= config.maxJumpDistance
+            let distanceToAccepted = current.distance(to: lastAccepted)
+            let nearAccepted = distanceToAccepted <= config.maxJumpDistance
             let nearRawPrevious = current.distance(to: points[i - 1]) <= config.maxJumpDistance
             let nearRawNext = i + 1 < points.count &&
                 current.distance(to: points[i + 1]) <= config.maxJumpDistance
 
-            if nearAccepted || nearRawPrevious || nearRawNext {
+            // Raw-neighbor support alone can be bootstrapped by a clustered
+            // glitch burst: two mutually close ghost points admit each other.
+            // Support therefore only counts while the point stays within a
+            // plausibility ceiling of the accepted path, unless it belongs to
+            // a sustained run of mutually consistent samples (a re-anchored
+            // long drag or a genuine post-gap tail keeps moving; a ghost
+            // cluster does not).
+            let ceiling = config.maxJumpDistance * 3
+            let supportIsPlausible = distanceToAccepted <= ceiling
+                || consistentRunLength(in: points, at: i) >= 3
+
+            if nearAccepted || ((nearRawPrevious || nearRawNext) && supportIsPlausible) {
                 filtered.append(current)
             }
-            // Isolated outlier (far from accepted path and both raw neighbors): skip
+            // Isolated or clustered outlier: skip
         }
 
         return filtered
+    }
+
+    /// Length of the run of mutually consistent raw samples containing
+    /// index `i` (consecutive neighbors within `maxJumpDistance`).
+    private func consistentRunLength(in points: [CGPoint], at i: Int) -> Int {
+        var length = 1
+        var backward = i
+        while backward > 0,
+              points[backward].distance(to: points[backward - 1]) <= config.maxJumpDistance {
+            length += 1
+            backward -= 1
+        }
+        var forward = i
+        while forward + 1 < points.count,
+              points[forward].distance(to: points[forward + 1]) <= config.maxJumpDistance {
+            length += 1
+            forward += 1
+        }
+        return length
     }
 
     // MARK: - Step 3: Aspect Ratio Normalization
