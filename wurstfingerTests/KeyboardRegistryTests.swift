@@ -76,6 +76,32 @@ struct KeyboardRegistryTests {
         #expect(reloaded != nil)
     }
 
+    /// Regression test: the registry cache used to be an unsynchronized
+    /// `static var` dictionary, which crashed with SIGSEGV in
+    /// `Dictionary._Variant.setValue` when parallel test suites called
+    /// `load(id:)` concurrently. Hammering the cache from multiple tasks
+    /// documents the thread-safety contract (and trips TSan without the lock).
+    @Test func concurrentLoadEvictAndQueryDoesNotCrash() async {
+        KeyboardRegistry.evictAll()
+        let ids = KeyboardRegistry.available.map(\.id)
+        await withTaskGroup(of: Void.self) { group in
+            for _ in 0 ..< 4 {
+                for id in ids {
+                    group.addTask {
+                        _ = KeyboardRegistry.load(id: id)
+                        _ = KeyboardRegistry.isCached(id: id)
+                    }
+                    group.addTask {
+                        KeyboardRegistry.evict(id: id)
+                    }
+                }
+            }
+        }
+        for id in ids {
+            #expect(KeyboardRegistry.load(id: id) != nil, "Failed to load \(id) after concurrent access")
+        }
+    }
+
     @Test func evictAllClearsCache() {
         // Load a few definitions
         _ = KeyboardRegistry.load(id: LanguageDefinitions.german.id)

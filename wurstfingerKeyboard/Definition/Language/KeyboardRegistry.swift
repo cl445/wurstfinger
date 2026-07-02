@@ -26,11 +26,19 @@ enum KeyboardRegistry {
 
     /// Cache for loaded definitions. Only languages actually loaded via
     /// `load(id:)` are built and held here.
+    ///
+    /// Guarded by `cacheLock`: the extension only touches the registry from
+    /// the main thread, but tests (and any future background use) may call it
+    /// concurrently — an unsynchronized dictionary crashes with SIGSEGV in
+    /// `Dictionary._Variant.setValue` under parallel access.
     private static var cache: [String: KeyboardDefinition] = [:]
+    private static let cacheLock = NSLock()
 
     /// Loads the full definition for a keyboard ID, building it lazily on first
     /// use and caching the result.
     static func load(id: String) -> KeyboardDefinition? {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
         if let cached = cache[id] { return cached }
         guard let descriptor = descriptorsByID[id] else {
             return nil
@@ -42,23 +50,31 @@ enum KeyboardRegistry {
 
     /// Removes a cached definition (e.g. on memory warning).
     static func evict(id: String) {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
         cache.removeValue(forKey: id)
     }
 
     /// Clears the entire cache. Active definitions are rebuilt lazily on next
     /// `load(id:)`.
     static func evictAll() {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
         cache.removeAll()
     }
 
     /// Evicts every cached definition except the given id. Used on memory
     /// warnings to free inactive layouts while keeping the active one resident.
     static func evictAll(except keepID: String) {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
         cache = cache.filter { $0.key == keepID }
     }
 
     /// Whether a definition is currently cached (for testing).
     static func isCached(id: String) -> Bool {
-        cache[id] != nil
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        return cache[id] != nil
     }
 }

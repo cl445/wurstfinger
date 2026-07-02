@@ -273,8 +273,8 @@ struct ViewModelDefinitionTests {
         #expect(vm.currentArrangement != nil)
     }
 
-    @Test func unknownLanguageIdFallsBackToEnglish() throws {
-        let defaults = try #require(UserDefaults(suiteName: "test.\(UUID().uuidString)"))
+    @Test func unknownLanguageIdFallsBackToEnglish() {
+        let defaults = InMemoryUserDefaults()
         let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
         vm.loadDefinition(for: "nonexistent_XX")
         // Must never leave the keyboard blank — falls back to a renderable layout.
@@ -311,7 +311,7 @@ struct ViewModelVCActionTests {
 @Suite(.serialized)
 struct ViewModelNumpadStyleTests {
     private func loadedNumericTopLeftDigit(numpadStyle: String?) -> String? {
-        let defaults = UserDefaults(suiteName: "test.\(UUID().uuidString)")!
+        let defaults = InMemoryUserDefaults()
         if let numpadStyle {
             defaults.set(numpadStyle, forKey: SettingsKey.numpadStyle.rawValue)
         }
