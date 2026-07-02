@@ -35,6 +35,9 @@ final class DocumentProxyTarget: TextInputTarget {
     }
 
     func adjustTextPosition(byCharacterOffset offset: Int) {
+        // Forwarded unchanged: `offset` is already in UTF-16 code units, which
+        // is what `UITextDocumentProxy.adjustTextPosition` moves by in practice
+        // (its "character offset" naming notwithstanding).
         proxy?.adjustTextPosition(byCharacterOffset: offset)
     }
 

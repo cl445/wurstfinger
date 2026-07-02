@@ -74,6 +74,37 @@ struct CursorMovementPipelineTests {
         vm.handleSlide(deleteKey, phase: .ended)
         #expect(target.events.contains(.deleteBackward))
     }
+
+    @Test func continuousSlideForwardCrossesWholeEmojiCluster() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        // 👍🏽 = thumbs up + skin-tone modifier = 4 UTF-16 code units.
+        target.documentContextAfterInput = "👍🏽x"
+        guard let spaceKey = vm.activeModeFromDefinition?.key(for: UtilitySlot.space) else {
+            Issue.record("Space key not found in definition")
+            return
+        }
+        vm.handleSlide(spaceKey, phase: .began)
+        vm.handleSlide(spaceKey, phase: .changed(deltaX: KeyboardConstants.SpaceGestures.dragStep))
+        vm.handleSlide(spaceKey, phase: .ended)
+        // One step must cross the whole cluster, not get stuck inside it.
+        #expect(target.events == [.adjustCursor(4)])
+        #expect(target.documentContextAfterInput == "x")
+    }
+
+    @Test func continuousSlideBackwardCrossesWholeEmojiCluster() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        target.documentContextBeforeInput = "x👍"
+        guard let spaceKey = vm.activeModeFromDefinition?.key(for: UtilitySlot.space) else {
+            Issue.record("Space key not found in definition")
+            return
+        }
+        vm.handleSlide(spaceKey, phase: .began)
+        vm.handleSlide(spaceKey, phase: .changed(deltaX: -KeyboardConstants.SpaceGestures.dragStep))
+        vm.handleSlide(spaceKey, phase: .ended)
+        // 👍 is a surrogate pair = 2 UTF-16 code units.
+        #expect(target.events == [.adjustCursor(-2)])
+        #expect(target.documentContextBeforeInput == "x")
+    }
 }
 
 // MARK: - Discrete cursor movement (one swipe = char, return swipe = word)
@@ -162,5 +193,75 @@ struct DiscreteCursorMovementTests {
         #expect(KeyboardViewModel.backwardWordOffset(in: "foo bar  ") == 5)
         #expect(KeyboardViewModel.backwardWordOffset(in: "foo") == 3)
         #expect(KeyboardViewModel.backwardWordOffset(in: "") == 0)
+    }
+
+    // MARK: - UTF-16 offsets for emoji and surrogate pairs
+
+    @Test func forwardWordOffsetCountsUTF16UnitsForEmoji() {
+        // 👍 = surrogate pair = 2 UTF-16 units; leading space adds 1.
+        #expect(KeyboardViewModel.forwardWordOffset(in: " 👍 bar") == 3)
+        // 👍🏽 = thumbs up + skin-tone modifier = 4 units.
+        #expect(KeyboardViewModel.forwardWordOffset(in: "👍🏽 bar") == 4)
+        // 👨‍👩‍👧‍👦 = ZWJ family sequence = 11 units.
+        #expect(KeyboardViewModel.forwardWordOffset(in: "👨‍👩‍👧‍👦 x") == 11)
+    }
+
+    @Test func backwardWordOffsetCountsUTF16UnitsForEmoji() {
+        #expect(KeyboardViewModel.backwardWordOffset(in: "bar 👍 ") == 3)
+        #expect(KeyboardViewModel.backwardWordOffset(in: "foo 👍🏽") == 4)
+        #expect(KeyboardViewModel.backwardWordOffset(in: "x 👨‍👩‍👧‍👦") == 11)
+    }
+
+    @Test func returnSwipeForwardAcrossEmojiLandsOnClusterBoundary() throws {
+        let (vm, target) = makeDiscreteViewModel()
+        let key = try spaceKey(vm)
+        target.documentContextAfterInput = "👍🏽 bar"
+        vm.handleSlide(key, phase: .began)
+        vm.handleSlide(key, phase: .changed(deltaX: 40))
+        vm.handleSlide(key, phase: .changed(deltaX: -36))
+        vm.handleSlide(key, phase: .ended)
+        // Word jump must cover the emoji's full 4 UTF-16 units.
+        #expect(target.events == [.adjustCursor(4)])
+        #expect(target.documentContextBeforeInput == "👍🏽")
+        #expect(target.documentContextAfterInput == " bar")
+    }
+
+    @Test func returnSwipeBackwardAcrossEmojiLandsOnClusterBoundary() throws {
+        let (vm, target) = makeDiscreteViewModel()
+        let key = try spaceKey(vm)
+        target.documentContextBeforeInput = "foo 👍🏽"
+        vm.handleSlide(key, phase: .began)
+        vm.handleSlide(key, phase: .changed(deltaX: -40))
+        vm.handleSlide(key, phase: .changed(deltaX: 36))
+        vm.handleSlide(key, phase: .ended)
+        #expect(target.events == [.adjustCursor(-4)])
+        #expect(target.documentContextBeforeInput == "foo ")
+        #expect(target.documentContextAfterInput == "👍🏽")
+    }
+
+    @Test func regularSwipeForwardCrossesWholeEmojiCluster() throws {
+        let (vm, target) = makeDiscreteViewModel()
+        let key = try spaceKey(vm)
+        target.documentContextAfterInput = "👍 bar"
+        let step = KeyboardConstants.SpaceGestures.dragStep
+        vm.handleSlide(key, phase: .began)
+        vm.handleSlide(key, phase: .changed(deltaX: step * 2))
+        vm.handleSlide(key, phase: .ended)
+        // One discrete step = one grapheme = 2 UTF-16 units for 👍.
+        #expect(target.events == [.adjustCursor(2)])
+        #expect(target.documentContextAfterInput == " bar")
+    }
+
+    @Test func regularSwipeBackwardCrossesZWJSequence() throws {
+        let (vm, target) = makeDiscreteViewModel()
+        let key = try spaceKey(vm)
+        target.documentContextBeforeInput = "x👨‍👩‍👧‍👦"
+        let step = KeyboardConstants.SpaceGestures.dragStep
+        vm.handleSlide(key, phase: .began)
+        vm.handleSlide(key, phase: .changed(deltaX: -step * 2))
+        vm.handleSlide(key, phase: .ended)
+        // The whole family emoji (11 UTF-16 units) is a single step.
+        #expect(target.events == [.adjustCursor(-11)])
+        #expect(target.documentContextBeforeInput == "x")
     }
 }

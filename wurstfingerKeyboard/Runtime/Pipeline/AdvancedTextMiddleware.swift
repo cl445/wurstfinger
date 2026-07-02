@@ -51,8 +51,11 @@ struct AdvancedTextMiddleware: ActionMiddleware {
     // MARK: - Delete Forward
 
     private func deleteForward(target: TextInputTarget) {
-        guard let after = target.documentContextAfterInput, !after.isEmpty else { return }
-        target.adjustTextPosition(byCharacterOffset: 1)
+        guard let next = target.documentContextAfterInput?.first else { return }
+        // `adjustTextPosition` moves by UTF-16 code units, so cross the whole
+        // grapheme cluster (emoji can span 2+ units); a fixed +1 would land
+        // mid-surrogate and delete the wrong character.
+        target.adjustTextPosition(byCharacterOffset: next.utf16.count)
         target.deleteBackward()
     }
 

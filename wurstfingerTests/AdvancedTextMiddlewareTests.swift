@@ -105,6 +105,46 @@ struct AdvancedTextMiddlewareDeleteForwardTests {
 
         #expect(target.events.isEmpty)
     }
+
+    @Test func deletesWholeSurrogatePairEmojiAfterCursor() {
+        let target = MockTextTarget()
+        // 👍 = surrogate pair = 2 UTF-16 units; a fixed +1 offset would land
+        // mid-pair and the deleteBackward would corrupt the emoji.
+        target.documentContextAfterInput = "👍abc"
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.deleteForward)) { _ in }
+
+        #expect(target.events == [.adjustCursor(2), .deleteBackward])
+        #expect(target.documentContextBeforeInput == "")
+        #expect(target.documentContextAfterInput == "abc")
+    }
+
+    @Test func deletesWholeSkinToneEmojiAfterCursor() {
+        let target = MockTextTarget()
+        // 👍🏽 = thumbs up + skin-tone modifier = 4 UTF-16 units.
+        target.documentContextAfterInput = "👍🏽abc"
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.deleteForward)) { _ in }
+
+        #expect(target.events == [.adjustCursor(4), .deleteBackward])
+        #expect(target.documentContextBeforeInput == "")
+        #expect(target.documentContextAfterInput == "abc")
+    }
+
+    @Test func deletesWholeZWJFamilyEmojiAfterCursor() {
+        let target = MockTextTarget()
+        // 👨‍👩‍👧‍👦 = ZWJ family sequence = 11 UTF-16 units.
+        target.documentContextAfterInput = "👨‍👩‍👧‍👦!"
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.deleteForward)) { _ in }
+
+        #expect(target.events == [.adjustCursor(11), .deleteBackward])
+        #expect(target.documentContextBeforeInput == "")
+        #expect(target.documentContextAfterInput == "!")
+    }
 }
 
 // MARK: - Capitalize word
