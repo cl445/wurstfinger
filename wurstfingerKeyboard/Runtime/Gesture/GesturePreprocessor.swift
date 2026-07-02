@@ -120,8 +120,11 @@ struct GesturePreprocessorConfig {
 
     /// Loads config from SharedDefaults with fallback to defaults.
     /// Non-finite values (NaN, Inf) are replaced with defaults.
-    static func fromUserDefaults() -> GesturePreprocessorConfig {
-        let store = SharedDefaults.store
+    /// Custom values only apply while expert mode is enabled; when it is off,
+    /// the defaults are returned. The stored values are kept so they survive
+    /// toggling expert mode off and on again.
+    static func fromUserDefaults(store: UserDefaults = SharedDefaults.store) -> GesturePreprocessorConfig {
+        guard store.bool(forKey: SettingsKey.expertModeEnabled.rawValue) else { return .default }
         let jitter = finiteCGFloat(from: store, key: jitterThresholdKey, default: defaultJitterThreshold)
         let maxJump = finiteCGFloat(from: store, key: maxJumpDistanceKey, default: defaultMaxJumpDistance)
         return GesturePreprocessorConfig(
@@ -414,9 +417,12 @@ struct GestureClassificationThresholds {
         return value.isFinite ? value : defaultValue
     }
 
-    /// Loads thresholds from SharedDefaults with fallback to defaults
-    static func fromUserDefaults() -> GestureClassificationThresholds {
-        let store = SharedDefaults.store
+    /// Loads thresholds from SharedDefaults with fallback to defaults.
+    /// Custom values only apply while expert mode is enabled; when it is off,
+    /// the defaults are returned. The stored values are kept so they survive
+    /// toggling expert mode off and on again.
+    static func fromUserDefaults(store: UserDefaults = SharedDefaults.store) -> GestureClassificationThresholds {
+        guard store.bool(forKey: SettingsKey.expertModeEnabled.rawValue) else { return .default }
         let start = loadCGFloat(from: store, key: returnDisplacementStartKey, default: defaultReturnDisplacementStart)
         let end = loadCGFloat(from: store, key: returnDisplacementEndKey, default: defaultReturnDisplacementEnd)
         return GestureClassificationThresholds(

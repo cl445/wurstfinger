@@ -480,3 +480,95 @@ struct GestureFeaturesTests {
         #expect(features.isClockwise) // CCW in math = positive angularSpan
     }
 }
+
+// MARK: - Expert Mode Gating Tests
+
+/// Custom `gesture.*` values must only govern gesture recognition while
+/// expert mode is enabled. When the user turns expert mode off (the obvious
+/// recovery action after breaking gesture recognition), the defaults apply
+/// again — but the stored values survive so re-enabling restores them.
+struct ExpertModeGatingTests {
+    private func storeWithCustomValues(expertModeEnabled: Bool) -> InMemoryUserDefaults {
+        let store = InMemoryUserDefaults()
+        store.set(expertModeEnabled, forKey: SettingsKey.expertModeEnabled.rawValue)
+        store.set(9.0, forKey: GesturePreprocessorConfig.jitterThresholdKey)
+        store.set(120.0, forKey: GesturePreprocessorConfig.maxJumpDistanceKey)
+        store.set(7, forKey: GesturePreprocessorConfig.smoothingWindowKey)
+        store.set(42.0, forKey: GestureClassificationThresholds.minSwipeLengthKey)
+        store.set(0.9, forKey: GestureClassificationThresholds.maxReturnRatioKey)
+        store.set(0.75, forKey: GestureClassificationThresholds.minCircularityKey)
+        return store
+    }
+
+    @Test func configIgnoresCustomValuesWhenExpertModeIsOff() {
+        let store = storeWithCustomValues(expertModeEnabled: false)
+
+        let config = GesturePreprocessorConfig.fromUserDefaults(store: store)
+
+        #expect(config.jitterThreshold == GesturePreprocessorConfig.defaultJitterThreshold)
+        #expect(config.maxJumpDistance == GesturePreprocessorConfig.defaultMaxJumpDistance)
+        #expect(config.smoothingWindow == GesturePreprocessorConfig.defaultSmoothingWindow)
+    }
+
+    @Test func configAppliesCustomValuesWhenExpertModeIsOn() {
+        let store = storeWithCustomValues(expertModeEnabled: true)
+
+        let config = GesturePreprocessorConfig.fromUserDefaults(store: store)
+
+        #expect(config.jitterThreshold == 9.0)
+        #expect(config.maxJumpDistance == 120.0)
+        #expect(config.smoothingWindow == 7)
+    }
+
+    @Test func configIgnoresCustomValuesWhenExpertModeKeyIsMissing() {
+        let store = storeWithCustomValues(expertModeEnabled: false)
+        store.removeObject(forKey: SettingsKey.expertModeEnabled.rawValue)
+
+        let config = GesturePreprocessorConfig.fromUserDefaults(store: store)
+
+        #expect(config.jitterThreshold == GesturePreprocessorConfig.defaultJitterThreshold)
+    }
+
+    @Test func thresholdsIgnoreCustomValuesWhenExpertModeIsOff() {
+        let store = storeWithCustomValues(expertModeEnabled: false)
+
+        let thresholds = GestureClassificationThresholds.fromUserDefaults(store: store)
+
+        #expect(thresholds.minSwipeLength == GestureClassificationThresholds.defaultMinSwipeLength)
+        #expect(thresholds.maxReturnRatio == GestureClassificationThresholds.defaultMaxReturnRatio)
+        #expect(thresholds.minCircularity == GestureClassificationThresholds.defaultMinCircularity)
+    }
+
+    @Test func thresholdsApplyCustomValuesWhenExpertModeIsOn() {
+        let store = storeWithCustomValues(expertModeEnabled: true)
+
+        let thresholds = GestureClassificationThresholds.fromUserDefaults(store: store)
+
+        #expect(thresholds.minSwipeLength == 42.0)
+        #expect(thresholds.maxReturnRatio == 0.9)
+        #expect(thresholds.minCircularity == 0.75)
+    }
+
+    @Test func customValuesSurviveExpertModeRoundTrip() {
+        let store = storeWithCustomValues(expertModeEnabled: true)
+
+        store.set(false, forKey: SettingsKey.expertModeEnabled.rawValue)
+        #expect(GestureClassificationThresholds.fromUserDefaults(store: store).minSwipeLength
+            == GestureClassificationThresholds.defaultMinSwipeLength)
+
+        store.set(true, forKey: SettingsKey.expertModeEnabled.rawValue)
+        #expect(GestureClassificationThresholds.fromUserDefaults(store: store).minSwipeLength == 42.0)
+    }
+
+    @Test func configValuesSurviveExpertModeRoundTrip() {
+        let store = storeWithCustomValues(expertModeEnabled: true)
+
+        store.set(false, forKey: SettingsKey.expertModeEnabled.rawValue)
+        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).jitterThreshold
+            == GesturePreprocessorConfig.defaultJitterThreshold)
+
+        store.set(true, forKey: SettingsKey.expertModeEnabled.rawValue)
+        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).jitterThreshold == 9.0)
+        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).maxJumpDistance == 120.0)
+    }
+}
