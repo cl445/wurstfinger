@@ -91,18 +91,30 @@ struct KeyGestureRecognizer: ViewModifier {
 
     // MARK: - Classification (Pure Function)
 
-    /// Classifies a sequence of touch positions into a `GestureType`.
-    ///
-    /// This is a pure function so it can be unit-tested without rendering
-    /// any SwiftUI views.
+    /// Classifies a sequence of touch positions into a `GestureType`, reading
+    /// preprocessor config and thresholds from `SharedDefaults`.
     static func classify(
         positions: [CGPoint],
         aspectRatio: CGFloat = 1.0
     ) -> GestureClassification {
-        let config = GesturePreprocessorConfig.fromUserDefaults()
-            .with(aspectRatio: aspectRatio)
+        classify(
+            positions: positions,
+            config: GesturePreprocessorConfig.fromUserDefaults()
+                .with(aspectRatio: aspectRatio),
+            thresholds: GestureClassificationThresholds.fromUserDefaults()
+        )
+    }
+
+    /// Classifies a sequence of touch positions with explicit configuration.
+    ///
+    /// This is a pure function so it can be unit-tested without rendering
+    /// any SwiftUI views and without depending on the shared defaults store.
+    static func classify(
+        positions: [CGPoint],
+        config: GesturePreprocessorConfig,
+        thresholds: GestureClassificationThresholds
+    ) -> GestureClassification {
         let preprocessor = GesturePreprocessor(config: config)
-        let thresholds = GestureClassificationThresholds.fromUserDefaults()
         let processed = preprocessor.preprocess(positions)
         let features = GestureFeatures.extract(from: processed, thresholds: thresholds)
 

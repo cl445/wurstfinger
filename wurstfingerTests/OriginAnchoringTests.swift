@@ -50,7 +50,11 @@ struct OriginAnchoringTests {
         // rightward return swipe again — checked through the production
         // classify(positions:) pipeline rather than a hand-rolled extraction.
         let anchored = KeyGestureRecognizer.anchoringOrigin(evicted)
-        let classification = KeyGestureRecognizer.classify(positions: anchored)
+        let classification = KeyGestureRecognizer.classify(
+            positions: anchored,
+            config: .default,
+            thresholds: .default
+        )
         #expect(classification.isReturn)
         #expect(classification.gesture == .swipeRight)
     }

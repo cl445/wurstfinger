@@ -12,8 +12,7 @@ import Testing
 struct HapticSettingsTests {
     // Helper to create isolated UserDefaults for testing
     private func createTestDefaults() -> UserDefaults {
-        let suiteName = "test.haptic.\(UUID().uuidString)"
-        return UserDefaults(suiteName: suiteName)!
+        InMemoryUserDefaults()
     }
 
     // MARK: - Initialization Tests
@@ -140,8 +139,7 @@ struct HapticSettingsTests {
 
 struct LayoutSettingsTests {
     private func createTestDefaults() -> UserDefaults {
-        let suiteName = "test.layout.\(UUID().uuidString)"
-        return UserDefaults(suiteName: suiteName)!
+        InMemoryUserDefaults()
     }
 
     // MARK: - Initialization Tests

@@ -14,7 +14,9 @@ import Testing
 
 struct GesturePreprocessorRobustnessTests {
     private func classify(_ points: [CGPoint]) -> GestureType {
-        KeyGestureRecognizer.classify(positions: points).gesture
+        // Explicit configs keep the test hermetic — independent of whatever
+        // is in the shared defaults store on the test host.
+        KeyGestureRecognizer.classify(positions: points, config: .default, thresholds: .default).gesture
     }
 
     @Test func emptyInputClassifiesAsTap() {
