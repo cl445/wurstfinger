@@ -382,7 +382,28 @@ extension KeyboardViewModel {
             spaceDragPeak = 0
         case .tap:
             handleGesture(.tap, keyId: key.id, isReturn: false)
+        case let .swipeUp(isReturn):
+            // Only reported when the horizontal slide never activated, so
+            // this cannot interfere with cursor movement in either style.
+            toggleLabelVisibility(grouped: isReturn)
         }
+    }
+
+    /// MessagEase space-bar label toggles. A plain up-swipe flips the
+    /// extra-symbol labels; a return-up swipe (`grouped`) toggles letter and
+    /// standard-symbol labels together: only when both are hidden does it
+    /// show them again, otherwise it hides both.
+    private func toggleLabelVisibility(grouped: Bool) {
+        if grouped {
+            let hidden = sharedDefaults.bool(forKey: SettingsKey.hideLetters.rawValue)
+                && sharedDefaults.bool(forKey: SettingsKey.hideStandardSymbols.rawValue)
+            sharedDefaults.set(!hidden, forKey: SettingsKey.hideLetters.rawValue)
+            sharedDefaults.set(!hidden, forKey: SettingsKey.hideStandardSymbols.rawValue)
+        } else {
+            let hidden = sharedDefaults.bool(forKey: SettingsKey.hideExtraSymbols.rawValue)
+            sharedDefaults.set(!hidden, forKey: SettingsKey.hideExtraSymbols.rawValue)
+        }
+        feedbackTap()
     }
 
     /// Continuous (joystick) mode: emit one character move per `dragStep` of
@@ -502,6 +523,10 @@ extension KeyboardViewModel {
             deleteDragResidual = 0
         case .tap:
             handleGesture(.tap, keyId: key.id, isReturn: false)
+        case .swipeUp:
+            // The delete key has no vertical gestures; label toggles are a
+            // space-bar feature. Vertical flicks stay ignored.
+            break
         }
     }
 

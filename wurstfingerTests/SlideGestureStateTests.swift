@@ -85,6 +85,104 @@ struct SlideGestureStateTests {
         #expect(phase == nil)
     }
 
+    // MARK: - Vertical up-swipes (label visibility toggles)
+
+    /// Space-bar up-swipe classification threshold.
+    private let upThreshold = KeyboardConstants.SpaceGestures.swipeUpActivationThreshold
+
+    @Test func upSwipeBeyondThresholdClassifiesAsSwipeUp() {
+        var state = SlideGestureState()
+        _ = state.handleChanged(
+            translation: CGSize(width: 2, height: -upThreshold), activationThreshold: threshold
+        )
+        _ = state.handleChanged(
+            translation: CGSize(width: 2, height: -upThreshold - 30), activationThreshold: threshold
+        )
+        let phase = state.handleEnded(
+            translation: CGSize(width: 2, height: -upThreshold - 30), activationThreshold: threshold
+        )
+        #expect(phase == .swipeUp(isReturn: false))
+    }
+
+    @Test func upSwipeReturningToOriginClassifiesAsReturn() {
+        var state = SlideGestureState()
+        _ = state.handleChanged(
+            translation: CGSize(width: 0, height: -upThreshold - 30), activationThreshold: threshold
+        )
+        _ = state.handleChanged(
+            translation: CGSize(width: 0, height: -4), activationThreshold: threshold
+        )
+        let phase = state.handleEnded(
+            translation: CGSize(width: 0, height: -4), activationThreshold: threshold
+        )
+        // Ends near the origin (below the tap threshold!) but the peak makes
+        // it a return-up swipe, not a tap.
+        #expect(phase == .swipeUp(isReturn: true))
+    }
+
+    @Test func upSwipeBelowThresholdIsIgnored() {
+        var state = SlideGestureState()
+        let translation = CGSize(width: 0, height: -upThreshold + 4)
+        _ = state.handleChanged(translation: translation, activationThreshold: threshold)
+        let phase = state.handleEnded(translation: translation, activationThreshold: threshold)
+        #expect(phase == nil)
+    }
+
+    @Test func downwardSwipeIsIgnored() {
+        var state = SlideGestureState()
+        let translation = CGSize(width: 0, height: upThreshold + 30)
+        _ = state.handleChanged(translation: translation, activationThreshold: threshold)
+        let phase = state.handleEnded(translation: translation, activationThreshold: threshold)
+        #expect(phase == nil)
+    }
+
+    @Test func upSwipeAfterHorizontalActivationEndsAsSlide() {
+        var state = SlideGestureState()
+        // Horizontal slide activates first, then the finger drifts far up:
+        // the gesture stays a cursor slide, never a label toggle.
+        _ = state.handleChanged(
+            translation: CGSize(width: threshold + 4, height: 0), activationThreshold: threshold
+        )
+        _ = state.handleChanged(
+            translation: CGSize(width: threshold + 4, height: -upThreshold - 30),
+            activationThreshold: threshold
+        )
+        let phase = state.handleEnded(
+            translation: CGSize(width: threshold + 4, height: -upThreshold - 30),
+            activationThreshold: threshold
+        )
+        #expect(phase == .ended)
+    }
+
+    @Test func tapWithSmallVerticalJitterIsStillATap() {
+        var state = SlideGestureState()
+        _ = state.handleChanged(
+            translation: CGSize(width: 1, height: -3), activationThreshold: threshold
+        )
+        let phase = state.handleEnded(
+            translation: CGSize(width: 1, height: -3), activationThreshold: threshold
+        )
+        #expect(phase == .tap)
+    }
+
+    @Test func cancellationResetsVerticalTracking() {
+        var state = SlideGestureState()
+        _ = state.handleChanged(
+            translation: CGSize(width: 0, height: -upThreshold - 70), activationThreshold: threshold
+        )
+        _ = state.handleCancelled()
+
+        // Next touch: a small movement must be a tap — a stale upward peak
+        // would classify it as a return-up swipe and toggle labels.
+        _ = state.handleChanged(
+            translation: CGSize(width: 1, height: -2), activationThreshold: threshold
+        )
+        let phase = state.handleEnded(
+            translation: CGSize(width: 1, height: -2), activationThreshold: threshold
+        )
+        #expect(phase == .tap)
+    }
+
     // MARK: - Touch cancellation (Bug 1)
 
     @Test func cancellationMidSlideReportsCancelled() {
@@ -175,5 +273,71 @@ struct SlideCancellationPipelineTests {
         vm.handleSlide(deleteKey, phase: .cancelled)
         #expect(!vm.isDeleteDragging)
         #expect(target.events.isEmpty)
+    }
+}
+
+// MARK: - Space-bar label visibility toggles (.swipeUp)
+
+@Suite(.serialized)
+struct SpaceLabelTogglePipelineTests {
+    private func hides(_ vm: KeyboardViewModel, _ key: SettingsKey) -> Bool {
+        vm.sharedDefaults.bool(forKey: key.rawValue)
+    }
+
+    @Test(arguments: [CursorMovementStyle.continuous, .discrete])
+    func upSwipeTogglesExtraSymbolsWithoutTextInput(style: CursorMovementStyle) throws {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        vm.sharedDefaults.set(style.rawValue, forKey: SettingsKey.cursorMovementStyle.rawValue)
+        let spaceKey = try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))
+
+        vm.handleSlide(spaceKey, phase: .swipeUp(isReturn: false))
+        #expect(hides(vm, .hideExtraSymbols))
+        // No space typed, no cursor movement.
+        #expect(target.events.isEmpty)
+
+        vm.handleSlide(spaceKey, phase: .swipeUp(isReturn: false))
+        #expect(!hides(vm, .hideExtraSymbols))
+        #expect(target.events.isEmpty)
+        // Letter/standard visibility is untouched by the plain up-swipe.
+        #expect(!hides(vm, .hideLetters))
+        #expect(!hides(vm, .hideStandardSymbols))
+    }
+
+    /// Return-up group semantics: only when letters AND standard symbols are
+    /// both hidden does the gesture show them again; any other combination
+    /// hides both.
+    @Test(arguments: [
+        (letters: false, symbols: false, expected: true),
+        (letters: true, symbols: false, expected: true),
+        (letters: false, symbols: true, expected: true),
+        (letters: true, symbols: true, expected: false),
+    ])
+    func returnUpSwipeTogglesLettersAndStandardSymbolsAsGroup(
+        start: (letters: Bool, symbols: Bool, expected: Bool)
+    ) throws {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        vm.sharedDefaults.set(start.letters, forKey: SettingsKey.hideLetters.rawValue)
+        vm.sharedDefaults.set(start.symbols, forKey: SettingsKey.hideStandardSymbols.rawValue)
+        let spaceKey = try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))
+
+        vm.handleSlide(spaceKey, phase: .swipeUp(isReturn: true))
+        #expect(hides(vm, .hideLetters) == start.expected)
+        #expect(hides(vm, .hideStandardSymbols) == start.expected)
+        // Extra symbols belong to the plain up-swipe, not the return swipe.
+        #expect(!hides(vm, .hideExtraSymbols))
+        #expect(target.events.isEmpty)
+    }
+
+    @Test func upSwipeOnDeleteKeyIsIgnored() throws {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        target.documentContextBeforeInput = "hello"
+        let deleteKey = try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.delete))
+
+        vm.handleSlide(deleteKey, phase: .swipeUp(isReturn: false))
+        vm.handleSlide(deleteKey, phase: .swipeUp(isReturn: true))
+        #expect(target.events.isEmpty)
+        #expect(!hides(vm, .hideLetters))
+        #expect(!hides(vm, .hideStandardSymbols))
+        #expect(!hides(vm, .hideExtraSymbols))
     }
 }
