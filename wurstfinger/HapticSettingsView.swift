@@ -148,11 +148,12 @@ struct HapticSettingsView: View {
             }
 
             VStack(spacing: 8) {
-                Slider(
-                    value: levelIndexBinding(for: value),
-                    in: 0 ... Double(HapticIntensityLevel.allCases.count - 1),
-                    step: 1
+                HapticLevelSlider(
+                    levelIndex: levelIndexBinding(for: value),
+                    levelCount: HapticIntensityLevel.allCases.count
                 )
+                .accessibilityLabel(Text(title))
+                .accessibilityValue(Text(HapticIntensityLevel(storedIntensity: value.wrappedValue).displayName))
 
                 HStack {
                     Text("Off")
@@ -178,12 +179,12 @@ struct HapticSettingsView: View {
     /// snap to a level the moment the slider is touched.
     ///
     /// Each snap onto a new level plays that level's pulse, so every level
-    /// can be felt while sliding across the detents.
-    private func levelIndexBinding(for value: Binding<Double>) -> Binding<Double> {
+    /// can be felt while sliding across the detents (off stays silent).
+    private func levelIndexBinding(for value: Binding<Double>) -> Binding<Int> {
         Binding(
-            get: { Double(HapticIntensityLevel(storedIntensity: value.wrappedValue).rawValue) },
+            get: { HapticIntensityLevel(storedIntensity: value.wrappedValue).rawValue },
             set: { index in
-                let level = HapticIntensityLevel(rawValue: Int(index.rounded())) ?? .off
+                let level = HapticIntensityLevel(rawValue: index) ?? .off
                 let previous = HapticIntensityLevel(storedIntensity: value.wrappedValue)
                 value.wrappedValue = Double(level.storedIntensity)
                 if level != previous {
@@ -216,6 +217,76 @@ extension HapticIntensityLevel {
         case .light: String(localized: "Light")
         case .medium: String(localized: "Medium")
         case .heavy: String(localized: "Strong")
+        }
+    }
+}
+
+/// Discrete slider with one detent per haptic level.
+///
+/// Custom instead of SwiftUI's `Slider` because the system control plays its
+/// own (non-suppressible) haptic when the thumb hits the range bounds — which
+/// made even the "Off" end vibrate. Here the only feedback is the level-snap
+/// pulse played by the binding.
+private struct HapticLevelSlider: View {
+    @Binding var levelIndex: Int
+    let levelCount: Int
+
+    private let thumbDiameter: CGFloat = 27
+    private let tickDiameter: CGFloat = 6
+    private let trackHeight: CGFloat = 4
+
+    var body: some View {
+        GeometryReader { geometry in
+            let stepWidth = (geometry.size.width - thumbDiameter) / CGFloat(levelCount - 1)
+            let thumbOffset = stepWidth * CGFloat(levelIndex)
+
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color(.systemFill))
+                    .frame(height: trackHeight)
+
+                Capsule()
+                    .fill(Color.accentColor)
+                    .frame(width: thumbOffset + thumbDiameter / 2, height: trackHeight)
+
+                ForEach(0 ..< levelCount, id: \.self) { index in
+                    Circle()
+                        .fill(Color(.systemGray3))
+                        .frame(width: tickDiameter, height: tickDiameter)
+                        .offset(x: thumbDiameter / 2 + stepWidth * CGFloat(index) - tickDiameter / 2)
+                }
+
+                Circle()
+                    .fill(.white)
+                    .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
+                    .frame(width: thumbDiameter, height: thumbDiameter)
+                    .offset(x: thumbOffset)
+            }
+            .frame(maxHeight: .infinity)
+            .animation(.snappy(duration: 0.15), value: levelIndex)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { gesture in
+                        let position = (gesture.location.x - thumbDiameter / 2) / stepWidth
+                        let index = min(max(Int(position.rounded()), 0), levelCount - 1)
+                        if index != levelIndex {
+                            levelIndex = index
+                        }
+                    }
+            )
+        }
+        .frame(height: 44)
+        .accessibilityElement(children: .ignore)
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment:
+                levelIndex = min(levelIndex + 1, levelCount - 1)
+            case .decrement:
+                levelIndex = max(levelIndex - 1, 0)
+            @unknown default:
+                break
+            }
         }
     }
 }
