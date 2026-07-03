@@ -54,30 +54,48 @@ struct OrientationLayoutTests {
 
     // MARK: - Window bounds (Split View / Stage Manager, issue #116)
 
-    @Test("Window bounds publish their shortest side")
-    func windowBoundsPublishShortestSide() {
+    private var screenShortestSide: CGFloat {
+        min(DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height)
+    }
+
+    @Test("Keyboard-sized window keeps the screen's portrait width")
+    func keyboardSizedWindowKeepsPortraitWidth() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
 
-        // Landscape Split View pane: height is the shortest side.
-        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 507, height: 834))
-        #expect(viewModel.windowShortestSide == 507)
+        // The extension's window is only as tall as the keyboard itself
+        // (issue behind #219's regression): its height must never cap the
+        // width. Portrait: window spans the screen width, keyboard-height tall.
+        viewModel.updateWindowBounds(
+            CGRect(x: 0, y: 0, width: DeviceLayoutUtils.screenBounds.width, height: 300)
+        )
+        #expect(viewModel.keyboardWidthCap == screenShortestSide)
 
-        // Portrait pane: width is the shortest side.
-        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 320, height: 1180))
-        #expect(viewModel.windowShortestSide == 320)
+        // Landscape: window is screen-height wide; the screen's shortest
+        // side still caps the keyboard at its portrait width.
+        viewModel.updateWindowBounds(
+            CGRect(x: 0, y: 0, width: DeviceLayoutUtils.screenBounds.height, height: 250)
+        )
+        #expect(viewModel.keyboardWidthCap == screenShortestSide)
+    }
+
+    @Test("Narrow pane window caps the keyboard width")
+    func narrowPaneWindowCapsWidth() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+
+        // Slide Over / narrow Split View pane: the window width is the
+        // available container width and wins over the screen.
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 320, height: 300))
+        #expect(viewModel.keyboardWidthCap == 320)
     }
 
     @Test("Nil window falls back to the device screen")
     func nilWindowFallsBackToScreen() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
-        let screenShortestSide = min(
-            DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height
-        )
 
-        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 507, height: 834))
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 320, height: 300))
         viewModel.updateWindowBounds(nil)
 
-        #expect(viewModel.windowShortestSide == screenShortestSide)
+        #expect(viewModel.keyboardWidthCap == screenShortestSide)
     }
 
     @Test("Same window bounds do not trigger redundant publish")
@@ -85,12 +103,12 @@ struct OrientationLayoutTests {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
 
         var publishCount = 0
-        let cancellable = viewModel.$windowShortestSide
+        let cancellable = viewModel.$keyboardWidthCap
             .dropFirst()
             .sink { _ in publishCount += 1 }
 
-        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 507, height: 834))
-        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 507, height: 834))
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 320, height: 300))
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 320, height: 300))
 
         #expect(publishCount == 1, "Same bounds should not publish again")
         _ = cancellable
@@ -100,9 +118,9 @@ struct OrientationLayoutTests {
     func degenerateWindowBoundsIgnored() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
 
-        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 507, height: 834))
-        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 0, height: 834))
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 320, height: 300))
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 0, height: 300))
 
-        #expect(viewModel.windowShortestSide == 507, "Zero-sized bounds must not be adopted")
+        #expect(viewModel.keyboardWidthCap == 320, "Zero-sized bounds must not be adopted")
     }
 }
