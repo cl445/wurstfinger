@@ -41,9 +41,11 @@ enum SettingsKey: String {
 /// Encapsulates all haptic-related settings with built-in persistence.
 /// Eliminates duplicate didSet handlers by using a unified approach.
 final class HapticSettings: ObservableObject {
-    /// Default intensity values (0.0 - 1.0)
-    static let defaultTapIntensity: CGFloat = 0.5
-    static let defaultDragIntensity: CGFloat = 0.5
+    /// Default intensity values (0.0 - 1.0). The tap default maps to a
+    /// `.light` impact (see `HapticPulse.pulse(for:)`); drag feedback is a
+    /// fixed selection tick, so its intensity only gates on/off.
+    static let defaultTapIntensity: CGFloat = 0.4
+    static let defaultDragIntensity: CGFloat = 1.0
 
     private let defaults: UserDefaults
     private let shouldPersist: Bool

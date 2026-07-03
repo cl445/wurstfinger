@@ -60,7 +60,6 @@ struct HapticSettingsView: View {
                             Divider()
                                 .padding(.horizontal, 16)
 
-                            // Sliders
                             VStack(spacing: 24) {
                                 hapticControl(
                                     title: "Tap Feedback",
@@ -68,11 +67,18 @@ struct HapticSettingsView: View {
                                     description: "Applies when you touch any key."
                                 )
 
-                                hapticControl(
-                                    title: "Drag Feedback",
-                                    value: $dragIntensity,
-                                    description: "Applies when you drag the Space or Delete key to move the cursor or delete text."
-                                )
+                                // Drag steps use a fixed selection tick (no
+                                // intensity), so this is a plain on/off toggle.
+                                VStack(spacing: 8) {
+                                    Toggle("Drag Feedback", isOn: dragFeedbackEnabled)
+                                        .font(.headline)
+
+                                    Text("Applies when you drag the Space or Delete key to move the cursor or delete text.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                .padding(.horizontal, 16)
                             }
                         }
                     } else {
@@ -116,6 +122,14 @@ struct HapticSettingsView: View {
         }
     }
 
+    /// The drag tick has no intensity; the stored value only gates on/off.
+    private var dragFeedbackEnabled: Binding<Bool> {
+        Binding(
+            get: { dragIntensity > 0 },
+            set: { dragIntensity = $0 ? Double(HapticSettings.defaultDragIntensity) : 0 }
+        )
+    }
+
     private let sliderRange: ClosedRange<Double> = 0 ... 1
     private let sliderStep: Double = 0.05
 
@@ -139,9 +153,8 @@ struct HapticSettingsView: View {
             VStack(spacing: 8) {
                 Slider(value: value, in: sliderRange, step: sliderStep) { editing in
                     if !editing {
-                        // Trigger feedback when user releases the slider
-                        let generator = UIImpactFeedbackGenerator(style: .rigid)
-                        generator.impactOccurred(intensity: value.wrappedValue)
+                        // Preview feedback when the user releases the slider
+                        previewFeedback(intensity: value.wrappedValue)
                     }
                 }
 
@@ -162,5 +175,16 @@ struct HapticSettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 16)
+    }
+
+    /// Plays the same pulse the keyboard will emit at this intensity.
+    private func previewFeedback(intensity: Double) {
+        guard intensity > 0 else { return }
+        switch HapticPulse.pulse(for: intensity) {
+        case .selectionTick:
+            UISelectionFeedbackGenerator().selectionChanged()
+        case let .impact(style):
+            UIImpactFeedbackGenerator(style: style).impactOccurred()
+        }
     }
 }
