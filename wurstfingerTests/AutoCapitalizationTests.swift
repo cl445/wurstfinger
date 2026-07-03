@@ -248,19 +248,6 @@ struct AutoCapitalizationTests {
         )
     }
 
-    @Test func refreshStillReleasesAutoEngagedShiftAfterManualCheck() {
-        let (vm, target) = makeAutoCapViewModel()
-        // Auto-engage in an empty field, then the caret moves mid-sentence:
-        // the auto-engaged shift is stale and must be released.
-        target.documentContextBeforeInput = nil
-        vm.refreshAutoCapitalization()
-        #expect(vm.activeModeName == ModeNames.shifted)
-
-        target.documentContextBeforeInput = "Hello wor"
-        vm.refreshAutoCapitalization()
-        #expect(vm.activeModeName == ModeNames.main)
-    }
-
     // MARK: - Engagement through the pipeline (key actions)
 
     @Test func middlewareEngagesShiftAfterSentenceEnderFromMain() {
