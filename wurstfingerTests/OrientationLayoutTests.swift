@@ -51,4 +51,58 @@ struct OrientationLayoutTests {
         #expect(publishCount == 1, "Same width should not publish again")
         _ = cancellable
     }
+
+    // MARK: - Window bounds (Split View / Stage Manager, issue #116)
+
+    @Test("Window bounds publish their shortest side")
+    func windowBoundsPublishShortestSide() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+
+        // Landscape Split View pane: height is the shortest side.
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 507, height: 834))
+        #expect(viewModel.windowShortestSide == 507)
+
+        // Portrait pane: width is the shortest side.
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 320, height: 1180))
+        #expect(viewModel.windowShortestSide == 320)
+    }
+
+    @Test("Nil window falls back to the device screen")
+    func nilWindowFallsBackToScreen() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        let screenShortestSide = min(
+            DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height
+        )
+
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 507, height: 834))
+        viewModel.updateWindowBounds(nil)
+
+        #expect(viewModel.windowShortestSide == screenShortestSide)
+    }
+
+    @Test("Same window bounds do not trigger redundant publish")
+    func sameWindowBoundsNoRedundantPublish() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+
+        var publishCount = 0
+        let cancellable = viewModel.$windowShortestSide
+            .dropFirst()
+            .sink { _ in publishCount += 1 }
+
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 507, height: 834))
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 507, height: 834))
+
+        #expect(publishCount == 1, "Same bounds should not publish again")
+        _ = cancellable
+    }
+
+    @Test("Degenerate window bounds are ignored")
+    func degenerateWindowBoundsIgnored() {
+        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 507, height: 834))
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 0, height: 834))
+
+        #expect(viewModel.windowShortestSide == 507, "Zero-sized bounds must not be adopted")
+    }
 }

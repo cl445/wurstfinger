@@ -22,10 +22,9 @@ struct DataDrivenKeyboardRootView: View {
     private var keyboardStyle: KeyboardStyle = .classic
 
     var body: some View {
-        let screenBounds = DeviceLayoutUtils.screenBounds
-        let screenShortestSide = min(screenBounds.width, screenBounds.height)
+        let containerShortestSide = viewModel.windowShortestSide
         let currentWidth = overrideWidth ?? viewModel.viewWidth
-        let baseWidth = min(currentWidth, screenShortestSide)
+        let baseWidth = min(currentWidth, containerShortestSide)
         let scaledWidth = baseWidth * viewModel.keyboardScale
         let availableSpace = currentWidth - scaledWidth
         let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
