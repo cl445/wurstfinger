@@ -2,7 +2,8 @@
 //  HapticFeedbackTests.swift
 //  wurstfingerTests
 //
-//  Tests for the haptic pulse mapping.
+//  Tests for the haptic pulse mapping and the pipeline event routing that
+//  keeps text actions silent (their haptic fires on touch-down).
 //
 
 import Testing
@@ -49,5 +50,36 @@ struct HapticIntensityLevelTests {
         #expect(HapticIntensityLevel(storedIntensity: 0.4) == .light)
         #expect(HapticIntensityLevel(storedIntensity: 0.65) == .medium)
         #expect(HapticIntensityLevel(storedIntensity: 1.0) == .heavy)
+    }
+}
+
+struct PipelineHapticEventTests {
+    @Test func textActionsAreSilent() {
+        #expect(KeyboardHapticEvent.forPipelineAction(.commitText("a")) == nil)
+        #expect(KeyboardHapticEvent.forPipelineAction(.compose(trigger: "'")) == nil)
+        #expect(KeyboardHapticEvent.forPipelineAction(.space) == nil)
+        #expect(KeyboardHapticEvent.forPipelineAction(.newline) == nil)
+        #expect(KeyboardHapticEvent.forPipelineAction(.deleteBackward) == nil)
+        #expect(KeyboardHapticEvent.forPipelineAction(.moveCursor(offset: 1)) == nil)
+        #expect(KeyboardHapticEvent.forPipelineAction(.none) == nil)
+    }
+
+    @Test func stateChangingActionsGetConfirmationTick() {
+        let actions: [KeyAction] = [
+            .switchMode("numeric"), .switchToNextLanguage,
+            .advanceToNextInputMode, .dismissKeyboard,
+            .copy, .cut, .paste,
+        ]
+        for action in actions {
+            #expect(KeyboardHapticEvent.forPipelineAction(action) == .stateChange)
+        }
+    }
+
+    @Test func stateChangeUsesTapIntensity() {
+        let settings = HapticSettings(defaults: InMemoryUserDefaults(), shouldPersist: false)
+        settings.tapIntensity = 0.7
+        settings.dragIntensity = 0.1
+
+        #expect(settings.intensity(for: .stateChange) == 0.7)
     }
 }

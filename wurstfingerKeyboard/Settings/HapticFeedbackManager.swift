@@ -88,7 +88,8 @@ final class HapticFeedbackManager {
         return gens
     }()
 
-    /// Detent-style tick for the lowest intensity level.
+    /// Detent-style ticks for drag steps, state changes, and the lowest
+    /// intensity level.
     private lazy var selectionGenerator = UISelectionFeedbackGenerator()
 
     init(settings: HapticSettings) {
@@ -107,12 +108,23 @@ final class HapticFeedbackManager {
         trigger(.drag)
     }
 
+    /// Triggers a confirmation tick for layer/language changes and system
+    /// actions (globe, dismiss, clipboard).
+    func stateChange() {
+        trigger(.stateChange)
+    }
+
     /// Triggers haptic feedback for the specified event type
     func trigger(_ event: KeyboardHapticEvent) {
         let intensity = settings.intensity(for: event)
         guard intensity > 0 else { return }
 
-        let pulse = HapticPulse.pulse(for: intensity)
+        let pulse: HapticPulse = switch event {
+        case .tap, .drag: .pulse(for: intensity)
+        // State changes always use the light detent tick —
+        // `UISelectionFeedbackGenerator` is made for exactly this.
+        case .stateChange: .selectionTick
+        }
 
         let performFeedback = { [self] in
             switch pulse {

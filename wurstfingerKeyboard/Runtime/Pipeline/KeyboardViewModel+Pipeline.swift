@@ -100,11 +100,14 @@ extension KeyboardViewModel {
         }
         var middlewares: [ActionMiddleware] = []
 
-        // (Deliberately no haptic middleware: the tap haptic fires once at
-        // touch-down in the view layer — DataDrivenKeyboardRootView's
-        // onTouchDown — and slide steps trigger their own drag haptic. A
-        // per-action haptic here buzzed every key press and every slide step
-        // a second time.)
+        // 1. Haptic feedback — confirmation ticks for state-changing actions
+        //    only. The per-keystroke tap haptic fires once at touch-down in
+        //    the view layer (`feedbackTap`) and slide steps trigger their own
+        //    drag haptic, so text actions MUST stay silent here: a per-action
+        //    haptic buzzed every key press and slide step a second time.
+        middlewares.append(HapticMiddleware(trigger: { [weak self] action in
+            self?.triggerHaptic(for: action)
+        }))
 
         // 2. Compose + Cycle Accents — per-definition engine so language-specific
         // compose rule overrides are honored (rebuilt on every definition load).

@@ -13,6 +13,23 @@ import UIKit
 enum KeyboardHapticEvent {
     case tap
     case drag
+    /// Layer/language changes and system actions (globe, dismiss, clipboard)
+    case stateChange
+
+    /// Feedback for an action flowing through the pipeline, or `nil` for
+    /// silence. Text actions are silent here: their haptic already fired on
+    /// touch-down, and firing again on dispatch would double every keystroke.
+    /// Only actions that change keyboard or system state get a distinct
+    /// confirmation tick.
+    static func forPipelineAction(_ action: KeyAction) -> KeyboardHapticEvent? {
+        switch action {
+        case .switchMode, .switchToNextLanguage, .advanceToNextInputMode,
+             .dismissKeyboard, .copy, .cut, .paste:
+            .stateChange
+        default:
+            nil
+        }
+    }
 }
 
 struct DeviceLayoutUtils {
@@ -256,6 +273,13 @@ final class KeyboardViewModel: ObservableObject {
         currentDefinition?.mode(activeModeName)
     }
 
+    /// Pipeline hook: fires a confirmation tick for state-changing actions.
+    /// Text actions stay silent — their haptic fires on touch-down.
+    func triggerHaptic(for action: KeyAction) {
+        guard let event = KeyboardHapticEvent.forPipelineAction(action) else { return }
+        hapticManager.trigger(event)
+    }
+
     func reloadSettings() {
         // Delegate to extracted settings classes - eliminates duplicate code
         hapticSettings.reload()
@@ -306,5 +330,10 @@ final class KeyboardViewModel: ObservableObject {
 
     func feedbackDrag() {
         hapticManager.drag()
+    }
+
+    /// Confirmation tick for explicit layer/language switches.
+    func feedbackStateChange() {
+        hapticManager.stateChange()
     }
 }

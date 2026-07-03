@@ -112,7 +112,7 @@ final class HapticSettings: ObservableObject {
     /// Returns the intensity for a given haptic event type
     func intensity(for event: KeyboardHapticEvent) -> CGFloat {
         switch event {
-        case .tap: tapIntensity
+        case .tap, .stateChange: tapIntensity
         case .drag: dragIntensity
         }
     }
