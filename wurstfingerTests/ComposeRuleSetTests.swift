@@ -40,9 +40,10 @@ struct ComposeRuleSetGlobalTests {
         #expect(tones.keys.sorted() == ["*", "?"])
         #expect(tones["?"]?["a"] == "ả")
         #expect(tones["*"]?["a"] == "ạ")
-        // Space fallbacks stay with the moved tables.
-        #expect(tones["?"]?[" "] == "?")
-        #expect(tones["*"]?[" "] == "*")
+        // No space fallbacks: Telex only reaches these tables with vowel
+        // bases, so the entries would be unreachable data.
+        #expect(tones["?"]?[" "] == nil)
+        #expect(tones["*"]?[" "] == nil)
     }
 
     @Test func globalMatchesSharedEngine() {
