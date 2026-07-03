@@ -78,6 +78,10 @@ final class KeyboardViewModel: ObservableObject {
     var resolverChain: GestureResolverChain?
     var returnSwipeResolverChain: GestureResolverChain?
     var pipeline: ActionPipeline?
+    /// Whether the current `shifted` mode was engaged by auto-capitalization
+    /// (as opposed to a manual shift tap). Only auto-engaged shift may be
+    /// released by `refreshAutoCapitalization()`; cleared on any mode change.
+    var shiftEngagedByAutoCapitalization = false
     weak var textInputTarget: TextInputTarget?
     var onAdvanceToNextInputMode: (() -> Void)?
     var onDismissKeyboard: (() -> Void)?

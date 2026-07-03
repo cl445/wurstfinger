@@ -169,9 +169,17 @@ extension KeyboardViewModel {
     /// `textDidChange` both firing on appearance) are harmless.
     func refreshAutoCapitalization() {
         switch evaluateAutoCapitalization() {
-        case .some(true): engageAutoCapitalization()
-        case .some(false): releaseAutoCapitalization()
-        case .none: break
+        case .some(true):
+            engageAutoCapitalization()
+        case .some(false):
+            // Outside the key pipeline only an *auto-engaged* shift may be
+            // released — a manually tapped shift must survive textDidChange
+            // firing for caret moves or field switches.
+            if shiftEngagedByAutoCapitalization {
+                releaseAutoCapitalization()
+            }
+        case .none:
+            break
         }
     }
 
@@ -193,6 +201,7 @@ extension KeyboardViewModel {
     func engageAutoCapitalization() {
         guard activeModeName == ModeNames.main else { return }
         switchToMode(ModeNames.shifted)
+        shiftEngagedByAutoCapitalization = activeModeName == ModeNames.shifted
     }
 
     /// Releases a pending auto-shift. Only fires from `shifted` so caps
@@ -283,6 +292,9 @@ extension KeyboardViewModel {
         else { return }
         activeModeName = modeName
         currentMode = definition.mode(modeName)
+        // Any mode change invalidates a pending auto-shift; the auto-cap
+        // engage path re-sets the flag right after switching.
+        shiftEngagedByAutoCapitalization = false
     }
 
     // MARK: - Slide Gesture Handling

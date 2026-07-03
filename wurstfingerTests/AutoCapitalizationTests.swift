@@ -232,6 +232,35 @@ struct AutoCapitalizationTests {
         #expect(vm.activeModeName == ModeNames.shifted)
     }
 
+    @Test func refreshDoesNotReleaseManuallyTappedShift() {
+        let (vm, target) = makeAutoCapViewModel()
+        // Mid-sentence context: auto-capitalization evaluates to false.
+        target.documentContextBeforeInput = "Hello wor"
+
+        // User taps shift to type a proper noun mid-sentence…
+        vm.switchToMode(ModeNames.shifted)
+        // …then the host fires textDidChange (e.g. caret bookkeeping).
+        vm.refreshAutoCapitalization()
+
+        #expect(
+            vm.activeModeName == ModeNames.shifted,
+            "A manual shift must survive out-of-pipeline refreshes"
+        )
+    }
+
+    @Test func refreshStillReleasesAutoEngagedShiftAfterManualCheck() {
+        let (vm, target) = makeAutoCapViewModel()
+        // Auto-engage in an empty field, then the caret moves mid-sentence:
+        // the auto-engaged shift is stale and must be released.
+        target.documentContextBeforeInput = nil
+        vm.refreshAutoCapitalization()
+        #expect(vm.activeModeName == ModeNames.shifted)
+
+        target.documentContextBeforeInput = "Hello wor"
+        vm.refreshAutoCapitalization()
+        #expect(vm.activeModeName == ModeNames.main)
+    }
+
     // MARK: - Engagement through the pipeline (key actions)
 
     @Test func middlewareEngagesShiftAfterSentenceEnderFromMain() {
