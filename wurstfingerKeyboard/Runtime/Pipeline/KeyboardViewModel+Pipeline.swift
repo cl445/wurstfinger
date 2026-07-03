@@ -248,12 +248,16 @@ extension KeyboardViewModel {
         let chain = isReturn ? returnSwipeResolverChain : resolverChain
         guard let binding = chain?.resolve(keyId: keyId, gesture: gesture, in: mode) else { return }
 
+        // Mode and language switches bypass the pipeline, so their
+        // confirmation tick fires here instead of in the haptic middleware.
         if case let .switchMode(targetMode) = binding.action {
+            feedbackStateChange()
             handleSwitchMode(targetMode)
             return
         }
 
         if case .switchToNextLanguage = binding.action {
+            feedbackStateChange()
             switchToNextLanguage()
             return
         }
