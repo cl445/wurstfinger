@@ -88,6 +88,20 @@ final class KeyboardViewController: UIInputViewController {
         // keyboard was backgrounded — avoids rebuilding the pipeline every time.
         loadDefinitionIfNeeded()
         updateKeyboardHeight()
+        // Engage/release shift for the field's current context (e.g. start
+        // uppercase in an empty compose field). `textDidChange` usually also
+        // fires on appearance, but that is not guaranteed in every host app;
+        // the refresh is idempotent, so evaluating in both paths is safe.
+        viewModel.refreshAutoCapitalization()
+    }
+
+    override func textDidChange(_ textInput: UITextInput?) {
+        super.textDidChange(textInput)
+        // Fires when the host text or caret position changes outside our own
+        // key actions (field switch, caret relocation, external edits) — and
+        // on keyboard appearance. Re-evaluate so stale shift state is
+        // corrected (e.g. caret moved from a sentence start into a word).
+        viewModel.refreshAutoCapitalization()
     }
 
     /// Loads the keyboard definition only when the inputs that determine it

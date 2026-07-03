@@ -143,23 +143,9 @@ extension KeyboardViewModel {
 
         // 7. Auto-capitalization
         middlewares.append(AutoCapitalizationMiddleware(
-            evaluate: { [weak self] in
-                guard let self,
-                      sharedDefaults.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue)
-                else { return nil }
-                return AutoCapitalization.shouldCapitalize(
-                    context: textInputTarget?.documentContextBeforeInput
-                )
-            },
-            onCapitalize: { [weak self] in
-                self?.switchToMode(ModeNames.shifted)
-            },
-            onReleaseCapitalize: { [weak self] in
-                guard let self else { return }
-                if activeModeName == ModeNames.shifted {
-                    switchToMode(ModeNames.main)
-                }
-            }
+            evaluate: { [weak self] in self?.evaluateAutoCapitalization() },
+            onCapitalize: { [weak self] in self?.engageAutoCapitalization() },
+            onReleaseCapitalize: { [weak self] in self?.releaseAutoCapitalization() }
         ))
 
         // 8. Mode transitions (auto-transitions from key category)
@@ -171,6 +157,58 @@ extension KeyboardViewModel {
         ))
 
         pipeline = ActionPipeline(middlewares: middlewares)
+    }
+
+    // MARK: - Auto-Capitalization
+
+    /// Re-evaluates auto-capitalization outside the key-action pipeline.
+    /// Called from `KeyboardViewController` when the host text changes
+    /// (keyboard appearance, field switch, caret relocation) so the shift
+    /// state matches the new context. Idempotent: `switchToMode` ignores
+    /// same-mode switches, so overlapping calls (e.g. `viewWillAppear` and
+    /// `textDidChange` both firing on appearance) are harmless.
+    func refreshAutoCapitalization() {
+        switch evaluateAutoCapitalization() {
+        case .some(true):
+            engageAutoCapitalization()
+        case .some(false):
+            // Outside the key pipeline only an *auto-engaged* shift may be
+            // released — a manually tapped shift must survive textDidChange
+            // firing for caret moves or field switches.
+            if shiftEngagedByAutoCapitalization {
+                releaseAutoCapitalization()
+            }
+        case .none:
+            break
+        }
+    }
+
+    /// Returns whether the next key should be capitalized, or `nil` when
+    /// auto-capitalization is inactive — either the definition does not
+    /// support it for this language or the user disabled it in settings.
+    func evaluateAutoCapitalization() -> Bool? {
+        guard currentDefinition?.settings.autoCapitalize == true,
+              sharedDefaults.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue)
+        else { return nil }
+        return AutoCapitalization.shouldCapitalize(
+            context: textInputTarget?.documentContextBeforeInput
+        )
+    }
+
+    /// Engages the shifted layer for the next key. Only fires from `main`:
+    /// caps lock must survive sentence enders, and the numeric/symbol
+    /// layers must not be hijacked into the letter layers.
+    func engageAutoCapitalization() {
+        guard activeModeName == ModeNames.main else { return }
+        switchToMode(ModeNames.shifted)
+        shiftEngagedByAutoCapitalization = activeModeName == ModeNames.shifted
+    }
+
+    /// Releases a pending auto-shift. Only fires from `shifted` so caps
+    /// lock and non-letter layers are never demoted.
+    func releaseAutoCapitalization() {
+        guard activeModeName == ModeNames.shifted else { return }
+        switchToMode(ModeNames.main)
     }
 
     // MARK: - Gesture Dispatch
@@ -254,6 +292,9 @@ extension KeyboardViewModel {
         else { return }
         activeModeName = modeName
         currentMode = definition.mode(modeName)
+        // Any mode change invalidates a pending auto-shift; the auto-cap
+        // engage path re-sets the flag right after switching.
+        shiftEngagedByAutoCapitalization = false
     }
 
     // MARK: - Slide Gesture Handling

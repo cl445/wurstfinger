@@ -105,9 +105,6 @@ struct KeyboardDefinitionSettings: Codable, Equatable {
     /// Auto-capitalization enabled
     let autoCapitalize: Bool
 
-    /// Language-specific auto-capitalizer rules (e.g. "i" → "I" in English)
-    let autoCapitalizers: [AutoCapitalizerRule]
-
     /// Language-specific compose rule overrides.
     /// Merged with global base rules at runtime.
     /// nil = only use global rules (sufficient for most languages).
@@ -119,22 +116,11 @@ struct KeyboardDefinitionSettings: Codable, Equatable {
 
     init(
         autoCapitalize: Bool,
-        autoCapitalizers: [AutoCapitalizerRule],
         composeRuleOverrides: ComposeRuleSet?,
         inputMethod: InputMethodKind = .direct
     ) {
         self.autoCapitalize = autoCapitalize
-        self.autoCapitalizers = autoCapitalizers
         self.composeRuleOverrides = composeRuleOverrides
         self.inputMethod = inputMethod
     }
-}
-
-/// A rule for automatic capitalization.
-struct AutoCapitalizerRule: Codable, Equatable {
-    /// Pattern recognized in text before cursor
-    let pattern: String
-
-    /// Replacement
-    let replacement: String
 }
