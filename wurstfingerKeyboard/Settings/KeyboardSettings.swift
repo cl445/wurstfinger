@@ -46,7 +46,9 @@ final class HapticSettings: ObservableObject {
     /// Default intensity values (0.0 - 1.0). Both map to a discrete
     /// `HapticIntensityLevel`; level `.off` (intensity 0) disables the
     /// respective feedback, so there is no separate master switch.
-    static let defaultTapIntensity: CGFloat = HapticIntensityLevel.light.storedIntensity
+    /// Defaults mirror the iOS system keyboard's subtle feel: a soft tap
+    /// per keystroke, detent ticks for drags.
+    static let defaultTapIntensity: CGFloat = HapticIntensityLevel.soft.storedIntensity
     static let defaultDragIntensity: CGFloat = HapticIntensityLevel.tick.storedIntensity
 
     private let defaults: UserDefaults

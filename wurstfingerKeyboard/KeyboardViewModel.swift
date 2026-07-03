@@ -183,16 +183,21 @@ final class KeyboardViewModel: ObservableObject {
         // Cross-process updates from the host app are handled by
         // KeyboardViewController.viewWillAppear → reloadSettings().
         // Non-persisting view models (previews, showcases, screenshots) are
-        // configured programmatically; reloading from the store would revert
-        // forced values (e.g. the full-size screenshot scale) on the next
-        // runloop pass, so they skip the observer.
-        if shouldPersistSettings {
-            userDefaultsObserver = NotificationCenter.default.addObserver(
-                forName: UserDefaults.didChangeNotification,
-                object: sharedDefaults,
-                queue: .main
-            ) { [weak self] _ in
-                self?.reloadSettings()
+        // configured programmatically; reloading everything from the store
+        // would revert forced values (e.g. the full-size screenshot scale) on
+        // the next runloop pass — but haptic settings are never forced, and
+        // the settings screen's preview keyboard should play slider changes
+        // live, so non-persisting view models follow the store for haptics only.
+        userDefaultsObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: sharedDefaults,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            if shouldPersistSettings {
+                reloadSettings()
+            } else {
+                hapticSettings.reload()
             }
         }
     }

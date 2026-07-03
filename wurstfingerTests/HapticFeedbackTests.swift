@@ -23,8 +23,8 @@ struct HapticPulseTests {
         #expect(HapticPulse.pulse(for: 1.0) == .impact(.heavy))
     }
 
-    @Test func defaultTapIntensityMapsToLightImpact() {
-        #expect(HapticPulse.pulse(for: HapticSettings.defaultTapIntensity) == .impact(.light))
+    @Test func defaultTapIntensityMapsToSoftImpact() {
+        #expect(HapticPulse.pulse(for: HapticSettings.defaultTapIntensity) == .impact(.soft))
     }
 }
 
