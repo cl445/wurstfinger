@@ -152,12 +152,7 @@ struct HapticSettingsView: View {
                     value: levelIndexBinding(for: value),
                     in: 0 ... Double(HapticIntensityLevel.allCases.count - 1),
                     step: 1
-                ) { editing in
-                    if !editing {
-                        // Preview feedback when the user releases the slider
-                        previewFeedback(intensity: value.wrappedValue)
-                    }
-                }
+                )
 
                 HStack {
                     Text("Off")
@@ -181,12 +176,19 @@ struct HapticSettingsView: View {
     /// Bridges the stored 0...1 intensity to a discrete level index. Writing
     /// stores the level's canonical intensity, so legacy in-between values
     /// snap to a level the moment the slider is touched.
+    ///
+    /// Each snap onto a new level plays that level's pulse, so every level
+    /// can be felt while sliding across the detents.
     private func levelIndexBinding(for value: Binding<Double>) -> Binding<Double> {
         Binding(
             get: { Double(HapticIntensityLevel(storedIntensity: value.wrappedValue).rawValue) },
             set: { index in
                 let level = HapticIntensityLevel(rawValue: Int(index.rounded())) ?? .off
+                let previous = HapticIntensityLevel(storedIntensity: value.wrappedValue)
                 value.wrappedValue = Double(level.storedIntensity)
+                if level != previous {
+                    previewFeedback(intensity: Double(level.storedIntensity))
+                }
             }
         )
     }
