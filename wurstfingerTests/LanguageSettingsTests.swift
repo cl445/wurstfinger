@@ -456,15 +456,19 @@ struct MultiLanguageSettingsTests {
         #expect(settings.enabledLanguageIds == ["en_US", "ru_RU"])
     }
 
-    @Test("Selected language always in enabled list after init")
-    func selectedAlwaysInEnabled() {
+    @Test("Init reselects the first enabled language when selected is not enabled")
+    func selectedNotEnabledReselectsFirstEnabled() {
         let (defaults, suite) = createTestDefaults()
         defer { defaults.removePersistentDomain(forName: suite) }
 
-        // Selected is ru_RU but enabled list only has en_US
+        // Selected is ru_RU but enabled list only has en_US — this state arises
+        // when the language was disabled elsewhere; the disable must win, so the
+        // selection falls back instead of re-enabling ru_RU.
         let settings = createSettings(defaults: defaults, selectedId: "ru_RU", enabledIds: ["en_US"])
-        #expect(settings.enabledLanguageIds.contains("ru_RU"))
-        #expect(settings.enabledLanguageIds.contains("en_US"))
+        #expect(settings.selectedLanguageId == "en_US")
+        #expect(settings.enabledLanguageIds == ["en_US"])
+        // The corrected selection is persisted for the keyboard extension.
+        #expect(defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue) == "en_US")
     }
 
     @Test("Enabled list persistence round-trips through JSON")
@@ -759,12 +763,15 @@ struct NormalizedEnabledLanguageIdsTests {
         #expect(LanguageSettings.normalizedEnabledLanguageIds(from: defaults) == ["ru_RU"])
     }
 
-    @Test("Includes the selected language even when missing from the stored list")
-    func includesSelectedWhenAbsent() {
+    @Test("Does not re-add a selected language missing from the stored list")
+    func doesNotReAddSelectedWhenAbsent() {
+        // selected = de_DE with de_DE absent from the enabled list means the
+        // host app disabled German after the keyboard selected it — treating it
+        // as enabled again would resurrect a language the user turned off.
         let (defaults, suite) = makeDefaults(selected: "de_DE", enabled: ["en_US"])
         defer { defaults.removePersistentDomain(forName: suite) }
 
-        #expect(LanguageSettings.normalizedEnabledLanguageIds(from: defaults) == ["de_DE", "en_US"])
+        #expect(LanguageSettings.normalizedEnabledLanguageIds(from: defaults) == ["en_US"])
     }
 
     @Test("Does not persist — leaves the stored list untouched")
@@ -774,5 +781,96 @@ struct NormalizedEnabledLanguageIdsTests {
 
         _ = LanguageSettings.normalizedEnabledLanguageIds(from: defaults)
         #expect(LanguageSettings.loadEnabledLanguageIds(from: defaults) == ["de_DE", "zz_ZZ"])
+    }
+}
+
+// MARK: - Cross-Process Staleness
+
+/// The host app holds `LanguageSettings.shared` for its whole lifetime while
+/// the keyboard extension writes `selectedLanguageId` on every globe-key
+/// language cycle. These tests simulate that cross-process drift by writing to
+/// the injected in-memory store externally between init and the mutating call.
+struct LanguageSettingsStalenessTests {
+    /// Store seeded with `selected = en_US`, `enabled = [en_US, de_DE]`.
+    private func makeStore() -> InMemoryUserDefaults {
+        let defaults = InMemoryUserDefaults()
+        defaults.set("en_US", forKey: SettingsKey.selectedLanguageId.rawValue)
+        LanguageSettings.saveEnabledLanguageIds(["en_US", "de_DE"], to: defaults)
+        return defaults
+    }
+
+    @Test("Disabling the externally-selected language reselects a remaining one")
+    func toggleRefreshesBeforeDisabling() {
+        let defaults = makeStore()
+        let settings = LanguageSettings(userDefaults: defaults)
+
+        // The keyboard extension cycles to German while the app is backgrounded.
+        defaults.set("de_DE", forKey: SettingsKey.selectedLanguageId.rawValue)
+
+        // Back in the app, the user disables German.
+        let result = settings.toggleLanguage(.german)
+
+        #expect(result == true)
+        #expect(settings.selectedLanguageId == "en_US")
+        #expect(settings.enabledLanguageIds == ["en_US"])
+        // The store ends consistent: the selection is enabled, German is gone.
+        #expect(defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue) == "en_US")
+        #expect(LanguageSettings.loadEnabledLanguageIds(from: defaults) == ["en_US"])
+    }
+
+    @Test("A disabled language stays disabled across a fresh init")
+    func disabledLanguageDoesNotResurrect() {
+        let defaults = makeStore()
+        let settings = LanguageSettings(userDefaults: defaults)
+
+        defaults.set("de_DE", forKey: SettingsKey.selectedLanguageId.rawValue)
+        settings.toggleLanguage(.german)
+
+        // The next app launch re-reads the store — German must not come back.
+        let relaunched = LanguageSettings(userDefaults: defaults)
+        #expect(relaunched.enabledLanguageIds == ["en_US"])
+        #expect(relaunched.selectedLanguageId == "en_US")
+    }
+
+    @Test("Init with an inconsistent store reselects the first enabled language")
+    func initNormalizesInconsistentStore() {
+        // selected = de_DE while de_DE is not enabled: the state an external
+        // writer (or the pre-fix toggle path) can leave behind.
+        let defaults = InMemoryUserDefaults()
+        defaults.set("de_DE", forKey: SettingsKey.selectedLanguageId.rawValue)
+        LanguageSettings.saveEnabledLanguageIds(["en_US"], to: defaults)
+
+        let settings = LanguageSettings(userDefaults: defaults)
+
+        #expect(settings.selectedLanguageId == "en_US")
+        #expect(settings.enabledLanguageIds == ["en_US"])
+        #expect(defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue) == "en_US")
+    }
+
+    @Test("reloadFromStore picks up an external language cycle")
+    func reloadPicksUpExternalSelection() {
+        let defaults = makeStore()
+        let settings = LanguageSettings(userDefaults: defaults)
+
+        defaults.set("de_DE", forKey: SettingsKey.selectedLanguageId.rawValue)
+        settings.reloadFromStore()
+
+        #expect(settings.selectedLanguageId == "de_DE")
+        #expect(settings.enabledLanguageIds == ["en_US", "de_DE"])
+    }
+
+    @Test("Pinning an externally-disabled language re-enables and pins it")
+    func pinReEnablesExternallyDisabledLanguage() {
+        // Deliberate asymmetry to the disable-wins invariant above: a pin is
+        // an explicit "use this language" request, so pin implies enabled —
+        // even when another process disabled the language in the meantime.
+        let defaults = makeStore()
+        let settings = LanguageSettings(userDefaults: defaults)
+
+        LanguageSettings.saveEnabledLanguageIds(["en_US"], to: defaults)
+        settings.pinLanguage(.german)
+
+        #expect(settings.enabledLanguageIds.contains("de_DE"))
+        #expect(settings.pinnedLanguageId == "de_DE")
     }
 }

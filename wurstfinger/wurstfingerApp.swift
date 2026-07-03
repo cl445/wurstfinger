@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct wurstfingerApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+
     private let screenshotMode: ScreenshotMode
 
     private enum ScreenshotMode {
@@ -38,13 +40,24 @@ struct wurstfingerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            switch screenshotMode {
-            case .appStore:
-                AppStoreScreenshotView()
-            case .keyboardOnly:
-                KeyboardShowcaseView()
-            case .none:
-                ContentView()
+            Group {
+                switch screenshotMode {
+                case .appStore:
+                    AppStoreScreenshotView()
+                case .keyboardOnly:
+                    KeyboardShowcaseView()
+                case .none:
+                    ContentView()
+                }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                // The keyboard extension writes the language selection while
+                // the app is backgrounded (globe-key cycling). Refresh the
+                // shared singleton on foreground so the settings UI never acts
+                // on stale state.
+                if newPhase == .active {
+                    LanguageSettings.shared.reloadFromStore()
+                }
             }
         }
     }
