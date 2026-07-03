@@ -16,12 +16,21 @@ import Testing
 
 @MainActor
 struct SettingsReloadObserverTests {
-    /// Posts the notification UserDefaults would emit for an in-process write,
-    /// then drains the main runloop so observer blocks enqueued on `.main`
-    /// are delivered before asserting.
+    /// Posts the notification UserDefaults would emit for an in-process write.
     private func postDidChange(for defaults: UserDefaults) {
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: defaults)
-        RunLoop.main.run(until: Date().addingTimeInterval(0.01))
+    }
+
+    /// Drains the main runloop in short slices until `condition` holds or the
+    /// deadline passes. Fast when the observer fires promptly, tolerant when a
+    /// loaded CI runner delays `.main`-queue delivery.
+    private func drainRunLoop(
+        deadline: TimeInterval = 1.0, until condition: () -> Bool = { false }
+    ) {
+        let end = Date().addingTimeInterval(deadline)
+        while !condition(), Date() < end {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.01))
+        }
     }
 
     @Test("Persisting view model reloads settings on didChange (control)")
@@ -33,6 +42,7 @@ struct SettingsReloadObserverTests {
 
         defaults.set(0.8, forKey: SettingsKey.keyboardScale.rawValue)
         postDidChange(for: defaults)
+        drainRunLoop(until: { vm.keyboardScale == 0.8 })
 
         #expect(vm.keyboardScale == 0.8)
     }
@@ -49,6 +59,9 @@ struct SettingsReloadObserverTests {
         // screenshot language) and the change notification fires.
         defaults.set("en_US", forKey: SettingsKey.selectedLanguageId.rawValue)
         postDidChange(for: defaults)
+        // Give a (buggy) observer ample time to fire before asserting that
+        // nothing changed — a fixed short drain could false-pass under load.
+        drainRunLoop(deadline: 0.1)
 
         // The forced scale must survive; a reload would revert it to 0.5.
         #expect(vm.keyboardScale == 1.0)
