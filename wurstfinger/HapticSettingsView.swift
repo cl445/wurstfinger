@@ -130,9 +130,9 @@ struct HapticSettingsView: View {
         )
     }
 
-    private let sliderRange: ClosedRange<Double> = 0 ... 1
-    private let sliderStep: Double = 0.05
-
+    /// The keyboard can only produce the pulses in `HapticIntensityLevel`,
+    /// so the slider snaps to those levels instead of offering a continuous
+    /// range that mostly changes nothing.
     private func hapticControl(
         title: LocalizedStringKey,
         value: Binding<Double>,
@@ -143,15 +143,16 @@ struct HapticSettingsView: View {
                 Text(title)
                     .font(.headline)
                 Spacer()
-                TextField("Value", value: value, formatter: NumberFormatter.decimalFormatter(minimum: 0, maximum: 1))
-                    .keyboardType(.decimalPad)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 80)
-                    .multilineTextAlignment(.trailing)
+                Text(HapticIntensityLevel(storedIntensity: value.wrappedValue).displayName)
+                    .foregroundColor(.secondary)
             }
 
             VStack(spacing: 8) {
-                Slider(value: value, in: sliderRange, step: sliderStep) { editing in
+                Slider(
+                    value: levelIndexBinding(for: value),
+                    in: 0 ... Double(HapticIntensityLevel.allCases.count - 1),
+                    step: 1
+                ) { editing in
                     if !editing {
                         // Preview feedback when the user releases the slider
                         previewFeedback(intensity: value.wrappedValue)
@@ -177,6 +178,19 @@ struct HapticSettingsView: View {
         .padding(.horizontal, 16)
     }
 
+    /// Bridges the stored 0...1 intensity to a discrete level index. Writing
+    /// stores the level's canonical intensity, so legacy in-between values
+    /// snap to a level the moment the slider is touched.
+    private func levelIndexBinding(for value: Binding<Double>) -> Binding<Double> {
+        Binding(
+            get: { Double(HapticIntensityLevel(storedIntensity: value.wrappedValue).rawValue) },
+            set: { index in
+                let level = HapticIntensityLevel(rawValue: Int(index.rounded())) ?? .off
+                value.wrappedValue = Double(level.storedIntensity)
+            }
+        )
+    }
+
     /// Plays the same pulse the keyboard will emit at this intensity.
     private func previewFeedback(intensity: Double) {
         guard intensity > 0 else { return }
@@ -185,6 +199,21 @@ struct HapticSettingsView: View {
             UISelectionFeedbackGenerator().selectionChanged()
         case let .impact(style):
             UIImpactFeedbackGenerator(style: style).impactOccurred()
+        }
+    }
+}
+
+extension HapticIntensityLevel {
+    /// User-facing level name. Lives in the host app target because the
+    /// keyboard extension has no string catalog.
+    var displayName: String {
+        switch self {
+        case .off: String(localized: "Off")
+        case .tick: String(localized: "Minimal")
+        case .soft: String(localized: "Soft")
+        case .light: String(localized: "Light")
+        case .medium: String(localized: "Medium")
+        case .heavy: String(localized: "Strong")
         }
     }
 }

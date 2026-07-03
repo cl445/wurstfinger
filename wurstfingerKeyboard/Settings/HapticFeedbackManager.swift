@@ -33,6 +33,44 @@ enum HapticPulse: Equatable {
     }
 }
 
+/// The discrete, user-facing intensity levels — one per producible pulse,
+/// plus off. The settings UI offers exactly these instead of a continuous
+/// range, because intermediate values cannot change the physical feedback.
+///
+/// Stored settings remain a 0...1 intensity for backward compatibility;
+/// levels map to their bucket's midpoint in `HapticPulse.pulse(for:)`.
+enum HapticIntensityLevel: Int, CaseIterable, Equatable {
+    case off = 0, tick, soft, light, medium, heavy
+
+    /// Canonical stored intensity (midpoint of the corresponding pulse bucket).
+    var storedIntensity: CGFloat {
+        switch self {
+        case .off: 0
+        case .tick: 0.1
+        case .soft: 0.3
+        case .light: 0.5
+        case .medium: 0.7
+        case .heavy: 0.9
+        }
+    }
+
+    /// Derives the level from a stored intensity via the pulse mapping, so
+    /// the two can never drift apart.
+    init(storedIntensity: CGFloat) {
+        guard storedIntensity > 0 else {
+            self = .off
+            return
+        }
+        self = switch HapticPulse.pulse(for: storedIntensity) {
+        case .selectionTick: .tick
+        case .impact(.soft): .soft
+        case .impact(.light): .light
+        case .impact(.medium): .medium
+        case .impact: .heavy
+        }
+    }
+}
+
 /// Manages haptic feedback generation for keyboard events.
 ///
 /// Requires Full Access to be enabled — without it, `UIFeedbackGenerator` silently

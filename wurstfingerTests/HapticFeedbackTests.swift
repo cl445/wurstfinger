@@ -27,3 +27,27 @@ struct HapticPulseTests {
         #expect(HapticPulse.pulse(for: HapticSettings.defaultTapIntensity) == .impact(.light))
     }
 }
+
+struct HapticIntensityLevelTests {
+    @Test func storedIntensityRoundTripsForAllLevels() {
+        for level in HapticIntensityLevel.allCases {
+            #expect(HapticIntensityLevel(storedIntensity: level.storedIntensity) == level)
+        }
+    }
+
+    @Test func eachLevelProducesItsOwnPulse() {
+        #expect(HapticPulse.pulse(for: HapticIntensityLevel.tick.storedIntensity) == .selectionTick)
+        #expect(HapticPulse.pulse(for: HapticIntensityLevel.soft.storedIntensity) == .impact(.soft))
+        #expect(HapticPulse.pulse(for: HapticIntensityLevel.light.storedIntensity) == .impact(.light))
+        #expect(HapticPulse.pulse(for: HapticIntensityLevel.medium.storedIntensity) == .impact(.medium))
+        #expect(HapticPulse.pulse(for: HapticIntensityLevel.heavy.storedIntensity) == .impact(.heavy))
+    }
+
+    @Test func legacyInBetweenValuesSnapToTheirBucket() {
+        #expect(HapticIntensityLevel(storedIntensity: 0) == .off)
+        #expect(HapticIntensityLevel(storedIntensity: 0.05) == .tick)
+        #expect(HapticIntensityLevel(storedIntensity: 0.4) == .light)
+        #expect(HapticIntensityLevel(storedIntensity: 0.65) == .medium)
+        #expect(HapticIntensityLevel(storedIntensity: 1.0) == .heavy)
+    }
+}
