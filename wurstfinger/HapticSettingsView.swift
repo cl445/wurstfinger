@@ -7,9 +7,6 @@ struct HapticSettingsView: View {
     @AppStorage(SettingsKey.hapticIntensityDrag.rawValue, store: SharedDefaults.store)
     private var dragIntensity = Double(HapticSettings.defaultDragIntensity)
 
-    @AppStorage(SettingsKey.hapticEnabled.rawValue, store: SharedDefaults.store)
-    private var hapticEnabled = true
-
     @AppStorage(SettingsKey.keyboardFullAccess.rawValue, store: SharedDefaults.store)
     private var hasFullAccess = false
 
@@ -37,57 +34,33 @@ struct HapticSettingsView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     if !hasSyncedFullAccess || hasFullAccess {
-                        // Full Access granted or not yet synced — show full UI
-                        VStack(spacing: 8) {
-                            Toggle("Haptic Feedback", isOn: $hapticEnabled)
-                                .font(.headline)
-
-                            Text("Enable or disable all haptic feedback vibrations.")
+                        // Full Access granted or not yet synced — show full UI.
+                        // No master toggle: each slider's "Off" level disables
+                        // its feedback.
+                        if !hasSyncedFullAccess {
+                            Text("Open the keyboard once to sync Full Access status.")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-
-                            if !hasSyncedFullAccess {
-                                Text("Open the keyboard once to sync Full Access status.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
+                                .padding(.horizontal, 16)
                         }
-                        .padding(.horizontal, 16)
 
-                        if hapticEnabled {
-                            Divider()
-                                .padding(.horizontal, 16)
+                        VStack(spacing: 24) {
+                            hapticControl(
+                                title: "Tap Feedback",
+                                value: $tapIntensity,
+                                description: "Applies when you touch any key."
+                            )
 
-                            VStack(spacing: 24) {
-                                hapticControl(
-                                    title: "Tap Feedback",
-                                    value: $tapIntensity,
-                                    description: "Applies when you touch any key."
-                                )
-
-                                // Drag steps use a fixed selection tick (no
-                                // intensity), so this is a plain on/off toggle.
-                                VStack(spacing: 8) {
-                                    Toggle("Drag Feedback", isOn: dragFeedbackEnabled)
-                                        .font(.headline)
-
-                                    Text("Applies when you drag the Space or Delete key to move the cursor or delete text.")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                }
-                                .padding(.horizontal, 16)
-                            }
+                            hapticControl(
+                                title: "Drag Feedback",
+                                value: $dragIntensity,
+                                description: "Applies when you drag the Space or Delete key to move the cursor or delete text."
+                            )
                         }
                     } else {
                         // Full Access explicitly denied
                         VStack(spacing: 12) {
-                            Toggle("Haptic Feedback", isOn: .constant(false))
-                                .font(.headline)
-                                .disabled(true)
-
                             Label {
                                 Text(
                                     // swiftlint:disable:next line_length
@@ -115,19 +88,10 @@ struct HapticSettingsView: View {
                     Button("Reset") {
                         tapIntensity = Double(HapticSettings.defaultTapIntensity)
                         dragIntensity = Double(HapticSettings.defaultDragIntensity)
-                        hapticEnabled = true
                     }
                 }
             }
         }
-    }
-
-    /// The drag tick has no intensity; the stored value only gates on/off.
-    private var dragFeedbackEnabled: Binding<Bool> {
-        Binding(
-            get: { dragIntensity > 0 },
-            set: { dragIntensity = $0 ? Double(HapticSettings.defaultDragIntensity) : 0 }
-        )
     }
 
     /// The keyboard can only produce the pulses in `HapticIntensityLevel`,

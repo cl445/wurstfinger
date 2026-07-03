@@ -117,11 +117,6 @@ final class KeyboardViewModel: ObservableObject {
         set { hapticSettings.dragIntensity = newValue }
     }
 
-    var hapticEnabled: Bool {
-        get { hapticSettings.enabled }
-        set { hapticSettings.enabled = newValue }
-    }
-
     var utilityColumnLeading: Bool {
         get { layoutSettings.utilityColumnLeading }
         set { layoutSettings.utilityColumnLeading = newValue }

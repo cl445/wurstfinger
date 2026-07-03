@@ -290,10 +290,7 @@ struct SettingsView: View {
 
     private func hapticModeDescription() -> String {
         let tap: String = HapticIntensityLevel(storedIntensity: hapticTapIntensity).displayName
-        // Drag feedback is a fixed tick, so its stored intensity is just on/off.
-        let drag: String = hapticDragIntensity <= 0.001
-            ? String(localized: "Off")
-            : String(localized: "On")
+        let drag: String = HapticIntensityLevel(storedIntensity: hapticDragIntensity).displayName
         return String(localized: "Tap: \(tap) • Drag: \(drag)")
     }
 }

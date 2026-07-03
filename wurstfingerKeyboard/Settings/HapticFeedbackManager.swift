@@ -88,7 +88,7 @@ final class HapticFeedbackManager {
         return gens
     }()
 
-    /// Detent-style ticks for drag steps and the lowest intensity level.
+    /// Detent-style tick for the lowest intensity level.
     private lazy var selectionGenerator = UISelectionFeedbackGenerator()
 
     init(settings: HapticSettings) {
@@ -109,17 +109,10 @@ final class HapticFeedbackManager {
 
     /// Triggers haptic feedback for the specified event type
     func trigger(_ event: KeyboardHapticEvent) {
-        guard settings.enabled else { return }
-
         let intensity = settings.intensity(for: event)
         guard intensity > 0 else { return }
 
-        let pulse: HapticPulse = switch event {
-        case .tap: .pulse(for: intensity)
-        // Repeated drag steps always use the light detent tick —
-        // `UISelectionFeedbackGenerator` is made for exactly this.
-        case .drag: .selectionTick
-        }
+        let pulse = HapticPulse.pulse(for: intensity)
 
         let performFeedback = { [self] in
             switch pulse {
