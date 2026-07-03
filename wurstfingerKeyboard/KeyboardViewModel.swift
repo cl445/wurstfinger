@@ -75,6 +75,11 @@ final class KeyboardViewModel: ObservableObject {
     // MARK: - Data-Driven Pipeline State (internal for extension access)
 
     var currentDefinition: KeyboardDefinition?
+    /// Signature of the inputs that produced `currentDefinition` (see
+    /// `definitionSignature(languageId:numpadStyle:)`). Kept on the view model
+    /// — not the controller — so in-keyboard language switches, which load a
+    /// new definition directly, keep it in sync.
+    var loadedDefinitionSignature: String?
     var resolverChain: GestureResolverChain?
     var returnSwipeResolverChain: GestureResolverChain?
     var pipeline: ActionPipeline?
@@ -242,17 +247,18 @@ final class KeyboardViewModel: ObservableObject {
         currentDefinition?.mode(activeModeName)
     }
 
-    /// Exposes haptic tap to the pipeline extension.
-    func triggerHapticTap() {
-        hapticManager.tap()
-    }
-
     func reloadSettings() {
         // Delegate to extracted settings classes - eliminates duplicate code
         hapticSettings.reload()
         layoutSettings.reload()
 
-        enabledLanguageIds = LanguageSettings.normalizedEnabledLanguageIds(from: sharedDefaults)
+        // Equality-guarded: this runs on every in-process defaults write (via
+        // the didChangeNotification observer), and an unguarded assignment to
+        // a @Published property re-renders the whole keyboard each time.
+        let newEnabledLanguageIds = LanguageSettings.normalizedEnabledLanguageIds(from: sharedDefaults)
+        if enabledLanguageIds != newEnabledLanguageIds {
+            enabledLanguageIds = newEnabledLanguageIds
+        }
     }
 
     func switchToNextLanguage() {

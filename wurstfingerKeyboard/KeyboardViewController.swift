@@ -15,11 +15,6 @@ final class KeyboardViewController: UIInputViewController {
     private var heightConstraint: NSLayoutConstraint?
     private var documentProxyTarget: DocumentProxyTarget?
 
-    /// Signature of the definition currently loaded into the pipeline. Used to
-    /// skip the expensive rebuild (two resolver chains + 8 middlewares) on every
-    /// `viewWillAppear` when nothing that affects the definition changed.
-    private var loadedDefinitionSignature: String?
-
     /// The language selected in the host app, normalised to an id that is
     /// guaranteed to exist in the registry (falling back to the system language,
     /// then English). Determines which definition is loaded.
@@ -80,13 +75,22 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // Persist Full Access status so the host app can show/hide haptic settings
-        SharedDefaults.store.set(hasFullAccess, forKey: SettingsKey.keyboardFullAccess.rawValue)
+        // Persist Full Access status so the host app can show/hide haptic
+        // settings. Write only on change: every shared-defaults write fires the
+        // in-process didChangeNotification observer, which would run a second,
+        // redundant reloadSettings on every appearance.
+        let fullAccessKey = SettingsKey.keyboardFullAccess.rawValue
+        if SharedDefaults.store.bool(forKey: fullAccessKey) != hasFullAccess {
+            SharedDefaults.store.set(hasFullAccess, forKey: fullAccessKey)
+        }
         // Reload settings every time keyboard appears
         viewModel.reloadSettings()
         // Reload definition only if language (or numpad style) changed while the
         // keyboard was backgrounded — avoids rebuilding the pipeline every time.
         loadDefinitionIfNeeded()
+        // Reopen on the default (letters) layer: a keyboard dismissed on the
+        // numeric or shifted layer must not resurface there.
+        viewModel.resetToDefaultMode()
         updateKeyboardHeight()
         // Engage/release shift for the field's current context (e.g. start
         // uppercase in an empty compose field). `textDidChange` usually also
@@ -113,13 +117,18 @@ final class KeyboardViewController: UIInputViewController {
         let languageId = selectedLanguageId
         let numpadStyle = SharedDefaults.store.string(
             forKey: SettingsKey.numpadStyle.rawValue
-        ) ?? ""
-        let signature = "\(languageId)|\(numpadStyle)"
-        guard signature != loadedDefinitionSignature else { return }
-        // Cache the signature only after a successful load so a failed lookup
-        // does not suppress future reload attempts.
+        )
+        let signature = KeyboardViewModel.definitionSignature(
+            languageId: languageId,
+            numpadStyle: numpadStyle
+        )
+        // Compare against the view model's record of what it actually loaded —
+        // a controller-side cache desyncs when the user cycles languages via
+        // the globe key (the view model loads directly), forcing a needless
+        // pipeline rebuild (two resolver chains + the full middleware stack)
+        // on the next appearance.
+        guard signature != viewModel.loadedDefinitionSignature else { return }
         viewModel.loadDefinition(for: languageId)
-        loadedDefinitionSignature = signature
     }
 
     override func didReceiveMemoryWarning() {
