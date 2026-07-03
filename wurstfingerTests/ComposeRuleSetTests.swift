@@ -14,7 +14,7 @@ import Testing
 struct ComposeRuleSetGlobalTests {
     @Test func globalHasAllTriggers() {
         let triggers = ComposeRuleSet.global.rules.keys.sorted()
-        #expect(triggers.count == 13)
+        #expect(triggers.count == 11)
         #expect(triggers.contains("¨"))
         #expect(triggers.contains("´"))
         #expect(triggers.contains("ˋ"))
@@ -25,9 +25,25 @@ struct ComposeRuleSetGlobalTests {
         #expect(triggers.contains("!"))
         #expect(triggers.contains("$"))
         #expect(triggers.contains("゛"))
-        #expect(triggers.contains("?"))
-        #expect(triggers.contains("*"))
         #expect(triggers.contains("ˇ"))
+    }
+
+    @Test func globalExcludesVietnameseToneTriggers() {
+        // `?` and `*` are Vietnamese Telex tone triggers; keeping them global
+        // would make every layout compose `a` + `*` → `ạ`.
+        #expect(ComposeRuleSet.global.rules["?"] == nil)
+        #expect(ComposeRuleSet.global.rules["*"] == nil)
+    }
+
+    @Test func vietnameseTonesContainToneTriggers() {
+        let tones = ComposeRuleSet.vietnameseTones.rules
+        #expect(tones.keys.sorted() == ["*", "?"])
+        #expect(tones["?"]?["a"] == "ả")
+        #expect(tones["*"]?["a"] == "ạ")
+        // No space fallbacks: Telex only reaches these tables with vowel
+        // bases, so the entries would be unreachable data.
+        #expect(tones["?"]?[" "] == nil)
+        #expect(tones["*"]?[" "] == nil)
     }
 
     @Test func globalMatchesSharedEngine() {

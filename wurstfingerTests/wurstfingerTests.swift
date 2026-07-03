@@ -291,4 +291,31 @@ struct wurstfingerTests {
         let allInserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
         #expect(allInserts.last == "Á", "Compose should produce Á after uppercase A, got \(allInserts.last ?? "nil")")
     }
+
+    // MARK: - Asterisk Regression (Vietnamese tone rules must not be global)
+
+    @Test func asteriskInsertsLiterallyAfterVowel() {
+        // Regression: `a` + `*` used to compose the Vietnamese nặng tone (ạ)
+        // on every layout because the tone table lived in the global rules.
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        vm.handleGesture(.tap, keyId: GridSlot.topLeft, isReturn: false) // a
+        vm.handleGesture(.swipeRight, keyId: GridSlot.bottomLeft, isReturn: false) // *
+
+        #expect(!target.events.contains(.deleteBackward), "Asterisk must not rewrite the preceding vowel")
+        let inserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
+        #expect(inserts == ["a", "*"], "Expected literal asterisk after 'a', got \(inserts)")
+    }
+
+    @Test func degreeComposeStillWorksAfterVowel() {
+        // Guards the neighboring compose binding: a + ° (bottomRight
+        // swipeUpRight) still composes å.
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        vm.handleGesture(.tap, keyId: GridSlot.topLeft, isReturn: false) // a
+        vm.handleGesture(.swipeUpRight, keyId: GridSlot.bottomRight, isReturn: false) // °
+
+        let inserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
+        #expect(inserts.last == "å", "Compose should produce å, got \(inserts.last ?? "nil")")
+    }
 }

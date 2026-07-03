@@ -247,7 +247,7 @@ enum CommonKeys {
                 returnAction: .commitText("˝"), accessibilityLabel: nil
             ),
             .swipeRight: KeyBinding(
-                label: "*", action: .compose(trigger: "*"), category: .compose,
+                label: "*", action: .commitText("*"), category: nil,
                 returnAction: .commitText("†"), accessibilityLabel: nil
             ),
             .swipeDownRight: KeyBinding(
