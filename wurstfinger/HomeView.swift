@@ -35,7 +35,7 @@ struct HomeView: View {
 
                 // Quick Actions
                 VStack(spacing: 12) {
-                    NavigationLink(destination: OnboardingView()) {
+                    NavigationLink(destination: OnboardingContentView()) {
                         HStack {
                             Image(systemName: "list.number")
                             Text("Setup Instructions")

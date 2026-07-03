@@ -168,12 +168,18 @@ final class KeyboardViewModel: ObservableObject {
         // Note: didChangeNotification only fires within the same process.
         // Cross-process updates from the host app are handled by
         // KeyboardViewController.viewWillAppear → reloadSettings().
-        userDefaultsObserver = NotificationCenter.default.addObserver(
-            forName: UserDefaults.didChangeNotification,
-            object: sharedDefaults,
-            queue: .main
-        ) { [weak self] _ in
-            self?.reloadSettings()
+        // Non-persisting view models (previews, showcases, screenshots) are
+        // configured programmatically; reloading from the store would revert
+        // forced values (e.g. the full-size screenshot scale) on the next
+        // runloop pass, so they skip the observer.
+        if shouldPersistSettings {
+            userDefaultsObserver = NotificationCenter.default.addObserver(
+                forName: UserDefaults.didChangeNotification,
+                object: sharedDefaults,
+                queue: .main
+            ) { [weak self] _ in
+                self?.reloadSettings()
+            }
         }
     }
 
