@@ -2,6 +2,34 @@
 
 ## Unreleased
 
+## v1.3.1 — 2026-07-04
+
+### Added
+
+- Space-bar label-visibility gestures — swipe up toggles the extra-symbol labels, a return-up swipe toggles letters and standard symbols as a group (#220, reliability fix in #225)
+- Hebrew final letters via return swipes (#208)
+- Compose trigger labels can now be hidden (#217)
+
+### Fixed
+
+- Double haptic pulse per keystroke (#216, #222)
+- Keyboard rendered narrower than the screen after the window-bounds sizing change (#219, #223)
+- Cursor offsets for emoji and surrogate pairs (#205)
+- Outlier filter cascade discarding fast swipes (#209)
+- Auto-capitalization engagement and mode guards (#212)
+- Stale language settings re-enabling disabled languages (#213)
+- Vietnamese tone rules leaking into other languages' compose tables (#218)
+- Touch cancellation now handled in the gesture handlers (#206)
+- Expert gesture thresholds applied only when expert mode is on (#210)
+- Compose rule overrides wired into the pipeline (#214)
+
+### Changed
+
+- Reworked haptic feedback — exactly one pulse per keystroke and a wider intensity scale (#222)
+- Settings strings routed through the String Catalog (#207)
+- KeyboardRegistry cache made thread-safe (#211)
+- Screenshot scale, navigation nesting, and shared-defaults duplication cleaned up (#215)
+
 ## v1.3.0 — 2026-06-30
 
 ### Added
