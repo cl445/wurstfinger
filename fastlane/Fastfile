@@ -1,33 +1,33 @@
 default_platform(:ios)
 
 platform :ios do
-  desc "Build & upload to TestFlight on develop merges"
-  lane :beta do
+  # Shared context for both lanes: validated environment plus an ASC API key.
+  private_lane :asc_context do
     app_id = ENV.fetch("APP_IDENTIFIER", "de.akator.wurstfinger")
     team_id = ENV.fetch("APPLE_TEAM_ID")
-    key_id = ENV.fetch("ASC_KEY_ID")
-    issuer = ENV.fetch("ASC_ISSUER_ID")
-    key_b64 = ENV.fetch("ASC_KEY_P8_BASE64")
 
     UI.user_error!("APPLE_TEAM_ID is required but not set") if team_id.nil? || team_id.empty?
 
     api_key = app_store_connect_api_key(
-      key_id: key_id,
-      issuer_id: issuer,
-      key_content: Base64.decode64(key_b64),
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: Base64.decode64(ENV.fetch("ASC_KEY_P8_BASE64")),
       duration: 1200,
       in_house: false
     )
 
-    # Get latest build number from TestFlight and increment
-    latest_build = latest_testflight_build_number(
-      api_key: api_key,
-      app_identifier: app_id
-    )
+    { app_id: app_id, api_key: api_key }
+  end
+
+  # Sets the build number, signs both targets via match, and builds the
+  # app-store ipa. Shared verbatim between the beta and release lanes so
+  # signing or build fixes cannot drift between them.
+  private_lane :build_signed_ipa do |options|
+    app_id = options[:app_id]
 
     increment_build_number(
       xcodeproj: "Wurstfinger.xcodeproj",
-      build_number: latest_build + 1
+      build_number: options[:build_number]
     )
 
     # Set export compliance to skip waiting
@@ -85,14 +85,43 @@ platform :ios do
       include_bitcode: false,
       xcargs: ENV["CI"] ? "OTHER_CODE_SIGN_FLAGS='--keychain fastlane_tmp_keychain'" : nil
     )
+  end
 
+  private_lane :cleanup_ci_keychain do
+    delete_keychain(name: "fastlane_tmp_keychain") if ENV["CI"]
+  end
+
+  desc "Build & upload to TestFlight on develop merges"
+  lane :beta do
+    ctx = asc_context
+
+    # Get latest build number from TestFlight and increment
+    latest_build = latest_testflight_build_number(
+      api_key: ctx[:api_key],
+      app_identifier: ctx[:app_id]
+    )
+
+    build_signed_ipa(app_id: ctx[:app_id], build_number: latest_build + 1)
+
+    # The upload itself must fail the lane — a blanket rescue here once
+    # masked App Store Connect rejecting every nightly binary while the
+    # workflow stayed green.
+    upload_to_testflight(
+      api_key: ctx[:api_key],
+      uses_non_exempt_encryption: false,
+      changelog: ENV.fetch("CHANGELOG", "Automated build from develop.")
+    )
+
+    # External distribution and beta review submission are flaky on Apple's
+    # side; the build is already uploaded, so tolerate failures here.
     begin
       upload_to_testflight(
-        api_key: api_key,
+        api_key: ctx[:api_key],
+        distribute_only: true,
+        build_number: lane_context[SharedValues::BUILD_NUMBER],
         groups: ["Internal", "Public Beta"],
         distribute_external: true,
         submit_beta_review: true,
-        uses_non_exempt_encryption: false,
         beta_app_review_info: {
           contact_email: ENV.fetch("BETA_CONTACT_EMAIL", "info@akator.de"),
           contact_first_name: ENV.fetch("BETA_CONTACT_FIRST_NAME", "Developer"),
@@ -100,105 +129,27 @@ platform :ios do
           contact_phone: ENV.fetch("BETA_CONTACT_PHONE", "+49 000 000000"),
           demo_account_required: false,
           notes: "MessagEase-inspired keyboard extension for iOS. Enable in Settings > General > Keyboard > Keyboards > Add New Keyboard."
-        },
-        changelog: ENV.fetch("CHANGELOG", "Automated build from develop.")
+        }
       )
     rescue => e
-      UI.important "TestFlight upload warning: #{e.message}"
-      UI.success "Build was uploaded successfully, but beta review submission may be pending"
+      UI.important "Beta distribution/review submission failed (build itself is uploaded): #{e.message}"
     end
 
-    # Cleanup temporary keychain for CI
-    if ENV["CI"]
-      delete_keychain(name: "fastlane_tmp_keychain")
-    end
+    cleanup_ci_keychain
   end
 
   desc "Submit to App Store for review"
   lane :release do
-    app_id = ENV.fetch("APP_IDENTIFIER", "de.akator.wurstfinger")
-    team_id = ENV.fetch("APPLE_TEAM_ID")
-    key_id = ENV.fetch("ASC_KEY_ID")
-    issuer = ENV.fetch("ASC_ISSUER_ID")
-    key_b64 = ENV.fetch("ASC_KEY_P8_BASE64")
-
-    UI.user_error!("APPLE_TEAM_ID is required but not set") if team_id.nil? || team_id.empty?
-
-    api_key = app_store_connect_api_key(
-      key_id: key_id,
-      issuer_id: issuer,
-      key_content: Base64.decode64(key_b64),
-      duration: 1200,
-      in_house: false
-    )
+    ctx = asc_context
 
     # Get latest build number from App Store and increment
     latest_build = app_store_build_number(
-      api_key: api_key,
-      app_identifier: app_id,
+      api_key: ctx[:api_key],
+      app_identifier: ctx[:app_id],
       live: false
     )
 
-    increment_build_number(
-      xcodeproj: "Wurstfinger.xcodeproj",
-      build_number: latest_build + 1
-    )
-
-    # Set export compliance to skip waiting
-    set_info_plist_value(
-      path: "wurstfingerKeyboard/Info.plist",
-      key: "ITSAppUsesNonExemptEncryption",
-      value: false
-    )
-
-    # Create temporary keychain for CI
-    if ENV["CI"]
-      create_keychain(
-        name: "fastlane_tmp_keychain",
-        password: "temp_password_123",
-        default_keychain: true,
-        unlock: true,
-        timeout: 3600,
-        lock_when_sleeps: false
-      )
-    end
-
-    match(
-      type: "appstore",
-      readonly: ENV["CI"] == "true",
-      app_identifier: [app_id, "#{app_id}.keyboard"],
-      keychain_name: ENV["CI"] ? "fastlane_tmp_keychain" : "login.keychain",
-      keychain_password: ENV["CI"] ? "temp_password_123" : nil
-    )
-
-    # Update signing for main app target
-    update_code_signing_settings(
-      use_automatic_signing: false,
-      path: "Wurstfinger.xcodeproj",
-      targets: ["WurstfingerApp"],
-      bundle_identifier: app_id,
-      profile_name: "match AppStore #{app_id}",
-      code_sign_identity: "iPhone Distribution"
-    )
-
-    # Update signing for keyboard extension target
-    update_code_signing_settings(
-      use_automatic_signing: false,
-      path: "Wurstfinger.xcodeproj",
-      targets: ["Wurstfinger"],
-      bundle_identifier: "#{app_id}.keyboard",
-      profile_name: "match AppStore #{app_id}.keyboard",
-      code_sign_identity: "iPhone Distribution"
-    )
-
-    build_app(
-      scheme: "Wurstfinger",
-      project: "Wurstfinger.xcodeproj",
-      export_method: "app-store",
-      include_symbols: true,
-      include_bitcode: false,
-      xcargs: ENV["CI"] ? "OTHER_CODE_SIGN_FLAGS='--keychain fastlane_tmp_keychain'" : nil
-    )
+    build_signed_ipa(app_id: ctx[:app_id], build_number: latest_build + 1)
 
     # Read version from Xcode project so deliver creates the correct App Store version
     version = get_version_number(
@@ -210,7 +161,7 @@ platform :ios do
     # already-uploaded build and silently skips uploading the freshly built
     # ipa. Without it, deliver uploads the ipa from the lane context itself.
     upload_to_app_store(
-      api_key: api_key,
+      api_key: ctx[:api_key],
       app_version: version,
       skip_metadata: false,
       skip_screenshots: false,
@@ -230,9 +181,6 @@ platform :ios do
       }
     )
 
-    # Cleanup temporary keychain for CI
-    if ENV["CI"]
-      delete_keychain(name: "fastlane_tmp_keychain")
-    end
+    cleanup_ci_keychain
   end
 end

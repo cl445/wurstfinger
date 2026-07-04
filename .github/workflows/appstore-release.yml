@@ -12,6 +12,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      # The image default (Xcode 16.4 on macos-15) builds against the iOS 18
+      # SDK, which App Store Connect rejects since April 2026. Select the
+      # newest installed Xcode 26 explicitly and fail loudly if none exists.
+      - name: Select Xcode 26
+        run: |
+          XCODE_APP=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -n 1)
+          if [ -z "$XCODE_APP" ]; then
+            echo "::error::No Xcode 26 installation found on the runner image"
+            ls -d /Applications/Xcode*.app
+            exit 1
+          fi
+          echo "Selecting $XCODE_APP"
+          sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+          xcodebuild -version
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
