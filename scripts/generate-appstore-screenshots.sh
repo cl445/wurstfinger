@@ -1,15 +1,18 @@
 #!/bin/bash
 #
 # generate-appstore-screenshots.sh
-# Generate App Store screenshots for all required device sizes
+# Generate App Store screenshots in the flat per-locale layout that deliver
+# uploads: fastlane/screenshots/<locale>/<size>_<NN>.png. deliver infers the
+# device class from the pixel dimensions, so there must be NO subdirectories
+# below the locale folder (nested APP_IPHONE_* folders are silently ignored).
 #
-# App Store Connect required sizes:
-# - iPhone 6.7" (1290 x 2796) - iPhone 14/15/16 Plus/Pro Max
-# - iPhone 6.5" (1284 x 2778) - iPhone 12/13/14 Pro Max
-# - iPhone 6.1" (1179 x 2556) - iPhone 14/15/16 Pro
+# Rendered natively per device — no sips scaling, the display classes have
+# slightly different aspect ratios:
+# - 69: iPhone 17 Pro Max (1320 x 2868, 6.9")
+# - 61: iPhone 16e       (1170 x 2532, 6.1")
 #
-# This script generates screenshots on iPhone 16 Plus and scales them
-# to all required App Store dimensions.
+# The screenshot content is locale-independent (the chat mock is English),
+# so the en-US set is mirrored to de-DE.
 #
 # Usage: ./scripts/generate-appstore-screenshots.sh
 
@@ -33,33 +36,23 @@ cd "$PROJECT_ROOT"
 # Configuration
 SCHEME="Wurstfinger"
 TEST_TARGET="WurstfingerUITests/ScreenshotTests/testGenerateAppStoreKeyboardScreenshots"
-FASTLANE_SCREENSHOTS="$PROJECT_ROOT/fastlane/screenshots/en-US"
+SCREENSHOTS_ROOT="$PROJECT_ROOT/fastlane/screenshots"
+PRIMARY_LOCALE="en-US"
+MIRROR_LOCALES=("de-DE")
 DERIVED_DATA="/tmp/WurstfingerAppStoreScreenshots"
 TEMP_SCREENSHOTS="/tmp/wurstfinger-screenshots-raw"
 
-# Source device (iPhone 16 Plus = 1290x2796)
-SOURCE_DEVICE="iPhone 16 Plus"
-
-# App Store required dimensions
-SIZE_67="1290x2796"
-SIZE_65="1284x2778"
-SIZE_61="1179x2556"
-
-# Create directories
-mkdir -p "$FASTLANE_SCREENSHOTS"
-mkdir -p "$TEMP_SCREENSHOTS"
-mkdir -p "$FASTLANE_SCREENSHOTS/APP_IPHONE_67"
-mkdir -p "$FASTLANE_SCREENSHOTS/APP_IPHONE_65"
-mkdir -p "$FASTLANE_SCREENSHOTS/APP_IPHONE_61"
+# size-prefix|simulator device name
+TARGETS=(
+    "69|iPhone 17 Pro Max"
+    "61|iPhone 16e"
+)
 
 echo -e "${BLUE}📋 Configuration:${NC}"
-echo "  Source Device: $SOURCE_DEVICE"
-echo "  Output: $FASTLANE_SCREENSHOTS"
-echo ""
-echo -e "${BLUE}📱 Target Sizes:${NC}"
-echo "  - APP_IPHONE_67: $SIZE_67"
-echo "  - APP_IPHONE_65: $SIZE_65"
-echo "  - APP_IPHONE_61: $SIZE_61"
+echo "  Output: $SCREENSHOTS_ROOT/<locale>/<size>_<NN>.png"
+for target in "${TARGETS[@]}"; do
+    echo "  - ${target%%|*}: ${target#*|}"
+done
 echo ""
 
 # Get device UDID
@@ -68,150 +61,148 @@ get_device_udid() {
     xcrun simctl list devices available | grep "$device_name" | head -n 1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' || true
 }
 
-# Scale screenshot to target size
-scale_screenshot() {
-    local src="$1"
-    local dst="$2"
-    local target_size="$3"
-
-    local width="${target_size%x*}"
-    local height="${target_size#*x}"
-
-    sips -z "$height" "$width" "$src" --out "$dst" > /dev/null 2>&1
-}
-
-echo -e "${BLUE}🔄 Step 1: Capture screenshots on $SOURCE_DEVICE${NC}"
-
-UDID=$(get_device_udid "$SOURCE_DEVICE")
-if [ -z "$UDID" ]; then
-    echo -e "${RED}❌ Device not found: $SOURCE_DEVICE${NC}"
-    echo "Available devices:"
-    xcrun simctl list devices available | grep iPhone
-    exit 1
-fi
-
-echo "  UDID: $UDID"
-
-# Boot simulator
-echo "  Booting simulator..."
-xcrun simctl boot "$UDID" 2>/dev/null || true
-xcrun simctl bootstatus "$UDID" -b 2>/dev/null || true
-
 # Ensure cleanup runs on any exit (normal, error, or signal)
+CURRENT_UDID=""
 cleanup() {
     echo ""
     echo -e "${BLUE}🧹 Cleaning up...${NC}"
-    xcrun simctl status_bar "$UDID" clear 2>/dev/null || true
-    xcrun simctl shutdown "$UDID" 2>/dev/null || true
+    if [ -n "$CURRENT_UDID" ]; then
+        xcrun simctl status_bar "$CURRENT_UDID" clear 2>/dev/null || true
+        xcrun simctl shutdown "$CURRENT_UDID" 2>/dev/null || true
+    fi
     rm -rf "$DERIVED_DATA"
     rm -rf "$TEMP_SCREENSHOTS"
 }
 trap cleanup EXIT
 
-# Override status bar to get consistent screenshots (Apple's standard 9:41)
-echo "  Setting consistent status bar..."
-xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100
+PRIMARY_DIR="$SCREENSHOTS_ROOT/$PRIMARY_LOCALE"
+mkdir -p "$PRIMARY_DIR"
+rm -f "$PRIMARY_DIR"/*.png
 
-# Run screenshot tests
-echo "  Running screenshot tests..."
-rm -rf "$DERIVED_DATA"
+for target in "${TARGETS[@]}"; do
+    SIZE_PREFIX="${target%%|*}"
+    DEVICE_NAME="${target#*|}"
 
-set +e
-xcodebuild test \
-    -scheme "$SCHEME" \
-    -destination "platform=iOS Simulator,id=$UDID" \
-    -only-testing:"$TEST_TARGET" \
-    -derivedDataPath "$DERIVED_DATA" \
-    CODE_SIGNING_ALLOWED=NO \
-    2>&1 | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi
-TEST_RESULT=$?
-set -e
+    echo -e "${BLUE}🔄 Capturing $SIZE_PREFIX screenshots on $DEVICE_NAME${NC}"
 
-if [ $TEST_RESULT -ne 0 ]; then
-    echo -e "${YELLOW}⚠️  Tests may have issues, checking for screenshots...${NC}"
-fi
+    UDID=$(get_device_udid "$DEVICE_NAME")
+    if [ -z "$UDID" ]; then
+        echo -e "${RED}❌ Device not found: $DEVICE_NAME${NC}"
+        echo "Available devices:"
+        xcrun simctl list devices available | grep iPhone
+        exit 1
+    fi
+    CURRENT_UDID="$UDID"
+    echo "  UDID: $UDID"
 
-# Find and extract screenshots from xcresult
-echo ""
-echo -e "${BLUE}🔄 Step 2: Extract screenshots from test results${NC}"
+    # Boot simulator
+    echo "  Booting simulator..."
+    xcrun simctl boot "$UDID" 2>/dev/null || true
+    xcrun simctl bootstatus "$UDID" -b 2>/dev/null || true
 
-RESULTS_BUNDLE=$(find "$DERIVED_DATA" -name "*.xcresult" -type d | head -n 1)
-if [ -z "$RESULTS_BUNDLE" ]; then
-    echo -e "${RED}❌ No results bundle found${NC}"
-    exit 1
-fi
+    # Override status bar to get consistent screenshots (Apple's standard 9:41)
+    echo "  Setting consistent status bar..."
+    xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100
 
-echo "  Results: $RESULTS_BUNDLE"
+    # Run screenshot tests
+    echo "  Running screenshot tests..."
+    rm -rf "$DERIVED_DATA"
 
-# Export attachments
-rm -rf "$TEMP_SCREENSHOTS"
-mkdir -p "$TEMP_SCREENSHOTS"
-xcrun xcresulttool export attachments --path "$RESULTS_BUNDLE" --output-path "$TEMP_SCREENSHOTS"
+    set +e
+    xcodebuild test \
+        -scheme "$SCHEME" \
+        -destination "platform=iOS Simulator,id=$UDID" \
+        -only-testing:"$TEST_TARGET" \
+        -derivedDataPath "$DERIVED_DATA" \
+        CODE_SIGNING_ALLOWED=NO \
+        2>&1 | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi
+    TEST_RESULT=$?
+    set -e
 
-# Find PNG files
-PNG_COUNT=$(find "$TEMP_SCREENSHOTS" -name "*.png" -type f | wc -l | tr -d ' ')
-echo "  Found $PNG_COUNT PNG files"
+    if [ $TEST_RESULT -ne 0 ]; then
+        echo -e "${YELLOW}⚠️  Tests may have issues, checking for screenshots...${NC}"
+    fi
 
-if [ "$PNG_COUNT" -eq 0 ]; then
-    echo -e "${RED}❌ No screenshots found${NC}"
-    exit 1
-fi
+    # Find and extract screenshots from xcresult
+    RESULTS_BUNDLE=$(find "$DERIVED_DATA" -name "*.xcresult" -type d | head -n 1)
+    if [ -z "$RESULTS_BUNDLE" ]; then
+        echo -e "${RED}❌ No results bundle found${NC}"
+        exit 1
+    fi
 
-# Process and scale screenshots
-echo ""
-echo -e "${BLUE}🔄 Step 3: Scale screenshots for App Store${NC}"
+    rm -rf "$TEMP_SCREENSHOTS"
+    mkdir -p "$TEMP_SCREENSHOTS"
+    xcrun xcresulttool export attachments --path "$RESULTS_BUNDLE" --output-path "$TEMP_SCREENSHOTS"
 
-# Clear old screenshots
-rm -f "$FASTLANE_SCREENSHOTS/APP_IPHONE_67"/*.png
-rm -f "$FASTLANE_SCREENSHOTS/APP_IPHONE_65"/*.png
-rm -f "$FASTLANE_SCREENSHOTS/APP_IPHONE_61"/*.png
+    PNG_COUNT=$(find "$TEMP_SCREENSHOTS" -name "*.png" -type f | wc -l | tr -d ' ')
+    echo "  Found $PNG_COUNT PNG files"
+    if [ "$PNG_COUNT" -eq 0 ]; then
+        echo -e "${RED}❌ No screenshots found for $DEVICE_NAME${NC}"
+        exit 1
+    fi
 
-# Copy original 6.7" screenshots
-echo "  Processing APP_IPHONE_67 (original size)..."
-COUNTER=1
-for src in $(find "$TEMP_SCREENSHOTS" -name "*.png" -type f | sort); do
-    filename=$(printf "%02d-screenshot.png" $COUNTER)
-    cp "$src" "$FASTLANE_SCREENSHOTS/APP_IPHONE_67/$filename"
-    echo "    ✓ $filename"
-    COUNTER=$((COUNTER + 1))
+    # xcresulttool exports attachments under opaque UUID filenames; the
+    # attachment name (which embeds the screenshot number, …-keyboard-01-…)
+    # only exists in manifest.json. Sorting the files directly would produce
+    # a random screenshot order, so order by the manifest names instead.
+    COUNTER=1
+    while IFS= read -r exported; do
+        filename=$(printf "%s_%02d.png" "$SIZE_PREFIX" $COUNTER)
+        cp "$TEMP_SCREENSHOTS/$exported" "$PRIMARY_DIR/$filename"
+        echo "    ✓ $filename ($exported)"
+        COUNTER=$((COUNTER + 1))
+    done < <(python3 - "$TEMP_SCREENSHOTS/manifest.json" <<'PYEOF'
+import json
+import sys
+
+
+def walk(node, out):
+    if isinstance(node, dict):
+        if "exportedFileName" in node and "suggestedHumanReadableName" in node:
+            out.append((node["suggestedHumanReadableName"], node["exportedFileName"]))
+        for value in node.values():
+            walk(value, out)
+    elif isinstance(node, list):
+        for value in node:
+            walk(value, out)
+
+
+attachments = []
+with open(sys.argv[1]) as f:
+    walk(json.load(f), attachments)
+if not attachments:
+    sys.exit("manifest.json contained no attachments")
+for _, exported in sorted(attachments):
+    print(exported)
+PYEOF
+)
+
+    # Shut down before switching to the next device
+    xcrun simctl status_bar "$UDID" clear 2>/dev/null || true
+    xcrun simctl shutdown "$UDID" 2>/dev/null || true
+    CURRENT_UDID=""
+    echo ""
 done
 
-# Scale to 6.5"
-echo "  Processing APP_IPHONE_65 ($SIZE_65)..."
-COUNTER=1
-for src in "$FASTLANE_SCREENSHOTS/APP_IPHONE_67"/*.png; do
-    if [ -f "$src" ]; then
-        filename=$(printf "%02d-screenshot.png" $COUNTER)
-        scale_screenshot "$src" "$FASTLANE_SCREENSHOTS/APP_IPHONE_65/$filename" "$SIZE_65"
-        echo "    ✓ $filename"
-        COUNTER=$((COUNTER + 1))
-    fi
-done
-
-# Scale to 6.1"
-echo "  Processing APP_IPHONE_61 ($SIZE_61)..."
-COUNTER=1
-for src in "$FASTLANE_SCREENSHOTS/APP_IPHONE_67"/*.png; do
-    if [ -f "$src" ]; then
-        filename=$(printf "%02d-screenshot.png" $COUNTER)
-        scale_screenshot "$src" "$FASTLANE_SCREENSHOTS/APP_IPHONE_61/$filename" "$SIZE_61"
-        echo "    ✓ $filename"
-        COUNTER=$((COUNTER + 1))
-    fi
+# Mirror the primary locale to the others (content is locale-independent)
+for locale in "${MIRROR_LOCALES[@]}"; do
+    LOCALE_DIR="$SCREENSHOTS_ROOT/$locale"
+    echo -e "${BLUE}🔄 Mirroring $PRIMARY_LOCALE → $locale${NC}"
+    mkdir -p "$LOCALE_DIR"
+    rm -f "$LOCALE_DIR"/*.png
+    cp "$PRIMARY_DIR"/*.png "$LOCALE_DIR/"
 done
 
 # Summary
 echo ""
 echo -e "${BLUE}📊 Summary:${NC}"
-echo "  APP_IPHONE_67: $(find "$FASTLANE_SCREENSHOTS/APP_IPHONE_67" -name "*.png" -type f | wc -l | tr -d ' ') screenshots"
-echo "  APP_IPHONE_65: $(find "$FASTLANE_SCREENSHOTS/APP_IPHONE_65" -name "*.png" -type f | wc -l | tr -d ' ') screenshots"
-echo "  APP_IPHONE_61: $(find "$FASTLANE_SCREENSHOTS/APP_IPHONE_61" -name "*.png" -type f | wc -l | tr -d ' ') screenshots"
+for locale in "$PRIMARY_LOCALE" "${MIRROR_LOCALES[@]}"; do
+    count=$(find "$SCREENSHOTS_ROOT/$locale" -maxdepth 1 -name "*.png" -type f | wc -l | tr -d ' ')
+    echo "  $locale: $count screenshots"
+done
 
 echo ""
 echo -e "${GREEN}✅ App Store screenshots generated successfully!${NC}"
-echo ""
-echo -e "${BLUE}📁 Output:${NC}"
-echo "  $FASTLANE_SCREENSHOTS"
 echo ""
 echo -e "${BLUE}📋 Next Steps:${NC}"
 echo "  1. Review screenshots"
