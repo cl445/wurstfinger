@@ -202,5 +202,18 @@ enum KeyboardConstants {
                 (Layout.gridVerticalSpacing * CGFloat(KeyDimensions.totalRows - 1)) +
                 Layout.verticalPaddingTop + Layout.verticalPaddingBottom
         }
+
+        /// Keyboard width at which the grid's cells come out exactly square:
+        /// the grid stretches its columns to fill the width the root view
+        /// gives it, so square keys are a property of the chosen width, not
+        /// of the aspect-ratio setting (whose clamp range starts at 1.0).
+        /// Used by the App Store screenshot mode to reproduce the MessagEase
+        /// marketing look.
+        static func squareKeyboardWidth(aspectRatio: CGFloat, scale: CGFloat, columns: Int) -> CGFloat {
+            let rowHeight = keyHeight(aspectRatio: aspectRatio) * scale
+            return (rowHeight * CGFloat(columns)) +
+                (Layout.gridHorizontalSpacing * CGFloat(columns - 1)) +
+                (Layout.horizontalPadding * 2)
+        }
     }
 }

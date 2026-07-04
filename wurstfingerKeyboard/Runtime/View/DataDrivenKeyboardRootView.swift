@@ -47,7 +47,9 @@ struct DataDrivenKeyboardRootView: View {
                         viewModel.handleSlide(key, phase: phase)
                     },
                     languageLabel: viewModel.currentLanguageLabel,
-                    showLanguageLabel: viewModel.hasMultipleLanguages
+                    showLanguageLabel: viewModel.hasMultipleLanguages,
+                    keyboardScale: viewModel.keyboardScale,
+                    keyAspectRatio: viewModel.keyAspectRatio
                 )
                 .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
                 .padding(.top, KeyboardConstants.Layout.verticalPaddingTop)
