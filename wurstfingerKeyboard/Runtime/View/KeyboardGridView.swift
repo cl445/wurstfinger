@@ -67,6 +67,8 @@ struct KeyboardGridView: View {
                 onSlide: onSlide,
                 spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan),
                 visualInset: visualInset(for: cell, totalRows: totalRows),
+                keyboardScale: keyboardScale,
+                keyAspectRatio: keyAspectRatio,
                 languageLabel: languageLabel,
                 showLanguageLabel: showLanguageLabel
             )
