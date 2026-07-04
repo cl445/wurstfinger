@@ -206,13 +206,12 @@ platform :ios do
       target: "WurstfingerApp"
     )
 
-    # Build number used for this upload (needed for build selection below)
-    build_number = get_build_number(xcodeproj: "Wurstfinger.xcodeproj")
-
+    # No `build_number:` here — that option tells deliver to select an
+    # already-uploaded build and silently skips uploading the freshly built
+    # ipa. Without it, deliver uploads the ipa from the lane context itself.
     upload_to_app_store(
       api_key: api_key,
       app_version: version,
-      build_number: build_number,
       skip_metadata: false,
       skip_screenshots: false,
       screenshots_path: "./fastlane/screenshots",
