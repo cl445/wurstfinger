@@ -21,7 +21,6 @@ struct HapticSettingsTests {
         let defaults = createTestDefaults()
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
-        #expect(settings.enabled == true)
         #expect(settings.tapIntensity == HapticSettings.defaultTapIntensity)
         #expect(settings.dragIntensity == HapticSettings.defaultDragIntensity)
     }
@@ -30,15 +29,50 @@ struct HapticSettingsTests {
         let defaults = createTestDefaults()
 
         // Pre-populate UserDefaults
-        defaults.set(false, forKey: SettingsKey.hapticEnabled.rawValue)
         defaults.set(0.3, forKey: SettingsKey.hapticIntensityTap.rawValue)
         defaults.set(0.9, forKey: SettingsKey.hapticIntensityDrag.rawValue)
 
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
-        #expect(settings.enabled == false)
         #expect(abs(settings.tapIntensity - 0.3) < 0.01)
         #expect(abs(settings.dragIntensity - 0.9) < 0.01)
+    }
+
+    // MARK: - Legacy Master Toggle Migration
+
+    @Test func legacyDisabledToggleMigratesToOffLevels() {
+        let defaults = createTestDefaults()
+        defaults.set(false, forKey: SettingsKey.hapticEnabled.rawValue)
+        defaults.set(0.5, forKey: SettingsKey.hapticIntensityTap.rawValue)
+        defaults.set(0.9, forKey: SettingsKey.hapticIntensityDrag.rawValue)
+
+        let settings = HapticSettings(defaults: defaults, shouldPersist: true)
+
+        #expect(settings.tapIntensity == 0)
+        #expect(settings.dragIntensity == 0)
+        #expect(defaults.double(forKey: SettingsKey.hapticIntensityTap.rawValue) == 0)
+        #expect(defaults.object(forKey: SettingsKey.hapticEnabled.rawValue) == nil)
+    }
+
+    @Test func legacyEnabledToggleKeepsIntensities() {
+        let defaults = createTestDefaults()
+        defaults.set(true, forKey: SettingsKey.hapticEnabled.rawValue)
+        defaults.set(0.5, forKey: SettingsKey.hapticIntensityTap.rawValue)
+
+        let settings = HapticSettings(defaults: defaults, shouldPersist: true)
+
+        #expect(abs(settings.tapIntensity - 0.5) < 0.01)
+        #expect(defaults.object(forKey: SettingsKey.hapticEnabled.rawValue) == nil)
+    }
+
+    @Test func migrationDoesNotPersistWhenPersistenceDisabled() {
+        let defaults = createTestDefaults()
+        defaults.set(false, forKey: SettingsKey.hapticEnabled.rawValue)
+
+        let settings = HapticSettings(defaults: defaults, shouldPersist: false)
+
+        #expect(settings.tapIntensity == 0)
+        #expect(defaults.object(forKey: SettingsKey.hapticEnabled.rawValue) != nil)
     }
 
     // MARK: - Clamping Tests
@@ -64,14 +98,11 @@ struct HapticSettingsTests {
         let settings = HapticSettings(defaults: defaults, shouldPersist: true)
 
         settings.tapIntensity = 0.7
-        settings.enabled = false
 
         // Verify persisted
         let savedIntensity = defaults.double(forKey: SettingsKey.hapticIntensityTap.rawValue)
-        let savedEnabled = defaults.bool(forKey: SettingsKey.hapticEnabled.rawValue)
 
         #expect(abs(savedIntensity - 0.7) < 0.01)
-        #expect(savedEnabled == false)
     }
 
     @Test func changesNotPersistedWhenDisabled() {
@@ -120,7 +151,6 @@ struct HapticSettingsTests {
 
         #expect(settings.tapIntensity == HapticSettings.defaultTapIntensity)
         #expect(settings.dragIntensity == HapticSettings.defaultDragIntensity)
-        #expect(settings.enabled == true)
     }
 
     // MARK: - Intensity For Event Tests

@@ -13,6 +13,23 @@ import UIKit
 enum KeyboardHapticEvent {
     case tap
     case drag
+    /// Layer/language changes and system actions (globe, dismiss, clipboard)
+    case stateChange
+
+    /// Feedback for an action flowing through the pipeline, or `nil` for
+    /// silence. Text actions are silent here: their haptic already fired on
+    /// touch-down, and firing again on dispatch would double every keystroke.
+    /// Only actions that change keyboard or system state get a distinct
+    /// confirmation tick.
+    static func forPipelineAction(_ action: KeyAction) -> KeyboardHapticEvent? {
+        switch action {
+        case .switchMode, .switchToNextLanguage, .advanceToNextInputMode,
+             .dismissKeyboard, .copy, .cut, .paste:
+            .stateChange
+        default:
+            nil
+        }
+    }
 }
 
 struct DeviceLayoutUtils {
@@ -117,11 +134,6 @@ final class KeyboardViewModel: ObservableObject {
         set { hapticSettings.dragIntensity = newValue }
     }
 
-    var hapticEnabled: Bool {
-        get { hapticSettings.enabled }
-        set { hapticSettings.enabled = newValue }
-    }
-
     var utilityColumnLeading: Bool {
         get { layoutSettings.utilityColumnLeading }
         set { layoutSettings.utilityColumnLeading = newValue }
@@ -188,16 +200,21 @@ final class KeyboardViewModel: ObservableObject {
         // Cross-process updates from the host app are handled by
         // KeyboardViewController.viewWillAppear → reloadSettings().
         // Non-persisting view models (previews, showcases, screenshots) are
-        // configured programmatically; reloading from the store would revert
-        // forced values (e.g. the full-size screenshot scale) on the next
-        // runloop pass, so they skip the observer.
-        if shouldPersistSettings {
-            userDefaultsObserver = NotificationCenter.default.addObserver(
-                forName: UserDefaults.didChangeNotification,
-                object: sharedDefaults,
-                queue: .main
-            ) { [weak self] _ in
-                self?.reloadSettings()
+        // configured programmatically; reloading everything from the store
+        // would revert forced values (e.g. the full-size screenshot scale) on
+        // the next runloop pass — but haptic settings are never forced, and
+        // the settings screen's preview keyboard should play slider changes
+        // live, so non-persisting view models follow the store for haptics only.
+        userDefaultsObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: sharedDefaults,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            if shouldPersistSettings {
+                reloadSettings()
+            } else {
+                hapticSettings.reload()
             }
         }
     }
@@ -256,6 +273,13 @@ final class KeyboardViewModel: ObservableObject {
         currentDefinition?.mode(activeModeName)
     }
 
+    /// Pipeline hook: fires a confirmation tick for state-changing actions.
+    /// Text actions stay silent — their haptic fires on touch-down.
+    func triggerHaptic(for action: KeyAction) {
+        guard let event = KeyboardHapticEvent.forPipelineAction(action) else { return }
+        hapticManager.trigger(event)
+    }
+
     func reloadSettings() {
         // Delegate to extracted settings classes - eliminates duplicate code
         hapticSettings.reload()
@@ -306,5 +330,10 @@ final class KeyboardViewModel: ObservableObject {
 
     func feedbackDrag() {
         hapticManager.drag()
+    }
+
+    /// Confirmation tick for explicit layer/language switches.
+    func feedbackStateChange() {
+        hapticManager.stateChange()
     }
 }

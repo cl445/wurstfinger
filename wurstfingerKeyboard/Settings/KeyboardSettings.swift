@@ -17,6 +17,8 @@ import Foundation
 enum SettingsKey: String {
     case hapticIntensityTap
     case hapticIntensityDrag
+    /// Legacy master toggle — only read to migrate an explicit "off" into
+    /// intensity 0, then removed.
     case hapticEnabled
     case utilityColumnLeading
     case keyAspectRatio
@@ -41,16 +43,16 @@ enum SettingsKey: String {
 /// Encapsulates all haptic-related settings with built-in persistence.
 /// Eliminates duplicate didSet handlers by using a unified approach.
 final class HapticSettings: ObservableObject {
-    /// Default intensity values (0.0 - 1.0)
-    static let defaultTapIntensity: CGFloat = 0.5
-    static let defaultDragIntensity: CGFloat = 0.5
+    /// Default intensity values (0.0 - 1.0). Both map to a discrete
+    /// `HapticIntensityLevel`; level `.off` (intensity 0) disables the
+    /// respective feedback, so there is no separate master switch.
+    /// Defaults mirror the iOS system keyboard's subtle feel: a soft tap
+    /// per keystroke, detent ticks for drags.
+    static let defaultTapIntensity: CGFloat = HapticIntensityLevel.soft.storedIntensity
+    static let defaultDragIntensity: CGFloat = HapticIntensityLevel.tick.storedIntensity
 
     private let defaults: UserDefaults
     private let shouldPersist: Bool
-
-    @Published var enabled: Bool {
-        didSet { persistIfNeeded(enabled, forKey: .hapticEnabled) }
-    }
 
     @Published var tapIntensity: CGFloat {
         didSet {
@@ -79,16 +81,27 @@ final class HapticSettings: ObservableObject {
         self.shouldPersist = shouldPersist
 
         // Load values with clamping
-        enabled = defaults.object(forKey: SettingsKey.hapticEnabled.rawValue) as? Bool ?? true
         tapIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityTap, default: Self.defaultTapIntensity)
         dragIntensity = Self.loadIntensity(from: defaults, key: .hapticIntensityDrag, default: Self.defaultDragIntensity)
+
+        // Migrate the removed master toggle: an explicit "off" becomes level
+        // `.off` on both sliders, so users who had haptics disabled stay
+        // silent after the update.
+        if defaults.object(forKey: SettingsKey.hapticEnabled.rawValue) as? Bool == false {
+            tapIntensity = 0
+            dragIntensity = 0
+            if shouldPersist {
+                defaults.set(0.0, forKey: SettingsKey.hapticIntensityTap.rawValue)
+                defaults.set(0.0, forKey: SettingsKey.hapticIntensityDrag.rawValue)
+            }
+        }
+        if shouldPersist {
+            defaults.removeObject(forKey: SettingsKey.hapticEnabled.rawValue)
+        }
     }
 
     /// Reload settings from UserDefaults (e.g., after changes from host app)
     func reload() {
-        let newEnabled = defaults.object(forKey: SettingsKey.hapticEnabled.rawValue) as? Bool ?? true
-        if enabled != newEnabled { enabled = newEnabled }
-
         let newTap = Self.loadIntensity(from: defaults, key: .hapticIntensityTap, default: Self.defaultTapIntensity)
         if abs(tapIntensity - newTap) > 0.0001 { tapIntensity = newTap }
 
@@ -99,7 +112,7 @@ final class HapticSettings: ObservableObject {
     /// Returns the intensity for a given haptic event type
     func intensity(for event: KeyboardHapticEvent) -> CGFloat {
         switch event {
-        case .tap: tapIntensity
+        case .tap, .stateChange: tapIntensity
         case .drag: dragIntensity
         }
     }

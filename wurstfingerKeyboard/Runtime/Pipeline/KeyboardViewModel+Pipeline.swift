@@ -100,11 +100,14 @@ extension KeyboardViewModel {
         }
         var middlewares: [ActionMiddleware] = []
 
-        // (Deliberately no haptic middleware: the tap haptic fires once at
-        // touch-down in the view layer — DataDrivenKeyboardRootView's
-        // onTouchDown — and slide steps trigger their own drag haptic. A
-        // per-action haptic here buzzed every key press and every slide step
-        // a second time.)
+        // 1. Haptic feedback — confirmation ticks for state-changing actions
+        //    only. The per-keystroke tap haptic fires once at touch-down in
+        //    the view layer (`feedbackTap`) and slide steps trigger their own
+        //    drag haptic, so text actions MUST stay silent here: a per-action
+        //    haptic buzzed every key press and slide step a second time.
+        middlewares.append(HapticMiddleware(trigger: { [weak self] action in
+            self?.triggerHaptic(for: action)
+        }))
 
         // 2. Compose + Cycle Accents — per-definition engine so language-specific
         // compose rule overrides are honored (rebuilt on every definition load).
@@ -245,13 +248,25 @@ extension KeyboardViewModel {
         let chain = isReturn ? returnSwipeResolverChain : resolverChain
         guard let binding = chain?.resolve(keyId: keyId, gesture: gesture, in: mode) else { return }
 
+        // Mode and language switches bypass the pipeline, so their
+        // confirmation tick fires here instead of in the haptic middleware —
+        // but only when the switch actually changed something (same-mode
+        // taps and single-language globe swipes are silent no-ops).
         if case let .switchMode(targetMode) = binding.action {
+            let previousMode = activeModeName
             handleSwitchMode(targetMode)
+            if activeModeName != previousMode {
+                feedbackStateChange()
+            }
             return
         }
 
         if case .switchToNextLanguage = binding.action {
+            let previousLanguage = currentDefinition?.id
             switchToNextLanguage()
+            if currentDefinition?.id != previousLanguage {
+                feedbackStateChange()
+            }
             return
         }
 
@@ -403,7 +418,10 @@ extension KeyboardViewModel {
             let hidden = sharedDefaults.bool(forKey: SettingsKey.hideExtraSymbols.rawValue)
             sharedDefaults.set(!hidden, forKey: SettingsKey.hideExtraSymbols.rawValue)
         }
-        feedbackTap()
+        // Confirmation tick, not a second tap impact: the touch-down already
+        // fired the tap haptic, and the toggle is a state change like a
+        // mode switch.
+        feedbackStateChange()
     }
 
     /// Continuous (joystick) mode: emit one character move per `dragStep` of

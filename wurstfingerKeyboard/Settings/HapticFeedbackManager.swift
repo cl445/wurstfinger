@@ -8,12 +8,70 @@
 
 import UIKit
 
-/// Manages haptic feedback generation for keyboard events.
+/// The physical pulse emitted for a haptic event.
 ///
-/// Uses `UIImpactFeedbackGenerator.impactOccurred()` (without intensity parameter)
-/// because the intensity variant requires CHHapticEngine, which cannot initialize
-/// in the sandboxed keyboard extension process.
-/// Intensity is approximated by selecting different feedback styles.
+/// `UIImpactFeedbackGenerator.impactOccurred(intensity:)` requires
+/// CHHapticEngine, which cannot initialize in the sandboxed keyboard
+/// extension process, so continuous intensity is unavailable. To still give
+/// the intensity slider a wide perceived range, the scale starts with a
+/// barely-noticeable `UISelectionFeedbackGenerator` tick and then steps
+/// through impact styles up to `.heavy`.
+enum HapticPulse: Equatable {
+    /// `UISelectionFeedbackGenerator` tick — the subtlest available feedback.
+    case selectionTick
+    case impact(UIImpactFeedbackGenerator.FeedbackStyle)
+
+    /// Maps a 0...1 intensity to a pulse (0 is handled upstream as "off").
+    static func pulse(for intensity: CGFloat) -> HapticPulse {
+        switch intensity {
+        case ..<0.2: .selectionTick
+        case ..<0.4: .impact(.soft)
+        case ..<0.6: .impact(.light)
+        case ..<0.8: .impact(.medium)
+        default: .impact(.heavy)
+        }
+    }
+}
+
+/// The discrete, user-facing intensity levels — one per producible pulse,
+/// plus off. The settings UI offers exactly these instead of a continuous
+/// range, because intermediate values cannot change the physical feedback.
+///
+/// Stored settings remain a 0...1 intensity for backward compatibility;
+/// levels map to their bucket's midpoint in `HapticPulse.pulse(for:)`.
+enum HapticIntensityLevel: Int, CaseIterable, Equatable {
+    case off = 0, tick, soft, light, medium, heavy
+
+    /// Canonical stored intensity (midpoint of the corresponding pulse bucket).
+    var storedIntensity: CGFloat {
+        switch self {
+        case .off: 0
+        case .tick: 0.1
+        case .soft: 0.3
+        case .light: 0.5
+        case .medium: 0.7
+        case .heavy: 0.9
+        }
+    }
+
+    /// Derives the level from a stored intensity via the pulse mapping, so
+    /// the two can never drift apart.
+    init(storedIntensity: CGFloat) {
+        guard storedIntensity > 0 else {
+            self = .off
+            return
+        }
+        self = switch HapticPulse.pulse(for: storedIntensity) {
+        case .selectionTick: .tick
+        case .impact(.soft): .soft
+        case .impact(.light): .light
+        case .impact(.medium): .medium
+        case .impact: .heavy
+        }
+    }
+}
+
+/// Manages haptic feedback generation for keyboard events.
 ///
 /// Requires Full Access to be enabled — without it, `UIFeedbackGenerator` silently
 /// fails because the underlying `CHHapticEngine` is blocked by the keyboard sandbox.
@@ -22,13 +80,17 @@ final class HapticFeedbackManager {
     private let settings: HapticSettings
 
     /// Cached generators per feedback style to avoid per-event allocation
-    private lazy var generators: [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator] = {
+    private lazy var impactGenerators: [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator] = {
         var gens = [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator]()
-        for style in [UIImpactFeedbackGenerator.FeedbackStyle.light, .medium, .rigid, .heavy] {
+        for style in [UIImpactFeedbackGenerator.FeedbackStyle.soft, .light, .medium, .heavy] {
             gens[style] = UIImpactFeedbackGenerator(style: style)
         }
         return gens
     }()
+
+    /// Detent-style ticks for drag steps, state changes, and the lowest
+    /// intensity level.
+    private lazy var selectionGenerator = UISelectionFeedbackGenerator()
 
     init(settings: HapticSettings) {
         self.settings = settings
@@ -46,34 +108,42 @@ final class HapticFeedbackManager {
         trigger(.drag)
     }
 
+    /// Triggers a confirmation tick for layer/language changes and system
+    /// actions (globe, dismiss, clipboard).
+    func stateChange() {
+        trigger(.stateChange)
+    }
+
     /// Triggers haptic feedback for the specified event type
     func trigger(_ event: KeyboardHapticEvent) {
-        guard settings.enabled else { return }
-
         let intensity = settings.intensity(for: event)
         guard intensity > 0 else { return }
 
-        let style = Self.style(for: intensity)
+        let pulse: HapticPulse = switch event {
+        case .tap, .drag: .pulse(for: intensity)
+        // State changes always use the light detent tick —
+        // `UISelectionFeedbackGenerator` is made for exactly this.
+        case .stateChange: .selectionTick
+        }
 
         let performFeedback = { [self] in
-            guard let generator = generators[style] ?? generators[.medium] else { return }
-            generator.impactOccurred()
+            switch pulse {
+            case .selectionTick:
+                selectionGenerator.selectionChanged()
+                selectionGenerator.prepare()
+            case let .impact(style):
+                guard let generator = impactGenerators[style] else { return }
+                generator.impactOccurred()
+                // Keep the Taptic Engine warm so the next keystroke fires
+                // without ramp-up latency.
+                generator.prepare()
+            }
         }
 
         if Thread.isMainThread {
             performFeedback()
         } else {
             DispatchQueue.main.async(execute: performFeedback)
-        }
-    }
-
-    /// Maps a 0...1 intensity to a feedback style
-    private static func style(for intensity: CGFloat) -> UIImpactFeedbackGenerator.FeedbackStyle {
-        switch intensity {
-        case ..<0.3: .light
-        case ..<0.6: .medium
-        case ..<0.8: .rigid
-        default: .heavy
         }
     }
 }

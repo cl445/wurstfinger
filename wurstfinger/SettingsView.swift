@@ -289,16 +289,9 @@ struct SettingsView: View {
     }
 
     private func hapticModeDescription() -> String {
-        let tap: String = formatIntensity(hapticTapIntensity)
-        let drag: String = formatIntensity(hapticDragIntensity)
+        let tap: String = HapticIntensityLevel(storedIntensity: hapticTapIntensity).displayName
+        let drag: String = HapticIntensityLevel(storedIntensity: hapticDragIntensity).displayName
         return String(localized: "Tap: \(tap) • Drag: \(drag)")
-    }
-
-    private func formatIntensity(_ value: Double) -> String {
-        if value <= 0.001 {
-            return String(localized: "Off")
-        }
-        return "\(Int(round(value * 100)))%"
     }
 }
 
