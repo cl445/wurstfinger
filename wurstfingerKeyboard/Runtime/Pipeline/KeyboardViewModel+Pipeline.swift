@@ -410,7 +410,10 @@ extension KeyboardViewModel {
             let hidden = sharedDefaults.bool(forKey: SettingsKey.hideExtraSymbols.rawValue)
             sharedDefaults.set(!hidden, forKey: SettingsKey.hideExtraSymbols.rawValue)
         }
-        feedbackTap()
+        // Confirmation tick, not a second tap impact: the touch-down already
+        // fired the tap haptic, and the toggle is a state change like a
+        // mode switch.
+        feedbackStateChange()
     }
 
     /// Continuous (joystick) mode: emit one character move per `dragStep` of
