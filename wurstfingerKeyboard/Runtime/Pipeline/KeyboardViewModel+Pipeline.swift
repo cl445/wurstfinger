@@ -249,16 +249,24 @@ extension KeyboardViewModel {
         guard let binding = chain?.resolve(keyId: keyId, gesture: gesture, in: mode) else { return }
 
         // Mode and language switches bypass the pipeline, so their
-        // confirmation tick fires here instead of in the haptic middleware.
+        // confirmation tick fires here instead of in the haptic middleware —
+        // but only when the switch actually changed something (same-mode
+        // taps and single-language globe swipes are silent no-ops).
         if case let .switchMode(targetMode) = binding.action {
-            feedbackStateChange()
+            let previousMode = activeModeName
             handleSwitchMode(targetMode)
+            if activeModeName != previousMode {
+                feedbackStateChange()
+            }
             return
         }
 
         if case .switchToNextLanguage = binding.action {
-            feedbackStateChange()
+            let previousLanguage = currentDefinition?.id
             switchToNextLanguage()
+            if currentDefinition?.id != previousLanguage {
+                feedbackStateChange()
+            }
             return
         }
 

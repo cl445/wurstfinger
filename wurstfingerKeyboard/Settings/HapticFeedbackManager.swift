@@ -132,7 +132,7 @@ final class HapticFeedbackManager {
                 selectionGenerator.selectionChanged()
                 selectionGenerator.prepare()
             case let .impact(style):
-                guard let generator = impactGenerators[style] ?? impactGenerators[.light] else { return }
+                guard let generator = impactGenerators[style] else { return }
                 generator.impactOccurred()
                 // Keep the Taptic Engine warm so the next keystroke fires
                 // without ramp-up latency.
