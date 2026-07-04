@@ -120,6 +120,67 @@ struct SlideGestureStateTests {
         #expect(phase == .swipeUp(isReturn: true))
     }
 
+    @Test func upSwipeWithHorizontalDriftStaysAnUpSwipe() {
+        var state = SlideGestureState()
+        // A natural upward flick drifts sideways beyond the (small) slide
+        // threshold. While the vertical axis dominates, the cursor slide must
+        // not latch — previously this became a cursor slide and the toggle
+        // never fired.
+        let drift = threshold + 4
+        let first = state.handleChanged(
+            translation: CGSize(width: drift, height: -drift - 6), activationThreshold: threshold
+        )
+        #expect(first.phases.isEmpty)
+        let second = state.handleChanged(
+            translation: CGSize(width: drift, height: -upThreshold - 20),
+            activationThreshold: threshold
+        )
+        #expect(second.phases.isEmpty)
+        let phase = state.handleEnded(
+            translation: CGSize(width: drift, height: -upThreshold - 20),
+            activationThreshold: threshold
+        )
+        #expect(phase == .swipeUp(isReturn: false))
+    }
+
+    @Test func horizontalDominanceStillActivatesSlideAfterVerticalWobble() {
+        var state = SlideGestureState()
+        // Contact wobble where the vertical axis briefly dominates must not
+        // block a genuine cursor slide once the horizontal axis takes over.
+        let wobble = state.handleChanged(
+            translation: CGSize(width: threshold, height: -threshold - 2),
+            activationThreshold: threshold
+        )
+        #expect(wobble.phases.isEmpty)
+        let sliding = state.handleChanged(
+            translation: CGSize(width: threshold * 3, height: -threshold - 2),
+            activationThreshold: threshold
+        )
+        #expect(sliding.phases.first == .began)
+        let phase = state.handleEnded(
+            translation: CGSize(width: threshold * 3, height: -threshold - 2),
+            activationThreshold: threshold
+        )
+        #expect(phase == .ended)
+    }
+
+    @Test func returnUpSwipeOvershootingOriginIsStillAReturn() {
+        var state = SlideGestureState()
+        // Fast return swipes routinely overshoot past the starting point.
+        // Measured as absolute distance from the origin this looked like a
+        // plain up-swipe and toggled the wrong label group.
+        _ = state.handleChanged(
+            translation: CGSize(width: 0, height: -upThreshold - 10), activationThreshold: threshold
+        )
+        _ = state.handleChanged(
+            translation: CGSize(width: 0, height: 20), activationThreshold: threshold
+        )
+        let phase = state.handleEnded(
+            translation: CGSize(width: 0, height: 20), activationThreshold: threshold
+        )
+        #expect(phase == .swipeUp(isReturn: true))
+    }
+
     @Test func upSwipeBelowThresholdIsIgnored() {
         var state = SlideGestureState()
         let translation = CGSize(width: 0, height: -upThreshold + 4)
