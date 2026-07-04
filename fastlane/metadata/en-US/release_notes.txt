@@ -8,7 +8,6 @@ New:
 
 Reliability:
 • Fixed double vibration per key press
-• The keyboard uses the full screen width again
 • Fixed cursor movement across emoji
 • Fast swipe gestures are recognized more reliably
 • Auto-capitalization now engages at the right moments

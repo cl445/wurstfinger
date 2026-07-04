@@ -8,7 +8,6 @@ Neu:
 
 Zuverlässigkeit:
 • Doppelte Vibration pro Tastendruck behoben
-• Tastatur nutzt wieder die volle Bildschirmbreite
 • Cursor-Bewegung über Emoji korrigiert
 • Schnelle Wischgesten werden zuverlässiger erkannt
 • Automatische Großschreibung greift jetzt in den richtigen Momenten
