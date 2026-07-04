@@ -59,12 +59,14 @@ final class KeyboardViewModel: ObservableObject {
     /// Updated by the controller in `viewWillLayoutSubviews()` so that
     /// SwiftUI re-evaluates layout after orientation changes.
     @Published private(set) var viewWidth: CGFloat = UIScreen.main.bounds.width
-    /// Shortest side of the hosting window, used to cap the keyboard width so
-    /// it keeps its portrait width in landscape. Measured from the actual
-    /// window (not the full screen) so sizing stays correct in Split View and
-    /// Stage Manager; falls back to the device screen until a window is
-    /// attached.
-    @Published private(set) var windowShortestSide: CGFloat = min(
+    /// Width cap for the keyboard so it keeps its portrait width in
+    /// landscape and follows narrow panes (Slide Over, Stage Manager).
+    /// Derived from the hosting window's *width* — the keyboard's own window
+    /// is only as tall as the keyboard itself, so its height carries no
+    /// container information — bounded by the screen's shortest side, which
+    /// keeps landscape at the portrait width. Falls back to the screen until
+    /// a window is attached.
+    @Published private(set) var keyboardWidthCap: CGFloat = min(
         DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height
     )
     /// The currently active keyboard mode.
@@ -216,11 +218,18 @@ final class KeyboardViewModel: ObservableObject {
     /// Updates the tracked window bounds. Called by the controller in
     /// `viewWillLayoutSubviews()` with the hosting window's bounds; a nil
     /// window (not yet attached) falls back to the device screen.
+    ///
+    /// Only the window's *width* is meaningful: the keyboard extension's
+    /// window is merely keyboard-sized, so `min(width, height)` would return
+    /// the keyboard height (~300 pt) and squeeze the keys horizontally while
+    /// the height constraint stays — visibly breaking the key aspect ratio.
     func updateWindowBounds(_ bounds: CGRect?) {
-        let reference = bounds ?? DeviceLayoutUtils.screenBounds
-        let shortestSide = min(reference.width, reference.height)
-        guard shortestSide > 0, shortestSide != windowShortestSide else { return }
-        windowShortestSide = shortestSide
+        let screenShortestSide = min(
+            DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height
+        )
+        let cap = bounds.map { min($0.width, screenShortestSide) } ?? screenShortestSide
+        guard cap > 0, cap != keyboardWidthCap else { return }
+        keyboardWidthCap = cap
     }
 
     // MARK: - Arrangement Selection
