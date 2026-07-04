@@ -59,7 +59,13 @@ struct SlideGestureState {
         let currentX = translation.width
         upwardPeakY = min(upwardPeakY, translation.height)
 
-        if !isSliding, abs(currentX) >= activationThreshold {
+        // Activate only while the horizontal axis dominates: crossing the
+        // (small) horizontal threshold during a mostly-vertical movement must
+        // not latch the slide, or an upward label-toggle swipe with a few
+        // points of sideways drift turns into a cursor slide and the vertical
+        // classification in `handleEnded` becomes unreachable. Once latched,
+        // the slide stays tolerant of vertical drift as before.
+        if !isSliding, abs(currentX) >= activationThreshold, abs(currentX) > abs(translation.height) {
             isSliding = true
             // Anchor at the threshold crossing (not the full translation) so
             // the travel beyond the threshold is reported on the same tick
@@ -94,12 +100,16 @@ struct SlideGestureState {
         // must precede the tap check: a return-up swipe ends near its origin
         // and would otherwise be classified as a tap.
         if -upwardPeakY >= swipeUpThreshold {
-            // Mirror the discrete horizontal classification: a final position
-            // close to the origin relative to the peak means the finger
-            // returned. Downward peaks are never tracked, so down-swipes
-            // still fall through and stay ignored.
-            let ratio = abs(translation.height) / abs(upwardPeakY)
-            return .swipeUp(isReturn: ratio < KeyboardConstants.SpaceGestures.returnSwipeThreshold)
+            // The finger "returned" when it came back at least
+            // (1 - returnSwipeThreshold) of the way from the peak toward the
+            // origin. Compared signed (peak is negative, y grows downward) so
+            // overshooting past the origin still counts as a return — fast
+            // return swipes routinely end below their starting point, and an
+            // absolute-distance ratio would misread them as plain up-swipes.
+            // Downward peaks are never tracked, so down-swipes still fall
+            // through and stay ignored.
+            let returnBoundary = upwardPeakY * KeyboardConstants.SpaceGestures.returnSwipeThreshold
+            return .swipeUp(isReturn: translation.height >= returnBoundary)
         }
         // A tap must stay near its origin on *both* axes. Gating on
         // horizontal travel alone would classify a vertical flick (e.g.
