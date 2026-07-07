@@ -45,16 +45,24 @@ struct LayoutValidationTests {
         }
     }
 
-    @Test func allLanguagesHaveShiftedMode() {
+    @Test func allCasedLanguagesHaveShiftedMode() {
         for info in KeyboardRegistry.available {
             guard let definition = KeyboardRegistry.load(id: info.id) else {
                 Issue.record("Failed to load \(info.id)")
                 continue
             }
-            #expect(
-                definition.mode(ModeNames.shifted) != nil,
-                "Language \(info.id) missing shifted mode"
-            )
+            if CaselessLanguages.ids.contains(info.id) {
+                // Caseless scripts have no shift affordance at all.
+                #expect(
+                    definition.mode(ModeNames.shifted) == nil,
+                    "Caseless language \(info.id) must not have a shifted mode"
+                )
+            } else {
+                #expect(
+                    definition.mode(ModeNames.shifted) != nil,
+                    "Language \(info.id) missing shifted mode"
+                )
+            }
         }
     }
 
