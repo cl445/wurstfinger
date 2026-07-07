@@ -307,7 +307,10 @@ final class KeyboardViewModel: ObservableObject {
         let currentId = currentDefinition?.id
             ?? sharedDefaults.string(forKey: SettingsKey.selectedLanguageId.rawValue)
             ?? "en_US"
-        let nextId = LanguageSettings(userDefaults: sharedDefaults).nextLanguageId(after: currentId)
+        // Static lookup on the already-normalized enabled list: constructing
+        // a throwaway LanguageSettings here would re-run init normalization
+        // (an app-group read/write cycle) on every globe swipe.
+        let nextId = LanguageSettings.nextLanguageId(after: currentId, in: enabledLanguageIds)
 
         if nextId != currentId {
             sharedDefaults.set(nextId, forKey: SettingsKey.selectedLanguageId.rawValue)
