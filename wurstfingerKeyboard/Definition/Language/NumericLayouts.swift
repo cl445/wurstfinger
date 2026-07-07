@@ -120,6 +120,10 @@ enum NumericLayouts {
             label: "¼", action: .commitText("¼"), category: nil,
             returnAction: nil, accessibilityLabel: nil
         ),
+        // Intentional MessagEase parity: the original's layout maps the
+        // numeric center key's circle gesture to a plain lowercase "a"
+        // ('5' circle → 'a' in the decompiled reference), even though every
+        // sibling is a math/superscript symbol. Do not "fix" this to "ª".
         GridSlot.center: KeyBinding(
             label: "a", action: .commitText("a"), category: nil,
             returnAction: nil, accessibilityLabel: nil
