@@ -79,4 +79,52 @@ struct CircularGesturePipelineTests {
 
         #expect(target.events.isEmpty)
     }
+
+    /// The uppercase fallback must route through `keyboardUppercased` so a
+    /// layout with ß on a tap position yields the capital sharp S (ẞ) instead
+    /// of the plain-`uppercased` two-letter "SS" expansion — matching the
+    /// shifted-layer generation in the definition layer. No shipped layout
+    /// carries ß on tap today, so the definition is injected directly.
+    @Test func circularOnSharpSKeyInsertsCapitalSharpS() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        let sharpSKey = KeyConfig(
+            id: "sz",
+            bindings: [
+                .tap: KeyBinding(
+                    label: "ß", action: .commitText("ß"), category: .letter,
+                    returnAction: nil, accessibilityLabel: nil
+                ),
+            ],
+            swipeMode: .eightWay, slideType: .none,
+            style: .primary, tapCycleActions: nil
+        )
+        let mainMode = KeyboardMode(
+            name: ModeNames.main,
+            keys: [sharpSKey.id: sharpSKey],
+            arrangements: [
+                .portrait: GridArrangement(
+                    columns: 1,
+                    rows: [[KeyPlacement(keyId: sharpSKey.id)]]
+                ),
+            ],
+            autoTransitions: [:]
+        )
+        vm.currentDefinition = KeyboardDefinition(
+            title: "Fixture", id: "fixture", localeIdentifier: "de_DE",
+            modes: [ModeNames.main: mainMode], defaultMode: ModeNames.main,
+            settings: KeyboardDefinitionSettings(
+                autoCapitalize: false, composeRuleOverrides: nil
+            )
+        )
+        vm.activeModeName = ModeNames.main
+        vm.currentMode = mainMode
+        vm.pipelineLocale = Locale(identifier: "de_DE")
+        vm.rebuildResolverChain()
+        vm.rebuildPipeline()
+
+        vm.handleGesture(.circularClockwise, keyId: sharpSKey.id, isReturn: false)
+
+        #expect(target.events == [.insertText("ẞ")])
+    }
 }

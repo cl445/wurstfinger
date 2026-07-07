@@ -322,7 +322,10 @@ extension KeyboardViewModel {
               text.first?.isLetter == true
         else { return false }
         let locale = pipelineLocale ?? Locale.current
-        let uppercased = text.uppercased(with: locale)
+        // keyboardUppercased (not plain uppercased) keeps ß → ẞ as a single
+        // character, matching the shifted-layer generation in the definition
+        // layer — a layout with ß on a tap position must not expand to "SS".
+        let uppercased = text.keyboardUppercased(with: locale)
         dispatchAction(.commitText(uppercased))
         return true
     }
