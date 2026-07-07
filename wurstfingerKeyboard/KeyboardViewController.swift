@@ -135,6 +135,20 @@ final class KeyboardViewController: UIInputViewController {
         viewModel.loadDefinition(for: languageId)
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        // Shed weight before the process gets suspended: iOS enforces the
+        // per-process memory limit again when a suspended keyboard extension
+        // is resumed by the next host. A device log capture (2026-07-07)
+        // showed exactly this — resume by Spotlight, immediate
+        // `jetsam per-process-limit` kill, silent system-keyboard fallback.
+        // Suspending small is what makes the next resume survive; a memory
+        // warning never fires on suspension, so this cannot wait for
+        // didReceiveMemoryWarning.
+        KeyboardRegistry.evictAll(except: selectedLanguageId)
+        KeyboardHealthLog.shared.record("viewDidDisappear")
+    }
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         KeyboardHealthLog.shared.record("didReceiveMemoryWarning")
