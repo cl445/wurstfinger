@@ -49,7 +49,11 @@ struct SlideGestureState {
     }
 
     /// Processes one `onChanged` sample.
-    mutating func handleChanged(translation: CGSize, activationThreshold: CGFloat) -> Update {
+    mutating func handleChanged(
+        translation: CGSize,
+        activationThreshold: CGFloat,
+        swipeUpThreshold: CGFloat = KeyboardConstants.SpaceGestures.swipeUpActivationThreshold
+    ) -> Update {
         var update = Update()
         if !dragStarted {
             dragStarted = true
@@ -65,7 +69,18 @@ struct SlideGestureState {
         // points of sideways drift turns into a cursor slide and the vertical
         // classification in `handleEnded` becomes unreachable. Once latched,
         // the slide stays tolerant of vertical drift as before.
-        if !isSliding, abs(currentX) >= activationThreshold, abs(currentX) > abs(translation.height) {
+        //
+        // Instantaneous dominance alone is not enough: on the return leg of a
+        // return-up swipe the vertical translation shrinks through ~0 while
+        // sideways drift stays, so a lift-off sample like (10, -6) would
+        // latch the slide even though the peak committed the up-swipe long
+        // ago. Once the upward peak crossed the up-swipe threshold, the
+        // gesture belongs to `handleEnded`'s vertical classification and must
+        // never latch.
+        if !isSliding,
+           -upwardPeakY < swipeUpThreshold,
+           abs(currentX) >= activationThreshold,
+           abs(currentX) > abs(translation.height) {
             isSliding = true
             // Anchor at the threshold crossing (not the full translation) so
             // the travel beyond the threshold is reported on the same tick
