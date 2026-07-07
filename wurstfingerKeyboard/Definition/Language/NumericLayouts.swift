@@ -228,8 +228,7 @@ enum NumericLayouts {
             name: ModeNames.numeric,
             keys: allKeys,
             arrangements: StandardArrangements.numeric3x3,
-            autoTransitions: [:],
-            doubleTapMode: nil
+            autoTransitions: [:]
         )
     }
 }

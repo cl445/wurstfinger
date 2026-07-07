@@ -36,8 +36,7 @@ private enum Fixtures {
             name: name,
             keys: Dictionary(uniqueKeysWithValues: keys.map { ($0.id, $0) }),
             arrangements: [.portrait: GridArrangement(columns: 1, rows: [[KeyPlacement(keyId: keys.first?.id ?? "x")]])],
-            autoTransitions: [:],
-            doubleTapMode: nil
+            autoTransitions: [:]
         )
     }
 

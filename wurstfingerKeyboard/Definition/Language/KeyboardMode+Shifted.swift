@@ -37,8 +37,7 @@ extension KeyboardMode {
             name: ModeNames.shifted,
             keys: shiftedKeys,
             arrangements: arrangements,
-            autoTransitions: [:],
-            doubleTapMode: nil
+            autoTransitions: [:]
         )
     }
 }

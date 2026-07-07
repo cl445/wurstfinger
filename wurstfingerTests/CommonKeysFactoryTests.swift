@@ -280,7 +280,6 @@ struct GridKeyboardFactoryTests {
     @Test func capsLockHasNoAutoTransitions() throws {
         let capsLock = try #require(Self.testLayout.modes[ModeNames.capsLock])
         #expect(capsLock.autoTransitions.isEmpty)
-        #expect(capsLock.doubleTapMode == nil)
     }
 
     @Test func mainModeShiftLabelIsUpArrow() throws {

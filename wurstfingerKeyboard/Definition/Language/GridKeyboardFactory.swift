@@ -131,8 +131,7 @@ enum GridKeyboardFactory {
             name: ModeNames.main,
             keys: allKeys,
             arrangements: arrangements,
-            autoTransitions: [:],
-            doubleTapMode: nil
+            autoTransitions: [:]
         )
 
         var modes: [String: KeyboardMode] = [

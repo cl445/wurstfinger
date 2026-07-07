@@ -72,8 +72,7 @@ struct KeyboardViewModelContextTests {
                 .portrait: utilityRightArrangement,
                 .portraitUtilityLeft: utilityLeftArrangement,
             ],
-            autoTransitions: [:],
-            doubleTapMode: nil
+            autoTransitions: [:]
         )
 
         let viewModel = makeViewModel(utilityLeft: false)

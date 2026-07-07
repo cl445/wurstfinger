@@ -65,8 +65,7 @@ private enum PipelineFixtures {
                     rows: [[KeyPlacement(keyId: keys.first?.id ?? "x")]]
                 ),
             ],
-            autoTransitions: autoTransitions,
-            doubleTapMode: nil
+            autoTransitions: autoTransitions
         )
     }
 
