@@ -167,7 +167,16 @@ extension KeyboardViewModel {
         middlewares.append(AutoCapitalizationMiddleware(
             evaluate: { [weak self] in self?.evaluateAutoCapitalization() },
             onCapitalize: { [weak self] in self?.engageAutoCapitalization() },
-            onReleaseCapitalize: { [weak self] in self?.releaseAutoCapitalization() }
+            onReleaseCapitalize: { [weak self] in
+                // Mirror `refreshAutoCapitalization`: only an *auto-engaged*
+                // shift may be released when the context stops calling for
+                // capitalization. A manually tapped shift is one-shot and is
+                // consumed exclusively by letters (via the shifted mode's
+                // auto-transition) — never dropped by delete, symbols,
+                // paste, or cut — matching iOS system shift behavior.
+                guard let self, shiftEngagedByAutoCapitalization else { return }
+                releaseAutoCapitalization()
+            }
         ))
 
         // 8. Mode transitions (auto-transitions from key category)
