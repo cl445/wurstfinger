@@ -146,10 +146,14 @@ extension KeyboardViewModel {
             }
         ))
 
-        // 4. Advanced text (delete-forward, capitalize, clipboard)
+        // 4. Advanced text (delete-forward, capitalize, clipboard). The
+        //    clipboard confirmation tick fires from the middleware's success
+        //    paths (not upfront in the haptic middleware) so guarded no-ops
+        //    stay silent.
         middlewares.append(AdvancedTextMiddleware(
             target: { [weak self] in self?.textInputTarget },
-            locale: { [weak self] in self?.pipelineLocale ?? Locale.current }
+            locale: { [weak self] in self?.pipelineLocale ?? Locale.current },
+            onClipboardSuccess: { [weak self] in self?.feedbackStateChange() }
         ))
 
         // 5. Basic text input (commitText, deleteBackward, space, newline, moveCursor)

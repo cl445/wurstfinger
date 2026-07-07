@@ -178,6 +178,16 @@ enum KeyboardConstants {
         static let repeatDelay: TimeInterval = 0.35
     }
 
+    // MARK: - Text Input
+
+    enum TextInput {
+        /// Maximum size of a pasted string in UTF-16 code units (~200 KB as
+        /// NSString storage). The pasteboard is the one unbounded external
+        /// input in the jetsam-constrained keyboard extension; longer text is
+        /// silently truncated at a grapheme boundary before insertion.
+        static let maxPasteUTF16Length = 200_000
+    }
+
     // MARK: - Preview Settings
 
     enum Preview {
