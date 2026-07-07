@@ -60,18 +60,15 @@ struct InteractiveKeyboardPreview: View {
     }
 
     private var previewHeight: CGFloat {
-        // Calculate preview height based on aspect ratio and scale
-        let baseHeight = KeyboardConstants.Calculations.baseHeight(aspectRatio: previewViewModel.keyAspectRatio)
-        let scaledHeight = baseHeight * scale
+        // Mirror the real keyboard height: shared base-height formula, scaled.
+        // The bindings drive the preview view model, so they are the
+        // authoritative source for layout inputs here.
+        let scaledHeight = KeyboardConstants.Calculations.baseHeight(aspectRatio: aspectRatio) * scale
 
-        // Determine height constraints based on usage
-        if scale < 0.99 {
-            return min(KeyboardConstants.Preview.maxHeight, max(KeyboardConstants.Preview.minHeight, scaledHeight))
-        } else {
-            let keyHeight = 54.0 * (1.5 / aspectRatio)
-            let totalHeight = (keyHeight * 4) + (8 * 3) + (10 * 2)
-            return min(400, max(200, totalHeight))
-        }
+        // Near full scale the preview reserves more minimum room so the
+        // keyboard is never squeezed below its natural size.
+        let minHeight: CGFloat = scale < 0.99 ? KeyboardConstants.Preview.minHeight : 200
+        return min(KeyboardConstants.Preview.maxHeight, max(minHeight, scaledHeight))
     }
 
     var body: some View {
@@ -106,12 +103,11 @@ struct InteractiveKeyboardPreview: View {
                     .cornerRadius(8)
             }
 
-            GeometryReader { _ in
+            GeometryReader { proxy in
                 ZStack(alignment: .top) {
                     Color(.systemGray6)
 
-                    DataDrivenKeyboardRootView(viewModel: previewViewModel)
-
+                    DataDrivenKeyboardRootView(viewModel: previewViewModel, overrideWidth: proxy.size.width)
                         .onChange(of: aspectRatio) { _, newValue in
                             previewViewModel.keyAspectRatio = newValue
                         }

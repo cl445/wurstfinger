@@ -15,14 +15,17 @@ struct GesturePlaygroundView: View {
     @State private var detectedGesture: GestureType = .tap
     @State private var isCircularCW: Bool?
 
-    @AppStorage("keyAspectRatio", store: SharedDefaults.store)
-    private var keyAspectRatio = 1.5
+    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
+    private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
-    // Key dimensions for the input area (simulating a standard key)
-    private let keyHeight: CGFloat = KeyboardConstants.KeyDimensions.height
+    // Key dimensions for the input area (simulating a standard key),
+    // derived from the shared layout calculation.
+    private var keyHeight: CGFloat {
+        KeyboardConstants.Calculations.keyHeight(aspectRatio: keyAspectRatio)
+    }
 
     private var keyWidth: CGFloat {
-        KeyboardConstants.KeyDimensions.height * CGFloat(keyAspectRatio)
+        keyHeight * CGFloat(keyAspectRatio)
     }
 
     @State private var isDragging = false
