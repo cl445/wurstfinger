@@ -101,21 +101,35 @@ enum StandardArrangements {
         ]
     )
 
+    // MARK: - Utility-Left Variants
+
+    /// The utility keys that move to the leading edge when "Utility Keys on
+    /// Left" is enabled: globe, symbols, delete, and return — in the same
+    /// top-to-bottom order as the trailing column. The space bar and all
+    /// letter/digit keys keep their original left-to-right order.
+    static let leadingUtilityKeys: Set<String> = [
+        UtilitySlot.globe, UtilitySlot.symbols, UtilitySlot.delete, UtilitySlot.return,
+    ]
+
+    private static func utilityLeft(_ arrangement: GridArrangement) -> GridArrangement {
+        arrangement.movingToLeading(keyIds: leadingUtilityKeys)
+    }
+
     // MARK: - All 4 Contexts
 
     /// All 4 arrangement contexts for 3x3 grid layouts.
     static let grid3x3: [ArrangementContext: GridArrangement] = [
         .portrait: portrait,
-        .portraitUtilityLeft: portrait.mirroredHorizontally(),
+        .portraitUtilityLeft: utilityLeft(portrait),
         .landscape: landscape,
-        .landscapeUtilityLeft: landscape.mirroredHorizontally(),
+        .landscapeUtilityLeft: utilityLeft(landscape),
     ]
 
     /// Numeric mode: same as grid3x3 but with an extra "0" key in the bottom row.
     static let numeric3x3: [ArrangementContext: GridArrangement] = [
         .portrait: numericPortrait,
-        .portraitUtilityLeft: numericPortrait.mirroredHorizontally(),
+        .portraitUtilityLeft: utilityLeft(numericPortrait),
         .landscape: numericLandscape,
-        .landscapeUtilityLeft: numericLandscape.mirroredHorizontally(),
+        .landscapeUtilityLeft: utilityLeft(numericLandscape),
     ]
 }

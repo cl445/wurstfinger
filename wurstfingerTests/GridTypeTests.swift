@@ -73,33 +73,37 @@ struct GridArrangementTests {
         ]
     )
 
-    @Test func mirroredHorizontallyReversesEachRow() {
-        let mirrored = Self.portrait.mirroredHorizontally()
+    static let utilityKeys: Set<String> = ["globe", "symbols", "delete", "return"]
 
-        #expect(mirrored.columns == 4)
-        #expect(mirrored.rows.count == 4)
+    @Test func movingToLeadingMovesOnlyUtilityKeys() {
+        let moved = Self.portrait.movingToLeading(keyIds: Self.utilityKeys)
 
-        // First row: globe should now be first
-        #expect(mirrored.rows[0][0].keyId == "globe")
-        #expect(mirrored.rows[0][1].keyId == "topRight")
-        #expect(mirrored.rows[0][2].keyId == "topCenter")
-        #expect(mirrored.rows[0][3].keyId == "topLeft")
+        #expect(moved.columns == 4)
+        #expect(moved.rows.count == 4)
 
-        // Last row: return first, space second
-        #expect(mirrored.rows[3][0].keyId == "return")
-        #expect(mirrored.rows[3][1].keyId == "space")
+        // Utility key leads each row; letters keep their original order.
+        #expect(moved.rows[0].map(\.keyId) == ["globe", "topLeft", "topCenter", "topRight"])
+        #expect(moved.rows[1].map(\.keyId) == ["symbols", "midLeft", "center", "midRight"])
+        #expect(moved.rows[2].map(\.keyId) == ["delete", "bottomLeft", "bottomCenter", "bottomRight"])
+        #expect(moved.rows[3].map(\.keyId) == ["return", "space"])
     }
 
-    @Test func mirroredHorizontallyPreservesMultipliers() throws {
-        let mirrored = Self.portrait.mirroredHorizontally()
+    @Test func movingToLeadingPreservesMultipliers() throws {
+        let moved = Self.portrait.movingToLeading(keyIds: Self.utilityKeys)
         // Space should keep its widthMultiplier
-        let spacePlacement = try #require(mirrored.rows[3].first { $0.keyId == "space" })
+        let spacePlacement = try #require(moved.rows[3].first { $0.keyId == "space" })
         #expect(spacePlacement.widthMultiplier == 3)
     }
 
-    @Test func doubleMirrorIsIdentity() {
-        let doubleMirrored = Self.portrait.mirroredHorizontally().mirroredHorizontally()
-        #expect(doubleMirrored == Self.portrait)
+    @Test func movingToLeadingIsIdempotent() {
+        let once = Self.portrait.movingToLeading(keyIds: Self.utilityKeys)
+        let twice = once.movingToLeading(keyIds: Self.utilityKeys)
+        #expect(twice == once)
+    }
+
+    @Test func movingToLeadingWithNoMatchesIsIdentity() {
+        let moved = Self.portrait.movingToLeading(keyIds: ["nonexistent"])
+        #expect(moved == Self.portrait)
     }
 
     @Test func resizedAdjustsTargetKey() throws {

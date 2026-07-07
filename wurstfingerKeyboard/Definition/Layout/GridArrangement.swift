@@ -22,11 +22,15 @@ struct GridArrangement: Codable, Equatable {
 // MARK: - Transformations
 
 extension GridArrangement {
-    /// Mirrors each row horizontally (utility left ↔ right).
-    func mirroredHorizontally() -> GridArrangement {
+    /// Moves the placements with the given key IDs to the leading edge of their
+    /// row while preserving the relative order of all other placements
+    /// (utility column left ↔ right without mirroring the letter grid).
+    func movingToLeading(keyIds: Set<String>) -> GridArrangement {
         GridArrangement(
             columns: columns,
-            rows: rows.map { $0.reversed() }
+            rows: rows.map { row in
+                row.filter { keyIds.contains($0.keyId) } + row.filter { !keyIds.contains($0.keyId) }
+            }
         )
     }
 

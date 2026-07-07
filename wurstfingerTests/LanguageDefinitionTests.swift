@@ -85,6 +85,23 @@ struct GermanLayoutTests {
     @Test func localeIsGerman() {
         #expect(Self.german.localeIdentifier == "de_DE")
     }
+
+    @Test func utilityLeftKeepsGermanLetterOrder() throws {
+        // "Utility Keys on Left" must not mirror the letter grid:
+        // the letters still read a n i / h d r / t e s left-to-right.
+        let main = try #require(Self.german.modes[ModeNames.main])
+        let arrangement = try #require(main.arrangements[.portraitUtilityLeft])
+        let letterRows = arrangement.rows.map { row in
+            row.compactMap { main.keys[$0.keyId]?.bindings[.tap]?.action }
+                .compactMap { action -> String? in
+                    if case let .commitText(text) = action { return text }
+                    return nil
+                }
+        }
+        #expect(letterRows[0] == ["a", "n", "i"])
+        #expect(letterRows[1] == ["h", "d", "r"])
+        #expect(letterRows[2] == ["t", "e", "s"])
+    }
 }
 
 // MARK: - NumericLayouts Tests
