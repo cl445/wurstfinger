@@ -3745,83 +3745,83 @@
       },
       "comment": "Header for keyboard visual style options"
     },
-    "Liquid Glass requires iOS 26 or later. The classic style will be used on this device.": {
+    "Liquid Glass is designed for iOS 26 and later. On earlier versions a simplified translucent style is used.": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass erfordert iOS 26 oder neuer. Auf diesem Gerät wird der klassische Stil verwendet."
+            "value": "Liquid Glass ist für iOS 26 und neuer ausgelegt. Auf älteren Versionen wird ein vereinfachter durchscheinender Stil verwendet."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass nécessite iOS 26 ou une version ultérieure. Le style classique sera utilisé sur cet appareil."
+            "value": "Liquid Glass est conçu pour iOS 26 et versions ultérieures. Sur les versions antérieures, un style translucide simplifié est utilisé."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass requiere iOS 26 o posterior. En este dispositivo se usará el estilo clásico."
+            "value": "Liquid Glass está diseñado para iOS 26 y posteriores. En versiones anteriores se usa un estilo translúcido simplificado."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass richiede iOS 26 o versioni successive. Su questo dispositivo verrà usato lo stile classico."
+            "value": "Liquid Glass è progettato per iOS 26 e versioni successive. Nelle versioni precedenti viene usato uno stile traslucido semplificato."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass требует iOS 26 или новее. На этом устройстве будет использоваться классический стиль."
+            "value": "Liquid Glass разработан для iOS 26 и новее. В более ранних версиях используется упрощённый полупрозрачный стиль."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass wymaga iOS 26 lub nowszego. Na tym urządzeniu zostanie użyty styl klasyczny."
+            "value": "Liquid Glass jest zaprojektowany dla iOS 26 i nowszych. W starszych wersjach używany jest uproszczony półprzezroczysty styl."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass kräver iOS 26 eller senare. Den klassiska stilen används på den här enheten."
+            "value": "Liquid Glass är utformat för iOS 26 och senare. På äldre versioner används en förenklad halvgenomskinlig stil."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass vaatii iOS 26:n tai uudemman. Tässä laitteessa käytetään klassista tyyliä."
+            "value": "Liquid Glass on suunniteltu iOS 26:lle ja uudemmille. Vanhemmissa versioissa käytetään yksinkertaistettua läpikuultavaa tyyliä."
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass zahtijeva iOS 26 ili noviji. Na ovom će se uređaju koristiti klasični stil."
+            "value": "Liquid Glass je osmišljen za iOS 26 i novije. Na starijim verzijama koristi se pojednostavljeni poluprozirni stil."
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass דורש iOS 26 ואילך. הסגנון הקלאסי ישמש במכשיר זה."
+            "value": "Liquid Glass מיועד ל‑iOS 26 ואילך. בגרסאות קודמות נעשה שימוש בסגנון שקוף למחצה ופשוט יותר."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass yêu cầu iOS 26 trở lên. Kiểu cổ điển sẽ được dùng trên thiết bị này."
+            "value": "Liquid Glass được thiết kế cho iOS 26 trở lên. Trên các phiên bản cũ hơn, một kiểu trong mờ đơn giản hóa sẽ được dùng."
           }
         },
         "fil": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kailangan ng Liquid Glass ang iOS 26 o mas bago. Gagamitin ang klasikong estilo sa device na ito."
+            "value": "Ang Liquid Glass ay idinisenyo para sa iOS 26 pataas. Sa mas lumang bersyon, gagamitin ang pinasimpleng translucent na estilo."
           }
         }
       },
-      "comment": "Warning note; 'Liquid Glass' is a style name (keep)"
+      "comment": "Note shown on pre-iOS-26 devices; 'Liquid Glass' is a style name (keep)"
     },
     "Enable or disable all haptic feedback vibrations.": {
       "extractionState": "manual",
@@ -8346,6 +8346,318 @@
         }
       },
       "comment": "Label visibility list item"
+    },
+    "Show Letters": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buchstaben anzeigen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher les lettres"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar letras"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra lettere"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показывать буквы"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokazuj litery"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visa bokstäver"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näytä kirjaimet"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prikaži slova"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הצגת אותיות"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiện chữ cái"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ipakita ang mga letra"
+          }
+        }
+      },
+      "comment": "Label visibility toggle"
+    },
+    "Show Standard Symbols": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standardsymbole anzeigen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher les symboles standard"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar símbolos estándar"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra simboli standard"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показывать стандартные символы"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokazuj symbole standardowe"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visa standardsymboler"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näytä vakiosymbolit"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prikaži standardne simbole"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הצגת סמלים רגילים"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiện ký hiệu chuẩn"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ipakita ang mga karaniwang simbolo"
+          }
+        }
+      },
+      "comment": "Label visibility toggle"
+    },
+    "Show Extra Symbols": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zusatzsymbole anzeigen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher les symboles supplémentaires"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar símbolos adicionales"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra simboli extra"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показывать дополнительные символы"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokazuj symbole dodatkowe"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visa extra symboler"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näytä lisäsymbolit"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prikaži dodatne simbole"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הצגת סמלים נוספים"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiện ký hiệu bổ sung"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ipakita ang mga dagdag na simbolo"
+          }
+        }
+      },
+      "comment": "Label visibility toggle"
+    },
+    "Hide labels to practice the layout from memory. Numbers and control keys are always visible.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blende Beschriftungen aus, um das Layout aus dem Gedächtnis zu üben. Zahlen und Steuertasten sind immer sichtbar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masquez les étiquettes pour vous exercer à la disposition de mémoire. Les chiffres et les touches de contrôle restent toujours visibles."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oculta las etiquetas para practicar la disposición de memoria. Los números y las teclas de control siempre están visibles."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascondi le etichette per esercitarti con il layout a memoria. I numeri e i tasti di controllo restano sempre visibili."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скройте подписи, чтобы тренировать раскладку по памяти. Цифры и служебные клавиши всегда видны."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ukryj etykiety, aby ćwiczyć układ z pamięci. Cyfry i klawisze sterujące są zawsze widoczne."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dölj etiketter för att öva på layouten ur minnet. Siffror och kontrolltangenter är alltid synliga."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piilota merkinnät harjoitellaksesi asettelua muistista. Numerot ja ohjausnäppäimet ovat aina näkyvissä."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sakrij oznake da vježbaš raspored napamet. Brojevi i upravljačke tipke uvijek su vidljivi."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הסתר תוויות כדי לתרגל את הפריסה מהזיכרון. הספרות ומקשי הבקרה תמיד גלויים."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ẩn nhãn để luyện tập bố cục theo trí nhớ. Số và các phím điều khiển luôn hiển thị."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Itago ang mga label para masanay sa layout mula sa memorya. Laging nakikita ang mga numero at control key."
+          }
+        }
+      },
+      "comment": "Label visibility footer"
     },
     "Classic": {
       "extractionState": "manual",
