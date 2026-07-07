@@ -42,7 +42,7 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        KeyboardMemoryLog.record("viewDidLoad.start")
+        KeyboardHealthLog.shared.record("viewDidLoad.start")
 
         // Set background immediately to avoid flash
         view.backgroundColor = .clear
@@ -70,11 +70,15 @@ final class KeyboardViewController: UIInputViewController {
         // viewWillAppear ran before configureHosting, leaving the extension
         // with a height constraint but no content.
         configureHosting()
-        KeyboardMemoryLog.record("viewDidLoad.end")
+        KeyboardHealthLog.shared.record("viewDidLoad.end")
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        // Heartbeat: one entry per keyboard appearance. Its absence at the time
+        // of a "system keyboard showed instead" incident proves iOS never
+        // launched the extension (as opposed to the extension failing).
+        KeyboardHealthLog.shared.record("viewWillAppear")
         // Persist Full Access status so the host app can show/hide haptic
         // settings. Write only on change: every shared-defaults write fires the
         // in-process didChangeNotification observer, which would run a second,
@@ -133,7 +137,7 @@ final class KeyboardViewController: UIInputViewController {
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        KeyboardMemoryLog.record("didReceiveMemoryWarning")
+        KeyboardHealthLog.shared.record("didReceiveMemoryWarning")
         // Free cached layouts for languages other than the active one. The
         // active definition stays resident (the view model holds a strong
         // reference) and remains cached for fast reuse.

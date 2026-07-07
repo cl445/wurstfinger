@@ -64,6 +64,9 @@ struct ExpertSettingsView: View {
                     NavigationLink("Gesture Playground") {
                         GesturePlaygroundView()
                     }
+                    NavigationLink("Keyboard Health") {
+                        KeyboardHealthView()
+                    }
                 } header: {
                     Label("Tools", systemImage: "hammer.fill")
                 }
