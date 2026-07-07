@@ -68,10 +68,25 @@ struct GesturePreprocessorRobustnessTests {
     }
 
     @Test func pathLongerThanPositionBufferStaysClassifiable() {
-        // More samples than KeyboardConstants.Gesture.positionBufferSize (60),
-        // a straight rightward drag — must still classify as a right swipe.
+        // More samples than KeyboardConstants.Gesture.positionBufferSize
+        // (120), a straight rightward drag — must still classify as a right
+        // swipe.
         let points = (0 ... 500).map { CGPoint(x: CGFloat($0), y: 0) }
         #expect(classify(points) == .swipeRight)
+    }
+
+    @Test(arguments: [CGFloat.zero, -2, .nan, .infinity])
+    func invalidAspectRatioFallsBackInsteadOfPoisoningClassification(aspectRatio: CGFloat) {
+        // The aspect ratio reaches the preprocessor via a raw @AppStorage
+        // read; a zero/non-finite stored value used to turn normalization
+        // into NaN so that every gesture classified as .swipeRight. It must
+        // fall back to 1.0 and classify this clean up-swipe correctly.
+        let config = GesturePreprocessorConfig.default.with(aspectRatio: aspectRatio)
+        let points = (0 ... 15).map { CGPoint(x: 0, y: CGFloat($0) * -4) }
+        let result = KeyGestureRecognizer.classify(
+            positions: points, config: config, thresholds: .default
+        )
+        #expect(result.gesture == .swipeUp)
     }
 
     @Test func preprocessHandlesDegenerateInput() {

@@ -118,8 +118,13 @@ enum KeyboardConstants {
         static let finalOffsetMultiplier: CGFloat = 0.71
 
         /// Number of touch points to buffer for gesture analysis.
-        /// 60 points at 60Hz = 1 second of touch history.
-        static let positionBufferSize: Int = 60
+        /// SwiftUI's DragGesture delivers samples at display refresh rate, so
+        /// the buffer is sized for the fastest shipping display: 120 points
+        /// hold 1 second of history at 120Hz (ProMotion) and 2 seconds at
+        /// 60Hz. A smaller buffer evicts the outbound leg of slow return
+        /// swipes, which then misclassify as plain swipes after
+        /// origin-anchoring (see `KeyGestureRecognizer.anchoringOrigin`).
+        static let positionBufferSize: Int = 120
     }
 
     // MARK: - Space Key Gestures
