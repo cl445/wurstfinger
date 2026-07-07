@@ -1,5 +1,11 @@
 default_platform(:ios)
 
+# Single CI predicate — GitHub Actions sets CI="true"; a bare truthy check
+# would also fire on CI="false" or CI="".
+def ci?
+  ENV["CI"] == "true"
+end
+
 platform :ios do
   # Shared context for both lanes: validated environment plus an ASC API key.
   private_lane :asc_context do
@@ -38,7 +44,7 @@ platform :ios do
     )
 
     # Create temporary keychain for CI
-    if ENV["CI"]
+    if ci?
       create_keychain(
         name: "fastlane_tmp_keychain",
         password: "temp_password_123",
@@ -51,10 +57,10 @@ platform :ios do
 
     match(
       type: "appstore",
-      readonly: ENV["CI"] == "true",
+      readonly: ci?,
       app_identifier: [app_id, "#{app_id}.keyboard"],
-      keychain_name: ENV["CI"] ? "fastlane_tmp_keychain" : "login.keychain",
-      keychain_password: ENV["CI"] ? "temp_password_123" : nil
+      keychain_name: ci? ? "fastlane_tmp_keychain" : "login.keychain",
+      keychain_password: ci? ? "temp_password_123" : nil
     )
 
     # Update signing for main app target
@@ -83,12 +89,31 @@ platform :ios do
       export_method: "app-store",
       include_symbols: true,
       include_bitcode: false,
-      xcargs: ENV["CI"] ? "OTHER_CODE_SIGN_FLAGS='--keychain fastlane_tmp_keychain'" : nil
+      xcargs: ci? ? "OTHER_CODE_SIGN_FLAGS='--keychain fastlane_tmp_keychain'" : nil
     )
   end
 
   private_lane :cleanup_ci_keychain do
-    delete_keychain(name: "fastlane_tmp_keychain") if ENV["CI"]
+    next unless ci?
+
+    # Only delete when the keychain actually exists — the lane may fail
+    # before create_keychain ran, and delete_keychain raises otherwise.
+    keychain = "fastlane_tmp_keychain"
+    exists = ["#{keychain}-db", keychain].any? do |name|
+      File.exist?(File.expand_path("~/Library/Keychains/#{name}"))
+    end
+    delete_keychain(name: keychain) if exists
+  end
+
+  # Runs after any lane failure. Without this, a failed match/build/upload
+  # leaves fastlane_tmp_keychain in place *and* set as the default keychain
+  # on the runner. Guarded so cleanup problems never mask the original error.
+  error do |_lane, _exception|
+    begin
+      cleanup_ci_keychain
+    rescue => cleanup_error
+      UI.important("CI keychain cleanup failed: #{cleanup_error.message}")
+    end
   end
 
   desc "Build & upload to TestFlight on develop merges"

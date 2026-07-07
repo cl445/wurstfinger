@@ -21,7 +21,6 @@ set -e
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
-YELLOW='\033[0;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
@@ -116,11 +115,17 @@ for target in "${TARGETS[@]}"; do
         -derivedDataPath "$DERIVED_DATA" \
         CODE_SIGNING_ALLOWED=NO \
         2>&1 | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi
-    TEST_RESULT=$?
+    # $? after a pipe is the formatter's exit code (always 0); we need xcodebuild's.
+    TEST_RESULT=${PIPESTATUS[0]}
     set -e
 
-    if [ $TEST_RESULT -ne 0 ]; then
-        echo -e "${YELLOW}⚠️  Tests may have issues, checking for screenshots...${NC}"
+    if [ "$TEST_RESULT" -ne 0 ]; then
+        # These screenshots ship to the App Store (deliver uploads with
+        # overwrite_screenshots: true), so a partial set from a failed run
+        # must never be used silently.
+        echo -e "${RED}❌ Screenshot tests failed on $DEVICE_NAME (exit code: $TEST_RESULT)${NC}"
+        echo -e "${RED}   Refusing to continue — a partial screenshot set must not ship.${NC}"
+        exit 1
     fi
 
     # Find and extract screenshots from xcresult
