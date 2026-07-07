@@ -25,9 +25,12 @@ import os
 /// defaults write fires the in-process `didChangeNotification`, which would
 /// trigger a redundant settings reload on each keyboard appearance.
 ///
-/// All writes happen on the extension's main thread; the host app only reads
-/// and clears. A clear racing a write can lose one side — acceptable for
-/// diagnostics, and the file stays bounded by `maxEntries` either way.
+/// `record` captures the footprint synchronously at the call site (so the
+/// measurement is attributed to the right lifecycle point) but persists on a
+/// serial utility queue — file I/O must not sit in the keyboard's launch
+/// path. A host-app clear racing an extension write can lose one side —
+/// acceptable for diagnostics, and the file stays bounded by `maxEntries`
+/// either way.
 struct KeyboardHealthLog {
     struct Entry: Codable, Equatable, Identifiable {
         let id: UUID
@@ -59,6 +62,14 @@ struct KeyboardHealthLog {
     private let fileURL: URL?
     private let maxEntries: Int
 
+    /// Serializes all file access across instances. `record` hops onto it
+    /// asynchronously; `entries()`/`clear()` sync through it, so reads always
+    /// observe every previously recorded entry.
+    private static let ioQueue = DispatchQueue(
+        label: "de.akator.wurstfinger.keyboard-health-log",
+        qos: .utility
+    )
+
     #if DEBUG
         private static let logger = Logger(subsystem: "de.akator.wurstfinger", category: "memory")
     #endif
@@ -83,29 +94,38 @@ struct KeyboardHealthLog {
             let message = "[\(label)] used: \(used) MB, available: \(available) MB"
             Self.logger.log("\(message, privacy: .public)")
         #endif
-        var all = entries()
-        all.append(entry)
-        if all.count > maxEntries {
-            all.removeFirst(all.count - maxEntries)
+        Self.ioQueue.async {
+            var all = readEntries()
+            all.append(entry)
+            if all.count > maxEntries {
+                all.removeFirst(all.count - maxEntries)
+            }
+            write(all)
         }
-        write(all)
     }
 
     /// All recorded entries, oldest first. Empty when the file is missing or
     /// unreadable (corruption is silently discarded — this is diagnostics,
     /// it must never take the keyboard down).
     func entries() -> [Entry] {
-        guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return [] }
-        return (try? JSONDecoder().decode([Entry].self, from: data)) ?? []
+        Self.ioQueue.sync { readEntries() }
     }
 
     /// Removes all recorded entries.
     func clear() {
         guard let fileURL else { return }
-        try? FileManager.default.removeItem(at: fileURL)
+        Self.ioQueue.sync {
+            try? FileManager.default.removeItem(at: fileURL)
+        }
     }
 
     // MARK: - Private
+
+    /// Raw read; must only run on `ioQueue`.
+    private func readEntries() -> [Entry] {
+        guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return [] }
+        return (try? JSONDecoder().decode([Entry].self, from: data)) ?? []
+    }
 
     private func write(_ entries: [Entry]) {
         guard let fileURL, let data = try? JSONEncoder().encode(entries) else { return }
