@@ -258,6 +258,12 @@ struct KeyView: View {
         case .copy: "doc.on.doc"
         case .paste: "doc.on.clipboard"
         case .cut: "scissors"
+        // Note: on the globe key `hintOverlay` renders the current-language
+        // label (e.g. "DE") for this action instead — both occupy the same
+        // directional slot, so the more informative label wins there. The
+        // icon keeps the action→icon mapping complete for any other render
+        // of a language-switch binding.
+        case .switchToNextLanguage: "globe.badge.chevron.backward"
         default: nil
         }
     }
