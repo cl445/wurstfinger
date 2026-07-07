@@ -117,7 +117,13 @@ enum GridKeyboardFactory {
             }
         }
 
-        // 2. Merge utility keys
+        // 2. Merge utility keys — the slot-id sets must be disjoint or the
+        // merge would silently swallow a utility key (same invariant as
+        // `NumericLayouts.buildMode`).
+        precondition(
+            Set(letterKeys.keys).isDisjoint(with: CommonKeys.allUtilityKeys.keys),
+            "letter and utility key IDs must not overlap"
+        )
         let allKeys = letterKeys.merging(CommonKeys.allUtilityKeys) { letter, _ in letter }
 
         // 3. Build base mode with all keys (includes shift-down on midRight)
