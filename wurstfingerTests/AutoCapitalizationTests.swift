@@ -391,6 +391,47 @@ struct AutoCapitalizationTests {
         )
     }
 
+    // MARK: - Spanish inverted punctuation (¿ / ¡)
+
+    @Test func invertedQuestionMarkEngagesShiftThroughPipeline() {
+        let (vm, target) = makeAutoCapViewModel()
+        target.documentContextBeforeInput = "Hola "
+
+        // ¿ is the return swipe of "?" (topRight swipeLeft).
+        vm.handleGesture(.swipeLeft, keyId: GridSlot.topRight, isReturn: true)
+
+        #expect(target.events.contains(.insertText("¿")))
+        #expect(
+            vm.activeModeName == ModeNames.shifted,
+            "¿ must capitalize the immediately following letter"
+        )
+    }
+
+    @Test func invertedExclamationMarkEngagesShiftThroughPipeline() {
+        let (vm, target) = makeAutoCapViewModel()
+        target.documentContextBeforeInput = "Hola "
+
+        vm.dispatchAction(.commitText("¡"))
+        #expect(vm.activeModeName == ModeNames.shifted)
+    }
+
+    @Test func invertedPunctuationEngagesShiftViaRefresh() {
+        let (vm, target) = makeAutoCapViewModel()
+        // Caret lands right after an opener (host-side change).
+        target.documentContextBeforeInput = "¿"
+
+        vm.refreshAutoCapitalization()
+        #expect(vm.activeModeName == ModeNames.shifted)
+    }
+
+    @Test func invertedPunctuationDoesNothingWhenSettingDisabled() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        target.documentContextBeforeInput = "Hola "
+
+        vm.dispatchAction(.commitText("¿"))
+        #expect(vm.activeModeName == ModeNames.main)
+    }
+
     // MARK: - Definition-level enablement
 
     @Test func definitionWithoutAutoCapitalizeDisablesEngagement() throws {

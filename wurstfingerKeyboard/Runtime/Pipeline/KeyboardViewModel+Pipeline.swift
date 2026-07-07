@@ -221,9 +221,14 @@ extension KeyboardViewModel {
         guard currentDefinition?.settings.autoCapitalize == true,
               sharedDefaults.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue)
         else { return nil }
-        return AutoCapitalization.shouldCapitalize(
-            context: textInputTarget?.documentContextBeforeInput
-        )
+        let context = textInputTarget?.documentContextBeforeInput
+        // Sentence-opening punctuation (Spanish ¿/¡) capitalizes the letter
+        // that immediately follows it, matching iOS system keyboards.
+        if let last = context?.last,
+           AutoCapitalization.shouldCapitalizeImmediately(after: String(last)) {
+            return true
+        }
+        return AutoCapitalization.shouldCapitalize(context: context)
     }
 
     /// Engages the shifted layer for the next key. Only fires from `main`:
