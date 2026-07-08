@@ -40,21 +40,15 @@ struct DeviceLayoutUtils {
         UIScreen.main.bounds
     }
 
-    /// Calculates the default keyboard scale to achieve a target width of ~270pt
-    /// (which corresponds to ~67% of an iPhone 17 Pro width).
-    static var defaultKeyboardScale: Double {
-        let targetWidth: CGFloat = 270.0
-        let screenWidth = screenBounds.width
-
-        // Avoid division by zero
-        guard screenWidth > 0 else { return 1.0 }
-
-        // Calculate scale required to hit target width
-        let calculatedScale = targetWidth / screenWidth
-
-        // Clamp between reasonable min/max (e.g., 0.26 to 1.0)
-        // 0.26 is roughly iPad width (1024pt) -> 270/1024 = 0.26
-        return min(1.0, max(0.25, calculatedScale))
+    /// Default keyboard width wish per device class, in points.
+    ///
+    /// Points are the density-independent unit, so the default deliberately
+    /// never consults screen bounds: the previous screen-relative default
+    /// was orientation-dependent and halved the keyboard on a fresh install
+    /// opened in landscape (review finding H1).
+    static var defaultKeyboardWidth: Double {
+        // 320 pt on iPad is a provisional constant pending real iPad tuning.
+        UIDevice.current.userInterfaceIdiom == .pad ? 320.0 : 270.0
     }
 
     static let defaultKeyAspectRatio: Double = 1.0
@@ -144,9 +138,9 @@ final class KeyboardViewModel: ObservableObject {
         set { layoutSettings.keyAspectRatio = newValue }
     }
 
-    var keyboardScale: Double {
-        get { layoutSettings.keyboardScale }
-        set { layoutSettings.keyboardScale = newValue }
+    var keyboardWidth: Double {
+        get { layoutSettings.keyboardWidth }
+        set { layoutSettings.keyboardWidth = newValue }
     }
 
     var keyboardHorizontalPosition: Double {
@@ -271,6 +265,29 @@ final class KeyboardViewModel: ObservableObject {
     /// The active mode resolved from the current definition and mode name.
     var activeModeFromDefinition: KeyboardMode? {
         currentDefinition?.mode(activeModeName)
+    }
+
+    // MARK: - Layout Metrics
+
+    /// Resolved layout metrics for the tracked view width — the single
+    /// geometry source for the grid, key fonts, gesture classification, and
+    /// the controller's height constraint. Recomputed whenever settings
+    /// reload or `viewWidth`/`keyboardWidthCap` change (all `@Published`).
+    var layoutMetrics: KeyboardLayoutMetrics {
+        layoutMetrics(forContainerWidth: viewWidth)
+    }
+
+    /// Metrics resolved against an explicit container width, for preview and
+    /// screenshot surfaces that render at a width other than the tracked
+    /// view width. The height guard reads the *screen* bounds — the
+    /// extension's own window is only keyboard-sized and carries no usable
+    /// height information (see `updateWindowBounds`).
+    func layoutMetrics(forContainerWidth width: CGFloat) -> KeyboardLayoutMetrics {
+        layoutSettings.resolveMetrics(
+            columns: currentArrangement?.columns ?? 4,
+            availableWidth: width > 0 ? min(width, keyboardWidthCap) : keyboardWidthCap,
+            screenHeight: DeviceLayoutUtils.screenBounds.height
+        )
     }
 
     /// Pipeline hook: fires a confirmation tick for state-changing actions.
