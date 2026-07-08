@@ -14,15 +14,22 @@ enum CommonKeys {
 
     static let globe: KeyConfig = {
         var bindings: [GestureType: KeyBinding] = [:]
-        // Tap is intentionally inert: switching the input method lives on the
-        // swipe-left gesture below. The empty `.none` slot keeps the key's
-        // accessibility label without re-triggering the globe on a plain tap;
-        // `accessibilityActivationGesture` routes a VoiceOver activation to
-        // that swipe so the label stays true for gesture-free input.
+        // Tap opens the emoji layer — the key's centre is otherwise unused
+        // (switching the input method lives on the swipe-left gesture below).
+        // The 🙂 label renders as a monochrome SF Symbol via
+        // `KeyView.sfSymbolMap`, matching other keyboards' emoji keys.
+        //
+        // Because that tap now does something, a VoiceOver activation resolves
+        // on its own and `accessibilityActivationGesture` stays inert (see
+        // `KeyConfig.accessibilityActivationOverride`, which only substitutes a
+        // gesture for an inert tap). It is kept declared so the globe still
+        // stays operable without gestures if the emoji entry ever moves off the
+        // tap. The input-method switch remains reachable under VoiceOver as the
+        // named rotor action carried by the swipe-left binding's label.
         bindings[.tap] = KeyBinding(
-            label: "", action: .none,
-            category: .utility, returnAction: nil,
-            accessibilityLabel: String(localized: "Switch keyboard")
+            label: "🙂", action: .switchMode(ModeNames.emoji),
+            category: .modifier, returnAction: nil,
+            accessibilityLabel: String(localized: "Emoji")
         )
         bindings[.swipeLeft] = KeyBinding(
             label: "", action: .advanceToNextInputMode,

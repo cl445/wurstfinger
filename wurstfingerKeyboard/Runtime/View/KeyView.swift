@@ -98,6 +98,7 @@ struct KeyView: View {
         "🌐": "globe",
         "⌫": "delete.backward",
         "↵": "return",
+        "🙂": "face.smiling",
     ]
 
     var body: some View {

@@ -25,8 +25,8 @@ struct CommonKeysTests {
     @Test func globeKeyAction() {
         let globe = CommonKeys.globe
         #expect(globe.id == UtilitySlot.globe)
-        // Switching the input method lives on swipe-left; tap is intentionally inert.
-        #expect(globe.bindings[.tap]?.action == KeyAction.none)
+        // Switching the input method lives on swipe-left; tap opens the emoji layer.
+        #expect(globe.bindings[.tap]?.action == .switchMode(ModeNames.emoji))
         #expect(globe.bindings[.swipeLeft]?.action == .advanceToNextInputMode)
         // Cycling the in-keyboard language lives on swipe-right.
         #expect(globe.bindings[.swipeRight]?.action == .switchToNextLanguage)
