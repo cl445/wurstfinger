@@ -14,6 +14,7 @@ final class KeyboardViewController: UIInputViewController {
     private lazy var viewModel = KeyboardViewModel()
     private var heightConstraint: NSLayoutConstraint?
     private var documentProxyTarget: DocumentProxyTarget?
+    private var hostLifecycleObservers: [NSObjectProtocol] = []
 
     /// The language selected in the host app, normalised to an id that is
     /// guaranteed to exist in the registry (falling back to the system language,
@@ -42,7 +43,7 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        KeyboardMemoryLog.record("viewDidLoad.start")
+        KeyboardHealthLog.shared.record("viewDidLoad.start")
 
         // Set background immediately to avoid flash
         view.backgroundColor = .clear
@@ -70,11 +71,20 @@ final class KeyboardViewController: UIInputViewController {
         // viewWillAppear ran before configureHosting, leaving the extension
         // with a height constraint but no content.
         configureHosting()
-        KeyboardMemoryLog.record("viewDidLoad.end")
+        observeHostLifecycle()
+        KeyboardHealthLog.shared.record("viewDidLoad.end")
+    }
+
+    deinit {
+        hostLifecycleObservers.forEach(NotificationCenter.default.removeObserver)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        // Heartbeat: one entry per keyboard appearance. Its absence at the time
+        // of a "system keyboard showed instead" incident proves iOS never
+        // launched the extension (as opposed to the extension failing).
+        KeyboardHealthLog.shared.record("viewWillAppear")
         // Persist Full Access status so the host app can show/hide haptic
         // settings. Write only on change: every shared-defaults write fires the
         // in-process didChangeNotification observer, which would run a second,
@@ -131,9 +141,50 @@ final class KeyboardViewController: UIInputViewController {
         viewModel.loadDefinition(for: languageId)
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        shedMemoryBeforeSuspension("viewDidDisappear")
+    }
+
+    /// Sheds weight before the process gets suspended: iOS enforces the
+    /// per-process memory limit again when a suspended keyboard extension is
+    /// resumed by the next host. A device log capture (2026-07-07) showed
+    /// exactly this — resume by Spotlight, immediate `jetsam
+    /// per-process-limit` kill, silent system-keyboard fallback. Suspending
+    /// small is what makes the next resume survive; a memory warning never
+    /// fires on suspension, so this cannot wait for didReceiveMemoryWarning.
+    private func shedMemoryBeforeSuspension(_ event: String) {
+        KeyboardRegistry.evictAll(except: selectedLanguageId)
+        KeyboardHealthLog.shared.record(event)
+    }
+
+    /// The keyboard can be suspended without `viewDidDisappear` ever firing:
+    /// when the host app itself backgrounds while the keyboard is on screen
+    /// (home gesture, app switch, tapping a Spotlight result), the view stays
+    /// in the hierarchy and only the host lifecycle notifications fire — so
+    /// the pre-suspension shedding must hook them too. The foreground record
+    /// documents survived resumes in the health log.
+    private func observeHostLifecycle() {
+        let center = NotificationCenter.default
+        hostLifecycleObservers.append(center.addObserver(
+            forName: NSNotification.Name.NSExtensionHostDidEnterBackground,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.shedMemoryBeforeSuspension("hostDidEnterBackground")
+        })
+        hostLifecycleObservers.append(center.addObserver(
+            forName: NSNotification.Name.NSExtensionHostWillEnterForeground,
+            object: nil,
+            queue: .main
+        ) { _ in
+            KeyboardHealthLog.shared.record("hostWillEnterForeground")
+        })
+    }
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        KeyboardMemoryLog.record("didReceiveMemoryWarning")
+        KeyboardHealthLog.shared.record("didReceiveMemoryWarning")
         // Free cached layouts for languages other than the active one. The
         // active definition stays resident (the view model holds a strong
         // reference) and remains cached for fast reuse.
