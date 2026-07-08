@@ -65,6 +65,24 @@ struct KeyView: View {
     @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
     private var longPressNumbersEnabled = false
 
+    @AppStorage(SettingsKey.themeKeyColor.rawValue, store: SharedDefaults.store)
+    private var themeKeyHex = KeyboardThemePreset.standard.keyHex
+
+    @AppStorage(SettingsKey.themeMainColor.rawValue, store: SharedDefaults.store)
+    private var themeMainHex = KeyboardThemePreset.standard.mainHex
+
+    @AppStorage(SettingsKey.themeHintColor.rawValue, store: SharedDefaults.store)
+    private var themeHintHex = KeyboardThemePreset.standard.hintHex
+
+    @AppStorage(SettingsKey.themePressedColor.rawValue, store: SharedDefaults.store)
+    private var themePressedHex = KeyboardThemePreset.standard.pressedHex
+
+    @AppStorage(SettingsKey.themeCornerRadius.rawValue, store: SharedDefaults.store)
+    private var themeCornerRadius = KeyboardTheme.defaultCornerRadius
+
+    @AppStorage(SettingsKey.themeKeyEdges.rawValue, store: SharedDefaults.store)
+    private var themeShowKeyEdges = KeyboardTheme.defaultShowKeyEdges
+
     /// Whether the label of `binding` should be drawn, honouring the user's
     /// label-visibility toggles (numbers and functional keys always show).
     private func isLabelVisible(_ binding: KeyBinding) -> Bool {
@@ -208,10 +226,18 @@ struct KeyView: View {
 
     // MARK: - Theme
 
-    /// Fixed palette when the active style is themed; nil for styles that
-    /// render from semantic system colors.
+    /// The configured palette when the active style is themed; nil for styles
+    /// that render from semantic system colors.
     private var theme: KeyboardTheme? {
-        keyboardStyle.theme
+        guard keyboardStyle == .messagEase else { return nil }
+        return KeyboardTheme(
+            keyHex: themeKeyHex,
+            mainHex: themeMainHex,
+            hintHex: themeHintHex,
+            pressedHex: themePressedHex,
+            cornerRadius: themeCornerRadius,
+            showKeyEdges: themeShowKeyEdges
+        )
     }
 
     /// Center label color.
@@ -270,10 +296,11 @@ struct KeyView: View {
                     shape.strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
                 )
         case .messagEase:
-            let theme = KeyboardTheme.messagEase
-            shape.fill(isActive ? theme.keyBackgroundActive : theme.keyBackground)
+            let theme = theme ?? .messagEase
+            let themedShape = RoundedRectangle(cornerRadius: theme.cornerRadius)
+            themedShape.fill(isActive ? theme.keyBackgroundActive : theme.keyBackground)
                 .overlay(
-                    shape.strokeBorder(theme.keyBorder, lineWidth: theme.keyBorderWidth)
+                    themedShape.strokeBorder(theme.keyBorder, lineWidth: theme.keyBorderWidth)
                 )
         }
     }

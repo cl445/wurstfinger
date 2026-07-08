@@ -52,6 +52,12 @@ enum SettingsKey: String {
     /// Opt-in: the action is destructive and unaided by undo, so it stays off
     /// until asked for rather than surprising anyone who circles the key.
     case cutAllEnabled
+    case themeKeyColor
+    case themeMainColor
+    case themeHintColor
+    case themePressedColor
+    case themeCornerRadius
+    case themeKeyEdges
 }
 
 // MARK: - Haptic Settings

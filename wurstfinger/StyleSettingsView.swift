@@ -38,6 +38,34 @@ struct StyleSettingsView: View {
                             styleOption(style)
                         }
 
+                        if keyboardStyleRaw == KeyboardStyle.messagEase.rawValue {
+                            NavigationLink {
+                                ThemeSettingsView()
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Customize Theme")
+                                            .font(.body)
+                                            .foregroundColor(.primary)
+
+                                        Text("Colors, presets and key shape")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.footnote.weight(.semibold))
+                                        .foregroundColor(Color(.tertiaryLabel))
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, 16)
+                        }
+
                         if keyboardStyleRaw == KeyboardStyle.liquidGlass.rawValue {
                             if #unavailable(iOS 26.0) {
                                 Text("Liquid Glass is designed for iOS 26 and later. On earlier versions a simplified translucent style is used.")
