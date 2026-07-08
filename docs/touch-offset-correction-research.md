@@ -153,7 +153,7 @@ al., *Simulating Errors in Touchscreen Typing* (CHI 2025, arXiv:2502.03560) · P
   sinnvolle, aber **nicht belegte** Ergänzungen. Als solche kennzeichnen.
 
 ## Evidenzlücke (ehrlich)
-Es gibt **praktisch keine** peer-reviewte Arbeit zu MessagEase-/Grid-/Gesten-/Swipe-Keyboards mit
+Es gibt **praktisch keine** peer-reviewte Arbeit zu Grid-/Gesten-/Swipe-Keyboards mit
 gelernter Offset-Korrektur. Alle Evidenz stammt von **QWERTY-Tap** und diskreter Zielauswahl. Die
 biomechanischen Grundlagen (systematischer, posture-/positionsabhängiger Offset; Varianz-Boden) sind
 **layout-unabhängig** und gelten für den Touchdown jeder Geste → **plausibel übertragbar, aber nicht
