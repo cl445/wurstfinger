@@ -28,7 +28,7 @@ struct AppStoreScreenshotView: View {
 
             // Keyboard at the bottom. The grid stretches its columns to fill
             // the width the root view derives, so pass the width at which the
-            // cells come out exactly square (MessagEase marketing look) —
+            // cells come out exactly square (the square marketing look) —
             // works together with keyboardScale = 1.0 set in
             // configureFromEnvironment, otherwise the scale would apply twice.
             DataDrivenKeyboardRootView(

@@ -207,7 +207,7 @@ enum KeyboardConstants {
         /// the grid stretches its columns to fill the width the root view
         /// gives it, so square keys are a property of the chosen width, not
         /// of the aspect-ratio setting (whose clamp range starts at 1.0).
-        /// Used by the App Store screenshot mode to reproduce the MessagEase
+        /// Used by the App Store screenshot mode to reproduce the square-key
         /// marketing look.
         static func squareKeyboardWidth(aspectRatio: CGFloat, scale: CGFloat, columns: Int) -> CGFloat {
             let rowHeight = keyHeight(aspectRatio: aspectRatio) * scale

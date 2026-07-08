@@ -5,7 +5,7 @@
 //  Verifies that `Calculations.squareKeyboardWidth` produces exactly square
 //  grid cells when fed through the real portrait arrangement and the same
 //  frame math `KeyboardGridLayout` uses at render time. Guards the App Store
-//  screenshot geometry (keys must be 1:1, the MessagEase marketing look).
+//  screenshot geometry (keys must be 1:1, the square marketing look).
 //
 
 import CoreGraphics
