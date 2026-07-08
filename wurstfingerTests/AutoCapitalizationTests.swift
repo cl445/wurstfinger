@@ -306,6 +306,132 @@ struct AutoCapitalizationTests {
         #expect(vm.activeModeName == ModeNames.numeric)
     }
 
+    // MARK: - One-shot shift semantics (manual vs. auto-engaged)
+
+    // Policy (matching iOS system keyboards): a manually tapped shift is
+    // consumed ONLY by letters. Delete, symbols, paste, and cut must not
+    // drop it — even while the auto-capitalization setting is on. Only an
+    // auto-engaged shift may be released when the context stops calling
+    // for capitalization.
+
+    @Test func manualShiftSurvivesDeleteThroughPipeline() {
+        let (vm, target) = makeAutoCapViewModel()
+        // Mid-sentence context: auto-capitalization evaluates to false.
+        target.documentContextBeforeInput = "Hello wor"
+
+        // User taps shift manually, then deletes a typo.
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.shifted)
+        vm.handleGesture(.tap, keyId: UtilitySlot.delete, isReturn: false)
+
+        #expect(
+            vm.activeModeName == ModeNames.shifted,
+            "Delete must not drop a manually engaged shift"
+        )
+    }
+
+    @Test func manualShiftSurvivesSymbolThroughPipeline() {
+        let (vm, target) = makeAutoCapViewModel()
+        target.documentContextBeforeInput = "Hello wor"
+
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.shifted)
+        // "-" on topLeft swipeRight is a symbol binding (unchanged in shifted).
+        vm.handleGesture(.swipeRight, keyId: GridSlot.topLeft, isReturn: false)
+
+        #expect(target.events.contains(.insertText("-")))
+        #expect(
+            vm.activeModeName == ModeNames.shifted,
+            "A symbol must not consume a manually engaged shift"
+        )
+    }
+
+    @Test func manualShiftSurvivesPasteThroughPipeline() {
+        let (vm, target) = makeAutoCapViewModel()
+        target.documentContextBeforeInput = "Hello wor"
+
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.shifted)
+        vm.dispatchAction(.paste)
+
+        #expect(
+            vm.activeModeName == ModeNames.shifted,
+            "Paste must not drop a manually engaged shift"
+        )
+    }
+
+    @Test func manualShiftIsConsumedByLetter() {
+        let (vm, target) = makeAutoCapViewModel()
+        target.documentContextBeforeInput = "Hello "
+
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.shifted)
+        vm.handleGesture(.tap, keyId: GridSlot.topLeft, isReturn: false)
+
+        #expect(target.events.contains(.insertText("A")))
+        #expect(
+            vm.activeModeName == ModeNames.main,
+            "A letter must consume the one-shot shift"
+        )
+    }
+
+    @Test func autoEngagedShiftIsStillReleasedByDelete() {
+        let (vm, target) = makeAutoCapViewModel()
+        target.documentContextBeforeInput = "Hello"
+
+        // Sentence ender auto-engages shift…
+        vm.dispatchAction(.commitText(". "))
+        #expect(vm.activeModeName == ModeNames.shifted)
+
+        // …deleting back into the sentence must release it again.
+        vm.dispatchAction(.deleteBackward)
+        #expect(
+            vm.activeModeName == ModeNames.main,
+            "An auto-engaged shift must be released when the context no longer calls for it"
+        )
+    }
+
+    // MARK: - Spanish inverted punctuation (¿ / ¡)
+
+    @Test func invertedQuestionMarkEngagesShiftThroughPipeline() {
+        let (vm, target) = makeAutoCapViewModel()
+        target.documentContextBeforeInput = "Hola "
+
+        // ¿ is the return swipe of "?" (topRight swipeLeft).
+        vm.handleGesture(.swipeLeft, keyId: GridSlot.topRight, isReturn: true)
+
+        #expect(target.events.contains(.insertText("¿")))
+        #expect(
+            vm.activeModeName == ModeNames.shifted,
+            "¿ must capitalize the immediately following letter"
+        )
+    }
+
+    @Test func invertedExclamationMarkEngagesShiftThroughPipeline() {
+        let (vm, target) = makeAutoCapViewModel()
+        target.documentContextBeforeInput = "Hola "
+
+        vm.dispatchAction(.commitText("¡"))
+        #expect(vm.activeModeName == ModeNames.shifted)
+    }
+
+    @Test func invertedPunctuationEngagesShiftViaRefresh() {
+        let (vm, target) = makeAutoCapViewModel()
+        // Caret lands right after an opener (host-side change).
+        target.documentContextBeforeInput = "¿"
+
+        vm.refreshAutoCapitalization()
+        #expect(vm.activeModeName == ModeNames.shifted)
+    }
+
+    @Test func invertedPunctuationDoesNothingWhenSettingDisabled() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        target.documentContextBeforeInput = "Hola "
+
+        vm.dispatchAction(.commitText("¿"))
+        #expect(vm.activeModeName == ModeNames.main)
+    }
+
     // MARK: - Definition-level enablement
 
     @Test func definitionWithoutAutoCapitalizeDisablesEngagement() throws {

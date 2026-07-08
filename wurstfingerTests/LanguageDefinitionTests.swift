@@ -26,9 +26,16 @@ struct LanguageDefinitionValidationTests {
     func layoutHasRequiredModes(descriptor: LanguageDescriptor) {
         let layout = descriptor.makeDefinition()
         #expect(layout.modes[ModeNames.main] != nil, "\(layout.id) missing main mode")
-        #expect(layout.modes[ModeNames.shifted] != nil, "\(layout.id) missing shifted mode")
-        #expect(layout.modes[ModeNames.capsLock] != nil, "\(layout.id) missing capsLock mode")
         #expect(layout.modes[ModeNames.numeric] != nil, "\(layout.id) missing numeric mode")
+        // Caseless scripts (Hebrew) carry no shift affordance at all; every
+        // other layout must have both shifted and capsLock.
+        if CaselessLanguages.ids.contains(layout.id) {
+            #expect(layout.modes[ModeNames.shifted] == nil, "\(layout.id) must not have a shifted mode")
+            #expect(layout.modes[ModeNames.capsLock] == nil, "\(layout.id) must not have a capsLock mode")
+        } else {
+            #expect(layout.modes[ModeNames.shifted] != nil, "\(layout.id) missing shifted mode")
+            #expect(layout.modes[ModeNames.capsLock] != nil, "\(layout.id) missing capsLock mode")
+        }
     }
 
     @Test func allLanguagesAreResolvableViaLanguageConfig() {
@@ -101,6 +108,79 @@ struct GermanLayoutTests {
         #expect(letterRows[0] == ["a", "n", "i"])
         #expect(letterRows[1] == ["h", "d", "r"])
         #expect(letterRows[2] == ["t", "e", "s"])
+    }
+}
+
+// MARK: - Caseless Script Tests (Hebrew)
+
+/// Hebrew is caseless: the layout must carry no shift affordance at all
+/// (no shifted/capsLock modes, no ⇧/⇩ bindings on midRight) and must opt
+/// out of auto-capitalization. All other languages keep the full shift
+/// machinery.
+struct CaselessScriptTests {
+    static let hebrew = LanguageDefinitions.hebrew.makeDefinition()
+
+    @Test func hebrewHasNoShiftedOrCapsLockModes() {
+        #expect(Self.hebrew.modes[ModeNames.shifted] == nil)
+        #expect(Self.hebrew.modes[ModeNames.capsLock] == nil)
+        #expect(Self.hebrew.modes[ModeNames.main] != nil)
+        #expect(Self.hebrew.modes[ModeNames.numeric] != nil)
+    }
+
+    @Test func hebrewMainModeHasNoShiftBindings() throws {
+        let main = try #require(Self.hebrew.modes[ModeNames.main])
+        let midRight = try #require(main.keys[GridSlot.midRight])
+        #expect(midRight.bindings[.swipeUp] == nil, "shift-up binding must be absent")
+        #expect(midRight.bindings[.swipeDown] == nil, "shift-down hint must be absent")
+    }
+
+    @Test func hebrewDisablesAutoCapitalization() {
+        #expect(!Self.hebrew.settings.autoCapitalize)
+    }
+
+    @Test func hebrewHasNoSwitchModeToShiftedAnywhere() {
+        for (modeName, mode) in Self.hebrew.modes {
+            for (keyId, key) in mode.keys {
+                for (gesture, binding) in key.bindings {
+                    #expect(
+                        binding.action != .switchMode(ModeNames.shifted)
+                            && binding.action != .switchMode(ModeNames.capsLock),
+                        "Dangling shift switchMode in \(modeName)/\(keyId)/\(gesture)"
+                    )
+                    #expect(
+                        binding.returnAction != .switchMode(ModeNames.shifted)
+                            && binding.returnAction != .switchMode(ModeNames.capsLock),
+                        "Dangling shift return switchMode in \(modeName)/\(keyId)/\(gesture)"
+                    )
+                }
+            }
+        }
+    }
+
+    @Test func hebrewAutoCapitalizationNeverEngages() {
+        let (vm, target) = makeViewModel(languageId: "he_IL")
+        vm.sharedDefaults.set(true, forKey: SettingsKey.autoCapitalizeEnabled.rawValue)
+
+        // Neither an empty field nor a sentence ender may switch modes —
+        // the definition opts out even with the user setting on.
+        target.documentContextBeforeInput = nil
+        vm.refreshAutoCapitalization()
+        #expect(vm.activeModeName == ModeNames.main)
+
+        vm.dispatchAction(.commitText("שלום. "))
+        #expect(vm.activeModeName == ModeNames.main)
+    }
+
+    @Test(arguments: LanguageDefinitions.all.filter { !CaselessLanguages.ids.contains($0.id) })
+    func casedLanguagesKeepShiftAndAutoCapitalization(descriptor: LanguageDescriptor) throws {
+        let layout = descriptor.makeDefinition()
+        #expect(layout.settings.autoCapitalize, "\(layout.id) must keep autoCapitalize")
+        let main = try #require(layout.modes[ModeNames.main])
+        let midRight = try #require(main.keys[GridSlot.midRight])
+        #expect(
+            midRight.bindings[.swipeUp]?.action == .switchMode(ModeNames.shifted),
+            "\(layout.id) must keep the shift-up binding on midRight"
+        )
     }
 }
 

@@ -24,10 +24,26 @@ struct ModeTransitionMiddleware: ActionMiddleware {
     func process(_ context: ActionContext, next: (ActionContext) -> Void) {
         next(context)
         guard let currentMode = definition.modes[context.mode] else { return }
-        let category = context.binding?.resolvedCategory
-            ?? context.action.inferredCategory
+        let category = Self.transitionCategory(for: context)
         guard let nextMode = currentMode.nextMode(after: category) else { return }
         guard nextMode != context.mode else { return }
         onModeChange(nextMode)
+    }
+
+    /// Category driving the auto-transition lookup.
+    ///
+    /// Normally the binding's resolved category. Compose bindings are the
+    /// exception: `ComposeMiddleware` rewrites their action before it gets
+    /// here (`.compose("´")` → `.commitText("á")`), and the transition must
+    /// follow the *result* — a composed letter consumes a one-shot shift
+    /// exactly like a plain letter, while a compose trigger that merely
+    /// commits its trigger character behaves like a symbol and keeps shift
+    /// engaged (matching iOS system shift semantics).
+    static func transitionCategory(for context: ActionContext) -> KeyCategory {
+        guard let binding = context.binding else { return context.action.inferredCategory }
+        if binding.resolvedCategory == .compose, context.action != binding.action {
+            return context.action.inferredCategory
+        }
+        return binding.resolvedCategory
     }
 }

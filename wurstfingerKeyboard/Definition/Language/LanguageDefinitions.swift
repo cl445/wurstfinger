@@ -256,6 +256,9 @@ enum LanguageDefinitions {
                     .swipeUpRight: "ף", .swipeDown: "ן", .swipeDownLeft: "ך",
                 ],
             ],
+            // Hebrew is caseless: no shift key, no shifted/capsLock modes,
+            // no auto-capitalization.
+            supportsCapitalization: false,
             numericBackToAlphaLabel: "אבג"
         )
     }

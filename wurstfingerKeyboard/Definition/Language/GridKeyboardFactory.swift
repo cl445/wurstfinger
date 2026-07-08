@@ -26,6 +26,10 @@ enum GridKeyboardFactory {
     ///   - composeRuleOverrides: Language-specific compose rules merged over the
     ///     global base rules at runtime (override wins for the same trigger +
     ///     base character). Defaults to nil (global rules only).
+    ///   - supportsCapitalization: Whether the script distinguishes letter case.
+    ///     Caseless scripts (Hebrew) pass `false`: the layout then has no
+    ///     shifted/capsLock modes, no shift binding on the midRight key, and
+    ///     auto-capitalization is disabled in the definition settings.
     ///   - numericBackToAlphaLabel: Label shown on the symbols key in numeric
     ///     mode that switches back to the main (alphabetic) layer. Defaults to
     ///     the Latin "abc"; non-Latin layouts (Hebrew, Russian, …) should
@@ -41,6 +45,7 @@ enum GridKeyboardFactory {
         directionalOverrides: [String: [GestureType: String]] = [:],
         returnOverrides: [String: [GestureType: String]] = [:],
         composeRuleOverrides: ComposeRuleSet? = nil,
+        supportsCapitalization: Bool = true,
         numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel,
         inputMethod: InputMethodKind = .direct
     ) -> KeyboardDefinition {
@@ -112,7 +117,13 @@ enum GridKeyboardFactory {
             }
         }
 
-        // 2. Merge utility keys
+        // 2. Merge utility keys — the slot-id sets must be disjoint or the
+        // merge would silently swallow a utility key (same invariant as
+        // `NumericLayouts.buildMode`).
+        precondition(
+            Set(letterKeys.keys).isDisjoint(with: CommonKeys.allUtilityKeys.keys),
+            "letter and utility key IDs must not overlap"
+        )
         let allKeys = letterKeys.merging(CommonKeys.allUtilityKeys) { letter, _ in letter }
 
         // 3. Build base mode with all keys (includes shift-down on midRight)
@@ -124,37 +135,45 @@ enum GridKeyboardFactory {
             doubleTapMode: nil
         )
 
-        // Generate the shifted base once and derive both shifted + caps lock.
-        let shiftedBase = baseMode.generateShifted(locale: locale)
+        var modes: [String: KeyboardMode] = [
+            ModeNames.numeric: NumericLayouts.phone(backToAlphaLabel: numericBackToAlphaLabel),
+        ]
 
-        // 4. Shifted — shift-up points directly to capsLock (label stays ⇧).
-        let shiftedMode = shiftedBase
-            .with(autoTransitions: [.letter: ModeNames.main])
-            .replacingShiftUpBinding(label: "⇧", action: .switchMode(ModeNames.capsLock))
+        if supportsCapitalization {
+            // Generate the shifted base once and derive both shifted + caps lock.
+            let shiftedBase = baseMode.generateShifted(locale: locale)
 
-        // 5. Caps lock — shift-up is no-op (stays in capsLock), label shows ⇪.
-        let capsLockMode = shiftedBase
-            .with(name: ModeNames.capsLock)
-            .replacingShiftUpBinding(label: "⇪", action: .switchMode(ModeNames.capsLock))
+            // 4. Shifted — shift-up points directly to capsLock (label stays ⇧).
+            modes[ModeNames.shifted] = shiftedBase
+                .with(autoTransitions: [.letter: ModeNames.main])
+                .replacingShiftUpBinding(label: "⇧", action: .switchMode(ModeNames.capsLock))
 
-        // 6. Main mode — remove shift-down hint from midRight (only shown in shifted/capsLock).
-        let mainMode = baseMode
-            .removingBinding(keyId: GridSlot.midRight, gesture: .swipeDown)
+            // 5. Caps lock — shift-up is no-op (stays in capsLock), label shows ⇪.
+            modes[ModeNames.capsLock] = shiftedBase
+                .with(name: ModeNames.capsLock)
+                .replacingShiftUpBinding(label: "⇪", action: .switchMode(ModeNames.capsLock))
+
+            // 6. Main mode — remove shift-down hint from midRight (only shown in shifted/capsLock).
+            modes[ModeNames.main] = baseMode
+                .removingBinding(keyId: GridSlot.midRight, gesture: .swipeDown)
+        } else {
+            // Caseless script: no shifted/capsLock modes and no shift
+            // affordance on the midRight key (neither the ⇧ shift-up
+            // binding nor the ⇩ back-to-main hint).
+            modes[ModeNames.main] = baseMode
+                .removingBinding(keyId: GridSlot.midRight, gesture: .swipeUp)
+                .removingBinding(keyId: GridSlot.midRight, gesture: .swipeDown)
+        }
 
         // 7. Assemble definition
         return KeyboardDefinition(
             title: title,
             id: id,
             localeIdentifier: localeIdentifier,
-            modes: [
-                ModeNames.main: mainMode,
-                ModeNames.shifted: shiftedMode,
-                ModeNames.capsLock: capsLockMode,
-                ModeNames.numeric: NumericLayouts.phone(backToAlphaLabel: numericBackToAlphaLabel),
-            ],
+            modes: modes,
             defaultMode: ModeNames.main,
             settings: KeyboardDefinitionSettings(
-                autoCapitalize: true,
+                autoCapitalize: supportsCapitalization,
                 composeRuleOverrides: composeRuleOverrides,
                 inputMethod: inputMethod
             ),

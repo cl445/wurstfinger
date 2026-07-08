@@ -115,6 +115,13 @@ final class InMemoryUserDefaults: UserDefaults {
     }
 }
 
+/// Language ids whose script is caseless. These layouts have no shift
+/// affordance (no shifted/capsLock modes, no shift binding) and
+/// auto-capitalization disabled in their definition settings.
+enum CaselessLanguages {
+    static let ids: Set<String> = ["he_IL"]
+}
+
 /// Creates a KeyboardViewModel wired to a MockTextTarget for testing.
 func makeViewModel(
     languageId: String = "de_DE",

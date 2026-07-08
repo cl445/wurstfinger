@@ -292,6 +292,50 @@ struct wurstfingerTests {
         #expect(allInserts.last == "Á", "Compose should produce Á after uppercase A, got \(allInserts.last ?? "nil")")
     }
 
+    @Test func composeAsFirstActionInShiftedModeConsumesShift() {
+        // Auto-capitalization is off here (default in makeViewModel), so the
+        // shift release must come from the mode transition itself, not from
+        // an auto-cap side effect.
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        // Type "a", then engage shift manually.
+        vm.handleGesture(.tap, keyId: GridSlot.topLeft, isReturn: false)
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.shifted)
+
+        // Compose as the FIRST action in shifted mode: ´ + a → á.
+        vm.handleGesture(.swipeUpRight, keyId: GridSlot.topCenter, isReturn: false)
+
+        let inserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
+        #expect(inserts.last == "á", "Compose should produce á, got \(inserts.last ?? "nil")")
+        #expect(
+            vm.activeModeName == ModeNames.main,
+            "A composed letter must consume the one-shot shift exactly like a plain letter"
+        )
+    }
+
+    @Test func composeTriggerWithoutRuleKeepsShiftEngaged() {
+        // Deliberate policy: when the compose gesture finds no rule (no
+        // preceding character) it merely commits the trigger character —
+        // a symbol, not a letter. Per the iOS-style one-shot shift
+        // semantics, symbols must NOT consume shift, so the keyboard stays
+        // shifted until an actual letter is produced.
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        vm.handleGesture(.swipeUp, keyId: GridSlot.midRight, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.shifted)
+
+        // Empty document: ´ has nothing to compose with and commits "´".
+        vm.handleGesture(.swipeUpRight, keyId: GridSlot.topCenter, isReturn: false)
+
+        let inserts = target.events.compactMap { if case let .insertText(t) = $0 { t } else { nil } }
+        #expect(inserts.last == "´", "Trigger should commit literally, got \(inserts.last ?? "nil")")
+        #expect(
+            vm.activeModeName == ModeNames.shifted,
+            "A committed trigger character is a symbol and must not consume shift"
+        )
+    }
+
     // MARK: - Asterisk Regression (Vietnamese tone rules must not be global)
 
     @Test func asteriskInsertsLiterallyAfterVowel() {

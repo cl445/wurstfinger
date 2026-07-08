@@ -167,7 +167,16 @@ extension KeyboardViewModel {
         middlewares.append(AutoCapitalizationMiddleware(
             evaluate: { [weak self] in self?.evaluateAutoCapitalization() },
             onCapitalize: { [weak self] in self?.engageAutoCapitalization() },
-            onReleaseCapitalize: { [weak self] in self?.releaseAutoCapitalization() }
+            onReleaseCapitalize: { [weak self] in
+                // Mirror `refreshAutoCapitalization`: only an *auto-engaged*
+                // shift may be released when the context stops calling for
+                // capitalization. A manually tapped shift is one-shot and is
+                // consumed exclusively by letters (via the shifted mode's
+                // auto-transition) — never dropped by delete, symbols,
+                // paste, or cut — matching iOS system shift behavior.
+                guard let self, shiftEngagedByAutoCapitalization else { return }
+                releaseAutoCapitalization()
+            }
         ))
 
         // 8. Mode transitions (auto-transitions from key category)
@@ -212,9 +221,14 @@ extension KeyboardViewModel {
         guard currentDefinition?.settings.autoCapitalize == true,
               sharedDefaults.bool(forKey: SettingsKey.autoCapitalizeEnabled.rawValue)
         else { return nil }
-        return AutoCapitalization.shouldCapitalize(
-            context: textInputTarget?.documentContextBeforeInput
-        )
+        let context = textInputTarget?.documentContextBeforeInput
+        // Sentence-opening punctuation (Spanish ¿/¡) capitalizes the letter
+        // that immediately follows it, matching iOS system keyboards.
+        if let last = context?.last,
+           AutoCapitalization.shouldCapitalizeImmediately(after: String(last)) {
+            return true
+        }
+        return AutoCapitalization.shouldCapitalize(context: context)
     }
 
     /// Engages the shifted layer for the next key. Only fires from `main`:
