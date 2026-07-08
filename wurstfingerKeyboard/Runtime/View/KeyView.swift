@@ -16,6 +16,11 @@ import SwiftUI
 /// setting changes and hands every key the fresh values.
 struct KeyRenderSettings: Equatable {
     var keyboardStyle: KeyboardStyle = .classic
+    /// Palette for a themed style; nil for the styles that render from
+    /// semantic system colors. Derived rather than stored: the root resolves
+    /// it once from the stored theme settings, so the hex parsing does not
+    /// repeat per key (and per color lookup within a key).
+    var theme: KeyboardTheme?
     var hideLetters = false
     var hideStandardSymbols = false
     var hideExtraSymbols = false
@@ -252,10 +257,10 @@ struct KeyView: View {
 
     // MARK: - Theme
 
-    /// Fixed palette when the active style is themed; nil for styles that
-    /// render from semantic system colors.
+    /// The configured palette when the active style is themed; nil for styles
+    /// that render from semantic system colors.
     private var theme: KeyboardTheme? {
-        settings.keyboardStyle.theme
+        settings.theme
     }
 
     /// Center label color.
@@ -314,10 +319,11 @@ struct KeyView: View {
                     shape.strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
                 )
         case .messagEase:
-            let theme = KeyboardTheme.messagEase
-            shape.fill(isActive ? theme.keyBackgroundActive : theme.keyBackground)
+            let theme = theme ?? .messagEase
+            let themedShape = RoundedRectangle(cornerRadius: theme.cornerRadius)
+            themedShape.fill(isActive ? theme.keyBackgroundActive : theme.keyBackground)
                 .overlay(
-                    shape.strokeBorder(theme.keyBorder, lineWidth: theme.keyBorderWidth)
+                    themedShape.strokeBorder(theme.keyBorder, lineWidth: theme.keyBorderWidth)
                 )
         }
     }

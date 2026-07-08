@@ -38,9 +38,45 @@ struct DataDrivenKeyboardRootView: View {
     @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
     private var longPressNumbersEnabled = KeyRenderSettings.stock.longPressNumbersEnabled
 
+    // The themed style's palette, stored per channel. Read here for the same
+    // reason as the settings above: the keyboard parses the hex values once
+    // per render instead of once per key.
+    @AppStorage(SettingsKey.themeKeyColor.rawValue, store: SharedDefaults.store)
+    private var themeKeyHex = KeyboardThemePreset.standard.keyHex
+
+    @AppStorage(SettingsKey.themeMainColor.rawValue, store: SharedDefaults.store)
+    private var themeMainHex = KeyboardThemePreset.standard.mainHex
+
+    @AppStorage(SettingsKey.themeHintColor.rawValue, store: SharedDefaults.store)
+    private var themeHintHex = KeyboardThemePreset.standard.hintHex
+
+    @AppStorage(SettingsKey.themePressedColor.rawValue, store: SharedDefaults.store)
+    private var themePressedHex = KeyboardThemePreset.standard.pressedHex
+
+    @AppStorage(SettingsKey.themeCornerRadius.rawValue, store: SharedDefaults.store)
+    private var themeCornerRadius = KeyboardTheme.defaultCornerRadius
+
+    @AppStorage(SettingsKey.themeKeyEdges.rawValue, store: SharedDefaults.store)
+    private var themeShowKeyEdges = KeyboardTheme.defaultShowKeyEdges
+
+    /// The configured palette when the active style is themed; nil for styles
+    /// that render from semantic system colors.
+    private var resolvedTheme: KeyboardTheme? {
+        guard keyboardStyle == .messagEase else { return nil }
+        return KeyboardTheme(
+            keyHex: themeKeyHex,
+            mainHex: themeMainHex,
+            hintHex: themeHintHex,
+            pressedHex: themePressedHex,
+            cornerRadius: themeCornerRadius,
+            showKeyEdges: themeShowKeyEdges
+        )
+    }
+
     private var renderSettings: KeyRenderSettings {
         KeyRenderSettings(
             keyboardStyle: keyboardStyle,
+            theme: resolvedTheme,
             hideLetters: hideLetters,
             hideStandardSymbols: hideStandardSymbols,
             hideExtraSymbols: hideExtraSymbols,
@@ -120,7 +156,7 @@ struct DataDrivenKeyboardRootView: View {
             // as clear.
             Color(.systemBackground).opacity(0.02)
         case .messagEase:
-            KeyboardTheme.messagEase.boardBackground
+            KeyboardTheme.boardBackground(forKeyHex: themeKeyHex)
         }
     }
 }

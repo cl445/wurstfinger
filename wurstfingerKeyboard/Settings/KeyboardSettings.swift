@@ -59,6 +59,12 @@ enum SettingsKey: String, CaseIterable {
     /// redrawing costs battery, so experienced users are not made to pay for
     /// it. Off also keeps the keyboard visually identical to before.
     case gestureTrailEnabled
+    case themeKeyColor
+    case themeMainColor
+    case themeHintColor
+    case themePressedColor
+    case themeCornerRadius
+    case themeKeyEdges
 }
 
 // MARK: - Haptic Settings
