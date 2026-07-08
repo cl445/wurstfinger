@@ -6,6 +6,11 @@ def ci?
   ENV["CI"] == "true"
 end
 
+# Shared by create_keychain, match, the build xcargs, and cleanup — a rename
+# in one place without the others would silently break signing or cleanup.
+CI_KEYCHAIN_NAME = "fastlane_tmp_keychain"
+CI_KEYCHAIN_PASSWORD = "temp_password_123"
+
 platform :ios do
   # Shared context for both lanes: validated environment plus an ASC API key.
   private_lane :asc_context do
@@ -46,8 +51,8 @@ platform :ios do
     # Create temporary keychain for CI
     if ci?
       create_keychain(
-        name: "fastlane_tmp_keychain",
-        password: "temp_password_123",
+        name: CI_KEYCHAIN_NAME,
+        password: CI_KEYCHAIN_PASSWORD,
         default_keychain: true,
         unlock: true,
         timeout: 3600,
@@ -59,8 +64,8 @@ platform :ios do
       type: "appstore",
       readonly: ci?,
       app_identifier: [app_id, "#{app_id}.keyboard"],
-      keychain_name: ci? ? "fastlane_tmp_keychain" : "login.keychain",
-      keychain_password: ci? ? "temp_password_123" : nil
+      keychain_name: ci? ? CI_KEYCHAIN_NAME : "login.keychain",
+      keychain_password: ci? ? CI_KEYCHAIN_PASSWORD : nil
     )
 
     # Update signing for main app target
@@ -89,7 +94,7 @@ platform :ios do
       export_method: "app-store",
       include_symbols: true,
       include_bitcode: false,
-      xcargs: ci? ? "OTHER_CODE_SIGN_FLAGS='--keychain fastlane_tmp_keychain'" : nil
+      xcargs: ci? ? "OTHER_CODE_SIGN_FLAGS='--keychain #{CI_KEYCHAIN_NAME}'" : nil
     )
   end
 
@@ -98,7 +103,7 @@ platform :ios do
 
     # Only delete when the keychain actually exists — the lane may fail
     # before create_keychain ran, and delete_keychain raises otherwise.
-    keychain = "fastlane_tmp_keychain"
+    keychain = CI_KEYCHAIN_NAME
     exists = ["#{keychain}-db", keychain].any? do |name|
       File.exist?(File.expand_path("~/Library/Keychains/#{name}"))
     end
