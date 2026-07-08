@@ -9,7 +9,7 @@
 
 import Foundation
 
-struct TouchOffsetConfig: Equatable {
+struct TouchOffsetConfig: Equatable, RunningEstimatorConfig {
     // MARK: Estimator (§4.2 Step 1)
 
     /// Plasticity cap: above this the running mean behaves like an EMA with
