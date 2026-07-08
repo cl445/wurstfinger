@@ -1,1 +1,1 @@
-näppäimistö,MessagEase,ThumbKey,kirjoittaa,pyyhkäisy,peukalo,ergonominen,yksityisyys,eleet
+näppäimistö,ThumbKey,kirjoittaa,pyyhkäisy,peukalo,ergonominen,yksityisyys,eleet

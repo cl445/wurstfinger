@@ -1,6 +1,6 @@
 Wurstfinger: klawiatura dla grubych palców
 
-Masz dość literówek? Wurstfinger to dbająca o prywatność klawiatura z dużymi klawiszami i gestami przesuwania. Oparta na sprawdzonym układzie MessagEase zastępuje ciasną siatkę QWERTY układem 3x3 zoptymalizowanym do pisania kciukami.
+Masz dość literówek? Wurstfinger to dbająca o prywatność klawiatura z dużymi klawiszami i gestami przesuwania. Zastępuje ciasną siatkę QWERTY sprawdzonym układem 3x3 zoptymalizowanym do pisania kciukami.
 
 W przeciwieństwie do popularnych klawiatur Wurstfinger nie opiera się na inwazyjnym przewidywaniu słów – precyzję osiąga dzięki ergonomicznej konstrukcji. Duże, dobrze rozmieszczone klawisze ograniczają chybione dotknięcia, a system gestów daje dostęp do wszystkich znaków bez szukania maleńkich przycisków.
 

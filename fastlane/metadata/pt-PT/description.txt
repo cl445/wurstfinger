@@ -1,6 +1,6 @@
 Wurstfinger: o teclado para dedos grandes
 
-Farto de erros ao escrever? O Wurstfinger é um teclado que respeita a privacidade, com teclas grandes e gestos de deslize. Baseado no comprovado esquema MessagEase, substitui a apertada grelha QWERTY por uma disposição 3x3 otimizada para escrever com os polegares.
+Farto de erros ao escrever? O Wurstfinger é um teclado que respeita a privacidade, com teclas grandes e gestos de deslize. Substitui a apertada grelha QWERTY por uma comprovada disposição 3x3 otimizada para escrever com os polegares.
 
 Ao contrário dos teclados convencionais, o Wurstfinger não depende de previsão de palavras invasiva: alcança precisão através de um design ergonómico. Teclas grandes e bem espaçadas reduzem os toques falhados, e o sistema de gestos dá acesso a todos os caracteres sem procurar botões minúsculos.
 

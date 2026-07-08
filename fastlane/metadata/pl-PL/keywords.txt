@@ -1,1 +1,1 @@
-klawiatura,MessagEase,ThumbKey,pisanie,przesuwanie,kciuk,ergonomiczna,prywatność,gesty
+klawiatura,ThumbKey,pisanie,przesuwanie,kciuk,ergonomiczna,prywatność,gesty
