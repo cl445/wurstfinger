@@ -551,13 +551,129 @@ enum LanguageDefinitions {
         finnish,
         french,
         german,
+        greek,
         hebrew,
         italian,
         polish,
+        portuguese,
         russian,
         spanish,
         swedish,
         tagalog,
+        ukrainian,
         vietnamese,
     ].sorted { $0.title < $1.title }
+}
+
+// MARK: - Additional MessagEase Layouts
+
+/// Layouts ported 1:1 from the decompiled MessagEase reference. Kept in a
+/// separate extension so the primary `LanguageDefinitions` body stays within
+/// SwiftLint's `type_body_length` limit.
+extension LanguageDefinitions {
+    // MARK: Ukrainian
+
+    /// Ukrainian reuses the Russian Cyrillic layout with MessagEase's four
+    /// letter substitutions (ъёэы → ґїєі), matching the decompiled reference.
+    static let ukrainian = LanguageDescriptor(
+        id: "uk_UA",
+        title: "Українська (Ukrainian)",
+        localeIdentifier: "uk_UA"
+    ) { meta in
+        GridKeyboardFactory.layout(
+            id: meta.id,
+            title: meta.title,
+            localeIdentifier: meta.localeIdentifier,
+            centerCharacters: [
+                ["с", "и", "т"],
+                ["в", "о", "а"],
+                ["е", "р", "н"],
+            ],
+            directionalOverrides: [
+                GridSlot.topLeft: [.swipeDown: "ц", .swipeDownRight: "п"],
+                GridSlot.topCenter: [.swipeUp: "й", .swipeDown: "к"],
+                GridSlot.topRight: [.swipeDownLeft: "ь"],
+                GridSlot.midLeft: [.swipeUp: "б", .swipeDown: "ґ", .swipeRight: "і"],
+                GridSlot.center: [
+                    .swipeUpLeft: "ч", .swipeUp: "м", .swipeUpRight: "х",
+                    .swipeRight: "г", .swipeDownRight: "ш", .swipeDown: "я",
+                    .swipeDownLeft: "щ", .swipeLeft: "ж",
+                ],
+                GridSlot.midRight: [.swipeLeft: "л"],
+                GridSlot.bottomLeft: [.swipeUp: "ї", .swipeRight: "є", .swipeUpRight: "д"],
+                GridSlot.bottomCenter: [.swipeUp: "у", .swipeRight: "з", .swipeLeft: "ю"],
+                GridSlot.bottomRight: [.swipeUpLeft: "ф"],
+            ],
+            numericBackToAlphaLabel: "абв"
+        )
+    }
+
+    // MARK: Greek
+
+    static let greek = LanguageDescriptor(
+        id: "el_GR",
+        title: "Ελληνικά (Greek)",
+        localeIdentifier: "el_GR"
+    ) { meta in
+        GridKeyboardFactory.layout(
+            id: meta.id,
+            title: meta.title,
+            localeIdentifier: meta.localeIdentifier,
+            centerCharacters: [
+                ["α", "ν", "ι"],
+                ["η", "ο", "ρ"],
+                ["τ", "ε", "σ"],
+            ],
+            directionalOverrides: [
+                GridSlot.topLeft: [.swipeUp: "ô", .swipeUpRight: "â", .swipeLeft: "ä", .swipeDownRight: "ω"],
+                GridSlot.topCenter: [.swipeDown: "λ"],
+                GridSlot.topRight: [.swipeUpLeft: "í", .swipeRight: "î", .swipeDownLeft: "χ"],
+                GridSlot.midLeft: [.swipeUp: "ç", .swipeRight: "κ", .swipeDown: "ø"],
+                GridSlot.center: [
+                    .swipeUpLeft: "θ", .swipeUp: "υ", .swipeUpRight: "π",
+                    .swipeRight: "β", .swipeDownRight: "ς", .swipeDown: "δ",
+                    .swipeDownLeft: "γ", .swipeLeft: "ξ",
+                ],
+                GridSlot.midRight: [.swipeLeft: "μ"],
+                GridSlot.bottomLeft: [.swipeUpRight: "ψ", .swipeDown: "ü"],
+                GridSlot.bottomCenter: [.swipeUp: "ω", .swipeLeft: "é", .swipeRight: "ζ"],
+                GridSlot.bottomRight: [.swipeUpLeft: "φ"],
+            ],
+            numericBackToAlphaLabel: "αβγ"
+        )
+    }
+
+    // MARK: Portuguese
+
+    static let portuguese = LanguageDescriptor(
+        id: "pt_PT",
+        title: "Português (Portuguese)",
+        localeIdentifier: "pt_PT"
+    ) { meta in
+        GridKeyboardFactory.layout(
+            id: meta.id,
+            title: meta.title,
+            localeIdentifier: meta.localeIdentifier,
+            centerCharacters: [
+                ["a", "n", "i"],
+                ["d", "o", "r"],
+                ["t", "e", "s"],
+            ],
+            directionalOverrides: [
+                GridSlot.topLeft: [.swipeUp: "ô", .swipeUpRight: "â", .swipeLeft: "ã", .swipeDown: "á", .swipeDownRight: "v"],
+                GridSlot.topCenter: [.swipeUp: "ñ", .swipeDown: "l"],
+                GridSlot.topRight: [.swipeUpLeft: "í", .swipeRight: "õ", .swipeDownLeft: "x"],
+                GridSlot.midLeft: [.swipeUp: "ü", .swipeRight: "k", .swipeDown: "ç"],
+                GridSlot.center: [
+                    .swipeUpLeft: "q", .swipeUp: "u", .swipeUpRight: "p",
+                    .swipeRight: "b", .swipeDownRight: "j", .swipeDown: "h",
+                    .swipeDownLeft: "g", .swipeLeft: "c",
+                ],
+                GridSlot.midRight: [.swipeLeft: "m"],
+                GridSlot.bottomLeft: [.swipeUp: "ú", .swipeUpRight: "y", .swipeRight: "ê", .swipeDown: "ó"],
+                GridSlot.bottomCenter: [.swipeUp: "w", .swipeLeft: "é", .swipeRight: "z"],
+                GridSlot.bottomRight: [.swipeUpLeft: "f"],
+            ]
+        )
+    }
 }
