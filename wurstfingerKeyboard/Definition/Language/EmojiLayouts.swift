@@ -40,7 +40,7 @@ enum EmojiLayouts {
             }
         }
 
-        keys[UtilitySlot.globe] = CommonKeys.globe
+        keys[UtilitySlot.globe] = toggleGlobe()
         keys[UtilitySlot.delete] = CommonKeys.delete
         keys[UtilitySlot.return] = CommonKeys.return
         keys[UtilitySlot.symbols] = backToMain(label: backToAlphaLabel)
@@ -70,6 +70,25 @@ enum EmojiLayouts {
             slideType: .none,
             style: .primary,
             tapCycleActions: nil
+        )
+    }
+
+    /// Globe key variant for the emoji layer: tapping the smiley again
+    /// returns to the main layer (toggle behavior). Swipes stay identical.
+    private static func toggleGlobe() -> KeyConfig {
+        let globe = CommonKeys.globe
+        var bindings = globe.bindings
+        if let tap = bindings[.tap] {
+            bindings[.tap] = KeyBinding(
+                label: tap.label, action: .switchMode(ModeNames.main),
+                category: tap.category, returnAction: nil,
+                accessibilityLabel: tap.accessibilityLabel
+            )
+        }
+        return KeyConfig(
+            id: globe.id, bindings: bindings, swipeMode: globe.swipeMode,
+            slideType: globe.slideType, style: globe.style,
+            tapCycleActions: globe.tapCycleActions
         )
     }
 
