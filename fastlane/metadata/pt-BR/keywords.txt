@@ -1,1 +1,1 @@
-teclado,MessagEase,ThumbKey,digitar,deslizar,polegar,ergonômico,privacidade,gestos,teclas grandes
+teclado,ThumbKey,digitar,deslizar,polegar,ergonômico,privacidade,gestos,teclas grandes

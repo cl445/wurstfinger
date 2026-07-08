@@ -1,1 +1,1 @@
-klávesnice,MessagEase,ThumbKey,psaní,přejetí,palec,ergonomická,soukromí,gesta,velké klávesy
+klávesnice,ThumbKey,psaní,přejetí,palec,ergonomická,soukromí,gesta,velké klávesy

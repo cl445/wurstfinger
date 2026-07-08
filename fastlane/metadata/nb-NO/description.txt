@@ -1,6 +1,6 @@
 Wurstfinger: tastaturet for tjukke fingre
 
-Lei av skrivefeil? Wurstfinger er et personvernvennlig tastatur med store taster og sveipebevegelser. Basert på den velprøvde MessagEase-oppsettet erstatter det det trange QWERTY-rutenettet med et 3x3-oppsett optimalisert for skriving med tomlene.
+Lei av skrivefeil? Wurstfinger er et personvernvennlig tastatur med store taster og sveipebevegelser. Det erstatter det trange QWERTY-rutenettet med et velprøvd 3x3-oppsett optimalisert for skriving med tomlene.
 
 I motsetning til vanlige tastaturer baserer ikke Wurstfinger seg på påtrengende ordforslag – det oppnår nøyaktighet gjennom ergonomisk design. Store taster med god avstand gir færre bomtrykk, og bevegelsessystemet gir tilgang til alle tegn uten å lete etter bittesmå knapper.
 

@@ -1,6 +1,6 @@
 Wurstfinger: tangentbordet för tjocka fingrar
 
-Trött på skrivfel? Wurstfinger är ett integritetsvänligt tangentbord med stora tangenter och svepgester. Baserat på den beprövade MessagEase-layouten ersätter det det trånga QWERTY-rutnätet med en 3x3-layout optimerad för att skriva med tummarna.
+Trött på skrivfel? Wurstfinger är ett integritetsvänligt tangentbord med stora tangenter och svepgester. Det ersätter det trånga QWERTY-rutnätet med en beprövad 3x3-layout optimerad för att skriva med tummarna.
 
 Till skillnad från vanliga tangentbord förlitar sig Wurstfinger inte på påträngande ordprediktion – det uppnår precision genom ergonomisk design. Stora, väl åtskilda tangenter ger färre felträffar, och gestsystemet ger åtkomst till alla tecken utan att leta efter pyttesmå knappar.
 

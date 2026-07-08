@@ -1,6 +1,6 @@
 Wurstfinger: klávesnice pro silné prsty
 
-Unaveni překlepy? Wurstfinger je klávesnice ohleduplná k soukromí s velkými klávesami a gesty přejetí. Vychází z osvědčeného rozložení MessagEase a nahrazuje stísněnou mřížku QWERTY rozložením 3x3 optimalizovaným pro psaní palci.
+Unaveni překlepy? Wurstfinger je klávesnice ohleduplná k soukromí s velkými klávesami a gesty přejetí. Nahrazuje stísněnou mřížku QWERTY osvědčeným rozložením 3x3 optimalizovaným pro psaní palci.
 
 Na rozdíl od běžných klávesnic se Wurstfinger nespoléhá na invazivní predikci slov – přesnosti dosahuje ergonomickým návrhem. Velké a dobře rozmístěné klávesy znamenají méně chybných doteků a systém gest umožňuje přístup ke všem znakům bez hledání drobných tlačítek.
 

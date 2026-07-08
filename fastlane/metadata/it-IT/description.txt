@@ -1,6 +1,6 @@
 Wurstfinger: la tastiera per dita grosse
 
-Stanco di errori di battitura? Wurstfinger è una tastiera attenta alla privacy, con tasti grandi e gesti di scorrimento. Basata sul collaudato schema MessagEase, sostituisce la stretta griglia QWERTY con una disposizione 3x3 ottimizzata per la digitazione con i pollici.
+Stanco di errori di battitura? Wurstfinger è una tastiera attenta alla privacy, con tasti grandi e gesti di scorrimento. Sostituisce la stretta griglia QWERTY con una collaudata disposizione 3x3 ottimizzata per la digitazione con i pollici.
 
 A differenza delle tastiere tradizionali, Wurstfinger non si affida a una predizione delle parole invasiva: ottiene la precisione grazie a un design ergonomico. Tasti grandi e ben distanziati riducono i tocchi mancati e il sistema di gesti consente di accedere a tutti i caratteri senza cercare minuscoli pulsanti.
 

@@ -1,6 +1,6 @@
 Wurstfinger : le clavier pour gros doigts
 
-Fatigué des fautes de frappe ? Wurstfinger est un clavier respectueux de la vie privée, doté de grandes touches et de gestes de glissement. Basé sur la disposition éprouvée MessagEase, il remplace la grille QWERTY exiguë par une disposition 3x3 optimisée pour la saisie au pouce.
+Fatigué des fautes de frappe ? Wurstfinger est un clavier respectueux de la vie privée, doté de grandes touches et de gestes de glissement. Il remplace la grille QWERTY exiguë par une disposition 3x3 éprouvée, optimisée pour la saisie au pouce.
 
 Contrairement aux claviers classiques, Wurstfinger ne repose pas sur une prédiction de mots intrusive : il atteint la précision grâce à une conception ergonomique. Des touches grandes et bien espacées réduisent les fautes de frappe, et le système de gestes donne accès à tous les caractères sans chercher de minuscules boutons.
 

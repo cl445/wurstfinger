@@ -1,6 +1,6 @@
 Wurstfinger: het toetsenbord voor dikke vingers
 
-Moe van typfouten? Wurstfinger is een privacyvriendelijk toetsenbord met grote toetsen en veeggebaren. Gebaseerd op de beproefde MessagEase-indeling vervangt het het krappe QWERTY-raster door een 3x3-indeling die is geoptimaliseerd voor typen met de duimen.
+Moe van typfouten? Wurstfinger is een privacyvriendelijk toetsenbord met grote toetsen en veeggebaren. Het vervangt het krappe QWERTY-raster door een beproefde 3x3-indeling die is geoptimaliseerd voor typen met de duimen.
 
 Anders dan gangbare toetsenborden leunt Wurstfinger niet op opdringerige woordvoorspelling, maar bereikt het nauwkeurigheid via ergonomisch ontwerp. Grote toetsen met ruime tussenruimte zorgen voor minder misslagen, en het gebarensysteem geeft toegang tot alle tekens zonder te zoeken naar minuscule knopjes.
 
