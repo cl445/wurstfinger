@@ -49,16 +49,26 @@ class LanguageSettings: ObservableObject {
         let state = Self.loadNormalizedState(from: defaults)
         selectedLanguageId = state.selected
         enabledLanguageIds = state.enabled
-        pinnedLanguageId = state.pinned
+        // Initialize the backing wrapper directly: the Optional property gets
+        // an implicit `nil` default, so a plain assignment here would run the
+        // setter — and its `didSet` persists to the app group on every
+        // construction, even when nothing changed.
+        _pinnedLanguageId = Published(initialValue: state.pinned)
 
         // `didSet` does not fire inside `init`, so persist the normalized
         // values explicitly — otherwise a corrected inconsistency (e.g. a
         // reselected language) would be re-read in its broken form next launch.
+        // Every write is change-guarded: an unguarded app-group write fires
+        // `UserDefaults.didChangeNotification` on each construction, which
+        // makes the keyboard's observer reload settings for nothing.
         if state.selected != defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue) {
             defaults.set(state.selected, forKey: SettingsKey.selectedLanguageId.rawValue)
         }
-        Self.saveEnabledLanguageIds(state.enabled, to: defaults)
-        if state.pinned == nil {
+        if state.enabled != Self.loadEnabledLanguageIds(from: defaults) {
+            Self.saveEnabledLanguageIds(state.enabled, to: defaults)
+        }
+        if state.pinned == nil,
+           defaults.string(forKey: SettingsKey.pinnedLanguageId.rawValue) != nil {
             defaults.removeObject(forKey: SettingsKey.pinnedLanguageId.rawValue)
         }
     }

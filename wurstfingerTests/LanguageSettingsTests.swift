@@ -874,3 +874,89 @@ struct LanguageSettingsStalenessTests {
         #expect(settings.pinnedLanguageId == "de_DE")
     }
 }
+
+// MARK: - Init Write Hygiene
+
+/// In-memory defaults that records every mutating call. Used to prove that
+/// constructing `LanguageSettings` on an already-normalized store performs
+/// no write at all — an unguarded app-group write would fire
+/// `UserDefaults.didChangeNotification` and make the keyboard extension
+/// reload its settings on every construction.
+private final class WriteRecordingDefaults: UserDefaults {
+    private var storage: [String: Any] = [:]
+    private(set) var writtenKeys: [String] = []
+
+    convenience init() {
+        self.init(suiteName: nil)!
+    }
+
+    override func object(forKey defaultName: String) -> Any? {
+        storage[defaultName]
+    }
+
+    override func set(_ value: Any?, forKey defaultName: String) {
+        writtenKeys.append(defaultName)
+        storage[defaultName] = value
+    }
+
+    override func removeObject(forKey defaultName: String) {
+        writtenKeys.append(defaultName)
+        storage[defaultName] = nil
+    }
+
+    override func string(forKey defaultName: String) -> String? {
+        object(forKey: defaultName) as? String
+    }
+
+    override func stringArray(forKey defaultName: String) -> [String]? {
+        object(forKey: defaultName) as? [String]
+    }
+
+    /// Seeds the store without recording the writes.
+    func seed(_ value: Any?, forKey key: String) {
+        storage[key] = value
+    }
+}
+
+struct LanguageSettingsInitWriteHygieneTests {
+    @Test("Init on an already-normalized store performs no write")
+    func initOnNormalizedStoreIsWriteFree() {
+        let defaults = WriteRecordingDefaults()
+        defaults.seed("en_US", forKey: SettingsKey.selectedLanguageId.rawValue)
+        defaults.seed(["en_US", "de_DE"], forKey: SettingsKey.enabledLanguageIds.rawValue)
+
+        _ = LanguageSettings(userDefaults: defaults)
+
+        #expect(defaults.writtenKeys.isEmpty)
+    }
+
+    @Test("Init on a normalized store with a valid pin performs no write")
+    func initWithValidPinIsWriteFree() {
+        let defaults = WriteRecordingDefaults()
+        defaults.seed("en_US", forKey: SettingsKey.selectedLanguageId.rawValue)
+        defaults.seed(["en_US", "de_DE"], forKey: SettingsKey.enabledLanguageIds.rawValue)
+        defaults.seed("de_DE", forKey: SettingsKey.pinnedLanguageId.rawValue)
+
+        _ = LanguageSettings(userDefaults: defaults)
+
+        #expect(defaults.writtenKeys.isEmpty)
+    }
+
+    @Test("Init still persists corrections for an inconsistent store")
+    func initPersistsNormalizationWhenStoreIsInconsistent() {
+        let defaults = WriteRecordingDefaults()
+        // Stale enabled entry + selection outside the enabled list + dangling pin.
+        defaults.seed("de_DE", forKey: SettingsKey.selectedLanguageId.rawValue)
+        defaults.seed(["en_US", "zz_ZZ"], forKey: SettingsKey.enabledLanguageIds.rawValue)
+        defaults.seed("zz_ZZ", forKey: SettingsKey.pinnedLanguageId.rawValue)
+
+        let settings = LanguageSettings(userDefaults: defaults)
+
+        #expect(settings.selectedLanguageId == "en_US")
+        #expect(settings.enabledLanguageIds == ["en_US"])
+        #expect(settings.pinnedLanguageId == nil)
+        #expect(defaults.writtenKeys.contains(SettingsKey.selectedLanguageId.rawValue))
+        #expect(defaults.writtenKeys.contains(SettingsKey.enabledLanguageIds.rawValue))
+        #expect(defaults.writtenKeys.contains(SettingsKey.pinnedLanguageId.rawValue))
+    }
+}

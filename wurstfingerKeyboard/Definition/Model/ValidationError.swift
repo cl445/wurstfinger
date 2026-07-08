@@ -140,11 +140,6 @@ extension KeyboardDefinition {
             for (_, targetMode) in mode.autoTransitions where modes[targetMode] == nil {
                 errors.append(.missingMode(targetMode))
             }
-
-            // All doubleTapMode targets must exist
-            if let doubleTap = mode.doubleTapMode, modes[doubleTap] == nil {
-                errors.append(.missingMode(doubleTap))
-            }
         }
 
         // Validate each mode individually

@@ -273,7 +273,7 @@ struct GenerateShiftedTests {
         return KeyboardMode(
             name: ModeNames.main, keys: keys,
             arrangements: [.portrait: arrangement],
-            autoTransitions: [:], doubleTapMode: nil
+            autoTransitions: [:]
         )
     }
 
@@ -322,15 +322,13 @@ struct GenerateShiftedTests {
 
         // Default: empty autoTransitions (stays active like caps lock)
         #expect(shifted.autoTransitions.isEmpty)
-        #expect(shifted.doubleTapMode == nil)
     }
 
     @Test func generateShiftedWithPostConfiguration() {
         let main = Self.sampleMode()
         let shifted = main.generateShifted(locale: Locale(identifier: "de_DE"))
-            .with(autoTransitions: [.letter: ModeNames.main], doubleTapMode: ModeNames.capsLock)
+            .with(autoTransitions: [.letter: ModeNames.main])
 
         #expect(shifted.autoTransitions[.letter] == ModeNames.main)
-        #expect(shifted.doubleTapMode == ModeNames.capsLock)
     }
 }

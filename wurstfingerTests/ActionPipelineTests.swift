@@ -65,8 +65,7 @@ private enum PipelineFixtures {
                     rows: [[KeyPlacement(keyId: keys.first?.id ?? "x")]]
                 ),
             ],
-            autoTransitions: autoTransitions,
-            doubleTapMode: nil
+            autoTransitions: autoTransitions
         )
     }
 
@@ -222,6 +221,61 @@ struct ComposeMiddlewareTests {
 
         #expect(sink.received.first?.action == .commitText("¨"))
         #expect(deleted == 0, "No rule → no previous-character deletion")
+    }
+
+    /// Composing never combines across a space. The rule set carries
+    /// Thumb-Key's space-consuming " " + x fallback rows, but the
+    /// middleware must skip them: "hello " + ´ → "hello ´".
+    @Test func preservesSpaceAndCommitsTriggerAfterSpace() {
+        let middleware = ComposeMiddleware(
+            compose: { previous, _ in
+                Issue.record("compose lookup must be skipped after a space")
+                return previous == " " ? "'" : nil
+            },
+            cycleAccent: { _ in nil },
+            previousCharacter: { " " },
+            deletePreviousCharacter: { Issue.record("Space must never be consumed by compose") }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .compose(trigger: "´")))
+
+        #expect(sink.received.first?.action == .commitText("´"))
+    }
+
+    @Test func stillComposesAfterLetterDespiteSpaceGuard() {
+        var deleted = 0
+        let middleware = ComposeMiddleware(
+            compose: { previous, trigger in
+                (previous == "e" && trigger == "´") ? "é" : nil
+            },
+            cycleAccent: { _ in nil },
+            previousCharacter: { "e" },
+            deletePreviousCharacter: { deleted += 1 }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .compose(trigger: "´")))
+
+        #expect(sink.received.first?.action == .commitText("é"))
+        #expect(deleted == 1)
+    }
+
+    @Test func commitsTriggerAtDocumentStart() {
+        let middleware = ComposeMiddleware(
+            compose: { _, _ in Issue.record("compose must not run at document start"); return nil },
+            cycleAccent: { _ in nil },
+            previousCharacter: { "" },
+            deletePreviousCharacter: { Issue.record("Must not delete at document start") }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .compose(trigger: "´")))
+
+        #expect(sink.received.first?.action == .commitText("´"))
     }
 
     @Test func insertsTriggerWhenNoPreviousCharacter() {

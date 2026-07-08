@@ -146,10 +146,14 @@ extension KeyboardViewModel {
             }
         ))
 
-        // 4. Advanced text (delete-forward, capitalize, clipboard)
+        // 4. Advanced text (delete-forward, capitalize, clipboard). The
+        //    clipboard confirmation tick fires from the middleware's success
+        //    paths (not upfront in the haptic middleware) so guarded no-ops
+        //    stay silent.
         middlewares.append(AdvancedTextMiddleware(
             target: { [weak self] in self?.textInputTarget },
-            locale: { [weak self] in self?.pipelineLocale ?? Locale.current }
+            locale: { [weak self] in self?.pipelineLocale ?? Locale.current },
+            onClipboardSuccess: { [weak self] in self?.feedbackStateChange() }
         ))
 
         // 5. Basic text input (commitText, deleteBackward, space, newline, moveCursor)
@@ -322,7 +326,10 @@ extension KeyboardViewModel {
               text.first?.isLetter == true
         else { return false }
         let locale = pipelineLocale ?? Locale.current
-        let uppercased = text.uppercased(with: locale)
+        // keyboardUppercased (not plain uppercased) keeps ß → ẞ as a single
+        // character, matching the shifted-layer generation in the definition
+        // layer — a layout with ß on a tap position must not expand to "SS".
+        let uppercased = text.keyboardUppercased(with: locale)
         dispatchAction(.commitText(uppercased))
         return true
     }

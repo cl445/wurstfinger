@@ -23,11 +23,13 @@ private enum AdvancedTextFixtures {
     /// the app's default uppercasing behaviour, e.g. `ß → SS`).
     static func middleware(
         target: MockTextTarget,
-        localeId: String = "de_DE"
+        localeId: String = "de_DE",
+        onClipboardSuccess: @escaping () -> Void = {}
     ) -> AdvancedTextMiddleware {
         AdvancedTextMiddleware(
             target: { target },
-            locale: { Locale(identifier: localeId) }
+            locale: { Locale(identifier: localeId) },
+            onClipboardSuccess: onClipboardSuccess
         )
     }
 }
@@ -251,12 +253,14 @@ final class AdvancedTextMiddlewareClipboardTests {
         target.hasFullAccess = true
         target.selectedText = "copied-\(UUID().uuidString)"
         let expected = target.selectedText
-        let middleware = AdvancedTextFixtures.middleware(target: target)
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
 
         middleware.process(AdvancedTextFixtures.context(.copy)) { _ in }
 
         #expect(UIPasteboard.general.string == expected)
         #expect(target.events.isEmpty) // copy must not mutate the document
+        #expect(successTicks == 1)
     }
 
     @Test func copyIsNoopWithoutFullAccess() {
@@ -266,11 +270,29 @@ final class AdvancedTextMiddlewareClipboardTests {
         let target = MockTextTarget()
         target.hasFullAccess = false
         target.selectedText = "secret"
-        let middleware = AdvancedTextFixtures.middleware(target: target)
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
 
         middleware.process(AdvancedTextFixtures.context(.copy)) { _ in }
 
         #expect(UIPasteboard.general.string == marker) // unchanged
+        #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
+    }
+
+    @Test func copyIsNoopWhenNothingSelected() {
+        let marker = "untouched-\(UUID().uuidString)"
+        UIPasteboard.general.string = marker
+
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        target.selectedText = nil
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
+
+        middleware.process(AdvancedTextFixtures.context(.copy)) { _ in }
+
+        #expect(UIPasteboard.general.string == marker) // unchanged
+        #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
     }
 
     @Test func pasteInsertsClipboardTextWithFullAccess() {
@@ -279,11 +301,13 @@ final class AdvancedTextMiddlewareClipboardTests {
 
         let target = MockTextTarget()
         target.hasFullAccess = true
-        let middleware = AdvancedTextFixtures.middleware(target: target)
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
 
         middleware.process(AdvancedTextFixtures.context(.paste)) { _ in }
 
         #expect(target.events == [.insertText(text)])
+        #expect(successTicks == 1)
     }
 
     @Test func pasteIsNoopWithoutFullAccess() {
@@ -291,11 +315,44 @@ final class AdvancedTextMiddlewareClipboardTests {
 
         let target = MockTextTarget()
         target.hasFullAccess = false
-        let middleware = AdvancedTextFixtures.middleware(target: target)
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
 
         middleware.process(AdvancedTextFixtures.context(.paste)) { _ in }
 
         #expect(target.events.isEmpty)
+        #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
+    }
+
+    @Test func pasteIsNoopWhenPasteboardEmpty() {
+        UIPasteboard.general.items = []
+
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
+
+        middleware.process(AdvancedTextFixtures.context(.paste)) { _ in }
+
+        #expect(target.events.isEmpty)
+        #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
+    }
+
+    @Test func pasteTruncatesOversizedPasteboardText() {
+        // 250k UTF-16 units — above the 200k cap. ASCII, so units == Characters.
+        let oversized = String(repeating: "a", count: 250_000)
+        UIPasteboard.general.string = oversized
+
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
+
+        middleware.process(AdvancedTextFixtures.context(.paste)) { _ in }
+
+        let expected = String(repeating: "a", count: KeyboardConstants.TextInput.maxPasteUTF16Length)
+        #expect(target.events == [.insertText(expected)])
+        #expect(successTicks == 1, "A truncated paste still inserts text and ticks")
     }
 
     @Test func cutCopiesSelectionAndDeletes() {
@@ -303,12 +360,14 @@ final class AdvancedTextMiddlewareClipboardTests {
         target.hasFullAccess = true
         target.selectedText = "cut-\(UUID().uuidString)"
         let expected = target.selectedText
-        let middleware = AdvancedTextFixtures.middleware(target: target)
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
 
         middleware.process(AdvancedTextFixtures.context(.cut)) { _ in }
 
         #expect(UIPasteboard.general.string == expected)
         #expect(target.events == [.deleteBackward])
+        #expect(successTicks == 1)
     }
 
     @Test func cutIsNoopWithoutFullAccess() {
@@ -318,12 +377,14 @@ final class AdvancedTextMiddlewareClipboardTests {
         let target = MockTextTarget()
         target.hasFullAccess = false
         target.selectedText = "secret"
-        let middleware = AdvancedTextFixtures.middleware(target: target)
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
 
         middleware.process(AdvancedTextFixtures.context(.cut)) { _ in }
 
         #expect(target.events.isEmpty)
         #expect(UIPasteboard.general.string == marker) // pasteboard untouched
+        #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
     }
 
     @Test func cutIsNoopWhenNothingSelected() {
@@ -333,11 +394,52 @@ final class AdvancedTextMiddlewareClipboardTests {
         let target = MockTextTarget()
         target.hasFullAccess = true
         target.selectedText = nil
-        let middleware = AdvancedTextFixtures.middleware(target: target)
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
 
         middleware.process(AdvancedTextFixtures.context(.cut)) { _ in }
 
         #expect(target.events.isEmpty)
         #expect(UIPasteboard.general.string == marker) // pasteboard untouched
+        #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
+    }
+}
+
+// MARK: - Paste size cap
+
+/// `cappedForInsertion` is pure, so the truncation semantics are tested
+/// directly with small caps; the 200k production cap is exercised once via
+/// the pasteboard in `pasteTruncatesOversizedPasteboardText` above.
+struct AdvancedTextPasteCapTests {
+    @Test func returnsShortTextUnchanged() {
+        let text = "hello wörld 👍🏽"
+        #expect(AdvancedTextMiddleware.cappedForInsertion(text) == text)
+    }
+
+    @Test func returnsTextExactlyAtCapUnchanged() {
+        let text = "abc"
+        #expect(AdvancedTextMiddleware.cappedForInsertion(text, maxUTF16Length: 3) == "abc")
+    }
+
+    @Test func truncatesToCapInUTF16Units() {
+        let text = "abcdef"
+        #expect(AdvancedTextMiddleware.cappedForInsertion(text, maxUTF16Length: 4) == "abcd")
+    }
+
+    @Test func neverSplitsAGraphemeCluster() {
+        // 👍🏽 = base + skin tone = 4 UTF-16 units. A cap that lands inside the
+        // cluster must round down to the previous boundary.
+        let text = "a👍🏽b"
+        #expect(AdvancedTextMiddleware.cappedForInsertion(text, maxUTF16Length: 3) == "a")
+        #expect(AdvancedTextMiddleware.cappedForInsertion(text, maxUTF16Length: 4) == "a")
+        #expect(AdvancedTextMiddleware.cappedForInsertion(text, maxUTF16Length: 5) == "a👍🏽")
+    }
+
+    @Test func neverSplitsAZWJFamilySequence() {
+        // 👨‍👩‍👧‍👦 = ZWJ family sequence = 11 UTF-16 units.
+        let family = "👨‍👩‍👧‍👦"
+        let text = "ab" + family
+        #expect(AdvancedTextMiddleware.cappedForInsertion(text, maxUTF16Length: 12) == "ab")
+        #expect(AdvancedTextMiddleware.cappedForInsertion(text, maxUTF16Length: 13) == text)
     }
 }

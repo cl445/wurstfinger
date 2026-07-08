@@ -120,6 +120,10 @@ enum NumericLayouts {
             label: "¼", action: .commitText("¼"), category: nil,
             returnAction: nil, accessibilityLabel: nil
         ),
+        // Intentional: the numeric center key's circle gesture types a
+        // plain lowercase "a" (the long-established convention for this
+        // key in this layout family), even though every sibling is a
+        // math/superscript symbol. Do not "fix" this to "ª".
         GridSlot.center: KeyBinding(
             label: "a", action: .commitText("a"), category: nil,
             returnAction: nil, accessibilityLabel: nil
@@ -228,8 +232,7 @@ enum NumericLayouts {
             name: ModeNames.numeric,
             keys: allKeys,
             arrangements: StandardArrangements.numeric3x3,
-            autoTransitions: [:],
-            doubleTapMode: nil
+            autoTransitions: [:]
         )
     }
 }
