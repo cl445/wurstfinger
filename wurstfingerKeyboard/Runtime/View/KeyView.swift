@@ -83,6 +83,12 @@ struct KeyView: View {
         "🙂": "face.smiling",
     ]
 
+    /// Per-symbol size adjustment: the round smiley glyph renders optically
+    /// larger than the other utility icons at the same point size.
+    private static let sfSymbolScale: [String: CGFloat] = [
+        "🙂": 0.7,
+    ]
+
     var body: some View {
         keyContent
     }
@@ -247,14 +253,14 @@ struct KeyView: View {
             // The centre label is hidden by the label-visibility setting.
             EmptyView()
         } else {
-            let font = Font.system(size: scaledFontSize, weight: .semibold, design: .rounded)
             if let sfName = Self.sfSymbolMap[primaryLabel] {
+                let scale = Self.sfSymbolScale[primaryLabel, default: 1]
                 Image(systemName: sfName)
-                    .font(font)
+                    .font(Font.system(size: scaledFontSize * scale, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
             } else {
                 Text(primaryLabel)
-                    .font(font)
+                    .font(Font.system(size: scaledFontSize, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
             }
         }

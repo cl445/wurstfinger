@@ -94,6 +94,14 @@ struct EmojiModeTests {
         #expect(LabelCategory.of(binding) == .functional)
     }
 
+    @Test func globeTapInEmojiModeTogglesBackToMain() throws {
+        let globe = try #require(mode.key(for: UtilitySlot.globe))
+        #expect(globe.bindings[.tap]?.action == .switchMode(ModeNames.main))
+        // The label stays the smiley; only the tap action toggles back.
+        #expect(globe.bindings[.tap]?.label == CommonKeys.globe.bindings[.tap]?.label)
+        #expect(globe.bindings[.swipeLeft]?.action == .advanceToNextInputMode)
+    }
+
     @Test func emojiEntryKeepsGlobeSwipes() {
         let bindings = CommonKeys.globe.bindings
         #expect(bindings[.swipeLeft]?.action == .advanceToNextInputMode)
