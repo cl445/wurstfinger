@@ -624,19 +624,23 @@ extension LanguageDefinitions {
                 ["η", "ο", "ρ"],
                 ["τ", "ε", "σ"],
             ],
+            // MessagEase's generic Latin accent ring (ô â ä í î ç ø é ü) is
+            // dropped here: it is noise on a Greek keyboard and would override
+            // the default punctuation/symbol swipes. Greek tonos/dialytika
+            // belong in compose rules, not as primary swipes.
             directionalOverrides: [
-                GridSlot.topLeft: [.swipeUp: "ô", .swipeUpRight: "â", .swipeLeft: "ä", .swipeDownRight: "ω"],
+                GridSlot.topLeft: [.swipeDownRight: "ω"],
                 GridSlot.topCenter: [.swipeDown: "λ"],
-                GridSlot.topRight: [.swipeUpLeft: "í", .swipeRight: "î", .swipeDownLeft: "χ"],
-                GridSlot.midLeft: [.swipeUp: "ç", .swipeRight: "κ", .swipeDown: "ø"],
+                GridSlot.topRight: [.swipeDownLeft: "χ"],
+                GridSlot.midLeft: [.swipeRight: "κ"],
                 GridSlot.center: [
                     .swipeUpLeft: "θ", .swipeUp: "υ", .swipeUpRight: "π",
                     .swipeRight: "β", .swipeDownRight: "ς", .swipeDown: "δ",
                     .swipeDownLeft: "γ", .swipeLeft: "ξ",
                 ],
                 GridSlot.midRight: [.swipeLeft: "μ"],
-                GridSlot.bottomLeft: [.swipeUpRight: "ψ", .swipeDown: "ü"],
-                GridSlot.bottomCenter: [.swipeUp: "ω", .swipeLeft: "é", .swipeRight: "ζ"],
+                GridSlot.bottomLeft: [.swipeUpRight: "ψ"],
+                GridSlot.bottomCenter: [.swipeUp: "ω", .swipeRight: "ζ"],
                 GridSlot.bottomRight: [.swipeUpLeft: "φ"],
             ],
             numericBackToAlphaLabel: "αβγ"
@@ -660,10 +664,14 @@ extension LanguageDefinitions {
                 ["t", "e", "s"],
             ],
             directionalOverrides: [
+                // Portuguese keeps its own accents (â ã õ ô á í ó ú ç ê é);
+                // MessagEase's foreign ring extras — ñ (Spanish) and ü
+                // (dropped from Portuguese in the 1990 orthographic reform) —
+                // are removed.
                 GridSlot.topLeft: [.swipeUp: "ô", .swipeUpRight: "â", .swipeLeft: "ã", .swipeDown: "á", .swipeDownRight: "v"],
-                GridSlot.topCenter: [.swipeUp: "ñ", .swipeDown: "l"],
+                GridSlot.topCenter: [.swipeDown: "l"],
                 GridSlot.topRight: [.swipeUpLeft: "í", .swipeRight: "õ", .swipeDownLeft: "x"],
-                GridSlot.midLeft: [.swipeUp: "ü", .swipeRight: "k", .swipeDown: "ç"],
+                GridSlot.midLeft: [.swipeRight: "k", .swipeDown: "ç"],
                 GridSlot.center: [
                     .swipeUpLeft: "q", .swipeUp: "u", .swipeUpRight: "p",
                     .swipeRight: "b", .swipeDownRight: "j", .swipeDown: "h",
