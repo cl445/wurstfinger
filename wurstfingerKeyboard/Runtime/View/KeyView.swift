@@ -113,6 +113,7 @@ struct KeyView: View {
                 slideType: key.slideType,
                 onSlide: { phase in onSlide?(key, phase) },
                 onTouchDown: { onTouchDown?() },
+                onLongPress: longPressHandler,
                 isActive: $isActive
             ))
         } else {

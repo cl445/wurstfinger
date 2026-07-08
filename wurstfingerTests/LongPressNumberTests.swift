@@ -84,6 +84,29 @@ struct LongPressNumberPipelineTests {
         #expect(target.events.contains(.insertText("0")))
     }
 
+    @Test func longPressOnSpaceBarTypesZero() {
+        let (vm, target) = makeViewModel()
+        let handled = vm.handleGesture(.longPress, keyId: UtilitySlot.space, isReturn: false)
+        #expect(handled)
+        #expect(target.events == [.insertText("0")])
+    }
+
+    @Test func longPressOnSpaceBarTypesZeroInNumericMode() {
+        let (vm, target) = makeViewModel()
+        vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
+        vm.handleGesture(.longPress, keyId: UtilitySlot.space, isReturn: false)
+        #expect(target.events.contains(.insertText("0")))
+    }
+
+    @Test func longPressOnDeleteReportsUnhandled() {
+        let (vm, target) = makeViewModel()
+        // Delete shares SlideGestureHandler with space but has no long-press
+        // binding; the hold must not be consumed.
+        let handled = vm.handleGesture(.longPress, keyId: UtilitySlot.delete, isReturn: false)
+        #expect(!handled)
+        #expect(target.events.isEmpty)
+    }
+
     @Test func unhandledLongPressReportsFalseAndTypesNothing() {
         let (vm, target) = makeViewModel()
         // Utility keys have no digit on the numeric layer: the long press must
