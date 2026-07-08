@@ -18,7 +18,7 @@ systematisch hintippt; die Voronoi-Grenzen zwischen Tasten verschieben sich ents
 
 ### Erwartungshaltung
 
-Bei MessagEase (3×3-Grid, große Tasten) ist reine Tasten-Verwechslung seltener als bei
+Bei einem 3×3-Grid mit großen Tasten ist reine Tasten-Verwechslung seltener als bei
 QWERTY. Der Nutzen liegt schwerpunktmäßig bei **Tastengrenzen** und dem **Gesten-Startpunkt**
 (der Touchdown bestimmt, welche Taste eine Geste „besitzt", inkl. Richtungs- und
 Return-Swipes). **Quantifizierte Erwartung aus der Literatur** (siehe
@@ -281,7 +281,7 @@ Damit ist der Fixpunkt der echte User-Bias, nicht das Auswahl-Ergebnis ⇒ keine
 
 ### 4.2 Lern-Algorithmus: Empirical-Bayes-Shrinkage mit bounded-influence Running-Mean
 
-Der Algorithmus nutzt aus, dass es **pro Regime nur eine Handvoll Tasten** gibt (MessagEase ≈ 9
+Der Algorithmus nutzt aus, dass es **pro Regime nur eine Handvoll Tasten** gibt (3×3-Grid ≈ 9
 Buchstaben-Positionen + Utility) und die Reach-Fläche nur 3–4 Koeffizienten hat. Damit ist die
 Flächenschätzung ein **winziger Closed-Form-Solve**, der bei Bedarf (Lesen/Persistieren) aus den
 Per-Tasten-Statistiken neu gerechnet wird — **kein** Online-RLS, **kein** Backfitting, **keine**
@@ -731,7 +731,7 @@ sie künstlich zu füllen (außer optionalem Spiegeln in v2).
 
 ### 11.3 Übertragbarkeit auf Gesten-Grid-Keyboards (Evidenzlücke, nicht Show-Stopper)
 
-Der Literatur-Review ergab: **es gibt keine peer-reviewte Arbeit zu MessagEase-/Grid-/Gesten-/
+Der Literatur-Review ergab: **es gibt keine peer-reviewte Arbeit zu Grid-/Gesten-/
 Swipe-Keyboards** mit gelernter Offset-Korrektur. Alle Evidenz (Gauß-Modelle, Backoff,
 systematischer Offset, Varianz-Boden) stammt von **QWERTY-Tap** und diskreter Zielauswahl. Die
 biomechanischen Grundlagen sind layout-unabhängig → **plausibel übertragbar, aber nicht belegt.**
