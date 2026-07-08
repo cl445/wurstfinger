@@ -15,11 +15,6 @@ struct ContentView: View {
                     Label("Home", systemImage: "house.fill")
                 }
 
-            OnboardingView()
-                .tabItem {
-                    Label("Setup", systemImage: "list.number")
-                }
-
             TestAreaView()
                 .tabItem {
                     Label("Test", systemImage: "keyboard")

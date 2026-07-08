@@ -14,7 +14,8 @@ import Foundation
 
 /// Centralized storage for all UserDefaults keys used by the keyboard.
 /// Using an enum prevents typos and makes refactoring easier.
-enum SettingsKey: String {
+/// `CaseIterable` powers the host app's "Reset All Settings" action.
+enum SettingsKey: String, CaseIterable {
     case hapticIntensityTap
     case hapticIntensityDrag
     /// Legacy master toggle — only read to migrate an explicit "off" into
