@@ -12,7 +12,7 @@ import Foundation
 /// - `.compose(trigger)`: checks `ComposeEngine` for a rule combining the
 ///   previous character with the trigger. Inserts the trigger as plain text
 ///   when no rule matches or when the previous character is a space (the
-///   space is never consumed — MessagEase parity).
+///   space is never consumed).
 /// - `.cycleAccents`: cycles through accent variants of the previous character.
 ///
 /// All other actions pass through untouched.
@@ -41,11 +41,11 @@ struct ComposeMiddleware: ActionMiddleware {
         case let .compose(trigger):
             var transformed = context
             let previous = previousCharacter()
-            // MessagEase parity: the original never combines across a space —
-            // its combine table has no space rules, so "hello " + ´ yields
-            // "hello ´" with the space preserved. The rule set inherits
-            // space-consuming " " + x fallback rows from Thumb-Key, so the
-            // lookup is skipped entirely when a space precedes the cursor.
+            // Combining across a space is never wanted: "hello " + ´ must
+            // yield "hello ´" with the space preserved. The rule set
+            // inherits space-consuming " " + x fallback rows from
+            // Thumb-Key, so the lookup is skipped entirely when a space
+            // precedes the cursor.
             if !previous.isEmpty, previous != " ", let replacement = compose(previous, trigger) {
                 deletePreviousCharacter()
                 transformed.action = .commitText(replacement)

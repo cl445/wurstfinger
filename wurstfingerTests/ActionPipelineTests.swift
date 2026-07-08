@@ -223,9 +223,9 @@ struct ComposeMiddlewareTests {
         #expect(deleted == 0, "No rule → no previous-character deletion")
     }
 
-    /// MessagEase parity: the original never combines across a space. The
-    /// rule set carries Thumb-Key's space-consuming " " + x fallback rows,
-    /// but the middleware must skip them: "hello " + ´ → "hello ´".
+    /// Composing never combines across a space. The rule set carries
+    /// Thumb-Key's space-consuming " " + x fallback rows, but the
+    /// middleware must skip them: "hello " + ´ → "hello ´".
     @Test func preservesSpaceAndCommitsTriggerAfterSpace() {
         let middleware = ComposeMiddleware(
             compose: { previous, _ in
