@@ -883,3 +883,76 @@ Zusätzlich:
 ### Scope-Grenze (klar)
 v1: **erheben + anzeigen**. **Keine** Schwellen-/Feature-Anpassung zur Laufzeit. Adaption (kern-
 verankert, geclampt, reversibel, default-aus; Winkel-Offset zuerst) ist ein eigener späterer Track.
+
+## 14. Swipe-Sektor-Bias-Korrektur (Winkel-Offset pro Richtung)
+
+**Status:** implementiert als Folge-Feature der Tap-Offset-Korrektur — der in §13 als „sauberster
+erster Kandidat" benannte per-Richtung-Winkel-Offset, jetzt mit *Anwendung* (nicht nur Erhebung).
+Eigener Toggle (`swipeBiasEnabled`, default aus), eigener Store, eigene Reset-Semantik.
+
+### 14.1 Lernen (Self-Labeling, analog §4.1)
+
+Die 8 Swipe-Sektoren sind 45°-Keile um die Mittelwinkel `i·45°` (Koordinaten wie `atan2`, y nach
+unten; `KeyGestureRecognizer.angleToGestureType`). Ein **akzeptierter** Swipe (nicht im Veto-Fenster
+gelöscht) liefert:
+
+```
+Label   = final klassifizierter Sektor S (Intent unter Self-Labeling)
+Sample  = Δθ = wrap(maxDisplacementAngle_roh − Mittelwinkel(S))   ∈ (−π, π]
+```
+
+Das Residual wird **immer gegen den rohen Messwinkel** gebildet — auch während eine Korrektur
+aktiv ist —, damit das gelernte Mittel den *unkorrigierten* Bias schätzt (kein Feedback-Drift).
+Return-Swipes nutzen dieselbe Winkel→Sektor-Abbildung und werden mitgelernt.
+
+**Gemeinsames Acceptance-Fenster:** Taps (§4.1) und Swipes teilen sich *ein* Veto-Fenster
+(`AcceptanceTracker<PendingSample>`), damit ein Delete den *jüngsten Commit* vetot, egal welcher
+Art — ein Delete nach Tap-dann-Swipe darf nicht den unschuldigen Tap treffen.
+
+**Zensur:** Fehlklassifizierte Swipes werden gelöscht/vetoed und fehlen im Sample — die Verteilung
+ist bei ±22,5° trunkiert, das Mittel unterschätzt den Bias betragsmäßig. Gleiches Argument wie bei
+Taps (§4.1): das Vorzeichen stimmt, die Korrektur konvergiert iterativ.
+
+### 14.2 Schätzer & Shrinkage
+
+Pro `(Regime, Sektor)` ein `RunningOffset` (derselbe robuste Schätzer wie §4.2 Step 1: Huber-Clip,
+EW-MAD-Gate, `nMax`-Plastizität — Einheiten hier Radiant, `spreadPrior ≈ 12°`). Empirical-Bayes-
+Shrinkage gegen den **zählungsgewichteten Regime-Globalbias** g (statt einer Reach-Surface — der
+Bias ist primär biomechanisch pro Richtung, 8 Zellen sind klein genug):
+
+```
+b_S = clamp(g + (m_S − g)·n_S/(n_S + κ),  ±clampRadians)
+```
+
+Residuen leben in (−22,5°, 22,5°] plus geclampter Korrektur — weit weg vom ±180°-Wrap, daher sind
+gewöhnliche (nicht-zirkuläre) Mittel exakt.
+
+### 14.3 Anwendung
+
+Rein numerisch im View-Model (`handleGesture`), **vor** Resolver und Telemetrie — kein Frame-
+Resizing, keine Invisible Compensation:
+
+```
+S_roh   = angleToGestureType(θ)
+S_final = angleToGestureType(θ − b_{S_roh})
+```
+
+Ein Lookup-Schritt genügt, weil `clampRadians` (15°) deutlich unter der halben Sektorbreite
+(22,5°) liegt. Gate: Toggle an **und** Regime-Reife `Σ n_S ≥ applyOn`.
+
+### 14.4 Persistenz / UI / Reset
+
+- Eigener Store (`swipeBias.snapshot`, eigene Schema-Version), nur Aggregate `{m_S, n_S, s_S}` —
+  keine Rohwinkel (§7-Datenschutz). Lernen ist inert, solange der Toggle aus ist.
+- Settings: Toggle „Correct my swipes" auf der Touch-Correction-Seite; beide Reset-Pfade
+  (Posture/alles) löschen auch den Swipe-Store.
+
+### 14.5 Telemetrie / Diagnose
+
+`sectorResidual` (Radiant) als zusätzliches Feature-Stat pro Gestenklasse in der P6-Telemetrie:
+Mittel deutlich ≠ 0 ⇒ systematischer Bias (Rotation hilft); Mittel ≈ 0 bei hoher Streuung ⇒ die
+Misses sind Varianz (dann wären Hysterese/Sektor-Gewichtung das Mittel, nicht Rotation).
+
+**Offen (Folge-Track):** Counterfactual-Metrik für Swipes (analog §8: „hat die Rotation den Sektor
+geflippt, und wurde das Ergebnis behalten?"); per-Key-Verfeinerung des Bias, falls die Daten sie
+hergeben; Tap↔Swipe-Schwellen-Adaption bleibt §13.
