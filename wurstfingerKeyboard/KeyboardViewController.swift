@@ -192,13 +192,16 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func updateKeyboardHeight() {
-        // Calculate keyboard height including both aspect ratio and scale
-        let baseHeight = KeyboardConstants.Calculations.baseHeight(aspectRatio: viewModel.keyAspectRatio)
-        // Apply scale to match the visual size from scaleEffect
-        let finalHeight = baseHeight * viewModel.keyboardScale
+        // Constraint height ≡ content height by construction: the metrics
+        // are the same source the SwiftUI grid renders from, so the fixed
+        // paddings/spacing are no longer scaled by the constraint while the
+        // content keeps them constant (review finding M7).
+        let finalHeight = viewModel.layoutMetrics.totalHeight
 
         if let constraint = heightConstraint {
-            constraint.constant = finalHeight
+            if constraint.constant != finalHeight {
+                constraint.constant = finalHeight
+            }
         } else {
             let constraint = view.heightAnchor.constraint(equalToConstant: finalHeight)
             constraint.priority = .defaultHigh
@@ -217,6 +220,12 @@ final class KeyboardViewController: UIInputViewController {
         // Stage Manager; UIApplication.shared is unavailable in extensions,
         // so the window is reached through the view hierarchy.
         viewModel.updateWindowBounds(view.window?.bounds)
+        // The resolved metrics depend on the container width and the
+        // current-orientation screen height (fit-clamps), so the height
+        // constraint must follow layout passes, not just viewWillAppear —
+        // rotation with the keyboard open never calls viewWillAppear.
+        // No-op when the height is unchanged.
+        updateKeyboardHeight()
     }
 
     override var needsInputModeSwitchKey: Bool {

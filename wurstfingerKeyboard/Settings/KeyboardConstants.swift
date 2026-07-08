@@ -52,11 +52,11 @@ enum KeyboardConstants {
         /// Normal hint label size (for less common characters).
         static let hintNormal: CGFloat = 10
 
-        // Main label dynamic scaling
+        // Main label dynamic scaling. Font sizes scale with the rendered
+        // cell height relative to `KeyDimensions.height` (see
+        // `KeyboardLayoutMetrics.fontScale`).
         /// Base size for main label scaling calculations.
         static let mainLabelBaseSize: CGFloat = 26
-        /// Reference key height for scaling calculations.
-        static let mainLabelReferenceHeight: CGFloat = KeyDimensions.height
         /// Minimum main label size to ensure readability.
         static let mainLabelMinSize: CGFloat = 20
         /// Maximum main label size to prevent overflow.
@@ -65,8 +65,6 @@ enum KeyboardConstants {
         // Hint label dynamic scaling
         /// Base size for hint label scaling.
         static let hintBaseSize: CGFloat = 14
-        /// Reference height for hint scaling.
-        static let hintReferenceHeight: CGFloat = KeyDimensions.height
         /// Minimum hint size to ensure readability.
         static let hintMinSize: CGFloat = 10
         /// Maximum hint size to prevent visual clutter.
@@ -195,23 +193,14 @@ enum KeyboardConstants {
             KeyDimensions.height * (KeyDimensions.referenceAspectRatio / aspectRatio)
         }
 
-        /// Calculates the total keyboard base height (without scaling)
-        static func baseHeight(aspectRatio: CGFloat) -> CGFloat {
-            let keyHeight = keyHeight(aspectRatio: aspectRatio)
-            return (keyHeight * CGFloat(KeyDimensions.totalRows)) +
-                (Layout.gridVerticalSpacing * CGFloat(KeyDimensions.totalRows - 1)) +
-                Layout.verticalPaddingTop + Layout.verticalPaddingBottom
-        }
-
-        /// Keyboard width at which the grid's cells come out exactly square:
-        /// the grid stretches its columns to fill the width the root view
-        /// gives it, so square keys are a property of the chosen width, not
-        /// of the aspect-ratio setting (whose clamp range starts at 1.0).
-        /// Used by the App Store screenshot mode to reproduce the square-key
-        /// marketing look.
-        static func squareKeyboardWidth(aspectRatio: CGFloat, scale: CGFloat, columns: Int) -> CGFloat {
-            let rowHeight = keyHeight(aspectRatio: aspectRatio) * scale
-            return (rowHeight * CGFloat(columns)) +
+        /// Keyboard width at which the grid's cells come out exactly
+        /// `cellSize` wide. Under the point-anchored metrics, square cells
+        /// are simply `keyAspectRatio == 1.0`, so this only converts a
+        /// desired cell size into the outer keyboard width (cells + gaps +
+        /// paddings). Used by the App Store screenshot mode to reproduce the
+        /// MessagEase marketing look at the full reference key height.
+        static func squareKeyboardWidth(cellSize: CGFloat, columns: Int) -> CGFloat {
+            (cellSize * CGFloat(columns)) +
                 (Layout.gridHorizontalSpacing * CGFloat(columns - 1)) +
                 (Layout.horizontalPadding * 2)
         }

@@ -114,6 +114,26 @@ struct OrientationLayoutTests {
         _ = cancellable
     }
 
+    @Test("Landscape metrics never exceed the portrait width cap")
+    func landscapeMetricsRespectWidthCap() {
+        // PR #223 semantics under the point-anchored model: even a maximal
+        // width wish must not blow the keyboard up to the full landscape
+        // width — the resolved metrics stay within the window-derived cap
+        // (bounded by the screen's shortest side).
+        let viewModel = KeyboardViewModel(
+            userDefaults: InMemoryUserDefaults(), shouldPersistSettings: false
+        )
+        viewModel.keyboardWidth = 600
+
+        // Landscape: the view spans the long side, the window caps at the
+        // screen's shortest side.
+        let longSide = max(DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height)
+        viewModel.updateViewWidth(longSide)
+        viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: longSide, height: 300))
+
+        #expect(viewModel.layoutMetrics.keyboardWidth <= screenShortestSide)
+    }
+
     @Test("Degenerate window bounds are ignored")
     func degenerateWindowBoundsIgnored() {
         let viewModel = KeyboardViewModel(shouldPersistSettings: false)
