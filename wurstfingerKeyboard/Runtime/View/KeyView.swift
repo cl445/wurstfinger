@@ -89,6 +89,11 @@ struct KeyView: View {
         "🙂": 0.7,
     ]
 
+    /// Symbols rendered in the muted hint styling instead of the full label
+    /// color: the smiley shares its key with several globe functions and
+    /// must not outshine their hint glyphs.
+    private static let mutedSymbols: Set<String> = ["🙂"]
+
     var body: some View {
         keyContent
     }
@@ -255,9 +260,14 @@ struct KeyView: View {
         } else {
             if let sfName = Self.sfSymbolMap[primaryLabel] {
                 let scale = Self.sfSymbolScale[primaryLabel, default: 1]
+                let muted = Self.mutedSymbols.contains(primaryLabel)
                 Image(systemName: sfName)
-                    .font(Font.system(size: scaledFontSize * scale, weight: .semibold, design: .rounded))
-                    .foregroundColor(.primary)
+                    .font(Font.system(
+                        size: scaledFontSize * scale,
+                        weight: muted ? .medium : .semibold,
+                        design: .rounded
+                    ))
+                    .foregroundStyle(muted ? Color.primary.opacity(0.5) : Color.primary)
             } else {
                 Text(primaryLabel)
                     .font(Font.system(size: scaledFontSize, weight: .semibold, design: .rounded))
