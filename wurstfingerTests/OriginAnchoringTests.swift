@@ -59,6 +59,31 @@ struct OriginAnchoringTests {
         #expect(classification.gesture == .swipeRight)
     }
 
+    @Test func slowReturnSwipeAtProMotionSampleRateKeepsItsOutboundLeg() {
+        // SwiftUI's DragGesture samples at display refresh rate: at 120Hz a
+        // ~0.85s return swipe produces ~100 samples. With the old 60-sample
+        // buffer the outbound leg was evicted; after origin re-anchoring the
+        // displacement peak sat at the start of the retained window
+        // (progress ~ 0, outside returnDisplacementRange) and the gesture
+        // committed as a plain right swipe instead of the return alternate.
+        var buffer = RingBuffer<CGPoint>(capacity: KeyboardConstants.Gesture.positionBufferSize)
+        buffer.append(.zero)
+        for i in 1 ... 50 {
+            buffer.append(CGPoint(x: CGFloat(i) * 1.2, y: 0))
+        }
+        for i in 1 ... 50 {
+            buffer.append(CGPoint(x: 60 - CGFloat(i) * 1.2, y: 0))
+        }
+
+        let classification = KeyGestureRecognizer.classify(
+            positions: KeyGestureRecognizer.anchoringOrigin(buffer.elements),
+            config: .default,
+            thresholds: .default
+        )
+        #expect(classification.gesture == .swipeRight)
+        #expect(classification.isReturn)
+    }
+
     @Test func longDragWithFarOutRetainedWindowClassifiesAsSwipe() {
         // A long slow drag overflowed the ring buffer and the retained
         // window sits entirely beyond maxJumpDistance (50pt) from the

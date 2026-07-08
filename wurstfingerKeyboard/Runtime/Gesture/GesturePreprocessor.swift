@@ -149,14 +149,18 @@ struct GesturePreprocessorConfig {
         return value.isFinite ? value : defaultValue
     }
 
-    /// Creates a config with custom aspect ratio
+    /// Creates a config with custom aspect ratio.
+    /// Non-finite or non-positive values (the ratio reaches this via a raw
+    /// `@AppStorage` read) fall back to 1.0 — `normalizeAspectRatio` divides
+    /// by the ratio, and dividing by zero/NaN would poison the whole pipeline
+    /// so that every gesture classifies as `.swipeRight`.
     func with(aspectRatio: CGFloat) -> GesturePreprocessorConfig {
         GesturePreprocessorConfig(
             jitterThreshold: jitterThreshold,
             maxJumpDistance: maxJumpDistance,
             smoothingWindow: smoothingWindow,
             smoothingOrder: smoothingOrder,
-            aspectRatio: aspectRatio
+            aspectRatio: aspectRatio.isFinite && aspectRatio > 0 ? aspectRatio : 1.0
         )
     }
 }

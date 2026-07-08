@@ -197,6 +197,29 @@ struct SlideGestureStateTests {
         #expect(phase == nil)
     }
 
+    @Test func returnUpSwipeWithDriftAtLiftOffStaysAReturnUpSwipe() {
+        var state = SlideGestureState()
+        // Return leg of a return-up swipe: the vertical component shrinks
+        // through ~0 while sideways drift stays above the (small) slide
+        // threshold. The committed up-swipe peak (-45, beyond the 30 pt
+        // up-swipe threshold) must keep the slide from latching on the
+        // lift-off samples — previously (10, -6) latched it (10 >= 8 and
+        // 10 > 6), losing the label toggle and jumping the cursor.
+        let samples: [CGSize] = [
+            CGSize(width: 6, height: -45),
+            CGSize(width: 9, height: -15),
+            CGSize(width: 10, height: -6),
+        ]
+        for sample in samples {
+            let update = state.handleChanged(translation: sample, activationThreshold: threshold)
+            #expect(update.phases.isEmpty)
+        }
+        let phase = state.handleEnded(
+            translation: CGSize(width: 10, height: -6), activationThreshold: threshold
+        )
+        #expect(phase == .swipeUp(isReturn: true))
+    }
+
     @Test func upSwipeAfterHorizontalActivationEndsAsSlide() {
         var state = SlideGestureState()
         // Horizontal slide activates first, then the finger drifts far up:
