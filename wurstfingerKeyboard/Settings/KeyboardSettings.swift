@@ -62,6 +62,9 @@ enum SettingsKey: String {
     /// Schema version of the persisted touch-offset model; bump invalidates
     /// incompatible stored state. See §7.
     case touchModelSchemaVersion
+    /// Toggle for the learned swipe-sector bias correction (default off).
+    /// See `docs/touch-offset-correction.md` §14.
+    case swipeBiasEnabled
 }
 
 // MARK: - Haptic Settings

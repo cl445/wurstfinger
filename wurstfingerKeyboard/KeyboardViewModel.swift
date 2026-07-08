@@ -168,12 +168,15 @@ final class KeyboardViewModel: ObservableObject {
     private var userDefaultsObserver: NSObjectProtocol?
     private var settingsCancellables = Set<AnyCancellable>()
 
-    /// Learns and (P7) applies per-key touch-offset correction (spec §4.1, §5).
-    /// Inert unless the feature toggle is on. Lazy so its closures can capture
-    /// `self` after initialization.
+    /// Learns and (P7) applies per-key touch-offset correction (spec §4.1, §5)
+    /// and per-sector swipe bias (§14). Each track is inert unless its feature
+    /// toggle is on. Lazy so its closures can capture `self` after
+    /// initialization.
     lazy var touchLearning: TouchLearningController = .init(
         store: TouchOffsetStore(defaults: sharedDefaults),
+        swipeStore: SwipeBiasStore(defaults: sharedDefaults),
         isEnabled: { [weak self] in self?.isTouchOffsetEnabled ?? false },
+        isSwipeBiasEnabled: { [weak self] in self?.isSwipeBiasEnabled ?? false },
         currentRegime: { [weak self] in
             self?.currentTouchRegime ?? TouchRegime(orientation: .portrait, posture: .twoThumb)
         },
