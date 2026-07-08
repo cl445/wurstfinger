@@ -198,7 +198,7 @@ enum KeyboardConstants {
         /// are simply `keyAspectRatio == 1.0`, so this only converts a
         /// desired cell size into the outer keyboard width (cells + gaps +
         /// paddings). Used by the App Store screenshot mode to reproduce the
-        /// MessagEase marketing look at the full reference key height.
+        /// square marketing look at the full reference key height.
         static func squareKeyboardWidth(cellSize: CGFloat, columns: Int) -> CGFloat {
             (cellSize * CGFloat(columns)) +
                 (Layout.gridHorizontalSpacing * CGFloat(columns - 1)) +
