@@ -10,8 +10,8 @@ import SwiftUI
 struct AspectRatioSettingsView: View {
     @Binding var aspectRatio: Double
 
-    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
-    private var keyboardScale = DeviceLayoutUtils.defaultKeyboardScale
+    @AppStorage(SettingsKey.keyboardWidthPoints.rawValue, store: SharedDefaults.store)
+    private var keyboardWidth = DeviceLayoutUtils.defaultKeyboardWidth
 
     @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
     private var keyboardHorizontalPosition = DeviceLayoutUtils.defaultKeyboardPosition
@@ -19,7 +19,7 @@ struct AspectRatioSettingsView: View {
     var body: some View {
         VStack(spacing: 20) {
             // Keyboard Preview
-            InteractiveKeyboardPreview(aspectRatio: $aspectRatio, scale: $keyboardScale, position: $keyboardHorizontalPosition)
+            InteractiveKeyboardPreview(aspectRatio: $aspectRatio, width: $keyboardWidth, position: $keyboardHorizontalPosition)
                 .padding(.horizontal, 16)
 
             // Slider Section

@@ -8,47 +8,59 @@
 import SwiftUI
 
 struct KeyboardSizePositionSettingsView: View {
-    @Binding var scale: Double
+    /// Keyboard width wish in points (the persisted value). The slider and
+    /// text field display it as a percentage of the device-class default.
+    @Binding var width: Double
     @Binding var position: Double
 
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
+    /// Slider range as percent of the device default (270 pt on iPhone):
+    /// 35 % ≈ 95 pt keeps the old 25 %-of-screen minimum reachable, 145 %
+    /// ≈ 392 pt covers a full iPhone width. Round values on purpose.
+    private static let minPercent: Double = 35
+    private static let maxPercent: Double = 145
+
+    /// Percent view onto the point-based wish width.
+    private var sizePercent: Binding<Double> {
+        Binding(
+            get: { width / DeviceLayoutUtils.defaultKeyboardWidth * 100 },
+            set: { width = $0 / 100 * DeviceLayoutUtils.defaultKeyboardWidth }
+        )
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             // Keyboard Preview
-            InteractiveKeyboardPreview(aspectRatio: $keyAspectRatio, scale: $scale, position: $position)
+            InteractiveKeyboardPreview(aspectRatio: $keyAspectRatio, width: $width, position: $position)
                 .padding(.horizontal, 16)
 
-            // Scale Slider
+            // Size Slider
             VStack(spacing: 16) {
                 HStack {
-                    Text("Keyboard Scale")
+                    Text("Keyboard Size")
                         .font(.headline)
                     Spacer()
                     Spacer()
-                    TextField("Value", value: $scale, formatter: NumberFormatter.decimalFormatter(minimum: 0.25, maximum: 1.0))
-                        .keyboardType(.decimalPad)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 80)
-                        .multilineTextAlignment(.trailing)
+                    TextField(
+                        "Value",
+                        value: sizePercent,
+                        formatter: NumberFormatter.decimalFormatter(
+                            minimum: Self.minPercent, maximum: Self.maxPercent
+                        )
+                    )
+                    .keyboardType(.decimalPad)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 80)
+                    .multilineTextAlignment(.trailing)
                 }
 
                 VStack(spacing: 8) {
-                    Slider(value: $scale, in: 0.25 ... 1.0, step: 0.01)
-                        .onChange(of: scale) { oldValue, newValue in
-                            // Reset position to center when scale reaches 100%
-                            if newValue >= 1.0 && oldValue < 1.0 {
-                                position = 0.5
-                            }
-                        }
+                    Slider(value: sizePercent, in: Self.minPercent ... Self.maxPercent, step: 1)
 
                     HStack {
-                        Text("25%")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("Compact")
+                        Text("35%")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -56,37 +68,34 @@ struct KeyboardSizePositionSettingsView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
-                        Text("Full Width")
+                        Text("145%")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                 }
 
-                Text("Scale the keyboard to make it smaller. At 100% it fills the full width, at 25% it's much more compact.")
+                Text("Size relative to the standard keyboard. It stays the same in every orientation; if it does not fit, it shrinks to the screen.")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 16)
 
-            // Position Slider (only enabled when scale < 1.0)
+            // Position Slider
             VStack(spacing: 16) {
                 HStack {
                     Text("Horizontal Position")
                         .font(.headline)
-                        .foregroundColor(scale < 1.0 ? .primary : .secondary)
                     Spacer()
                     TextField("Value", value: $position, formatter: NumberFormatter.decimalFormatter(minimum: 0.0, maximum: 1.0))
                         .keyboardType(.decimalPad)
                         .textFieldStyle(.roundedBorder)
                         .frame(width: 80)
                         .multilineTextAlignment(.trailing)
-                        .disabled(scale >= 1.0)
                 }
 
                 VStack(spacing: 8) {
                     Slider(value: $position, in: 0.0 ... 1.0, step: 0.01)
-                        .disabled(scale >= 1.0)
 
                     HStack {
                         Text("Left")
@@ -103,20 +112,12 @@ struct KeyboardSizePositionSettingsView: View {
                     }
                 }
 
-                if scale >= 1.0 {
-                    Text("Position is only available when scale is below 100%.")
-                        .font(.caption)
-                        .foregroundColor(.orange)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    Text("Adjust the horizontal position of the keyboard when it's scaled below 100%.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                Text("Adjust the horizontal position of the keyboard when it is narrower than the screen.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 16)
-            .animation(.easeInOut(duration: 0.2), value: scale >= 1.0)
 
             Spacer()
         }
@@ -126,7 +127,7 @@ struct KeyboardSizePositionSettingsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Reset") {
-                    scale = DeviceLayoutUtils.defaultKeyboardScale
+                    width = DeviceLayoutUtils.defaultKeyboardWidth
                     position = DeviceLayoutUtils.defaultKeyboardPosition
                 }
             }
@@ -136,6 +137,6 @@ struct KeyboardSizePositionSettingsView: View {
 
 #Preview {
     NavigationStack {
-        KeyboardSizePositionSettingsView(scale: .constant(0.7), position: .constant(0.5))
+        KeyboardSizePositionSettingsView(width: .constant(270), position: .constant(0.5))
     }
 }

@@ -19,8 +19,8 @@ struct HapticSettingsView: View {
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var previewAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
-    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
-    private var previewScale = DeviceLayoutUtils.defaultKeyboardScale
+    @AppStorage(SettingsKey.keyboardWidthPoints.rawValue, store: SharedDefaults.store)
+    private var previewWidth = DeviceLayoutUtils.defaultKeyboardWidth
 
     @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
     private var previewPosition = DeviceLayoutUtils.defaultKeyboardPosition
@@ -28,7 +28,7 @@ struct HapticSettingsView: View {
     var body: some View {
         VStack(spacing: 20) {
             // Keyboard Preview
-            InteractiveKeyboardPreview(aspectRatio: $previewAspectRatio, scale: $previewScale, position: $previewPosition)
+            InteractiveKeyboardPreview(aspectRatio: $previewAspectRatio, width: $previewWidth, position: $previewPosition)
                 .padding(.horizontal, 16)
 
             ScrollView {
