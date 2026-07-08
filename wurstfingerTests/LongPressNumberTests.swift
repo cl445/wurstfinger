@@ -2,7 +2,7 @@
 //  LongPressNumberTests.swift
 //  WurstfingerTests
 //
-//  Tests for the MessagEase-style "type numbers by holding" feature.
+//  Tests for the "type numbers by holding" feature.
 //  A .longPress gesture on a letter key resolves to the digit that key
 //  carries on the numeric layer (via GhostKeyResolver), and handleGesture
 //  reports whether the press was handled so the recognizer only consumes

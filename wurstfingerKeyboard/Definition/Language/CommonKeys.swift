@@ -82,8 +82,8 @@ enum CommonKeys {
                 label: "␣", action: .space, category: .utility,
                 returnAction: nil, accessibilityLabel: String(localized: "Space")
             ),
-            // MessagEase pairs the hold-for-digit feature with 0 on the space
-            // bar (no letter-layer slot maps to 0 otherwise). Long presses
+            // The hold-for-digit feature pairs 0 with the space bar (no
+            // letter-layer slot maps to 0 otherwise). Long presses
             // only occur with the opt-in setting enabled, so this is inert by
             // default; .longPress has no hint alignment, so nothing renders.
             .longPress: KeyBinding(
