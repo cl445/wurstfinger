@@ -119,6 +119,8 @@ struct DataDrivenKeyboardRootView: View {
             // on top still win the hit-test. ~2% over the glass backdrop reads
             // as clear.
             Color(.systemBackground).opacity(0.02)
+        case .messagEase:
+            KeyboardTheme.messagEase.boardBackground
         }
     }
 }

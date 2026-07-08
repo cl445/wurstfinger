@@ -19178,6 +19178,89 @@
         }
       },
       "comment": "ACCESSIBILITY action name for the question-mark swipe; the Arabic script substitutes ؟ (VoiceOver)"
+    },
+    "Dark keys with golden letters, like MessagEase": {
+      "comment": "Keyboard style description: messagEase",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dunkle Tasten mit goldenen Buchstaben, wie MessagEase"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touches sombres aux lettres dorées, comme MessagEase"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teclas oscuras con letras doradas, como MessagEase"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasti scuri con lettere dorate, come MessagEase"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тёмные клавиши с золотыми буквами, как в MessagEase"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ciemne klawisze ze złotymi literami, jak w MessagEase"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mörka tangenter med gyllene bokstäver, som MessagEase"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tummat näppäimet ja kultaiset kirjaimet, kuten MessagEase"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tamne tipke sa zlatnim slovima, kao MessagEase"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מקשים כהים עם אותיות זהובות, כמו MessagEase"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phím tối với chữ vàng, giống MessagEase"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Madilim na mga key na may gintong mga titik, tulad ng MessagEase"
+          }
+        }
+      }
+    },
+    "MessagEase": {
+      "comment": "Keyboard style name: messagEase (brand name, do not translate)",
+      "extractionState": "manual",
+      "shouldTranslate": false
     }
   },
   "version": "1.0"
