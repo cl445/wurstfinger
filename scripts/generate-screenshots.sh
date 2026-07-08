@@ -60,6 +60,10 @@ for runtime_devices in devices.values():
 raise SystemExit(1)
 " 2>/dev/null || true)
 
+# Marker file so we can count only screenshots created by this run
+# (pre-existing .webp files in $DOCS_DIR must not count as success).
+RUN_MARKER=$(mktemp)
+
 # Ensure cleanup runs on any exit (normal, error, or signal)
 cleanup() {
     echo ""
@@ -68,6 +72,7 @@ cleanup() {
         xcrun simctl status_bar "$TARGET_UDID" clear 2>/dev/null || true
     fi
     rm -rf "$DERIVED_DATA"
+    rm -f "$RUN_MARKER"
 }
 trap cleanup EXIT
 
@@ -101,7 +106,7 @@ xcodebuild test \
 TEST_EXIT_CODE=${PIPESTATUS[0]}
 set -e
 
-if [ $TEST_EXIT_CODE -ne 0 ]; then
+if [ "$TEST_EXIT_CODE" -ne 0 ]; then
   echo -e "${RED}⚠️  UI tests failed (exit code: $TEST_EXIT_CODE), but continuing to check for screenshots...${NC}"
 fi
 
@@ -128,6 +133,7 @@ rm -rf "$TEMP_EXPORT"
 xcrun xcresulttool export attachments --path "$RESULTS_BUNDLE" --output-path "$TEMP_EXPORT"
 
 # Map exported files to proper names based on manifest
+COPIED=0
 if [ -f "$TEMP_EXPORT/manifest.json" ]; then
     # Parse manifest, crop, and convert to WebP
     export TEMP_EXPORT
@@ -261,19 +267,21 @@ for test_result in manifest:
             print(f"  ✓ Created {base_name}.webp ({img.width}x{img.height})")
 EOF
 
-    # Count created files
-    COPIED=$(ls -1 "$DOCS_DIR"/*.webp 2>/dev/null | wc -l | tr -d ' ')
+    # Count only files created (or overwritten) by this run
+    COPIED=$(find "$DOCS_DIR" -maxdepth 1 -name "*.webp" -type f -newer "$RUN_MARKER" | wc -l | tr -d ' ')
+else
+    echo -e "${RED}❌ No manifest.json in exported attachments — nothing was extracted${NC}"
 fi
 
 # Clean up temp export
 rm -rf "$TEMP_EXPORT"
 
 echo ""
-if [ $COPIED -gt 0 ]; then
+if [ "${COPIED:-0}" -gt 0 ]; then
   echo -e "${GREEN}✅ Success! Created $COPIED WebP screenshot(s) in $DOCS_DIR${NC}"
   echo ""
   echo -e "${BLUE}📝 Generated screenshots:${NC}"
-  ls -1 "$DOCS_DIR"/*.webp 2>/dev/null | while read -r f; do echo "    - $(basename "$f")"; done
+  find "$DOCS_DIR" -maxdepth 1 -name "*.webp" -type f -newer "$RUN_MARKER" | sort | while read -r f; do echo "    - $(basename "$f")"; done
 else
   echo -e "${RED}❌ No screenshots found${NC}"
   echo ""
