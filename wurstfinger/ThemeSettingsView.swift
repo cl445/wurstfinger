@@ -2,7 +2,7 @@
 //  ThemeSettingsView.swift
 //  wurstfinger
 //
-//  Configuration sub-page for the MessagEase keyboard style: built-in
+//  Configuration sub-page for the Dark Gold keyboard style: built-in
 //  theme presets, per-channel colors, and key shape.
 //
 
@@ -157,7 +157,7 @@ private struct PresetSwatch: View {
                     lineWidth: isSelected ? 2 : 0.5
                 )
         )
-        .accessibilityLabel(Text("Theme \(preset.id + 1)"))
+        .accessibilityLabel(Text(verbatim: preset.name))
     }
 }
 

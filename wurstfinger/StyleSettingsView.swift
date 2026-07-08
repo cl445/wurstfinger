@@ -38,7 +38,7 @@ struct StyleSettingsView: View {
                             styleOption(style)
                         }
 
-                        if keyboardStyleRaw == KeyboardStyle.messagEase.rawValue {
+                        if keyboardStyleRaw == KeyboardStyle.darkGold.rawValue {
                             NavigationLink {
                                 ThemeSettingsView()
                             } label: {

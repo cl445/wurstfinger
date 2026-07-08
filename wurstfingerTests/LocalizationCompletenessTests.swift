@@ -82,7 +82,7 @@ struct LocalizationCompletenessTests {
 
         for (key, entry) in catalog.strings {
             // Entries marked "shouldTranslate": false stay in the source
-            // language everywhere (e.g. brand names like "MessagEase").
+            // language everywhere (e.g. proper names like "Dark Gold").
             if entry["shouldTranslate"] as? Bool == false {
                 continue
             }

@@ -4864,80 +4864,85 @@
         }
       }
     },
-    "Dark keys with golden letters, like MessagEase": {
-      "comment": "Keyboard style description: messagEase",
+    "Dark Gold": {
+      "comment": "Keyboard style name: darkGold (proper name, do not translate)",
+      "extractionState": "manual",
+      "shouldTranslate": false
+    },
+    "Dark keys with golden letters": {
+      "comment": "Keyboard style description: darkGold",
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dunkle Tasten mit goldenen Buchstaben, wie MessagEase"
+            "value": "Dunkle Tasten mit goldenen Buchstaben"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Touches sombres aux lettres dorées, comme MessagEase"
+            "value": "Touches sombres aux lettres dorées"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Teclas oscuras con letras doradas, como MessagEase"
+            "value": "Teclas oscuras con letras doradas"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tasti scuri con lettere dorate, come MessagEase"
+            "value": "Tasti scuri con lettere dorate"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Тёмные клавиши с золотыми буквами, как в MessagEase"
+            "value": "Тёмные клавиши с золотыми буквами"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ciemne klawisze ze złotymi literami, jak w MessagEase"
+            "value": "Ciemne klawisze ze złotymi literami"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mörka tangenter med gyllene bokstäver, som MessagEase"
+            "value": "Mörka tangenter med gyllene bokstäver"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tummat näppäimet ja kultaiset kirjaimet, kuten MessagEase"
+            "value": "Tummat näppäimet ja kultaiset kirjaimet"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tamne tipke sa zlatnim slovima, kao MessagEase"
+            "value": "Tamne tipke sa zlatnim slovima"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "מקשים כהים עם אותיות זהובות, כמו MessagEase"
+            "value": "מקשים כהים עם אותיות זהובות"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Phím tối với chữ vàng, giống MessagEase"
+            "value": "Phím tối với chữ vàng"
           }
         },
         "fil": {
           "stringUnit": {
             "state": "translated",
-            "value": "Madilim na mga key na may gintong mga titik, tulad ng MessagEase"
+            "value": "Madilim na mga key na may gintong mga titik"
           }
         }
       }
@@ -11265,11 +11270,6 @@
       },
       "comment": "Haptic intensity level name"
     },
-    "MessagEase": {
-      "comment": "Keyboard style name: messagEase (brand name, do not translate)",
-      "extractionState": "manual",
-      "shouldTranslate": false
-    },
     "MessagEase Layout": {
       "extractionState": "manual",
       "localizations": {
@@ -17572,84 +17572,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tema"
-          }
-        }
-      }
-    },
-    "Theme %lld": {
-      "comment": "Theme settings: preset swatch accessibility label",
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Theme %lld"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thème %lld"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tema %lld"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tema %lld"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Тема %lld"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Motyw %lld"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tema %lld"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Teema %lld"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tema %lld"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ערכת נושא %lld"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chủ đề %lld"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tema %lld"
           }
         }
       }
