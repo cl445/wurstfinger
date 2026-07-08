@@ -108,6 +108,16 @@ final class TypingTests: XCTestCase {
 
     // MARK: - Tests
 
+    /// Hindi sequential combine: swiping the short vowel इ (top-center,
+    /// down-right) twice collapses to the long vowel ई via CombineMiddleware.
+    @MainActor
+    func testHindiVowelLengtheningCombines() {
+        relaunch(language: "hi_IN")
+        swipe(on: "topCenter", dx: 40, dy: 40) // down-right → इ
+        swipe(on: "topCenter", dx: 40, dy: 40) // down-right → इ, combines with previous → ई
+        assertTypedText(equals: "ई")
+    }
+
     /// Tapping letter keys appends each key's character in order.
     @MainActor
     func testTappingKeysSpellsTheirLabels() {

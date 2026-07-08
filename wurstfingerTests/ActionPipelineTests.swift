@@ -393,6 +393,74 @@ struct ComposeMiddlewareTests {
     }
 }
 
+// MARK: - CombineMiddleware
+
+struct CombineMiddlewareTests {
+    @Test func combinesWhenRuleMatches() {
+        var deleted = 0
+        let middleware = CombineMiddleware(
+            isActive: { true },
+            documentContextBefore: { "इ" },
+            deleteBackward: { deleted += 1 },
+            combine: { previous, trigger in
+                (previous == "इ" && trigger == "इ") ? "ई" : nil
+            }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .commitText("इ")))
+
+        #expect(sink.received.first?.action == .commitText("ई"))
+        #expect(deleted == 1, "The consumed base character must be deleted before the combined commit")
+    }
+
+    @Test func passesThroughWhenNoRuleMatches() {
+        let middleware = CombineMiddleware(
+            isActive: { true },
+            documentContextBefore: { "अ" },
+            deleteBackward: { Issue.record("Must not delete when no rule matches") },
+            combine: { _, _ in nil }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .commitText("इ")))
+
+        #expect(sink.received.first?.action == .commitText("इ"))
+    }
+
+    @Test func inertWhenInactive() {
+        let middleware = CombineMiddleware(
+            isActive: { false },
+            documentContextBefore: { Issue.record("Must not read context when inactive"); return "इ" },
+            deleteBackward: { Issue.record("Must not delete when inactive") },
+            combine: { _, _ in Issue.record("Must not combine when inactive"); return nil }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .commitText("इ")))
+
+        #expect(sink.received.first?.action == .commitText("इ"))
+    }
+
+    @Test func passesThroughWithoutPreviousCharacter() {
+        let middleware = CombineMiddleware(
+            isActive: { true },
+            documentContextBefore: { "" },
+            deleteBackward: { Issue.record("Must not delete without a previous char") },
+            combine: { _, _ in Issue.record("Must not combine without a previous char"); return nil }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .commitText("इ")))
+
+        #expect(sink.received.first?.action == .commitText("इ"))
+    }
+}
+
 // MARK: - TextInputMiddleware
 
 // These tests use the shared `MockTextTarget` (TestHelpers.swift). A private

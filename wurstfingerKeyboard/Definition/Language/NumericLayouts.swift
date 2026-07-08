@@ -29,6 +29,9 @@ enum NumericLayouts {
     /// Thai digits (U+0E50–0E59), used by the Thai layout.
     static let thaiDigits = ["๐", "๑", "๒", "๓", "๔", "๕", "๖", "๗", "๘", "๙"]
 
+    /// Devanagari digits (U+0966–096F), used by the Hindi layout.
+    static let devanagariDigits = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"]
+
     /// Phone-style layout (1-2-3 in top row).
     ///
     /// - Parameter digits: Digit set indexed by value (0–9). Non-Latin layouts
