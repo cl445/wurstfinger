@@ -118,6 +118,17 @@ final class TypingTests: XCTestCase {
         assertTypedText(equals: "ई")
     }
 
+    /// Korean Hangul composition: the jamo ㅎ, ㅏ, ㄴ fold into one syllable 한
+    /// via the HangulComposer automaton behind CombineMiddleware.
+    @MainActor
+    func testKoreanJamoComposeSyllable() {
+        relaunch(language: "ko_KR")
+        tapKey("bottomRight") // ㅎ (leading consonant)
+        swipe(on: "center", dx: 40, dy: 0) // right → ㅏ, composes → 하
+        tapKey("midRight") // ㄴ (final consonant), composes → 한
+        assertTypedText(equals: "한")
+    }
+
     /// Japanese kana voicing: type か (center, up-left) then the dakuten mark ゛
     /// (bottom-center, up-left) → the two combine into が via CombineMiddleware.
     @MainActor

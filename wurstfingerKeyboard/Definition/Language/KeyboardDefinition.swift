@@ -107,6 +107,10 @@ enum InputMethodKind: String, Codable, Equatable {
     /// Vietnamese Telex: single-char and digraph lookback composition
     /// handled by `TelexMiddleware`.
     case telex
+
+    /// Korean Hangul: jamo → syllable composition handled by
+    /// `CombineMiddleware` driven by the `HangulComposer` automaton.
+    case hangul
 }
 
 /// Keyboard-specific settings for a KeyboardDefinition.
