@@ -38,7 +38,7 @@ struct StyleSettingsView: View {
                             styleOption(style)
                         }
 
-                        if keyboardStyleRaw == KeyboardStyle.messagEase.rawValue {
+                        if keyboardStyleRaw == KeyboardStyle.darkGold.rawValue {
                             NavigationLink {
                                 ThemeSettingsView()
                             } label: {
@@ -127,7 +127,7 @@ extension KeyboardStyle {
         switch self {
         case .classic: String(localized: "Classic")
         case .liquidGlass: String(localized: "Liquid Glass")
-        case .messagEase: String(localized: "MessagEase")
+        case .darkGold: String(localized: "Dark Gold")
         }
     }
 
@@ -136,7 +136,7 @@ extension KeyboardStyle {
         switch self {
         case .classic: String(localized: "Traditional opaque keys")
         case .liquidGlass: String(localized: "Transparent glass effect (iOS 26+)")
-        case .messagEase: String(localized: "Dark keys with golden letters, like MessagEase")
+        case .darkGold: String(localized: "Dark keys with golden letters")
         }
     }
 }

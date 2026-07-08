@@ -279,8 +279,8 @@ struct KeyView: View {
         (theme?.hintLabel ?? Color.secondary).opacity(0.45)
     }
 
-    /// Letter text hints. Themed styles keep hints near full strength to
-    /// match MessagEase's prominent secondary characters.
+    /// Letter text hints. Themed styles keep hints near full strength so the
+    /// secondary characters stay prominent.
     private var letterHintColor: Color {
         theme.map { $0.hintLabel.opacity(0.9) } ?? Color.primary.opacity(0.65)
     }
@@ -318,8 +318,8 @@ struct KeyView: View {
                 .overlay(
                     shape.strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
                 )
-        case .messagEase:
-            let theme = theme ?? .messagEase
+        case .darkGold:
+            let theme = theme ?? .darkGold
             let themedShape = RoundedRectangle(cornerRadius: theme.cornerRadius)
             themedShape.fill(isActive ? theme.keyBackgroundActive : theme.keyBackground)
                 .overlay(

@@ -62,7 +62,7 @@ struct DataDrivenKeyboardRootView: View {
     /// The configured palette when the active style is themed; nil for styles
     /// that render from semantic system colors.
     private var resolvedTheme: KeyboardTheme? {
-        guard keyboardStyle == .messagEase else { return nil }
+        guard keyboardStyle == .darkGold else { return nil }
         return KeyboardTheme(
             keyHex: themeKeyHex,
             mainHex: themeMainHex,
@@ -155,7 +155,7 @@ struct DataDrivenKeyboardRootView: View {
             // on top still win the hit-test. ~2% over the glass backdrop reads
             // as clear.
             Color(.systemBackground).opacity(0.02)
-        case .messagEase:
+        case .darkGold:
             KeyboardTheme.boardBackground(forKeyHex: themeKeyHex)
         }
     }

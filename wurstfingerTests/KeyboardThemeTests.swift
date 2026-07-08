@@ -58,14 +58,14 @@ struct KeyboardThemePresetTests {
         }
     }
 
-    @Test func presetIdsMatchOriginalOrder() {
+    @Test func presetIdsAreSequentialAndNamesUnique() {
         #expect(KeyboardThemePreset.all.count == 16)
         #expect(KeyboardThemePreset.all.map(\.id) == Array(0 ..< 16))
+        #expect(Set(KeyboardThemePreset.all.map(\.name)).count == KeyboardThemePreset.all.count)
     }
 
-    @Test func standardPresetIsMessagEaseDefault() {
-        // Theme 12 is DEFAULT_COLOR_INDEX in the original app.
-        #expect(KeyboardThemePreset.standard.id == 12)
+    @Test func standardPresetIsSlateAndGold() {
+        #expect(KeyboardThemePreset.standard.name == "Slate & Gold")
         #expect(HexColor.parse(KeyboardThemePreset.standard.keyHex) == 0x333A48)
         #expect(HexColor.parse(KeyboardThemePreset.standard.mainHex) == 0xD1AA05)
     }
@@ -81,7 +81,7 @@ struct KeyboardThemeTests {
             cornerRadius: KeyboardTheme.defaultCornerRadius,
             showKeyEdges: KeyboardTheme.defaultShowKeyEdges
         )
-        #expect(broken == KeyboardTheme.messagEase)
+        #expect(broken == KeyboardTheme.darkGold)
     }
 
     @Test func keyEdgesToggleControlsBorderWidth() {
