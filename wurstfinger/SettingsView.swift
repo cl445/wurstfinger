@@ -16,8 +16,8 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
-    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
-    private var keyboardScale = DeviceLayoutUtils.defaultKeyboardScale
+    @AppStorage(SettingsKey.keyboardWidthPoints.rawValue, store: SharedDefaults.store)
+    private var keyboardWidth = DeviceLayoutUtils.defaultKeyboardWidth
 
     @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
     private var keyboardHorizontalPosition = DeviceLayoutUtils.defaultKeyboardPosition
@@ -128,7 +128,7 @@ struct SettingsView: View {
                 )
             }
 
-            NavigationLink(destination: KeyboardSizePositionSettingsView(scale: $keyboardScale, position: $keyboardHorizontalPosition)) {
+            NavigationLink(destination: KeyboardSizePositionSettingsView(width: $keyboardWidth, position: $keyboardHorizontalPosition)) {
                 SettingsRow(
                     icon: "arrow.up.left.and.arrow.down.right",
                     color: .green,
@@ -237,7 +237,10 @@ struct SettingsView: View {
     }
 
     private var sizePositionDescription: String {
-        let scale = "\(Int(keyboardScale * 100))%"
+        // Percent relative to the device-class default width (the wish is
+        // stored in points; 100 % == DeviceLayoutUtils.defaultKeyboardWidth).
+        let percent = Int((keyboardWidth / DeviceLayoutUtils.defaultKeyboardWidth * 100).rounded())
+        let scale = "\(percent)%"
         return String(localized: "Scale: \(scale), Position: \(positionLabel(for: keyboardHorizontalPosition))")
     }
 
