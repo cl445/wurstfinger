@@ -118,16 +118,71 @@ struct StandardArrangementsTests {
         #expect(landscape.rows.count == 3)
     }
 
-    @Test func portraitUtilityLeftIsMirroredPortrait() throws {
-        let portrait = try #require(StandardArrangements.grid3x3[.portrait])
-        let utilityLeft = try #require(StandardArrangements.grid3x3[.portraitUtilityLeft])
-        #expect(utilityLeft == portrait.mirroredHorizontally())
+    /// Key IDs of a row without the relocated utility keys (letters, digits, space).
+    private func nonUtilityIds(_ row: [KeyPlacement]) -> [String] {
+        row.map(\.keyId).filter { !StandardArrangements.leadingUtilityKeys.contains($0) }
     }
 
-    @Test func landscapeUtilityLeftIsMirroredLandscape() throws {
-        let landscape = try #require(StandardArrangements.grid3x3[.landscape])
+    @Test(arguments: [StandardArrangements.grid3x3, StandardArrangements.numeric3x3])
+    func utilityLeftKeepsNonUtilityKeyOrder(_ arrangements: [ArrangementContext: GridArrangement]) throws {
+        // The "Utility Keys on Left" variants must not mirror the letter grid:
+        // per row, everything except the utility column keeps its order.
+        for (base, utilityLeft) in [
+            (ArrangementContext.portrait, ArrangementContext.portraitUtilityLeft),
+            (ArrangementContext.landscape, ArrangementContext.landscapeUtilityLeft),
+        ] {
+            let baseRows = try #require(arrangements[base]).rows
+            let utilityLeftRows = try #require(arrangements[utilityLeft]).rows
+            #expect(baseRows.count == utilityLeftRows.count)
+            for (baseRow, utilityLeftRow) in zip(baseRows, utilityLeftRows) {
+                #expect(nonUtilityIds(baseRow) == nonUtilityIds(utilityLeftRow))
+            }
+        }
+    }
+
+    @Test(arguments: [StandardArrangements.grid3x3, StandardArrangements.numeric3x3])
+    func utilityLeftMovesUtilityKeysToLeadingEdge(_ arrangements: [ArrangementContext: GridArrangement]) throws {
+        // In the utility-left variants every relocated utility key sits at the
+        // start of its row, before all letter/digit keys.
+        for context in [ArrangementContext.portraitUtilityLeft, .landscapeUtilityLeft] {
+            for row in try #require(arrangements[context]).rows {
+                let ids = row.map(\.keyId)
+                let utilityCount = ids.count(where: { StandardArrangements.leadingUtilityKeys.contains($0) })
+                #expect(
+                    Array(ids.prefix(utilityCount)).allSatisfy { StandardArrangements.leadingUtilityKeys.contains($0) },
+                    "Utility keys must lead row \(ids) in \(context)"
+                )
+            }
+        }
+    }
+
+    @Test func portraitUtilityLeftUtilityColumnOrderMatchesTrailingColumn() throws {
+        // Leading utility column reads globe/symbols/delete/return top-to-bottom,
+        // the same order as the trailing column in the default portrait layout.
+        let utilityLeft = try #require(StandardArrangements.grid3x3[.portraitUtilityLeft])
+        let firstColumn = utilityLeft.rows.map { $0[0].keyId }
+        #expect(firstColumn == [UtilitySlot.globe, UtilitySlot.symbols, UtilitySlot.delete, UtilitySlot.return])
+    }
+
+    @Test func landscapeUtilityLeftSolvesWithReturnSpanInsideGrid() throws {
+        // The relocated return key still spans two rows and every cell stays
+        // within the 5-column grid.
         let utilityLeft = try #require(StandardArrangements.grid3x3[.landscapeUtilityLeft])
-        #expect(utilityLeft == landscape.mirroredHorizontally())
+        let cells = GridLayoutSolver.solve(utilityLeft)
+        let returnCell = try #require(cells.first { $0.keyId == UtilitySlot.return })
+        #expect(returnCell.rowSpan == 2)
+        for cell in cells {
+            #expect(cell.column + cell.columnSpan <= utilityLeft.columns)
+        }
+        // No two cells overlap.
+        var covered = Set<[Int]>()
+        for cell in cells {
+            for row in cell.row ..< (cell.row + cell.rowSpan) {
+                for column in cell.column ..< (cell.column + cell.columnSpan) {
+                    #expect(covered.insert([row, column]).inserted, "Overlap at \(row),\(column)")
+                }
+            }
+        }
     }
 
     @Test func portraitFirstRowContainsGridAndGlobe() throws {
