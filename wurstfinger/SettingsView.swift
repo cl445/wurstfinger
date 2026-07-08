@@ -40,6 +40,9 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.autoCapitalizeEnabled.rawValue, store: SharedDefaults.store)
     private var autoCapitalizeEnabled = false
 
+    @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
+    private var longPressNumbersEnabled = false
+
     private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!
 
     @AppStorage(SettingsKey.expertModeEnabled.rawValue, store: SharedDefaults.store)
@@ -88,6 +91,14 @@ struct SettingsView: View {
                     icon: "textformat.size.larger", color: .teal,
                     title: "Auto-Capitalize",
                     subtitle: String(localized: "Capitalize after sentence-ending punctuation")
+                )
+            }
+
+            Toggle(isOn: $longPressNumbersEnabled) {
+                SettingsRow(
+                    icon: "123.rectangle", color: .pink,
+                    title: "Type Numbers by Holding",
+                    subtitle: String(localized: "Hold a letter key to type its digit")
                 )
             }
 

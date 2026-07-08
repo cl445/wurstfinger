@@ -250,17 +250,23 @@ extension KeyboardViewModel {
     // MARK: - Gesture Dispatch
 
     /// Central entry point for the data-driven gesture path.
-    func handleGesture(_ gesture: GestureType, keyId: String, isReturn: Bool) {
-        guard let mode = activeModeFromDefinition else { return }
+    ///
+    /// Returns whether the gesture resolved to a binding and was dispatched.
+    /// The long-press path uses this to decide whether the touch is consumed:
+    /// a key without a long-press binding (e.g. return, globe) must keep its
+    /// normal tap on release instead of being swallowed by the failed hold.
+    @discardableResult
+    func handleGesture(_ gesture: GestureType, keyId: String, isReturn: Bool) -> Bool {
+        guard let mode = activeModeFromDefinition else { return false }
 
         // Circular gestures: try requested direction, fall back to opposite.
         if gesture == .circularClockwise || gesture == .circularCounterclockwise {
             handleCircular(keyId: keyId, in: mode, gesture: gesture)
-            return
+            return true
         }
 
         let chain = isReturn ? returnSwipeResolverChain : resolverChain
-        guard let binding = chain?.resolve(keyId: keyId, gesture: gesture, in: mode) else { return }
+        guard let binding = chain?.resolve(keyId: keyId, gesture: gesture, in: mode) else { return false }
 
         // Mode and language switches bypass the pipeline, so their
         // confirmation tick fires here instead of in the haptic middleware —
@@ -272,7 +278,7 @@ extension KeyboardViewModel {
             if activeModeName != previousMode {
                 feedbackStateChange()
             }
-            return
+            return true
         }
 
         if case .switchToNextLanguage = binding.action {
@@ -281,7 +287,7 @@ extension KeyboardViewModel {
             if currentDefinition?.id != previousLanguage {
                 feedbackStateChange()
             }
-            return
+            return true
         }
 
         let context = ActionContext(
@@ -290,6 +296,7 @@ extension KeyboardViewModel {
             mode: activeModeName
         )
         pipeline?.process(context)
+        return true
     }
 
     /// Handles a circular gesture. Checks for an explicit binding first
