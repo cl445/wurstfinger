@@ -565,16 +565,16 @@ enum LanguageDefinitions {
     ].sorted { $0.title < $1.title }
 }
 
-// MARK: - Additional MessagEase Layouts
+// MARK: - Additional Layouts
 
-/// Layouts ported 1:1 from the decompiled MessagEase reference. Kept in a
+/// Additional language layouts. Kept in a
 /// separate extension so the primary `LanguageDefinitions` body stays within
 /// SwiftLint's `type_body_length` limit.
 extension LanguageDefinitions {
     // MARK: Ukrainian
 
-    /// Ukrainian reuses the Russian Cyrillic layout with MessagEase's four
-    /// letter substitutions (ъёэы → ґїєі), matching the decompiled reference.
+    /// Ukrainian reuses the Russian Cyrillic layout with four letter
+    /// substitutions (ъёэы → ґїєі).
     static let ukrainian = LanguageDescriptor(
         id: "uk_UA",
         title: "Українська (Ukrainian)",
@@ -624,7 +624,7 @@ extension LanguageDefinitions {
                 ["η", "ο", "ρ"],
                 ["τ", "ε", "σ"],
             ],
-            // MessagEase's generic Latin accent ring (ô â ä í î ç ø é ü) is
+            // The generic Latin accent ring (ô â ä í î ç ø é ü) is
             // dropped here: it is noise on a Greek keyboard and would override
             // the default punctuation/symbol swipes. Greek tonos/dialytika
             // belong in compose rules, not as primary swipes.
@@ -665,7 +665,7 @@ extension LanguageDefinitions {
             ],
             directionalOverrides: [
                 // Portuguese keeps its own accents (â ã õ ô á í ó ú ç ê é);
-                // MessagEase's foreign ring extras — ñ (Spanish) and ü
+                // The foreign ring extras — ñ (Spanish) and ü
                 // (dropped from Portuguese in the 1990 orthographic reform) —
                 // are removed.
                 GridSlot.topLeft: [.swipeUp: "ô", .swipeUpRight: "â", .swipeLeft: "ã", .swipeDown: "á", .swipeDownRight: "v"],
