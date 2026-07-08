@@ -49,6 +49,20 @@ struct ExpertSettingsView: View {
     @AppStorage(GestureClassificationThresholds.minOrientedCompactnessKey, store: SharedDefaults.store)
     private var minOrientedCompactness = Double(GestureClassificationThresholds.defaultMinOrientedCompactness)
 
+    // MARK: - Layout Settings (read-only, for the key-height indicator)
+
+    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
+    private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
+
+    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
+    private var keyboardScale = DeviceLayoutUtils.defaultKeyboardScale
+
+    /// The key height the user actually sees, derived from the shared layout
+    /// calculation and the stored scale.
+    private var effectiveKeyHeight: Double {
+        KeyboardConstants.Calculations.keyHeight(aspectRatio: keyAspectRatio) * keyboardScale
+    }
+
     var body: some View {
         Form {
             warningSection
@@ -208,11 +222,11 @@ struct ExpertSettingsView: View {
 
             // Visual indicator
             HStack {
-                Text("Key height: 54pt")
+                Text("Key height: \(Int(effectiveKeyHeight.rounded()))pt")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Spacer()
-                Text("Threshold: \(Int(minSwipeLength / 54 * 100))% of key")
+                Text("Threshold: \(Int(minSwipeLength / effectiveKeyHeight * 100))% of key")
                     .font(.caption)
                     .foregroundColor(.orange)
             }

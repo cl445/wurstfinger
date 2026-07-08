@@ -266,7 +266,7 @@ enum CursorMovementStyle: String, CaseIterable {
 /// Visual style for the keyboard appearance
 enum KeyboardStyle: String, CaseIterable {
     case classic // Traditional opaque key backgrounds
-    case liquidGlass // iOS 26+ Liquid Glass effect (falls back to classic on older iOS)
+    case liquidGlass // iOS 26+ Liquid Glass effect (renders as a simplified translucent style on older iOS)
 
     var displayName: String {
         switch self {

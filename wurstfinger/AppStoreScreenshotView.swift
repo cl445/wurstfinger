@@ -9,7 +9,6 @@ import SwiftUI
 
 struct AppStoreScreenshotView: View {
     @StateObject private var viewModel = KeyboardViewModel(shouldPersistSettings: false)
-    @StateObject private var languageSettings = LanguageSettings.shared
     @State private var colorScheme: ColorScheme?
 
     // Sample text to display - can be overridden via environment
@@ -164,19 +163,13 @@ struct AppStoreScreenshotView: View {
     private func configureFromEnvironment() {
         let env = ProcessInfo.processInfo.environment
 
-        // Default to English for App Store screenshots
-        languageSettings.selectedLanguageId = "en_US"
-
         // Use full-size keyboard for screenshots (no scaling)
         viewModel.keyboardScale = 1.0
 
-        // Override language if specified
-        if let forcedLanguage = env["FORCE_LANGUAGE"] {
-            languageSettings.selectedLanguageId = forcedLanguage
-        }
-
-        // Load definition for the selected language
-        viewModel.loadDefinition(for: languageSettings.selectedLanguageId)
+        // Load the forced language (default: English for App Store screenshots)
+        // on the view model only — the screenshot view must never persist into
+        // the real shared app-group store (`shouldPersistSettings: false`).
+        viewModel.loadDefinition(for: env["FORCE_LANGUAGE"] ?? "en_US")
 
         // Set keyboard mode
         if let forcedLayer = env["FORCE_LAYER"] {

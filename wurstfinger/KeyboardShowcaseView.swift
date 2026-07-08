@@ -73,7 +73,6 @@ private class ActionCountTarget: TextInputTarget, ObservableObject {
 
 struct KeyboardShowcaseView: View {
     @StateObject private var viewModel = KeyboardViewModel(shouldPersistSettings: false)
-    @StateObject private var languageSettings = LanguageSettings.shared
     @StateObject private var actionTarget = ActionCountTarget(
         capturesText: ProcessInfo.processInfo.environment["TYPING_TEST"] != nil
     )
@@ -115,18 +114,19 @@ struct KeyboardShowcaseView: View {
         .preferredColorScheme(colorScheme)
         .statusBar(hidden: true)
         .onAppear {
-            // Set language from environment if specified (for UI tests)
-            if let forcedLanguage = ProcessInfo.processInfo.environment["FORCE_LANGUAGE"] {
-                languageSettings.selectedLanguageId = forcedLanguage
-            }
-
             // Wire up the capturing target for dead-zone and typing tests
             if isDeadZoneTest || isTypingTest {
                 viewModel.bindTextInputTarget(actionTarget)
             }
 
-            // Load definition
-            viewModel.loadDefinition(for: languageSettings.selectedLanguageId)
+            // Load the definition for the forced language (UI tests) or the
+            // stored selection. The forced id is applied to the view model
+            // only — the showcase must never persist into the real shared
+            // app-group store (`shouldPersistSettings: false`).
+            let languageId = ProcessInfo.processInfo.environment["FORCE_LANGUAGE"]
+                ?? SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
+                ?? LanguageSettings.detectSystemLanguage()
+            viewModel.loadDefinition(for: languageId)
 
             // Set keyboard mode from environment if specified (for UI tests)
             if let forcedLayer = ProcessInfo.processInfo.environment["FORCE_LAYER"] {
