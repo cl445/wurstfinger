@@ -8,17 +8,8 @@
 import SwiftUI
 
 #if os(iOS)
-    /// Tab-root wrapper that provides its own navigation context. Views that
-    /// are already inside a `NavigationStack` (e.g. Home) must push
-    /// `OnboardingContentView` instead — nesting stacks is unsupported.
-    struct OnboardingView: View {
-        var body: some View {
-            NavigationStack {
-                OnboardingContentView()
-            }
-        }
-    }
-
+    /// Setup checklist, pushed from Home (the former dedicated Setup tab was
+    /// merged into the adaptive Home screen).
     struct OnboardingContentView: View {
         @Environment(\.openURL) private var openURL
 
@@ -122,6 +113,8 @@ import SwiftUI
 
 #if os(iOS)
     #Preview {
-        OnboardingView()
+        NavigationStack {
+            OnboardingContentView()
+        }
     }
 #endif

@@ -13,6 +13,8 @@
 import SwiftUI
 
 struct ExpertSettingsView: View {
+    @State private var showResetConfirmation = false
+
     @AppStorage(SettingsKey.expertModeEnabled.rawValue, store: SharedDefaults.store)
     private var expertModeEnabled = false
 
@@ -81,9 +83,6 @@ struct ExpertSettingsView: View {
                 returnSwipeDetectionSection
 
                 Section {
-                    NavigationLink("Gesture Playground") {
-                        GesturePlaygroundView()
-                    }
                     NavigationLink("Keyboard Health") {
                         KeyboardHealthView()
                     }
@@ -98,9 +97,18 @@ struct ExpertSettingsView: View {
             if expertModeEnabled {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Reset") {
-                        resetToDefaults()
+                        showResetConfirmation = true
                     }
                 }
+            }
+        }
+        .confirmationDialog(
+            "Reset all gesture tuning to the defaults?",
+            isPresented: $showResetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Reset", role: .destructive) {
+                resetToDefaults()
             }
         }
     }
