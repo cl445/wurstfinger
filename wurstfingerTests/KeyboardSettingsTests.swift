@@ -179,8 +179,9 @@ struct LayoutSettingsTests {
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
         #expect(settings.utilityColumnLeading == false)
-        // Note: keyAspectRatio, keyboardScale, keyboardHorizontalPosition
-        // have device-dependent defaults
+        // The width default is a device-class constant, deliberately not
+        // derived from (orientation-dependent) screen bounds.
+        #expect(settings.keyboardWidth == DeviceLayoutUtils.defaultKeyboardWidth)
     }
 
     @Test func initLoadsPersistedValues() {
@@ -188,14 +189,14 @@ struct LayoutSettingsTests {
 
         defaults.set(true, forKey: SettingsKey.utilityColumnLeading.rawValue)
         defaults.set(1.3, forKey: SettingsKey.keyAspectRatio.rawValue)
-        defaults.set(0.8, forKey: SettingsKey.keyboardScale.rawValue)
+        defaults.set(300.0, forKey: SettingsKey.keyboardWidthPoints.rawValue)
         defaults.set(0.25, forKey: SettingsKey.keyboardHorizontalPosition.rawValue)
 
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
         #expect(settings.utilityColumnLeading == true)
         #expect(abs(settings.keyAspectRatio - 1.3) < 0.01)
-        #expect(abs(settings.keyboardScale - 0.8) < 0.01)
+        #expect(abs(settings.keyboardWidth - 300.0) < 0.01)
         #expect(abs(settings.keyboardHorizontalPosition - 0.25) < 0.01)
     }
 
@@ -212,15 +213,24 @@ struct LayoutSettingsTests {
         #expect(settings.keyAspectRatio == 1.0)
     }
 
-    @Test func scaleClampedToValidRange() {
+    @Test func widthClampedToValidRange() {
         let defaults = createTestDefaults()
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
-        settings.keyboardScale = 1.5 // above max (1.0)
-        #expect(settings.keyboardScale == 1.0)
+        settings.keyboardWidth = 10000 // above max (600)
+        #expect(settings.keyboardWidth == 600)
 
-        settings.keyboardScale = 0.1 // below min (0.25)
-        #expect(settings.keyboardScale == 0.25)
+        settings.keyboardWidth = 10 // below min (90)
+        #expect(settings.keyboardWidth == 90)
+    }
+
+    @Test func widthClampedOnLoad() {
+        let defaults = createTestDefaults()
+        defaults.set(10000.0, forKey: SettingsKey.keyboardWidthPoints.rawValue)
+
+        let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
+
+        #expect(settings.keyboardWidth == 600)
     }
 
     @Test func positionClampedToValidRange() {
@@ -266,6 +276,90 @@ struct LayoutSettingsTests {
     }
 }
 
+// MARK: - Legacy Scale Migration Tests
+
+struct LayoutSettingsMigrationTests {
+    private var shortestScreenSide: Double {
+        Double(min(DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height))
+    }
+
+    @Test func legacyScaleMigratesToWidthAndPersistsOnce() {
+        let defaults = InMemoryUserDefaults()
+        defaults.set(0.5, forKey: SettingsKey.keyboardScale.rawValue)
+
+        let settings = LayoutSettings(defaults: defaults, shouldPersist: true)
+
+        // Converted against the orientation-stable shortest screen side, so
+        // the rendered portrait width existing users see is preserved.
+        let expected = 0.5 * shortestScreenSide
+        #expect(abs(settings.keyboardWidth - expected) < 0.01)
+        let persisted = defaults.object(forKey: SettingsKey.keyboardWidthPoints.rawValue) as? Double
+        #expect(persisted != nil)
+        #expect(abs((persisted ?? 0) - expected) < 0.01)
+        // Downgrade safety: the legacy key stays in the store.
+        #expect(defaults.object(forKey: SettingsKey.keyboardScale.rawValue) as? Double == 0.5)
+    }
+
+    @Test func migrationIsIdempotentOnSecondLoad() {
+        let defaults = InMemoryUserDefaults()
+        defaults.set(0.5, forKey: SettingsKey.keyboardScale.rawValue)
+
+        let first = LayoutSettings(defaults: defaults, shouldPersist: true)
+        let migratedWidth = first.keyboardWidth
+
+        // A later legacy-scale change must be ignored: the persisted width
+        // is now the single source of truth.
+        defaults.set(0.9, forKey: SettingsKey.keyboardScale.rawValue)
+        let second = LayoutSettings(defaults: defaults, shouldPersist: true)
+
+        #expect(second.keyboardWidth == migratedWidth)
+    }
+
+    @Test func freshInstallUsesDeviceDefaultWithoutPersisting() {
+        let defaults = InMemoryUserDefaults()
+
+        let settings = LayoutSettings(defaults: defaults, shouldPersist: true)
+
+        #expect(settings.keyboardWidth == DeviceLayoutUtils.defaultKeyboardWidth)
+        // The default is a fallback, never written (consistent with the
+        // registered-defaults behavior of the other layout settings).
+        #expect(defaults.object(forKey: SettingsKey.keyboardWidthPoints.rawValue) == nil)
+    }
+
+    @Test func existingWidthWinsOverLegacyScale() {
+        let defaults = InMemoryUserDefaults()
+        defaults.set(0.5, forKey: SettingsKey.keyboardScale.rawValue)
+        defaults.set(333.0, forKey: SettingsKey.keyboardWidthPoints.rawValue)
+
+        let settings = LayoutSettings(defaults: defaults, shouldPersist: true)
+
+        #expect(settings.keyboardWidth == 333.0)
+    }
+
+    @Test func nonPersistingInstanceMigratesWithoutWriting() {
+        let defaults = InMemoryUserDefaults()
+        defaults.set(0.5, forKey: SettingsKey.keyboardScale.rawValue)
+
+        let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
+
+        let expected = 0.5 * shortestScreenSide
+        #expect(abs(settings.keyboardWidth - expected) < 0.01)
+        #expect(defaults.object(forKey: SettingsKey.keyboardWidthPoints.rawValue) == nil)
+    }
+
+    @Test func standaloneMigrationHelperPersistsTheWidth() {
+        let defaults = InMemoryUserDefaults()
+        defaults.set(0.5, forKey: SettingsKey.keyboardScale.rawValue)
+
+        // The host app runs this at launch before registering defaults.
+        LayoutSettings.migrateLegacyScaleIfNeeded(in: defaults)
+
+        let persisted = defaults.object(forKey: SettingsKey.keyboardWidthPoints.rawValue) as? Double
+        #expect(persisted != nil)
+        #expect(abs((persisted ?? 0) - 0.5 * shortestScreenSide) < 0.01)
+    }
+}
+
 // MARK: - SettingsKey Tests
 
 struct SettingsKeyTests {
@@ -275,6 +369,7 @@ struct SettingsKeyTests {
         #expect(SettingsKey.utilityColumnLeading.rawValue == "utilityColumnLeading")
         #expect(SettingsKey.keyAspectRatio.rawValue == "keyAspectRatio")
         #expect(SettingsKey.keyboardScale.rawValue == "keyboardScale")
+        #expect(SettingsKey.keyboardWidthPoints.rawValue == "keyboardWidthPoints")
         #expect(SettingsKey.numpadStyle.rawValue == "numpadStyle")
     }
 }

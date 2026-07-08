@@ -20,9 +20,14 @@ struct wurstfingerApp: App {
     }
 
     init() {
+        // Migrate a legacy keyboardScale into keyboardWidthPoints BEFORE
+        // registering defaults: a registered width would make the key appear
+        // present and mask a pending migration.
+        LayoutSettings.migrateLegacyScaleIfNeeded(in: SharedDefaults.store)
+
         let defaults: [String: Any] = [
             SettingsKey.keyAspectRatio.rawValue: DeviceLayoutUtils.defaultKeyAspectRatio,
-            SettingsKey.keyboardScale.rawValue: DeviceLayoutUtils.defaultKeyboardScale,
+            SettingsKey.keyboardWidthPoints.rawValue: DeviceLayoutUtils.defaultKeyboardWidth,
             SettingsKey.keyboardHorizontalPosition.rawValue: DeviceLayoutUtils.defaultKeyboardPosition
         ]
         SharedDefaults.store.register(defaults: defaults)
