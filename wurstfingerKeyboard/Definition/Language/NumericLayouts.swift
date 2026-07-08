@@ -16,14 +16,32 @@ enum NumericLayouts {
     /// script-appropriate label via `phone(backToAlphaLabel:)`.
     static let defaultBackToAlphaLabel = "abc"
 
+    /// Western (ASCII) digits, indexed by value 0–9. The default digit set.
+    static let westernDigits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+    /// Arabic-Indic digits (U+0660–0669), used by the Arabic layout.
+    static let arabicIndicDigits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"]
+
+    /// Extended Arabic-Indic (Persian) digits (U+06F0–06F9), used by the
+    /// Persian and Urdu layouts.
+    static let persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"]
+
     /// Phone-style layout (1-2-3 in top row).
-    static func phone(backToAlphaLabel: String = defaultBackToAlphaLabel) -> KeyboardMode {
+    ///
+    /// - Parameter digits: Digit set indexed by value (0–9). Non-Latin layouts
+    ///   (Arabic, Persian, …) pass their script-specific digits; both the tap
+    ///   output and the key label use the supplied glyphs.
+    static func phone(
+        digits: [String] = westernDigits,
+        backToAlphaLabel: String = defaultBackToAlphaLabel
+    ) -> KeyboardMode {
         buildMode(
             centerDigits: [
-                ["1", "2", "3"],
-                ["4", "5", "6"],
-                ["7", "8", "9"],
+                [digits[1], digits[2], digits[3]],
+                [digits[4], digits[5], digits[6]],
+                [digits[7], digits[8], digits[9]],
             ],
+            zeroDigit: digits[0],
             // Phone layout swaps digits but keeps circular gestures at their
             // physical positions.
             circularOverrides: phoneCircularOverrides,
@@ -32,13 +50,17 @@ enum NumericLayouts {
     }
 
     /// Classic calculator style (7-8-9 in top row).
-    static func classic(backToAlphaLabel: String = defaultBackToAlphaLabel) -> KeyboardMode {
+    static func classic(
+        digits: [String] = westernDigits,
+        backToAlphaLabel: String = defaultBackToAlphaLabel
+    ) -> KeyboardMode {
         buildMode(
             centerDigits: [
-                ["7", "8", "9"],
-                ["4", "5", "6"],
-                ["1", "2", "3"],
+                [digits[7], digits[8], digits[9]],
+                [digits[4], digits[5], digits[6]],
+                [digits[1], digits[2], digits[3]],
             ],
+            zeroDigit: digits[0],
             circularOverrides: classicCircularOverrides,
             backToAlphaLabel: backToAlphaLabel
         )
@@ -55,28 +77,30 @@ enum NumericLayouts {
     }
 
     /// Standalone "0" digit key in the bottom row.
-    private static let zeroKey = KeyConfig(
-        id: GridSlot.zero,
-        bindings: [
-            .tap: KeyBinding(
-                label: "0", action: .commitText("0"),
-                category: .digit, returnAction: nil, accessibilityLabel: nil
-            ),
-        ],
-        swipeMode: .none,
-        slideType: .none,
-        style: .primary,
-        tapCycleActions: nil
-    )
+    private static func zeroKey(digit: String) -> KeyConfig {
+        KeyConfig(
+            id: GridSlot.zero,
+            bindings: [
+                .tap: KeyBinding(
+                    label: digit, action: .commitText(digit),
+                    category: .digit, returnAction: nil, accessibilityLabel: nil
+                ),
+            ],
+            swipeMode: .none,
+            slideType: .none,
+            style: .primary,
+            tapCycleActions: nil
+        )
+    }
 
-    private static func utilityKeys(backToAlphaLabel: String) -> [String: KeyConfig] {
+    private static func utilityKeys(zeroDigit: String, backToAlphaLabel: String) -> [String: KeyConfig] {
         [
             UtilitySlot.globe: CommonKeys.globe,
             UtilitySlot.delete: CommonKeys.delete,
             UtilitySlot.return: CommonKeys.return,
             UtilitySlot.symbols: backToMain(label: backToAlphaLabel),
             UtilitySlot.space: CommonKeys.spacebar,
-            GridSlot.zero: zeroKey,
+            GridSlot.zero: zeroKey(digit: zeroDigit),
         ]
     }
 
@@ -168,6 +192,7 @@ enum NumericLayouts {
 
     private static func buildMode(
         centerDigits: [[String]],
+        zeroDigit: String,
         circularOverrides: [String: KeyBinding],
         backToAlphaLabel: String
     ) -> KeyboardMode {
@@ -217,7 +242,7 @@ enum NumericLayouts {
             }
         }
 
-        let utilities = utilityKeys(backToAlphaLabel: backToAlphaLabel)
+        let utilities = utilityKeys(zeroDigit: zeroDigit, backToAlphaLabel: backToAlphaLabel)
         precondition(
             Set(digitKeys.keys).isDisjoint(with: utilities.keys),
             "digit and utility key IDs must not overlap"

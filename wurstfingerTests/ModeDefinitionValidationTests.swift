@@ -182,6 +182,74 @@ struct KeyboardDefinitionTests {
     }
 }
 
+// MARK: - Native Digit Layer Tests
+
+/// Covers the per-language numeric digit set (Arabic-Indic / Persian) plumbed
+/// through `NumericLayouts`, `GridKeyboardFactory`, and `KeyboardDefinition`.
+struct NativeDigitLayerTests {
+    /// Reads the tap output of a numeric-mode key.
+    private func digitTap(_ mode: KeyboardMode?, _ slot: String) -> String? {
+        guard case let .commitText(text)? = mode?.keys[slot]?.bindings[.tap]?.action else { return nil }
+        return text
+    }
+
+    @Test func phoneDefaultsToWesternDigits() {
+        let mode = NumericLayouts.phone()
+        #expect(digitTap(mode, GridSlot.topLeft) == "1")
+        #expect(digitTap(mode, GridSlot.zero) == "0")
+    }
+
+    @Test func phoneUsesSuppliedNativeDigits() {
+        let mode = NumericLayouts.phone(digits: NumericLayouts.arabicIndicDigits)
+        #expect(digitTap(mode, GridSlot.topLeft) == "١") // value 1
+        #expect(digitTap(mode, GridSlot.center) == "٥") // value 5
+        #expect(digitTap(mode, GridSlot.zero) == "٠") // value 0
+    }
+
+    @Test func classicUsesSuppliedNativeDigits() {
+        let mode = NumericLayouts.classic(digits: NumericLayouts.persianDigits)
+        #expect(digitTap(mode, GridSlot.topLeft) == "۷") // classic top-left is value 7
+        #expect(digitTap(mode, GridSlot.zero) == "۰")
+    }
+
+    @Test func factoryThreadsDigitsIntoDefinitionAndNumericMode() {
+        let def = GridKeyboardFactory.layout(
+            id: "test_ar", title: "Test", localeIdentifier: "ar",
+            centerCharacters: [["ا", "ب", "ت"], ["ث", "ج", "ح"], ["خ", "د", "ذ"]],
+            numericDigits: NumericLayouts.arabicIndicDigits
+        )
+        #expect(def.numericDigits == NumericLayouts.arabicIndicDigits)
+        #expect(digitTap(def.mode(ModeNames.numeric), GridSlot.zero) == "٠")
+    }
+
+    @Test func numericDigitsSurviveNumpadStyleSwap() {
+        let def = GridKeyboardFactory.layout(
+            id: "test_ar", title: "Test", localeIdentifier: "ar",
+            centerCharacters: [["ا", "ب", "ت"], ["ث", "ج", "ح"], ["خ", "د", "ذ"]],
+            numericDigits: NumericLayouts.arabicIndicDigits
+        )
+        // Mirror KeyboardViewModel+Pipeline.applyNumpadStyle's classic rebuild.
+        let swapped = def.replacingMode(
+            ModeNames.numeric,
+            with: NumericLayouts.classic(
+                digits: def.numericDigits,
+                backToAlphaLabel: def.numericBackToAlphaLabel
+            )
+        )
+        #expect(swapped.numericDigits == NumericLayouts.arabicIndicDigits)
+        #expect(digitTap(swapped.mode(ModeNames.numeric), GridSlot.zero) == "٠")
+    }
+
+    @Test func defaultDefinitionKeepsWesternDigits() {
+        let def = GridKeyboardFactory.layout(
+            id: "test_en", title: "Test", localeIdentifier: "en_US",
+            centerCharacters: [["a", "n", "i"], ["h", "o", "r"], ["t", "e", "s"]]
+        )
+        #expect(def.numericDigits == NumericLayouts.westernDigits)
+        #expect(digitTap(def.mode(ModeNames.numeric), GridSlot.topLeft) == "1")
+    }
+}
+
 // MARK: - Validation Tests
 
 struct ValidationTests {

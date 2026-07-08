@@ -47,6 +47,7 @@ enum GridKeyboardFactory {
         composeRuleOverrides: ComposeRuleSet? = nil,
         supportsCapitalization: Bool = true,
         numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel,
+        numericDigits: [String] = NumericLayouts.westernDigits,
         inputMethod: InputMethodKind = .direct
     ) -> KeyboardDefinition {
         precondition(
@@ -136,7 +137,9 @@ enum GridKeyboardFactory {
         )
 
         var modes: [String: KeyboardMode] = [
-            ModeNames.numeric: NumericLayouts.phone(backToAlphaLabel: numericBackToAlphaLabel),
+            ModeNames.numeric: NumericLayouts.phone(
+                digits: numericDigits, backToAlphaLabel: numericBackToAlphaLabel
+            ),
         ]
 
         if supportsCapitalization {
@@ -177,7 +180,8 @@ enum GridKeyboardFactory {
                 composeRuleOverrides: composeRuleOverrides,
                 inputMethod: inputMethod
             ),
-            numericBackToAlphaLabel: numericBackToAlphaLabel
+            numericBackToAlphaLabel: numericBackToAlphaLabel,
+            numericDigits: numericDigits
         )
     }
 }
