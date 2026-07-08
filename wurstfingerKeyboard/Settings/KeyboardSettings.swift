@@ -343,6 +343,7 @@ enum CursorMovementStyle: String, CaseIterable {
 enum KeyboardStyle: String, CaseIterable {
     case classic // Traditional opaque key backgrounds
     case liquidGlass // iOS 26+ Liquid Glass effect (renders as a simplified translucent style on older iOS)
+    case messagEase // MessagEase-inspired fixed palette (see KeyboardTheme)
 
     var displayName: String {
         switch self {
@@ -350,6 +351,8 @@ enum KeyboardStyle: String, CaseIterable {
             String(localized: "Classic")
         case .liquidGlass:
             String(localized: "Liquid Glass")
+        case .messagEase:
+            String(localized: "MessagEase")
         }
     }
 
@@ -359,6 +362,8 @@ enum KeyboardStyle: String, CaseIterable {
             String(localized: "Traditional opaque keys")
         case .liquidGlass:
             String(localized: "Transparent glass effect (iOS 26+)")
+        case .messagEase:
+            String(localized: "Dark keys with golden letters, like MessagEase")
         }
     }
 }
