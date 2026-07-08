@@ -100,12 +100,17 @@ struct KeyboardHealthView: View {
         return used + String(format: " / %.1f free", entry.availableMB)
     }
 
+    /// Headroom below which an entry is flagged as jetsam-critical.
+    private static let criticalHeadroomMB: Double = 5
+    /// Headroom below which an entry is flagged as jetsam-near.
+    private static let warningHeadroomMB: Double = 15
+
     /// Flags entries that were close to the jetsam limit when recorded.
     private func memoryColor(for entry: KeyboardHealthLog.Entry) -> Color {
         guard entry.availableMB > 0 else { return .primary }
         switch entry.availableMB {
-        case ..<5: return .red
-        case ..<15: return .orange
+        case ..<Self.criticalHeadroomMB: return .red
+        case ..<Self.warningHeadroomMB: return .orange
         default: return .primary
         }
     }
