@@ -391,84 +391,6 @@
       },
       "comment": "Playful app tagline/slogan"
     },
-    "Setup Instructions": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Anleitung zur Einrichtung"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Instructions de configuration"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Instrucciones de configuración"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Istruzioni di configurazione"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Инструкция по настройке"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Instrukcje konfiguracji"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Konfigureringsanvisningar"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Käyttöönotto-ohjeet"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Upute za postavljanje"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "הוראות הגדרה"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hướng dẫn thiết lập"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mga Tagubilin sa Setup"
-          }
-        }
-      },
-      "comment": "Button leading to setup steps"
-    },
     "Issues": {
       "extractionState": "manual",
       "localizations": {
@@ -1092,84 +1014,6 @@
         }
       },
       "comment": "Onboarding step 3 description; 'Test tab' refers to the in-app tab labeled 'Test'"
-    },
-    "General": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Allgemein"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Général"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "General"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Generali"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Основные"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ogólne"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Allmänt"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yleiset"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Općenito"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "כללי"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cài đặt chung"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pangkalahatan"
-          }
-        }
-      },
-      "comment": "Settings section header"
     },
     "Language": {
       "extractionState": "manual",
@@ -1873,84 +1717,6 @@
       },
       "comment": "Settings section header"
     },
-    "Customize the look and feel of your keyboard.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Passe das Erscheinungsbild deiner Tastatur an."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Personnalisez l'apparence de votre clavier."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Personaliza el aspecto de tu teclado."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Personalizza l'aspetto della tua tastiera."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Настройте внешний вид клавиатуры."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dostosuj wygląd swojej klawiatury."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Anpassa tangentbordets utseende och känsla."
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mukauta näppäimistösi ulkoasua ja tuntumaa."
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prilagodi izgled i dojam svoje tipkovnice."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "התאם אישית את המראה והתחושה של המקלדת."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tùy chỉnh giao diện và cảm nhận của bàn phím."
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I-customize ang hitsura at pakiramdam ng iyong keyboard."
-          }
-        }
-      },
-      "comment": "Settings section footer"
-    },
     "Style": {
       "extractionState": "manual",
       "localizations": {
@@ -2028,162 +1794,6 @@
         }
       },
       "comment": "Settings row / title: visual style"
-    },
-    "Key Aspect Ratio": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seitenverhältnis der Tasten"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proportions des touches"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proporción de las teclas"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proporzioni dei tasti"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Соотношение сторон клавиш"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proporcje klawiszy"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tangenternas proportioner"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Näppäinten kuvasuhde"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Omjer stranica tipki"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "יחס גובה-רוחב של המקשים"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tỷ lệ phím"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aspect Ratio ng Key"
-          }
-        }
-      },
-      "comment": "Settings row / title: width-to-height ratio of keys"
-    },
-    "Size & Position": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Größe & Position"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Taille et position"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tamaño y posición"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dimensioni e posizione"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Размер и положение"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rozmiar i położenie"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Storlek och position"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Koko ja sijainti"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Veličina i položaj"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "גודל ומיקום"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kích cỡ & Vị trí"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sukat at Posisyon"
-          }
-        }
-      },
-      "comment": "Settings row / title: keyboard size and position"
     },
     "Numpad Style": {
       "extractionState": "manual",
@@ -3589,84 +3199,6 @@
       },
       "comment": "Navigation title for the language picker"
     },
-    "MessagEase Layout": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MessagEase-Layout"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Disposition MessagEase"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Disposición MessagEase"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Layout MessagEase"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Раскладка MessagEase"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Układ MessagEase"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MessagEase-layout"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MessagEase-asettelu"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MessagEase raspored"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "פריסת MessagEase"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bố cục MessagEase"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MessagEase Layout"
-          }
-        }
-      },
-      "comment": "Caption under each language option; 'MessagEase' is a product name (keep)"
-    },
     "Visual Style": {
       "extractionState": "manual",
       "localizations": {
@@ -4993,240 +4525,6 @@
       },
       "comment": "Button to reset values to defaults"
     },
-    "Value": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wert"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Valeur"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Valor"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Valore"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Значение"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wartość"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Värde"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arvo"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vrijednost"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ערך"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Giá trị"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Halaga"
-          }
-        }
-      },
-      "comment": "Label/placeholder for a numeric input field"
-    },
-    "Haptic feedback requires Full Access. Enable it in **Settings › Wurstfinger › Keyboards › Wurstfinger › Allow Full Access**.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Haptisches Feedback erfordert Vollzugriff. Aktiviere ihn unter **Einstellungen › Wurstfinger › Tastaturen › Wurstfinger › Vollzugriff erlauben**."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Le retour haptique nécessite l'accès complet. Activez-le dans **Réglages › Wurstfinger › Claviers › Wurstfinger › Autoriser l'accès complet**."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La respuesta háptica requiere acceso completo. Actívalo en **Ajustes › Wurstfinger › Teclados › Wurstfinger › Permitir acceso completo**."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Il feedback aptico richiede l'accesso completo. Attivalo in **Impostazioni › Wurstfinger › Tastiere › Wurstfinger › Consenti accesso completo**."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Тактильный отклик требует полного доступа. Включите его в **Настройки › Wurstfinger › Клавиатуры › Wurstfinger › Разрешить полный доступ**."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reakcje haptyczne wymagają pełnego dostępu. Włącz go w **Ustawienia › Wurstfinger › Klawiatury › Wurstfinger › Przyznaj pełny dostęp**."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Taktil återkoppling kräver fullständig åtkomst. Aktivera den i **Inställningar › Wurstfinger › Tangentbord › Wurstfinger › Tillåt fullständig åtkomst**."
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tuntopalaute vaatii täyden käyttöoikeuden. Ota se käyttöön kohdassa **Asetukset › Wurstfinger › Näppäimistöt › Wurstfinger › Salli täysi käyttöoikeus**."
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Haptičke povratne informacije zahtijevaju puni pristup. Uključi ga u **Postavke › Wurstfinger › Tipkovnice › Wurstfinger › Dopusti puni pristup**."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "משוב מישושי דורש גישה מלאה. הפעל אותה ב-**הגדרות › Wurstfinger › מקלדות › Wurstfinger › אפשר גישה מלאה**."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Phản hồi xúc giác yêu cầu Truy cập đầy đủ. Bật trong **Cài đặt › Wurstfinger › Bàn phím › Wurstfinger › Cho phép truy cập đầy đủ**."
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kailangan ng haptic feedback ang Full Access. I-enable ito sa **Mga Setting › Wurstfinger › Mga Keyboard › Wurstfinger › Payagan ang Full Access**."
-          }
-        }
-      },
-      "comment": "Warning with markdown bold and › separators; the path words inside ** ** are iOS Settings names — localize Settings/Keyboards/Allow Full Access, keep 'Wurstfinger', keep markdown ** and ›"
-    },
-    "Keyboard Scale": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tastaturgröße"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Échelle du clavier"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escala del teclado"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scala della tastiera"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Масштаб клавиатуры"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skala klawiatury"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tangentbordets skala"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Näppäimistön koko"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Veličina tipkovnice"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "קנה מידה של המקלדת"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tỷ lệ bàn phím"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scale ng Keyboard"
-          }
-        }
-      },
-      "comment": "Slider title: overall keyboard size"
-    },
     "Compact": {
       "extractionState": "manual",
       "localizations": {
@@ -5382,162 +4680,6 @@
         }
       },
       "comment": "Slider label (full width / 100%)"
-    },
-    "Scale the keyboard to make it smaller. At 100% it fills the full width, at 25% it's much more compact.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skaliere die Tastatur, um sie zu verkleinern. Bei 100 % füllt sie die volle Breite, bei 25 % ist sie deutlich kompakter."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réduisez la taille du clavier. À 100 %, il occupe toute la largeur ; à 25 %, il est beaucoup plus compact."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajusta la escala del teclado para hacerlo más pequeño. Al 100 % ocupa todo el ancho; al 25 % es mucho más compacto."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ridimensiona la tastiera per rimpicciolirla. Al 100% occupa tutta la larghezza, al 25% è molto più compatta."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Уменьшите масштаб клавиатуры. При 100 % она занимает всю ширину, при 25 % становится гораздо компактнее."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skaluj klawiaturę, aby ją zmniejszyć. Przy 100% wypełnia całą szerokość, a przy 25% jest znacznie bardziej kompaktowa."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skala tangentbordet för att göra det mindre. Vid 100 % fyller det hela bredden, vid 25 % är det mycket mer kompakt."
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pienennä näppäimistöä skaalaamalla. 100 %:ssa se täyttää koko leveyden, 25 %:ssa se on huomattavasti tiiviimpi."
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Smanji tipkovnicu mijenjanjem njezine veličine. Pri 100 % ispunjava punu širinu, a pri 25 % znatno je kompaktnija."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "שנה את קנה המידה של המקלדת כדי להקטין אותה. ב-100% היא ממלאת את הרוחב המלא, וב-25% היא קומפקטית בהרבה."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thu nhỏ bàn phím. Ở 100% bàn phím chiếm toàn bộ chiều rộng, ở 25% bàn phím gọn hơn nhiều."
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I-scale ang keyboard para gawing mas maliit. Sa 100% pinupuno nito ang buong lapad, sa 25% mas compact ito."
-          }
-        }
-      },
-      "comment": "Caption under the scale slider"
-    },
-    "Horizontal Position": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Horizontale Position"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Position horizontale"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Posición horizontal"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Posizione orizzontale"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Положение по горизонтали"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Położenie poziome"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Horisontell position"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vaakasijainti"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vodoravni položaj"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "מיקום אופקי"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vị trí ngang"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Horizontal na Posisyon"
-          }
-        }
-      },
-      "comment": "Slider title"
     },
     "Left": {
       "extractionState": "manual",
@@ -5773,318 +4915,6 @@
       },
       "comment": "Slider label: right position"
     },
-    "Position is only available when scale is below 100%.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Die Position ist nur verfügbar, wenn die Größe unter 100 % liegt."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La position n'est disponible que lorsque l'échelle est inférieure à 100 %."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La posición solo está disponible cuando la escala es inferior al 100 %."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La posizione è disponibile solo quando la scala è inferiore al 100%."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Положение доступно только при масштабе менее 100 %."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Położenie jest dostępne tylko, gdy skala jest poniżej 100%."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Positionen är endast tillgänglig när skalan är under 100 %."
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sijainti on käytettävissä vain, kun koko on alle 100 %."
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Položaj je dostupan samo kad je veličina ispod 100 %."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "המיקום זמין רק כאשר קנה המידה נמוך מ-100%."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chỉ chỉnh được vị trí khi tỷ lệ dưới 100%."
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Available lang ang posisyon kapag mas mababa sa 100% ang scale."
-          }
-        }
-      },
-      "comment": "Note shown when scale is at 100%"
-    },
-    "Adjust the horizontal position of the keyboard when it's scaled below 100%.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Passe die horizontale Position der Tastatur an, wenn sie unter 100 % skaliert ist."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajustez la position horizontale du clavier lorsque son échelle est inférieure à 100 %."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajusta la posición horizontal del teclado cuando su escala es inferior al 100 %."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Regola la posizione orizzontale della tastiera quando la scala è inferiore al 100%."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Настройте положение клавиатуры по горизонтали при масштабе менее 100 %."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dostosuj poziome położenie klawiatury, gdy jest przeskalowana poniżej 100%."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Justera tangentbordets horisontella position när det är skalat under 100 %."
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Säädä näppäimistön vaakasijaintia, kun se on skaalattu alle 100 %:iin."
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prilagodi vodoravni položaj tipkovnice kad je smanjena ispod 100 %."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "התאם את המיקום האופקי של המקלדת כאשר קנה המידה שלה נמוך מ-100%."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Điều chỉnh vị trí ngang của bàn phím khi tỷ lệ dưới 100%."
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Iayos ang horizontal na posisyon ng keyboard kapag naka-scale ito nang mas mababa sa 100%."
-          }
-        }
-      },
-      "comment": "Caption under the position slider"
-    },
-    "Aspect Ratio": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seitenverhältnis"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proportions"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proporción"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proporzioni"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Соотношение сторон"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proporcje"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proportioner"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kuvasuhde"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Omjer stranica"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "יחס גובה-רוחב"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tỷ lệ khung"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aspect Ratio"
-          }
-        }
-      },
-      "comment": "Slider title: key width-to-height ratio"
-    },
-    "Square · Default": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quadratisch · Standard"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Carré · Par défaut"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cuadrado · Por defecto"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quadrato · Predefinito"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Квадрат · По умолчанию"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kwadratowe · Domyślne"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kvadratisk · Standard"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Neliö · Oletus"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kvadratno · Zadano"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "מרובע · ברירת מחדל"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vuông · Mặc định"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Parisukat · Default"
-          }
-        }
-      },
-      "comment": "Slider tick label at ratio 1.0; keep the · middle dot"
-    },
     "Wide": {
       "extractionState": "manual",
       "localizations": {
@@ -6240,84 +5070,6 @@
         }
       },
       "comment": "Slider tick label at the golden ratio 1.62"
-    },
-    "Adjust the width-to-height ratio of the keys. 1.0 creates square keys (the default), and 1.62 is the golden ratio (widest).": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Passe das Verhältnis von Breite zu Höhe der Tasten an. 1,0 erzeugt quadratische Tasten (Standard), 1,62 ist der Goldene Schnitt (am breitesten)."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajustez le rapport largeur/hauteur des touches. 1,0 crée des touches carrées (par défaut) et 1,62 correspond au nombre d'or (le plus large)."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajusta la proporción entre el ancho y el alto de las teclas. 1.0 crea teclas cuadradas (por defecto) y 1.62 es la proporción áurea (las más anchas)."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Regola il rapporto larghezza-altezza dei tasti. 1.0 crea tasti quadrati (l'impostazione predefinita), mentre 1.62 è la sezione aurea (la più larga)."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Настройте соотношение ширины и высоты клавиш. 1.0 создаёт квадратные клавиши (по умолчанию), а 1.62 — золотое сечение (самые широкие)."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dostosuj stosunek szerokości do wysokości klawiszy. 1.0 daje klawisze kwadratowe (domyślnie), a 1.62 to złoty podział (najszersze)."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Justera tangenternas förhållande mellan bredd och höjd. 1,0 ger kvadratiska tangenter (standard) och 1,62 är det gyllene snittet (bredast)."
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Säädä näppäinten leveyden ja korkeuden suhdetta. 1,0 tuottaa neliönmuotoiset näppäimet (oletus) ja 1,62 on kultainen leikkaus (levein)."
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prilagodi omjer širine i visine tipki. 1.0 stvara kvadratne tipke (zadano), a 1.62 je zlatni rez (najšire)."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "התאם את יחס הרוחב-גובה של המקשים. 1.0 יוצר מקשים מרובעים (ברירת המחדל), ו-1.62 הוא יחס הזהב (הרחב ביותר)."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Điều chỉnh tỷ lệ rộng trên cao của phím. 1.0 tạo phím vuông (mặc định), và 1.62 là tỷ lệ vàng (rộng nhất)."
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Iayos ang ratio ng lapad-sa-taas ng mga key. Ang 1.0 ay gumagawa ng parisukat na key (ang default), at ang 1.62 ay ang golden ratio (pinakamalapad)."
-          }
-        }
-      },
-      "comment": "Caption under the aspect ratio slider"
     },
     "Preview": {
       "extractionState": "manual",
@@ -7254,162 +6006,6 @@
         }
       },
       "comment": "Languages summary: list of languages + pinned default language"
-    },
-    "Current: %@:1": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aktuell: %@:1"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Actuel : %@:1"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Actual: %@:1"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Attuale: %@:1"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Текущее: %@:1"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Obecnie: %@:1"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aktuellt: %@:1"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nykyinen: %@:1"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trenutno: %@:1"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "נוכחי: %@:1"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hiện tại: %@:1"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kasalukuyan: %@:1"
-          }
-        }
-      },
-      "comment": "Key aspect ratio subtitle, e.g. 'Current: 1.00:1'"
-    },
-    "Scale: %@, Position: %@": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Größe: %@, Position: %@"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Échelle : %@, position : %@"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escala: %@, posición: %@"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scala: %@, posizione: %@"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Масштаб: %@, положение: %@"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skala: %@, położenie: %@"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skala: %@, position: %@"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Koko: %@, sijainti: %@"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Veličina: %@, položaj: %@"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "קנה מידה: %@, מיקום: %@"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tỷ lệ: %@, vị trí: %@"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scale: %@, posisyon: %@"
-          }
-        }
-      },
-      "comment": "Size & Position subtitle, e.g. 'Scale: 100%, Position: Center'"
     },
     "Tap: %@ • Drag: %@": {
       "extractionState": "manual",
@@ -9439,84 +8035,6 @@
       },
       "comment": "Settings row title"
     },
-    "Default": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Standard"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Par défaut"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Predeterminado"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Predefinita"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "По умолчанию"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Domyślny"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Standard"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oletus"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zadano"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ברירת מחדל"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mặc định"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Default"
-          }
-        }
-      },
-      "comment": "Badge on the default startup language"
-    },
     "Cannot Disable": {
       "extractionState": "manual",
       "localizations": {
@@ -9751,83 +8269,3778 @@
       },
       "comment": "Alert message when disabling the last language"
     },
-    "Swipe right on the globe key to switch languages. Tap a language to set it as the default startup language.": {
+    "Typing": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wische auf der Globus-Taste nach rechts, um die Sprache zu wechseln. Tippe auf eine Sprache, um sie als Standard-Startsprache festzulegen."
+            "value": "Tippen"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Balayez vers la droite sur la touche globe pour changer de langue. Touchez une langue pour la définir comme langue par défaut au démarrage."
+            "value": "Saisie"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Desliza hacia la derecha sobre la tecla del globo para cambiar de idioma. Toca un idioma para establecerlo como idioma predeterminado de inicio."
+            "value": "Escritura"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scorri verso destra sul tasto globo per cambiare lingua. Tocca una lingua per impostarla come lingua predefinita all'avvio."
+            "value": "Digitazione"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Смахните вправо по клавише глобуса, чтобы переключить язык. Нажмите на язык, чтобы сделать его языком по умолчанию при запуске."
+            "value": "Ввод текста"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Przesuń w prawo po klawiszu globusa, aby przełączyć język. Stuknij język, aby ustawić go jako domyślny język startowy."
+            "value": "Pisanie"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Svep åt höger på jordglobstangenten för att byta språk. Tryck på ett språk för att ange det som standardspråk vid start."
+            "value": "Skrivande"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vaihda kieltä pyyhkäisemällä maapallonäppäintä oikealle. Aseta kieli oletuskieleksi napauttamalla sitä."
+            "value": "Kirjoittaminen"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Prijeđi udesno po tipki globusa za promjenu jezika. Dodirni jezik da ga postaviš kao zadani početni jezik."
+            "value": "Tipkanje"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "החלק ימינה על מקש הגלובוס כדי להחליף שפה. הקש על שפה כדי להגדיר אותה כשפת ברירת המחדל בהפעלה."
+            "value": "הקלדה"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vuốt sang phải trên phím địa cầu để chuyển ngôn ngữ. Chạm vào một ngôn ngữ để đặt làm ngôn ngữ mặc định khi khởi động."
+            "value": "Gõ phím"
           }
         },
         "fil": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mag-swipe pakanan sa globe key para magpalit ng wika. I-tap ang isang wika para gawin itong default na panimulang wika."
+            "value": "Pagta-type"
           }
         }
-      },
-      "comment": "Footer on the language selection screen"
+      }
+    },
+    "Layout": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layout"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disposition"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diseño"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layout"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Раскладка"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Układ"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layout"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asettelu"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raspored"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פריסה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bố cục"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layout"
+          }
+        }
+      }
+    },
+    "Size & Layout": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Größe & Layout"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taille et disposition"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tamaño y diseño"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dimensioni e layout"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Размер и раскладка"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rozmiar i układ"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Storlek och layout"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koko ja asettelu"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veličina i raspored"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "גודל ופריסה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kích thước & bố cục"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laki at Layout"
+          }
+        }
+      }
+    },
+    "Width: %@, Keys: %@:1": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breite: %@, Tasten: %@:1"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Largeur : %@, touches : %@:1"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ancho: %@, teclas: %@:1"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Larghezza: %@, tasti: %@:1"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ширина: %@, клавиши: %@:1"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Szerokość: %@, klawisze: %@:1"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bredd: %@, tangenter: %@:1"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leveys: %@, näppäimet: %@:1"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Širina: %@, tipke: %@:1"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "רוחב: %@, מקשים: %@:1"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiều rộng: %@, phím: %@:1"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lapad: %@, mga key: %@:1"
+          }
+        }
+      }
+    },
+    "See how your gestures are recognized": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sieh, wie deine Gesten erkannt werden"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voyez comment vos gestes sont reconnus"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mira cómo se reconocen tus gestos"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guarda come vengono riconosciuti i tuoi gesti"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Посмотрите, как распознаются ваши жесты"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zobacz, jak rozpoznawane są Twoje gesty"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se hur dina gester känns igen"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Katso, miten eleesi tunnistetaan"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pogledaj kako se prepoznaju tvoje geste"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ראו כיצד המחוות שלכם מזוהות"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xem cử chỉ của bạn được nhận dạng như thế nào"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tingnan kung paano nakikilala ang iyong mga galaw"
+          }
+        }
+      }
+    },
+    "Gesture Playground": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesten-Spielplatz"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terrain d'essai des gestes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona de pruebas de gestos"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Area di prova gesti"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Полигон жестов"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poligon gestów"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestlekplats"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elealue"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Igralište gesta"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מגרש משחקים למחוות"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sân chơi cử chỉ"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Playground ng mga Galaw"
+          }
+        }
+      }
+    },
+    "Reset All Settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Einstellungen zurücksetzen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réinitialiser tous les réglages"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restablecer todos los ajustes"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripristina tutte le impostazioni"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить все настройки"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zresetuj wszystkie ustawienia"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Återställ alla inställningar"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palauta kaikki asetukset"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vrati sve postavke"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "איפוס כל ההגדרות"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đặt lại tất cả cài đặt"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I-reset ang Lahat ng Setting"
+          }
+        }
+      }
+    },
+    "Reset all keyboard settings to their defaults?": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Tastatur-Einstellungen auf die Standardwerte zurücksetzen?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réinitialiser tous les réglages du clavier aux valeurs par défaut ?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Restablecer todos los ajustes del teclado a sus valores predeterminados?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripristinare tutte le impostazioni della tastiera ai valori predefiniti?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить все настройки клавиатуры к значениям по умолчанию?"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zresetować wszystkie ustawienia klawiatury do wartości domyślnych?"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Återställa alla tangentbordsinställningar till standardvärdena?"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palautetaanko kaikki näppäimistön asetukset oletusarvoihin?"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vratiti sve postavke tipkovnice na zadane vrijednosti?"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לאפס את כל הגדרות המקלדת לברירת המחדל?"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đặt lại tất cả cài đặt bàn phím về mặc định?"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I-reset ang lahat ng setting ng keyboard sa mga default?"
+          }
+        }
+      }
+    },
+    "This restores every keyboard setting, including languages and expert gesture tuning.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dies setzt jede Tastatur-Einstellung zurück, einschließlich Sprachen und Experten-Gestenabstimmung."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cela restaure tous les réglages du clavier, y compris les langues et le réglage expert des gestes."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto restablece todos los ajustes del teclado, incluidos los idiomas y el ajuste experto de gestos."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo ripristina ogni impostazione della tastiera, incluse le lingue e la regolazione esperta dei gesti."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это восстановит все настройки клавиатуры, включая языки и экспертную настройку жестов."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przywraca to wszystkie ustawienia klawiatury, w tym języki i eksperckie strojenie gestów."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detta återställer alla tangentbordsinställningar, inklusive språk och expertjustering av gester."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tämä palauttaa kaikki näppäimistön asetukset, mukaan lukien kielet ja eleiden asiantuntijasäädöt."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ovo vraća svaku postavku tipkovnice, uključujući jezike i stručno podešavanje gesta."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פעולה זו משחזרת כל הגדרת מקלדת, כולל שפות וכוונון מחוות למומחים."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thao tác này khôi phục mọi cài đặt bàn phím, bao gồm ngôn ngữ và tinh chỉnh cử chỉ nâng cao."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ibinabalik nito ang bawat setting ng keyboard, kasama ang mga wika at expert na pag-tune ng galaw."
+          }
+        }
+      }
+    },
+    "Restores all keyboard settings to their defaults.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setzt alle Tastatur-Einstellungen auf die Standardwerte zurück."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaure tous les réglages du clavier aux valeurs par défaut."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restablece todos los ajustes del teclado a sus valores predeterminados."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripristina tutte le impostazioni della tastiera ai valori predefiniti."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Восстанавливает все настройки клавиатуры по умолчанию."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przywraca wszystkie ustawienia klawiatury do wartości domyślnych."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Återställer alla tangentbordsinställningar till standardvärdena."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palauttaa kaikki näppäimistön asetukset oletusarvoihin."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vraća sve postavke tipkovnice na zadane vrijednosti."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "משחזר את כל הגדרות המקלדת לברירת המחדל."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khôi phục tất cả cài đặt bàn phím về mặc định."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ibinabalik ang lahat ng setting ng keyboard sa mga default."
+          }
+        }
+      }
+    },
+    "Key Shape": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tastenform"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forme des touches"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forma de las teclas"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forma dei tasti"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Форма клавиш"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kształt klawiszy"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tangentform"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näppäinten muoto"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oblik tipki"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "צורת המקשים"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hình dạng phím"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hugis ng Key"
+          }
+        }
+      }
+    },
+    "Square": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quadratisch"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrée"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuadrada"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quadrata"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Квадратные"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kwadratowy"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kvadratisk"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neliö"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kvadratno"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ריבועי"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuông"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parisukat"
+          }
+        }
+      }
+    },
+    "Wider": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breiter"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus large"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más ancha"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Più larga"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Шире"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Szerszy"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bredare"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leveämpi"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Šire"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "רחב יותר"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rộng hơn"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mas malapad"
+          }
+        }
+      }
+    },
+    "Choose a preset or fine-tune the width-to-height ratio of the keys.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle eine Voreinstellung oder stimme das Verhältnis von Breite zu Höhe der Tasten fein ab."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez un préréglage ou affinez le rapport largeur/hauteur des touches."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige un ajuste predefinido o afina la relación entre ancho y alto de las teclas."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli un preset o regola con precisione il rapporto larghezza-altezza dei tasti."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите пресет или точно настройте соотношение ширины и высоты клавиш."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wybierz ustawienie wstępne lub dostrój proporcje szerokości do wysokości klawiszy."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Välj en förinställning eller finjustera tangenternas förhållande mellan bredd och höjd."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valitse esiasetus tai hienosäädä näppäinten leveyden ja korkeuden suhdetta."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odaberi unaprijed zadanu postavku ili fino podesi omjer širine i visine tipki."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "בחרו הגדרה מוכנה או כווננו את יחס הרוחב-גובה של המקשים."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chọn một cài đặt sẵn hoặc tinh chỉnh tỉ lệ rộng-cao của các phím."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pumili ng preset o i-fine-tune ang ratio ng lapad at taas ng mga key."
+          }
+        }
+      }
+    },
+    "Width": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breite"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Largeur"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ancho"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Larghezza"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ширина"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Szerokość"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bredd"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leveys"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Širina"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "רוחב"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiều rộng"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lapad"
+          }
+        }
+      }
+    },
+    "Make the keyboard narrower to unlock horizontal positioning.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mache die Tastatur schmaler, um die horizontale Positionierung freizuschalten."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rétrécissez le clavier pour débloquer le positionnement horizontal."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haz el teclado más estrecho para desbloquear la posición horizontal."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restringi la tastiera per sbloccare il posizionamento orizzontale."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сузьте клавиатуру, чтобы разблокировать горизонтальное позиционирование."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zwęź klawiaturę, aby odblokować pozycjonowanie poziome."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gör tangentbordet smalare för att låsa upp horisontell placering."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kavenna näppäimistöä avataksesi vaakasuuntaisen sijoittelun."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suzi tipkovnicu kako bi otključao vodoravno pozicioniranje."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הצרו את המקלדת כדי לאפשר מיקום אופקי."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thu hẹp bàn phím để mở khóa định vị theo chiều ngang."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paliitin ang lapad ng keyboard para ma-unlock ang pahalang na pagpoposisyon."
+          }
+        }
+      }
+    },
+    "A narrower keyboard is easier to reach one-handed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine schmalere Tastatur ist einhändig leichter zu erreichen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un clavier plus étroit est plus facile à atteindre d'une seule main."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un teclado más estrecho es más fácil de alcanzar con una mano."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una tastiera più stretta è più facile da raggiungere con una mano."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Узкой клавиатурой проще пользоваться одной рукой."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Węższa klawiatura jest łatwiejsza w obsłudze jedną ręką."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ett smalare tangentbord är lättare att nå med en hand."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapeampi näppäimistö on helpompi ulottaa yhdellä kädellä."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Užu tipkovnicu lakše je dohvatiti jednom rukom."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מקלדת צרה יותר קלה יותר לשימוש ביד אחת."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bàn phím hẹp hơn dễ thao tác bằng một tay hơn."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mas madaling abutin gamit ang isang kamay ang mas makitid na keyboard."
+          }
+        }
+      }
+    },
+    "Position": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Position"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Position"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posición"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posizione"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Положение"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pozycja"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Position"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sijainti"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Položaj"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מיקום"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vị trí"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posisyon"
+          }
+        }
+      }
+    },
+    "Move the keyboard toward one edge for one-handed typing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schiebe die Tastatur an einen Rand, um einhändig zu tippen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Déplacez le clavier vers un bord pour taper d'une seule main."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mueve el teclado hacia un borde para escribir con una mano."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sposta la tastiera verso un bordo per digitare con una mano."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сдвиньте клавиатуру к краю для набора одной рукой."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przesuń klawiaturę do krawędzi, aby pisać jedną ręką."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flytta tangentbordet mot en kant för att skriva med en hand."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siirrä näppäimistö reunaan yhden käden kirjoittamista varten."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomakni tipkovnicu prema jednom rubu za tipkanje jednom rukom."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הזיזו את המקלדת לכיוון אחד הקצוות להקלדה ביד אחת."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Di chuyển bàn phím về một cạnh để gõ bằng một tay."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ilipat ang keyboard sa isang gilid para sa isang-kamay na pagta-type."
+          }
+        }
+      }
+    },
+    "Reset size and layout to their defaults?": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Größe und Layout auf die Standardwerte zurücksetzen?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réinitialiser la taille et la disposition aux valeurs par défaut ?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Restablecer el tamaño y el diseño a sus valores predeterminados?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripristinare dimensioni e layout ai valori predefiniti?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить размер и раскладку к значениям по умолчанию?"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zresetować rozmiar i układ do wartości domyślnych?"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Återställa storlek och layout till standardvärdena?"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palautetaanko koko ja asettelu oletusarvoihin?"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vratiti veličinu i raspored na zadane vrijednosti?"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לאפס את הגודל והפריסה לברירת המחדל?"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đặt lại kích thước và bố cục về mặc định?"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I-reset ang laki at layout sa mga default?"
+          }
+        }
+      }
+    },
+    "Haptic feedback requires Full Access for the Wurstfinger keyboard.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haptisches Feedback erfordert Vollzugriff für die Wurstfinger-Tastatur."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le retour haptique nécessite l'accès complet pour le clavier Wurstfinger."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La respuesta háptica requiere acceso total para el teclado Wurstfinger."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il feedback aptico richiede l'accesso completo per la tastiera Wurstfinger."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для тактильного отклика клавиатуре Wurstfinger нужен полный доступ."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wibracje wymagają pełnego dostępu dla klawiatury Wurstfinger."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haptisk återkoppling kräver full åtkomst för Wurstfinger-tangentbordet."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haptinen palaute vaatii täydet käyttöoikeudet Wurstfinger-näppäimistölle."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haptička povratna informacija zahtijeva puni pristup za tipkovnicu Wurstfinger."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "משוב מישושי דורש גישה מלאה עבור מקלדת Wurstfinger."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phản hồi rung yêu cầu Toàn quyền truy cập cho bàn phím Wurstfinger."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kailangan ng haptic feedback ng Full Access para sa Wurstfinger keyboard."
+          }
+        }
+      }
+    },
+    "Allow Full Access in Settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vollzugriff in den Einstellungen erlauben"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autoriser l'accès complet dans Réglages"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir acceso total en Ajustes"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti accesso completo in Impostazioni"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешить полный доступ в Настройках"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zezwól na pełny dostęp w Ustawieniach"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tillåt full åtkomst i Inställningar"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salli täydet käyttöoikeudet Asetuksissa"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dopusti puni pristup u Postavkama"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אפשרו גישה מלאה בהגדרות"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cho phép Toàn quyền truy cập trong Cài đặt"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Payagan ang Full Access sa Settings"
+          }
+        }
+      }
+    },
+    "Reset haptic feedback to its defaults?": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haptisches Feedback auf die Standardwerte zurücksetzen?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réinitialiser le retour haptique aux valeurs par défaut ?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Restablecer la respuesta háptica a sus valores predeterminados?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripristinare il feedback aptico ai valori predefiniti?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить тактильный отклик к значениям по умолчанию?"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zresetować wibracje do wartości domyślnych?"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Återställa haptisk återkoppling till standardvärdena?"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palautetaanko haptinen palaute oletusarvoihin?"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vratiti haptičku povratnu informaciju na zadane vrijednosti?"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לאפס את המשוב המישושי לברירת המחדל?"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đặt lại phản hồi rung về mặc định?"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I-reset ang haptic feedback sa mga default?"
+          }
+        }
+      }
+    },
+    "Keyboard is set up": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tastatur ist eingerichtet"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le clavier est configuré"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El teclado está configurado"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tastiera è configurata"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Клавиатура настроена"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klawiatura jest skonfigurowana"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tangentbordet är konfigurerat"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näppäimistö on määritetty"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipkovnica je postavljena"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "המקלדת מוגדרת"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bàn phím đã được thiết lập"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naka-set up na ang keyboard"
+          }
+        }
+      }
+    },
+    "Set Up the Keyboard": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tastatur einrichten"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurer le clavier"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar el teclado"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configura la tastiera"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настроить клавиатуру"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skonfiguruj klawiaturę"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konfigurera tangentbordet"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Määritä näppäimistö"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Postavi tipkovnicu"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הגדרת המקלדת"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thiết lập bàn phím"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I-set Up ang Keyboard"
+          }
+        }
+      }
+    },
+    "Learn the Gestures": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesten lernen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apprendre les gestes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprende los gestos"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impara i gesti"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изучить жесты"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poznaj gesty"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lär dig gesterna"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opettele eleet"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nauči geste"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לימוד המחוות"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Học các cử chỉ"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alamin ang mga Galaw"
+          }
+        }
+      }
+    },
+    "Tap a language to enable or disable it. Tap the star to choose the language the keyboard starts with. Swipe right on the globe key to switch languages while typing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippe auf eine Sprache, um sie zu aktivieren oder zu deaktivieren. Tippe auf den Stern, um die Startsprache der Tastatur zu wählen. Wische auf der Globus-Taste nach rechts, um beim Tippen die Sprache zu wechseln."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touchez une langue pour l'activer ou la désactiver. Touchez l'étoile pour choisir la langue de démarrage du clavier. Balayez vers la droite sur la touche globe pour changer de langue en cours de frappe."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca un idioma para activarlo o desactivarlo. Toca la estrella para elegir el idioma con el que inicia el teclado. Desliza a la derecha sobre la tecla del globo para cambiar de idioma mientras escribes."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocca una lingua per attivarla o disattivarla. Tocca la stella per scegliere la lingua con cui parte la tastiera. Scorri a destra sul tasto globo per cambiare lingua mentre scrivi."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите на язык, чтобы включить или отключить его. Нажмите на звёздочку, чтобы выбрать язык, с которого начинает клавиатура. Смахните вправо по клавише с глобусом, чтобы сменить язык во время набора."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dotknij języka, aby go włączyć lub wyłączyć. Dotknij gwiazdki, aby wybrać język startowy klawiatury. Przesuń w prawo po klawiszu globusa, aby zmienić język podczas pisania."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tryck på ett språk för att aktivera eller inaktivera det. Tryck på stjärnan för att välja språket tangentbordet startar med. Svep åt höger på globtangenten för att byta språk medan du skriver."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ota kieli käyttöön tai pois käytöstä napauttamalla sitä. Valitse näppäimistön aloituskieli napauttamalla tähteä. Vaihda kieltä kirjoittaessasi pyyhkäisemällä maapallonäppäimellä oikealle."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dodirni jezik da ga omogućiš ili onemogućiš. Dodirni zvjezdicu da odabereš jezik s kojim tipkovnica počinje. Povuci udesno po tipki globusa za promjenu jezika tijekom tipkanja."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הקישו על שפה כדי להפעיל או להשבית אותה. הקישו על הכוכב כדי לבחור את שפת הפתיחה של המקלדת. החליקו ימינה על מקש הגלובוס כדי להחליף שפה בזמן ההקלדה."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chạm vào một ngôn ngữ để bật hoặc tắt. Chạm vào ngôi sao để chọn ngôn ngữ khởi động của bàn phím. Vuốt sang phải trên phím quả cầu để chuyển ngôn ngữ khi gõ."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I-tap ang isang wika para i-enable o i-disable ito. I-tap ang bituin para piliin ang wikang panimula ng keyboard. Mag-swipe pakanan sa globe key para magpalit ng wika habang nagta-type."
+          }
+        }
+      }
+    },
+    "Make %@ the default language": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ als Standardsprache festlegen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Définir %@ comme langue par défaut"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hacer de %@ el idioma predeterminado"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imposta %@ come lingua predefinita"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сделать %@ языком по умолчанию"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ustaw %@ jako język domyślny"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gör %@ till standardspråk"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aseta %@ oletuskieleksi"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Postavi %@ kao zadani jezik"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הגדרת %@ כשפת ברירת המחדל"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đặt %@ làm ngôn ngữ mặc định"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gawing default na wika ang %@"
+          }
+        }
+      }
+    },
+    "Gestures": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesten"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestos"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesti"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Жесты"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesty"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gester"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eleet"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geste"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מחוות"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cử chỉ"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mga Galaw"
+          }
+        }
+      }
+    },
+    "Letters & Symbols": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buchstaben & Symbole"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lettres et symboles"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letras y símbolos"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lettere e simboli"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Буквы и символы"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Litery i symbole"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bokstäver och symboler"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kirjaimet ja symbolit"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slova i simboli"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אותיות וסמלים"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chữ cái & ký hiệu"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mga Titik at Simbolo"
+          }
+        }
+      }
+    },
+    "Editing": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bearbeiten"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Édition"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edición"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifica"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Редактирование"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edycja"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redigering"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muokkaus"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uređivanje"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עריכה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chỉnh sửa"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pag-edit"
+          }
+        }
+      }
+    },
+    "Switching": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wechseln"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changement"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambio"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переключение"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przełączanie"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Växling"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaihtaminen"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prebacivanje"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החלפה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chuyển đổi"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paglipat"
+          }
+        }
+      }
+    },
+    "Tap": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toucher"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocar"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocco"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажатие"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dotknięcie"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tryck"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Napautus"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dodir"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הקשה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chạm"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap"
+          }
+        }
+      }
+    },
+    "Swipe": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wischen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balayer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deslizar"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scorrimento"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свайп"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przesunięcie"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Svep"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pyyhkäisy"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Povlačenje"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החלקה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuốt"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swipe"
+          }
+        }
+      }
+    },
+    "Return Swipe": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hin-und-zurück-Wischen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aller-retour"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deslizar y volver"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scorrimento di ritorno"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свайп туда-обратно"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przesunięcie powrotne"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retursvep"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paluupyyhkäisy"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Povratno povlačenje"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החלקה הלוך ושוב"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuốt quay lại"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return Swipe"
+          }
+        }
+      }
+    },
+    "Circle": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kreis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cercle"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Círculo"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerchio"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Круг"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okrąg"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cirkel"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ympyrä"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Krug"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עיגול"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vòng tròn"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bilog"
+          }
+        }
+      }
+    },
+    "Space Drag": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leertasten-Ziehen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glisser sur l'espace"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastrar el espacio"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trascina la barra spaziatrice"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перетаскивание пробела"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przeciąganie spacji"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dra på mellanslag"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Välilyönnin veto"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Povlačenje razmaknice"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "גרירת מקש הרווח"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kéo phím cách"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pag-drag sa Space"
+          }
+        }
+      }
+    },
+    "Delete Drag": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lösch-Ziehen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glisser sur l'effacement"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastrar el borrado"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trascina il tasto elimina"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перетаскивание удаления"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przeciąganie kasowania"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dra på radering"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poiston veto"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Povlačenje brisanja"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "גרירת מקש המחיקה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kéo phím xóa"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pag-drag sa Delete"
+          }
+        }
+      }
+    },
+    "Clipboard": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zwischenablage"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presse-papiers"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Portapapeles"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appunti"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Буфер обмена"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schowek"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Urklipp"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leikepöytä"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Međuspremnik"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לוח העתקה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bảng nhớ tạm"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clipboard"
+          }
+        }
+      }
+    },
+    "Globe Key": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Globus-Taste"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touche globe"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tecla del globo"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasto globo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Клавиша с глобусом"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klawisz globusa"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Globtangenten"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maapallonäppäin"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipka globusa"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מקש הגלובוס"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phím quả cầu"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Globe Key"
+          }
+        }
+      }
+    },
+    "Types the large character in the center of a key.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schreibt das große Zeichen in der Mitte einer Taste."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saisit le grand caractère au centre de la touche."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe el carácter grande del centro de la tecla."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Digita il carattere grande al centro del tasto."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вводит крупный символ в центре клавиши."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wpisuje duży znak ze środka klawisza."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skriver det stora tecknet i mitten av tangenten."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kirjoittaa näppäimen keskellä olevan ison merkin."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upisuje veliki znak u sredini tipke."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מקליד את התו הגדול שבמרכז המקש."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gõ ký tự lớn ở giữa phím."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nagta-type ng malaking character sa gitna ng key."
+          }
+        }
+      }
+    },
+    "Types the small character shown in that direction on the key.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schreibt das kleine Zeichen, das in dieser Richtung auf der Taste steht."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saisit le petit caractère affiché dans cette direction sur la touche."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribe el carácter pequeño que aparece en esa dirección en la tecla."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Digita il carattere piccolo mostrato in quella direzione sul tasto."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вводит маленький символ, показанный в этом направлении на клавише."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wpisuje mały znak widoczny w tym kierunku na klawiszu."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skriver det lilla tecknet som visas i den riktningen på tangenten."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kirjoittaa pienen merkin, joka näkyy näppäimessä siinä suunnassa."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upisuje mali znak prikazan u tom smjeru na tipki."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מקליד את התו הקטן המוצג בכיוון זה על המקש."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gõ ký tự nhỏ hiển thị theo hướng đó trên phím."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nagta-type ng maliit na character na nakikita sa direksyong iyon sa key."
+          }
+        }
+      }
+    },
+    "Swipe away and back without lifting your finger to get the key's alternate character.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wische weg und zurück, ohne den Finger abzuheben, um das Alternativzeichen der Taste zu erhalten."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balayez vers l'extérieur puis revenez sans lever le doigt pour obtenir le caractère alternatif de la touche."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desliza hacia fuera y de vuelta sin levantar el dedo para obtener el carácter alternativo de la tecla."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scorri via e torna indietro senza sollevare il dito per ottenere il carattere alternativo del tasto."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проведите пальцем в сторону и обратно, не отрывая его, чтобы получить альтернативный символ клавиши."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przesuń palcem w bok i z powrotem bez odrywania go, aby uzyskać alternatywny znak klawisza."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Svep bort och tillbaka utan att lyfta fingret för att få tangentens alternativa tecken."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pyyhkäise poispäin ja takaisin nostamatta sormea saadaksesi näppäimen vaihtoehtoisen merkin."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Povuci prstom van i natrag bez podizanja prsta da dobiješ alternativni znak tipke."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החליקו החוצה ובחזרה בלי להרים את האצבע כדי לקבל את התו החלופי של המקש."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuốt ra rồi quay lại mà không nhấc ngón tay để nhận ký tự thay thế của phím."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mag-swipe palayo at pabalik nang hindi inaangat ang daliri para makuha ang alternatibong character ng key."
+          }
+        }
+      }
+    },
+    "Draw a small circle on a letter key to type it as an uppercase letter.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeichne einen kleinen Kreis auf einer Buchstabentaste, um den Buchstaben groß zu schreiben."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dessinez un petit cercle sur une touche de lettre pour la saisir en majuscule."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dibuja un pequeño círculo sobre una tecla de letra para escribirla en mayúscula."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disegna un piccolo cerchio su un tasto lettera per digitarla in maiuscolo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нарисуйте маленький круг на клавише с буквой, чтобы ввести её заглавной."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Narysuj małe kółko na klawiszu litery, aby wpisać ją jako wielką literę."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rita en liten cirkel på en bokstavstangent för att skriva den som versal."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piirrä pieni ympyrä kirjainnäppäimelle kirjoittaaksesi kirjaimen isolla."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nacrtaj mali krug na tipki slova da ga upišeš kao veliko slovo."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ציירו עיגול קטן על מקש אות כדי להקליד אותה כאות גדולה."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vẽ một vòng tròn nhỏ trên phím chữ để gõ chữ đó ở dạng in hoa."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gumuhit ng maliit na bilog sa isang letter key para i-type ito bilang malaking titik."
+          }
+        }
+      }
+    },
+    "Hold and drag the space key to move the cursor through your text.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte die Leertaste und ziehe sie, um den Cursor durch deinen Text zu bewegen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maintenez et faites glisser la touche espace pour déplacer le curseur dans votre texte."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén pulsada y arrastra la tecla de espacio para mover el cursor por el texto."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tieni premuta e trascina la barra spaziatrice per muovere il cursore nel testo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удерживайте и перетаскивайте пробел, чтобы перемещать курсор по тексту."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przytrzymaj i przeciągnij spację, aby przesuwać kursor po tekście."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Håll och dra mellanslagstangenten för att flytta markören genom texten."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidä välilyöntinäppäintä painettuna ja vedä siirtääksesi kohdistinta tekstissä."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drži i povlači razmaknicu za pomicanje pokazivača kroz tekst."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החזיקו וגררו את מקש הרווח כדי להזיז את הסמן בטקסט."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giữ và kéo phím cách để di chuyển con trỏ trong văn bản."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pindutin nang matagal at i-drag ang space key para igalaw ang cursor sa iyong text."
+          }
+        }
+      }
+    },
+    "Hold and drag the delete key to keep deleting — the further you drag, the more it removes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte die Löschtaste und ziehe sie, um fortlaufend zu löschen — je weiter du ziehst, desto mehr wird entfernt."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maintenez et faites glisser la touche d'effacement pour continuer à effacer — plus vous glissez loin, plus elle supprime."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén pulsada y arrastra la tecla de borrado para seguir borrando: cuanto más arrastres, más se elimina."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tieni premuto e trascina il tasto elimina per continuare a cancellare: più trascini, più viene rimosso."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удерживайте и перетаскивайте клавишу удаления, чтобы продолжать удалять — чем дальше тянете, тем больше удаляется."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przytrzymaj i przeciągnij klawisz kasowania, aby usuwać dalej — im dalej przeciągniesz, tym więcej znika."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Håll och dra raderingstangenten för att fortsätta radera — ju längre du drar, desto mer tas bort."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pidä poistonäppäintä painettuna ja vedä jatkaaksesi poistamista — mitä pidemmälle vedät, sitä enemmän poistuu."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drži i povlači tipku za brisanje za neprekidno brisanje — što dalje povlačiš, više se briše."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החזיקו וגררו את מקש המחיקה כדי להמשיך למחוק — ככל שגוררים רחוק יותר, נמחק יותר."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giữ và kéo phím xóa để tiếp tục xóa — kéo càng xa, xóa càng nhiều."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pindutin nang matagal at i-drag ang delete key para tuloy-tuloy na magbura — habang mas malayo ang drag, mas marami ang nabubura."
+          }
+        }
+      }
+    },
+    "On the 123 key: swipe up to copy, up-right to cut, down to paste.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf der 123-Taste: nach oben wischen zum Kopieren, nach oben rechts zum Ausschneiden, nach unten zum Einfügen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sur la touche 123 : balayez vers le haut pour copier, en haut à droite pour couper, vers le bas pour coller."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En la tecla 123: desliza hacia arriba para copiar, arriba a la derecha para cortar y hacia abajo para pegar."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sul tasto 123: scorri in alto per copiare, in alto a destra per tagliare, in basso per incollare."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На клавише 123: смахните вверх — копировать, вверх-вправо — вырезать, вниз — вставить."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na klawiszu 123: przesuń w górę, aby skopiować, w górę w prawo, aby wyciąć, w dół, aby wkleić."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "På 123-tangenten: svep uppåt för att kopiera, uppåt höger för att klippa ut, nedåt för att klistra in."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "123-näppäimellä: pyyhkäise ylös kopioidaksesi, yläoikealle leikataksesi, alas liittääksesi."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na tipki 123: povuci gore za kopiranje, gore-desno za izrezivanje, dolje za lijepljenje."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "על מקש 123: החליקו למעלה להעתקה, למעלה-ימינה לגזירה, למטה להדבקה."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trên phím 123: vuốt lên để sao chép, lên-phải để cắt, xuống để dán."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sa 123 key: mag-swipe pataas para kumopya, pataas-pakanan para gumupit, pababa para mag-paste."
+          }
+        }
+      }
+    },
+    "Swipe left to switch to the next system keyboard, swipe right to change the language, swipe down to hide the keyboard.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wische nach links, um zur nächsten Systemtastatur zu wechseln, nach rechts, um die Sprache zu ändern, und nach unten, um die Tastatur auszublenden."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balayez vers la gauche pour passer au clavier système suivant, vers la droite pour changer de langue, vers le bas pour masquer le clavier."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desliza a la izquierda para cambiar al siguiente teclado del sistema, a la derecha para cambiar de idioma y hacia abajo para ocultar el teclado."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scorri a sinistra per passare alla tastiera di sistema successiva, a destra per cambiare lingua, in basso per nascondere la tastiera."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Смахните влево, чтобы перейти к следующей системной клавиатуре, вправо — чтобы сменить язык, вниз — чтобы скрыть клавиатуру."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przesuń w lewo, aby przełączyć na następną klawiaturę systemową, w prawo, aby zmienić język, w dół, aby ukryć klawiaturę."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Svep åt vänster för att byta till nästa systemtangentbord, åt höger för att byta språk, nedåt för att dölja tangentbordet."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pyyhkäise vasemmalle vaihtaaksesi seuraavaan järjestelmänäppäimistöön, oikealle vaihtaaksesi kieltä ja alas piilottaaksesi näppäimistön."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Povuci ulijevo za prelazak na sljedeću sistemsku tipkovnicu, udesno za promjenu jezika, prema dolje za skrivanje tipkovnice."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החליקו שמאלה כדי לעבור למקלדת המערכת הבאה, ימינה כדי להחליף שפה ולמטה כדי להסתיר את המקלדת."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuốt sang trái để chuyển sang bàn phím hệ thống tiếp theo, sang phải để đổi ngôn ngữ, xuống dưới để ẩn bàn phím."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mag-swipe pakaliwa para lumipat sa susunod na system keyboard, pakanan para magpalit ng wika, pababa para itago ang keyboard."
+          }
+        }
+      }
+    },
+    "Try all gestures safely in the Test tab or the settings preview.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probiere alle Gesten gefahrlos im Test-Tab oder in der Vorschau der Einstellungen aus."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Essayez tous les gestes en toute sécurité dans l'onglet Test ou dans l'aperçu des réglages."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prueba todos los gestos sin riesgo en la pestaña Prueba o en la vista previa de los ajustes."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prova tutti i gesti in sicurezza nella scheda Test o nell'anteprima delle impostazioni."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Безопасно попробуйте все жесты на вкладке «Тест» или в предпросмотре настроек."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wypróbuj wszystkie gesty bezpiecznie na karcie Test lub w podglądzie ustawień."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prova alla gester riskfritt på fliken Test eller i inställningarnas förhandsvisning."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kokeile kaikkia eleitä turvallisesti Testi-välilehdellä tai asetusten esikatselussa."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isprobaj sve geste bez brige na kartici Test ili u pregledu postavki."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נסו את כל המחוות בבטחה בלשונית הבדיקה או בתצוגה המקדימה של ההגדרות."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thử tất cả cử chỉ một cách an toàn trong thẻ Kiểm tra hoặc bản xem trước trong cài đặt."
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subukan ang lahat ng galaw nang ligtas sa Test tab o sa preview ng mga setting."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

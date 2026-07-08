@@ -21,37 +21,27 @@ struct StyleSettingsView: View {
     private var previewPosition = DeviceLayoutUtils.defaultKeyboardPosition
 
     var body: some View {
-        VStack(spacing: 20) {
-            // Keyboard Preview
+        VStack(spacing: 16) {
             InteractiveKeyboardPreview(aspectRatio: $previewAspectRatio, scale: $previewScale, position: $previewPosition)
                 .padding(.horizontal, 16)
+                .padding(.top, 20)
 
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Style Selection
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Visual Style")
-                            .font(.headline)
-                            .padding(.horizontal, 16)
-
-                        ForEach(KeyboardStyle.allCases, id: \.self) { style in
-                            styleOption(style)
-                        }
-
-                        if keyboardStyleRaw == KeyboardStyle.liquidGlass.rawValue {
-                            if #unavailable(iOS 26.0) {
-                                Text("Liquid Glass is designed for iOS 26 and later. On earlier versions a simplified translucent style is used.")
-                                    .font(.caption)
-                                    .foregroundColor(.orange)
-                                    .padding(.horizontal, 16)
-                            }
+            Form {
+                Section {
+                    ForEach(KeyboardStyle.allCases, id: \.self) { style in
+                        styleOption(style)
+                    }
+                } header: {
+                    Text("Visual Style")
+                } footer: {
+                    if keyboardStyleRaw == KeyboardStyle.liquidGlass.rawValue {
+                        if #unavailable(iOS 26.0) {
+                            Text("Liquid Glass requires iOS 26 or later. The classic style will be used on this device.")
                         }
                     }
                 }
-                .padding(.vertical, 8)
             }
         }
-        .padding(.vertical, 20)
         .navigationTitle("Style")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -79,15 +69,10 @@ struct StyleSettingsView: View {
                         .fontWeight(.semibold)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(keyboardStyleRaw == style.rawValue ? Color.accentColor.opacity(0.1) : Color.clear)
-            )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 16)
+        .accessibilityAddTraits(keyboardStyleRaw == style.rawValue ? [.isSelected] : [])
     }
 }
 

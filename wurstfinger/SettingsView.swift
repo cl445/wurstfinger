@@ -54,33 +54,40 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
     private var hideExtraSymbols = false
 
+    @State private var showResetAllConfirmation = false
+
     var body: some View {
         NavigationStack {
             Form {
-                generalSection
+                typingSection
+                layoutSection
                 appearanceSection
                 feedbackSection
-                expertSection
+                advancedSection
                 aboutSection
+                resetSection
             }
             .navigationTitle("Settings")
+            .confirmationDialog(
+                "Reset all keyboard settings to their defaults?",
+                isPresented: $showResetAllConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Reset All Settings", role: .destructive) {
+                    resetAllSettings()
+                }
+            } message: {
+                Text("This restores every keyboard setting, including languages and expert gesture tuning.")
+            }
         }
     }
 
     // MARK: - Sections
 
-    private var generalSection: some View {
+    private var typingSection: some View {
         Section {
             NavigationLink(destination: LanguageSelectionView()) {
                 SettingsRow(icon: "globe", color: .blue, title: "Languages", subtitle: enabledLanguagesSummary)
-            }
-
-            Toggle(isOn: $utilityColumnLeading) {
-                SettingsRow(
-                    icon: "keyboard.badge.ellipsis", color: .indigo,
-                    title: "Utility Keys on Left",
-                    subtitle: String(localized: "Places globe, symbols, delete and return on the left")
-                )
             }
 
             Toggle(isOn: $autoCapitalizeEnabled) {
@@ -102,7 +109,43 @@ struct SettingsView: View {
                 )
             }
         } header: {
-            Text("General")
+            Text("Typing")
+        }
+    }
+
+    private var layoutSection: some View {
+        Section {
+            NavigationLink(
+                destination: KeyboardLayoutSettingsView(
+                    aspectRatio: $keyAspectRatio,
+                    scale: $keyboardScale,
+                    position: $keyboardHorizontalPosition
+                )
+            ) {
+                SettingsRow(
+                    icon: "arrow.up.left.and.arrow.down.right",
+                    color: .orange,
+                    title: "Size & Layout",
+                    subtitle: sizeLayoutDescription
+                )
+            }
+
+            Toggle(isOn: $utilityColumnLeading) {
+                SettingsRow(
+                    icon: "keyboard.badge.ellipsis", color: .indigo,
+                    title: "Utility Keys on Left",
+                    subtitle: String(localized: "Places globe, symbols, delete and return on the left")
+                )
+            }
+
+            Picker(selection: $numpadStyleRaw) {
+                Text("Phone (1-2-3)").tag(NumpadStyle.phone.rawValue)
+                Text("Classic (7-8-9)").tag(NumpadStyle.classic.rawValue)
+            } label: {
+                SettingsRow(icon: "number.square", color: .purple, title: "Numpad Style", subtitle: numpadStyleDescription)
+            }
+        } header: {
+            Text("Layout")
         }
     }
 
@@ -119,34 +162,8 @@ struct SettingsView: View {
                     subtitle: labelVisibilityDescription
                 )
             }
-
-            NavigationLink(destination: AspectRatioSettingsView(aspectRatio: $keyAspectRatio)) {
-                SettingsRow(
-                    icon: "square.resize", color: .orange,
-                    title: "Key Aspect Ratio",
-                    subtitle: String(localized: "Current: \(String(format: "%.2f", keyAspectRatio)):1")
-                )
-            }
-
-            NavigationLink(destination: KeyboardSizePositionSettingsView(scale: $keyboardScale, position: $keyboardHorizontalPosition)) {
-                SettingsRow(
-                    icon: "arrow.up.left.and.arrow.down.right",
-                    color: .green,
-                    title: "Size & Position",
-                    subtitle: sizePositionDescription
-                )
-            }
-
-            Picker(selection: $numpadStyleRaw) {
-                Text("Phone (1-2-3)").tag(NumpadStyle.phone.rawValue)
-                Text("Classic (7-8-9)").tag(NumpadStyle.classic.rawValue)
-            } label: {
-                SettingsRow(icon: "number.square", color: .purple, title: "Numpad Style", subtitle: numpadStyleDescription)
-            }
         } header: {
             Text("Appearance")
-        } footer: {
-            Text("Customize the look and feel of your keyboard.")
         }
     }
 
@@ -160,8 +177,17 @@ struct SettingsView: View {
         }
     }
 
-    private var expertSection: some View {
+    private var advancedSection: some View {
         Section {
+            NavigationLink(destination: GesturePlaygroundView()) {
+                SettingsRow(
+                    icon: "scribble.variable",
+                    color: .mint,
+                    title: "Gesture Playground",
+                    subtitle: String(localized: "See how your gestures are recognized")
+                )
+            }
+
             NavigationLink(destination: ExpertSettingsView()) {
                 SettingsRow(
                     icon: "slider.horizontal.3",
@@ -221,6 +247,52 @@ struct SettingsView: View {
         }
     }
 
+    private var resetSection: some View {
+        Section {
+            Button(role: .destructive) {
+                showResetAllConfirmation = true
+            } label: {
+                Text("Reset All Settings")
+                    .frame(maxWidth: .infinity)
+            }
+        } footer: {
+            Text("Restores all keyboard settings to their defaults.")
+        }
+    }
+
+    // MARK: - Reset
+
+    /// Removes every stored keyboard setting so all values fall back to
+    /// their defaults. The synced Full Access status is kept — it mirrors a
+    /// system permission, not a user preference.
+    private func resetAllSettings() {
+        let store = SharedDefaults.store
+
+        for key in SettingsKey.allCases where key != .keyboardFullAccess {
+            store.removeObject(forKey: key.rawValue)
+        }
+
+        let gestureTuningKeys = [
+            GesturePreprocessorConfig.jitterThresholdKey,
+            GesturePreprocessorConfig.maxJumpDistanceKey,
+            GesturePreprocessorConfig.smoothingWindowKey,
+            GestureClassificationThresholds.minSwipeLengthKey,
+            GestureClassificationThresholds.maxReturnRatioKey,
+            GestureClassificationThresholds.returnDisplacementStartKey,
+            GestureClassificationThresholds.returnDisplacementEndKey,
+            GestureClassificationThresholds.minCircularityKey,
+            GestureClassificationThresholds.minAngularSpanKey,
+            GestureClassificationThresholds.minTurnConsistencyKey,
+            GestureClassificationThresholds.minOrientedCompactnessKey,
+        ]
+        for key in gestureTuningKeys {
+            store.removeObject(forKey: key)
+        }
+
+        // The long-lived language singleton caches its state in memory.
+        languageSettings.reloadFromStore()
+    }
+
     // MARK: - Helpers
 
     private var enabledLanguagesSummary: String {
@@ -236,9 +308,10 @@ struct SettingsView: View {
         return list
     }
 
-    private var sizePositionDescription: String {
-        let scale = "\(Int(keyboardScale * 100))%"
-        return String(localized: "Scale: \(scale), Position: \(positionLabel(for: keyboardHorizontalPosition))")
+    private var sizeLayoutDescription: String {
+        let width = "\(Int(keyboardScale * 100))%"
+        let ratio = String(format: "%.2f", keyAspectRatio)
+        return String(localized: "Width: \(width), Keys: \(ratio):1")
     }
 
     private var keyboardStyleDescription: String {
@@ -275,16 +348,6 @@ struct SettingsView: View {
             return String(localized: "Phone layout (1-2-3)")
         case .classic:
             return String(localized: "Classic layout (7-8-9)")
-        }
-    }
-
-    private func positionLabel(for value: Double) -> String {
-        if value < 0.25 {
-            String(localized: "Left")
-        } else if value > 0.75 {
-            String(localized: "Right")
-        } else {
-            String(localized: "Center")
         }
     }
 

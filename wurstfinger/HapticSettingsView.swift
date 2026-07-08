@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct HapticSettingsView: View {
+    @Environment(\.openURL) private var openURL
+
+    @State private var showResetConfirmation = false
+
     @AppStorage(SettingsKey.hapticIntensityTap.rawValue, store: SharedDefaults.store)
     private var tapIntensity = Double(HapticSettings.defaultTapIntensity)
 
@@ -26,70 +30,77 @@ struct HapticSettingsView: View {
     private var previewPosition = DeviceLayoutUtils.defaultKeyboardPosition
 
     var body: some View {
-        VStack(spacing: 20) {
-            // Keyboard Preview
+        VStack(spacing: 16) {
             InteractiveKeyboardPreview(aspectRatio: $previewAspectRatio, scale: $previewScale, position: $previewPosition)
                 .padding(.horizontal, 16)
+                .padding(.top, 20)
 
-            ScrollView {
-                VStack(spacing: 24) {
-                    if !hasSyncedFullAccess || hasFullAccess {
-                        // Full Access granted or not yet synced — show full UI.
-                        // No master toggle: each slider's "Off" level disables
-                        // its feedback.
-                        if !hasSyncedFullAccess {
+            Form {
+                if !hasSyncedFullAccess || hasFullAccess {
+                    // Full Access granted or not yet synced — show full UI.
+                    // No master toggle: each slider's "Off" level disables
+                    // its feedback.
+                    hapticSection(
+                        title: "Tap Feedback",
+                        value: $tapIntensity,
+                        description: "Applies when you touch any key."
+                    )
+
+                    hapticSection(
+                        title: "Drag Feedback",
+                        value: $dragIntensity,
+                        description: "Applies when you drag the Space or Delete key to move the cursor or delete text."
+                    )
+
+                    if !hasSyncedFullAccess {
+                        Section {} footer: {
                             Text("Open the keyboard once to sync Full Access status.")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 16)
                         }
-
-                        VStack(spacing: 24) {
-                            hapticControl(
-                                title: "Tap Feedback",
-                                value: $tapIntensity,
-                                description: "Applies when you touch any key."
-                            )
-
-                            hapticControl(
-                                title: "Drag Feedback",
-                                value: $dragIntensity,
-                                description: "Applies when you drag the Space or Delete key to move the cursor or delete text."
-                            )
-                        }
-                    } else {
-                        // Full Access explicitly denied
-                        VStack(spacing: 12) {
-                            Label {
-                                Text(
-                                    // swiftlint:disable:next line_length
-                                    "Haptic feedback requires Full Access. Enable it in **Settings › Wurstfinger › Keyboards › Wurstfinger › Allow Full Access**."
-                                )
-                                .font(.caption)
-                            } icon: {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .foregroundColor(.orange)
+                    }
+                } else {
+                    // Full Access explicitly denied
+                    Section {
+                        Button {
+                            openURL(URL(string: "app-settings:")!)
+                        } label: {
+                            HStack {
+                                Image(systemName: "gear")
+                                Text("Allow Full Access in Settings")
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(maxWidth: .infinity)
                         }
-                        .padding(.horizontal, 16)
+                        .buttonStyle(.borderedProminent)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .listRowBackground(Color.clear)
+                    } header: {
+                        Label {
+                            Text("Haptic feedback requires Full Access for the Wurstfinger keyboard.")
+                        } icon: {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                        }
+                        .textCase(nil)
                     }
                 }
-                .padding(.vertical, 8)
             }
         }
-        .padding(.vertical, 20)
         .navigationTitle("Haptics")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if !hasSyncedFullAccess || hasFullAccess {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Reset") {
-                        tapIntensity = Double(HapticSettings.defaultTapIntensity)
-                        dragIntensity = Double(HapticSettings.defaultDragIntensity)
-                    }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Reset") {
+                    showResetConfirmation = true
                 }
+            }
+        }
+        .confirmationDialog(
+            "Reset haptic feedback to its defaults?",
+            isPresented: $showResetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Reset", role: .destructive) {
+                tapIntensity = Double(HapticSettings.defaultTapIntensity)
+                dragIntensity = Double(HapticSettings.defaultDragIntensity)
             }
         }
     }
@@ -97,20 +108,12 @@ struct HapticSettingsView: View {
     /// The keyboard can only produce the pulses in `HapticIntensityLevel`,
     /// so the slider snaps to those levels instead of offering a continuous
     /// range that mostly changes nothing.
-    private func hapticControl(
+    private func hapticSection(
         title: LocalizedStringKey,
         value: Binding<Double>,
         description: LocalizedStringKey
     ) -> some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text(title)
-                    .font(.headline)
-                Spacer()
-                Text(HapticIntensityLevel(storedIntensity: value.wrappedValue).displayName)
-                    .foregroundColor(.secondary)
-            }
-
+        Section {
             VStack(spacing: 8) {
                 HapticLevelSlider(
                     levelIndex: levelIndexBinding(for: value),
@@ -129,13 +132,15 @@ struct HapticSettingsView: View {
                         .foregroundColor(.secondary)
                 }
             }
-
+        } header: {
+            HStack {
+                Text(title)
+                Spacer()
+                Text(HapticIntensityLevel(storedIntensity: value.wrappedValue).displayName)
+            }
+        } footer: {
             Text(description)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, 16)
     }
 
     /// Bridges the stored 0...1 intensity to a discrete level index. Writing
