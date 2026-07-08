@@ -248,6 +248,14 @@ struct NativeDigitLayerTests {
         #expect(def.numericDigits == NumericLayouts.westernDigits)
         #expect(digitTap(def.mode(ModeNames.numeric), GridSlot.topLeft) == "1")
     }
+
+    @Test func rtlLanguagesShipNativeDigits() {
+        #expect(LanguageDefinitions.arabic.makeDefinition().numericDigits == NumericLayouts.arabicIndicDigits)
+        #expect(LanguageDefinitions.persian.makeDefinition().numericDigits == NumericLayouts.persianDigits)
+        #expect(LanguageDefinitions.urdu.makeDefinition().numericDigits == NumericLayouts.persianDigits)
+        // The new non-Arabic-script languages keep Western digits.
+        #expect(LanguageDefinitions.greek.makeDefinition().numericDigits == NumericLayouts.westernDigits)
+    }
 }
 
 // MARK: - Validation Tests
