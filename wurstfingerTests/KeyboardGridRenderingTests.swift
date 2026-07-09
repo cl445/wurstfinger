@@ -18,7 +18,7 @@ struct KeyboardViewModelContextTests {
     /// Builds a ViewModel with a deterministic utility-column setting. We use an
     /// in-memory UserDefaults so the suite never touches the shared store.
     private func makeViewModel(utilityLeft: Bool) -> KeyboardViewModel {
-        let defaults = UserDefaults(suiteName: "test.\(UUID().uuidString)")!
+        let defaults = InMemoryUserDefaults()
         let viewModel = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
         viewModel.utilityColumnLeading = utilityLeft
         return viewModel
