@@ -47,17 +47,25 @@ struct InteractiveKeyboardPreview: View {
     @Binding var width: Double
     @Binding var position: Double
 
+    /// Forces the keyboard preview into a specific appearance (so the theme
+    /// gallery can preview the light or dark slot regardless of the device
+    /// setting). `nil` follows the system.
+    var appearanceOverride: ColorScheme?
+
     @StateObject private var previewViewModel = KeyboardViewModel(shouldPersistSettings: false)
     @StateObject private var previewTarget = PreviewTextTarget()
+    @Environment(\.colorScheme) private var systemColorScheme
 
     init(
         aspectRatio: Binding<Double> = .constant(1.0),
         width: Binding<Double> = .constant(DeviceLayoutUtils.defaultKeyboardWidth),
-        position: Binding<Double> = .constant(0.5)
+        position: Binding<Double> = .constant(0.5),
+        appearanceOverride: ColorScheme? = nil
     ) {
         _aspectRatio = aspectRatio
         _width = width
         _position = position
+        self.appearanceOverride = appearanceOverride
     }
 
     private var previewHeight: CGFloat {
@@ -134,6 +142,9 @@ struct InteractiveKeyboardPreview: View {
             }
             .frame(height: previewHeight)
             .clipShape(RoundedRectangle(cornerRadius: 12))
+            // Preview the chosen slot's appearance (light/dark) independent of
+            // the device; the keyboard resolves its theme from this colorScheme.
+            .environment(\.colorScheme, appearanceOverride ?? systemColorScheme)
             .animation(.easeInOut(duration: 0.2), value: aspectRatio)
             .animation(.easeInOut(duration: 0.2), value: width)
             .animation(.easeInOut(duration: 0.2), value: position)
