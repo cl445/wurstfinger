@@ -70,6 +70,13 @@ enum ThemeColor: Equatable {
         }
     }
 
+    /// Builds a fixed color from a SwiftUI color — the form the editor's color
+    /// wells write. A color with no RGB representation (e.g. a pattern) falls
+    /// back to opaque black rather than dropping the edit.
+    static func from(_ color: Color) -> ThemeColor {
+        .fixed(hex: HexColor.string(from: color) ?? "#000000")
+    }
+
     /// The same color with its opacity raised to at least `minimum`. Used to
     /// keep the board fill touchable (a keyboard extension's input view only
     /// delivers touches on rendered surfaces; see DataDrivenKeyboardRootView).
