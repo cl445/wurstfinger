@@ -50,7 +50,9 @@ struct SquareKeyboardWidthTests {
         // gaps; the drawn key is the frame inset by the same `gapInsets` that
         // `KeyView` applies. The square property must hold for the visible key.
         let totalRows = cells.map { $0.row + $0.rowSpan }.max() ?? 0
+        var checked = 0
         for (cell, frame) in zip(cells, frames) where cell.columnSpan == 1 && cell.rowSpan == 1 {
+            checked += 1
             let insets = KeyboardGridLayout.gapInsets(
                 for: cell,
                 columns: arrangement.columns,
@@ -66,5 +68,6 @@ struct SquareKeyboardWidthTests {
             )
             #expect(abs(visibleHeight - rowHeight) < 0.001)
         }
+        #expect(checked > 0, "no single-span cells were checked for \(config)")
     }
 }
