@@ -14841,6 +14841,66 @@
             "state": "translated",
             "value": "Ipakita ang mga letra"
           }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εμφάνιση γραμμάτων"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar letras"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показувати літери"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إظهار الحروف"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نمایش حروف"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حروف دکھائیں"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แสดงตัวอักษร"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अक्षर दिखाएँ"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字を表示"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "글자 표시"
+          }
         }
       },
       "comment": "Label visibility toggle"
@@ -14918,6 +14978,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ipakita ang mga karaniwang simbolo"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εμφάνιση βασικών συμβόλων"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar símbolos padrão"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показувати стандартні символи"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إظهار الرموز القياسية"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نمایش نمادهای استاندارد"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "معیاری علامات دکھائیں"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แสดงสัญลักษณ์มาตรฐาน"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मानक चिह्न दिखाएँ"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "標準記号を表示"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표준 기호 표시"
           }
         }
       },
@@ -14997,6 +15117,66 @@
             "state": "translated",
             "value": "Ipakita ang mga dagdag na simbolo"
           }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εμφάνιση πρόσθετων συμβόλων"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar símbolos extras"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показувати додаткові символи"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إظهار الرموز الإضافية"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نمایش نمادهای اضافی"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اضافی علامات دکھائیں"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แสดงสัญลักษณ์เพิ่มเติม"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अतिरिक्त चिह्न दिखाएँ"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追加記号を表示"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "추가 기호 표시"
+          }
         }
       },
       "comment": "Label visibility toggle"
@@ -15074,6 +15254,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Itago ang mga label para masanay sa layout mula sa memorya. Laging nakikita ang mga numero at control key."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Απόκρυψη ετικετών για εξάσκηση της διάταξης από μνήμης. Οι αριθμοί και τα πλήκτρα ελέγχου είναι πάντα ορατά."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oculte os rótulos para praticar o layout de memória. Números e teclas de controle estão sempre visíveis."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приховайте підписи, щоб вивчати розкладку напам'ять. Цифри та клавіші керування завжди видимі."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أخفِ التسميات للتدرب على التخطيط من الذاكرة. الأرقام ومفاتيح التحكم مرئية دائمًا."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "برچسب‌ها را پنهان کنید تا چیدمان را از حفظ تمرین کنید. اعداد و کلیدهای کنترل همیشه نمایان هستند."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ترتیب کو یادداشت سے مشق کرنے کے لیے لیبل چھپائیں۔ نمبر اور کنٹرول کیز ہمیشہ نظر آتی ہیں۔"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ซ่อนป้ายกำกับเพื่อฝึกเค้าโครงจากความจำ ตัวเลขและปุ่มควบคุมจะแสดงอยู่เสมอ"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लेआउट को याद से अभ्यास करने के लिए लेबल छिपाएँ। संख्याएँ और नियंत्रण कुंजियाँ हमेशा दिखती हैं।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "レイアウトを記憶で練習するにはラベルを非表示にします。数字と制御キーは常に表示されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "레이아웃을 외워서 연습하려면 라벨을 숨기세요. 숫자와 컨트롤 키는 항상 표시됩니다."
           }
         }
       },
