@@ -31,6 +31,7 @@ struct wurstfingerApp: App {
             SettingsKey.keyboardHorizontalPosition.rawValue: DeviceLayoutUtils.defaultKeyboardPosition
         ]
         SharedDefaults.store.register(defaults: defaults)
+        ThemeStore.migrateIfNeeded()
 
         // Determine screenshot mode from launch arguments
         let args = ProcessInfo.processInfo.arguments

@@ -34,8 +34,8 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.cursorMovementStyle.rawValue, store: SharedDefaults.store)
     private var cursorMovementStyleRaw = CursorMovementStyle.continuous.rawValue
 
-    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
-    private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
+    @AppStorage(SettingsKey.selectedThemeLight.rawValue, store: SharedDefaults.store)
+    private var selectedThemeLight = BuiltInThemes.classic.id
 
     @AppStorage(SettingsKey.autoCapitalizeEnabled.rawValue, store: SharedDefaults.store)
     private var autoCapitalizeEnabled = false
@@ -296,8 +296,8 @@ struct SettingsView: View {
     }
 
     private var keyboardStyleDescription: String {
-        let style = KeyboardStyle(rawValue: keyboardStyleRaw) ?? .classic
-        return style.displayName
+        let theme = ThemeStore.theme(id: selectedThemeLight) ?? BuiltInThemes.classic
+        return theme.displayName
     }
 
     private var labelVisibilityDescription: String {

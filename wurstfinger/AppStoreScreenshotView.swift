@@ -15,6 +15,13 @@ struct AppStoreScreenshotView: View {
     @State private var displayText: String = "I love it!"
     @State private var receivedText: String = "How do you like the new keyboard?"
 
+    /// Explicit theme injection for screenshots: FORCE_THEME names a theme id
+    /// ("classic", "liquid-glass", "dark-gold"). Defaults to Classic so
+    /// leftover simulator state can never recolor screenshot output.
+    private let forcedTheme: KeyboardThemeDefinition = ProcessInfo.processInfo
+        .environment["FORCE_THEME"]
+        .flatMap { BuiltInThemes.theme(id: $0) } ?? BuiltInThemes.classic
+
     var body: some View {
         VStack(spacing: 0) {
             // iPhone status bar - at the very top
@@ -29,8 +36,9 @@ struct AppStoreScreenshotView: View {
             // Keyboard at the bottom. Its geometry is fully forced onto the
             // non-persisting view model in configureFromEnvironment (square
             // cells at the full reference key height), so the standard render
-            // path applies with no extra overrides here.
-            DataDrivenKeyboardRootView(viewModel: viewModel)
+            // path applies with no extra overrides here. The forced theme keeps
+            // screenshots deterministic (see forcedTheme).
+            DataDrivenKeyboardRootView(viewModel: viewModel, themeOverride: forcedTheme)
                 .frame(maxWidth: .infinity)
                 // `.contain` promotes the per-key accessibilityIdentifiers into
                 // a queryable container so UI tests can find keys by slot id.

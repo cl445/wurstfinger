@@ -48,6 +48,10 @@ final class KeyboardViewController: UIInputViewController {
         // Set background immediately to avoid flash
         view.backgroundColor = .clear
 
+        // Migrate the legacy style selection to the theme assignment before
+        // the root view reads it. Idempotent; the host app runs it too.
+        ThemeStore.migrateIfNeeded()
+
         // Wire up the data-driven pipeline
         let target = DocumentProxyTarget(controller: self)
         documentProxyTarget = target

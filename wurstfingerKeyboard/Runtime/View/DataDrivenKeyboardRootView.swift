@@ -18,8 +18,33 @@ struct DataDrivenKeyboardRootView: View {
     /// When nil, falls back to `viewModel.viewWidth`.
     var overrideWidth: CGFloat?
 
-    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
-    private var keyboardStyle: KeyboardStyle = .classic
+    /// Explicit theme for showcase/screenshot rendering. When set, the
+    /// stored selection is bypassed entirely — screenshots can never be
+    /// recolored by leftover simulator state.
+    var themeOverride: KeyboardThemeDefinition?
+
+    @AppStorage(SettingsKey.selectedThemeLight.rawValue, store: SharedDefaults.store)
+    private var selectedThemeLight = BuiltInThemes.classic.id
+
+    @AppStorage(SettingsKey.selectedThemeDark.rawValue, store: SharedDefaults.store)
+    private var selectedThemeDark = BuiltInThemes.classic.id
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    /// Resolved once here for the whole keyboard; key views read it from the
+    /// environment. Fallback cascade: assigned slot → other slot → Classic.
+    private var resolvedTheme: ResolvedTheme {
+        if let themeOverride {
+            return themeOverride.resolved()
+        }
+        let (primaryId, secondaryId) = colorScheme == .dark
+            ? (selectedThemeDark, selectedThemeLight)
+            : (selectedThemeLight, selectedThemeDark)
+        let definition = ThemeStore.theme(id: primaryId)
+            ?? ThemeStore.theme(id: secondaryId)
+            ?? BuiltInThemes.classic
+        return definition.resolved()
+    }
 
     var body: some View {
         let currentWidth = overrideWidth ?? viewModel.viewWidth
@@ -31,8 +56,9 @@ struct DataDrivenKeyboardRootView: View {
         let availableSpace = currentWidth - metrics.keyboardWidth
         let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
 
+        let theme = resolvedTheme
         ZStack {
-            keyboardBackground
+            keyboardBackground(theme.boardBackground)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             if let mode = viewModel.activeModeFromDefinition,
@@ -73,24 +99,29 @@ struct DataDrivenKeyboardRootView: View {
         // directions. A lone hint glyph is direction-agnostic, so RTL text
         // still renders correctly. (Finding #4.)
         .environment(\.layoutDirection, .leftToRight)
+        .environment(\.keyboardTheme, theme)
     }
 
     // MARK: - Background
 
+    /// A keyboard extension's input view only delivers touches that land on
+    /// a rendered surface; fully transparent regions pass through and would
+    /// drop taps in the gaps between keys. The resolver therefore clamps
+    /// color board fills to a near-invisible minimum alpha
+    /// (`KeyboardThemeDefinition.minimumBoardOpacity`), so every theme's
+    /// board is a real touch surface while the keys on top win the hit-test.
+    ///
+    /// Color fills render as a plain `Color`, matching the pre-engine board
+    /// exactly: `Color` and `Rectangle().fill` have different ideal sizes, and
+    /// in the height-free showcase layout that difference would shift the whole
+    /// keyboard. Only the bar material genuinely needs a shape.
     @ViewBuilder
-    private var keyboardBackground: some View {
-        switch keyboardStyle {
-        case .classic:
-            Color(.systemBackground)
-        case .liquidGlass:
-            // A keyboard extension's input view only delivers touches that land
-            // on a rendered surface; fully transparent regions pass through. A
-            // `Color.clear` root would drop taps that fall in the gaps between
-            // keys, so paint a near-invisible fill instead: the whole keyboard
-            // becomes a real surface that receives those touches while the keys
-            // on top still win the hit-test. ~2% over the glass backdrop reads
-            // as clear.
-            Color(.systemBackground).opacity(0.02)
+    private func keyboardBackground(_ fill: ResolvedFill) -> some View {
+        switch fill {
+        case let .color(color):
+            color
+        case .material:
+            Rectangle().fill(.bar)
         }
     }
 }

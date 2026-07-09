@@ -34,8 +34,9 @@ struct KeyView: View {
 
     @State private var isActive = false
 
-    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
-    private var keyboardStyle: KeyboardStyle = .classic
+    /// Resolved once in `DataDrivenKeyboardRootView` and injected here — key
+    /// views never resolve theme data themselves.
+    @Environment(\.keyboardTheme) private var theme
 
     /// Resolved layout metrics injected by `KeyboardGridView` (same reasoning
     /// as there: an `@AppStorage` read desynchronizes from the width path
@@ -198,14 +199,6 @@ struct KeyView: View {
         style == .utility
     }
 
-    /// Background fill for the key.
-    static func backgroundColor(for style: KeyStyle, active: Bool = false) -> Color {
-        if active {
-            return Color(.tertiarySystemFill)
-        }
-        return Color(.secondarySystemBackground)
-    }
-
     // MARK: - Gesture Selection
 
     /// Whether this key uses slide gesture handling instead of standard
@@ -225,16 +218,36 @@ struct KeyView: View {
 
     @ViewBuilder
     private var background: some View {
-        let shape = RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
-        switch keyboardStyle {
-        case .classic:
-            shape.fill(Self.backgroundColor(for: key.style, active: isActive))
-        case .liquidGlass:
-            shape.fill(.bar)
+        let shape = RoundedRectangle(cornerRadius: theme.cornerRadius)
+        let fill = isActive ? theme.keyFillActive : theme.keyFill
+        if let border = theme.keyBorder, theme.keyBorderWidth > 0 {
+            keyFill(shape, fill)
                 .overlay(
-                    shape.strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
+                    shape.strokeBorder(border, lineWidth: theme.keyBorderWidth)
                 )
+        } else {
+            // No border overlay in the view tree at all — themes without a
+            // border (Classic) render exactly as before the theme engine.
+            keyFill(shape, fill)
         }
+    }
+
+    /// Fills the key shape. The bar material is applied directly rather than
+    /// through `AnyShapeStyle`, because the wrapper changes how the material
+    /// samples its backdrop and would shift Liquid Glass off its baseline.
+    @ViewBuilder
+    private func keyFill(_ shape: RoundedRectangle, _ fill: ResolvedFill) -> some View {
+        switch fill {
+        case let .color(color):
+            shape.fill(color)
+        case .material:
+            shape.fill(.bar)
+        }
+    }
+
+    /// Center label color: utility glyphs may differ from letter keys.
+    private var labelColor: Color {
+        key.style == .utility ? theme.utilityLabel : theme.mainLabel
     }
 
     @ViewBuilder
@@ -250,11 +263,11 @@ struct KeyView: View {
             if let sfName = Self.sfSymbolMap[primaryLabel] {
                 Image(systemName: sfName)
                     .font(font)
-                    .foregroundColor(.primary)
+                    .foregroundColor(labelColor)
             } else {
                 Text(primaryLabel)
                     .font(font)
-                    .foregroundColor(.primary)
+                    .foregroundColor(labelColor)
             }
         }
     }
@@ -349,7 +362,7 @@ struct KeyView: View {
                         if showLanguageLabel {
                             Text(languageLabel)
                                 .font(.system(size: scaledHintFontSize * 0.75, weight: .semibold, design: .rounded))
-                                .foregroundStyle(Color.primary.opacity(0.5))
+                                .foregroundStyle(theme.hintIconProminent)
                                 .fixedSize()
                                 .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
                                 .frame(
@@ -391,12 +404,12 @@ struct KeyView: View {
                 // Globe / dismiss: larger, bolder for discoverability
                 Image(systemName: iconName)
                     .font(.system(size: scaledHintFontSize * 0.75, weight: .medium))
-                    .foregroundStyle(Color.primary.opacity(0.5))
+                    .foregroundStyle(theme.hintIconProminent)
             } else {
                 // Copy / paste / cut: smaller, lighter to avoid visual clutter
                 Image(systemName: iconName)
                     .font(.system(size: scaledHintFontSize * 0.6, weight: .regular))
-                    .foregroundStyle(Color.secondary.opacity(0.45))
+                    .foregroundStyle(theme.hintIconSubtle)
             }
         } else {
             // Text hint — letters get higher prominence than symbols
@@ -407,11 +420,7 @@ struct KeyView: View {
                     weight: isLetter ? .medium : .regular,
                     design: .rounded
                 ))
-                .foregroundStyle(
-                    isLetter
-                        ? Color.primary.opacity(0.65)
-                        : Color.secondary.opacity(0.55)
-                )
+                .foregroundStyle(isLetter ? theme.hintLetter : theme.hintSymbol)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
         }
