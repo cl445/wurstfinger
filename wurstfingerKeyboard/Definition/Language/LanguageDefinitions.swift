@@ -952,6 +952,7 @@ extension LanguageDefinitions {
                 GridSlot.bottomCenter: [.swipeUp: "ๆ", .swipeRight: "ํ"],
                 GridSlot.bottomRight: [.swipeUp: "ฌ", .swipeRight: "ซ", .swipeDownLeft: "ำ"],
             ],
+            supportsCapitalization: false,
             numericBackToAlphaLabel: "กขค",
             numericDigits: NumericLayouts.thaiDigits
         )
