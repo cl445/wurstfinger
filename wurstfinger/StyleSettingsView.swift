@@ -30,6 +30,15 @@ struct StyleSettingsView: View {
     @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
     private var previewPosition = DeviceLayout.defaultKeyboardPosition
 
+    /// Grid columns for the color-palette swatches.
+    private let paletteColumns = [GridItem(.adaptive(minimum: 64), spacing: 10)]
+
+    /// User-created themes, reloaded from the store after every edit.
+    @State private var userThemes: [KeyboardThemeDefinition] = ThemeStore.userThemes()
+
+    /// The theme currently open in the editor sheet.
+    @State private var editingTheme: KeyboardThemeDefinition?
+
     /// The theme id the gallery currently reflects: the dark slot while editing
     /// dark mode, otherwise the light slot (which both slots share when the
     /// separate-dark-slot toggle is off).
@@ -53,6 +62,7 @@ struct StyleSettingsView: View {
                 VStack(spacing: 24) {
                     appearanceSection
                     stylesSection
+                    userThemesSection
                 }
                 .padding(.vertical, 8)
             }
@@ -60,6 +70,19 @@ struct StyleSettingsView: View {
         .padding(.vertical, 20)
         .navigationTitle("Style")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $editingTheme) { theme in
+            ThemeEditorView(
+                theme: theme,
+                onSave: { updated in
+                    ThemeStore.saveUserTheme(updated)
+                    reloadUserThemes()
+                },
+                onDelete: { id in
+                    ThemeStore.deleteUserTheme(id: id)
+                    reloadUserThemes()
+                }
+            )
+        }
     }
 
     /// Toggle for assigning a separate dark-mode theme, plus the light/dark
@@ -87,7 +110,7 @@ struct StyleSettingsView: View {
         }
     }
 
-    /// The built-in themes as descriptive cards.
+    /// Adaptive/material styles (Classic, Liquid Glass) as descriptive cards.
     private var stylesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Visual Style")
@@ -107,6 +130,37 @@ struct StyleSettingsView: View {
                 }
             }
         }
+    }
+
+    /// User-created themes as a swatch grid, with edit/delete in the menu.
+    /// Hidden until the user duplicates their first theme.
+    @ViewBuilder private var userThemesSection: some View {
+        if !userThemes.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("My Themes")
+                    .font(.headline)
+                    .padding(.horizontal, 16)
+
+                LazyVGrid(columns: paletteColumns, spacing: 10) {
+                    ForEach(userThemes) { theme in
+                        swatchButton(theme)
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+    }
+
+    /// A selectable swatch with the shared theme context menu.
+    private func swatchButton(_ theme: KeyboardThemeDefinition) -> some View {
+        Button {
+            select(theme)
+        } label: {
+            ThemeSwatch(theme: theme, isSelected: activeThemeId == theme.id)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(theme.displayName)
+        .contextMenu { themeMenu(for: theme) }
     }
 
     /// Assigns the theme to the slot being edited. With the separate-dark-slot
@@ -158,6 +212,88 @@ struct StyleSettingsView: View {
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 16)
+        .contextMenu { themeMenu(for: theme) }
+    }
+
+    // MARK: - Theme actions
+
+    /// Shared context menu: any theme can be duplicated into an editable copy;
+    /// user themes can also be edited and deleted (built-ins cannot).
+    @ViewBuilder private func themeMenu(for theme: KeyboardThemeDefinition) -> some View {
+        Button {
+            duplicate(theme)
+        } label: {
+            Label("Duplicate", systemImage: "plus.square.on.square")
+        }
+
+        if !theme.isBuiltIn {
+            Button {
+                editingTheme = theme
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+
+            Button(role: .destructive) {
+                ThemeStore.deleteUserTheme(id: theme.id)
+                reloadUserThemes()
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+
+    /// Creates a user-owned copy and opens it in the editor immediately.
+    private func duplicate(_ theme: KeyboardThemeDefinition) {
+        let copy = ThemeStore.duplicate(theme, existing: userThemes)
+        ThemeStore.saveUserTheme(copy)
+        reloadUserThemes()
+        editingTheme = copy
+    }
+
+    private func reloadUserThemes() {
+        userThemes = ThemeStore.userThemes()
+    }
+}
+
+/// Miniature key rendering a palette: key fill, main letter, hint dot. Draws
+/// from the theme's own resolved colors, so it always matches the keyboard.
+private struct ThemeSwatch: View {
+    let theme: KeyboardThemeDefinition
+    let isSelected: Bool
+
+    var body: some View {
+        let resolved = theme.resolved()
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(keyColor(resolved.keyFill))
+
+            Text(verbatim: "a")
+                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                .foregroundStyle(resolved.mainLabel)
+
+            Circle()
+                .fill(resolved.hintLetter)
+                .frame(width: 5, height: 5)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .padding(6)
+        }
+        .frame(height: 48)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(
+                    isSelected ? Color.accentColor : Color.primary.opacity(0.12),
+                    lineWidth: isSelected ? 2.5 : 0.5
+                )
+        )
+    }
+
+    /// The swatch fill color. Palettes are always color fills; the material
+    /// fallback is only a safety net (styles aren't shown as swatches).
+    private func keyColor(_ fill: ResolvedFill) -> Color {
+        if case let .color(color) = fill {
+            return color
+        }
+        return Color(.secondarySystemBackground)
     }
 }
 
