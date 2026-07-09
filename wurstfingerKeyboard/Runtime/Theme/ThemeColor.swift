@@ -16,6 +16,7 @@ import UIKit
 enum ThemeSemanticToken: String, Codable, CaseIterable {
     case primary
     case secondary
+    case gray
     case systemBackground
     case secondarySystemBackground
     case tertiarySystemFill
@@ -24,6 +25,7 @@ enum ThemeSemanticToken: String, Codable, CaseIterable {
         switch self {
         case .primary: .primary
         case .secondary: .secondary
+        case .gray: .gray
         case .systemBackground: Color(.systemBackground)
         case .secondarySystemBackground: Color(.secondarySystemBackground)
         case .tertiarySystemFill: Color(.tertiarySystemFill)

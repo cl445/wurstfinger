@@ -39,8 +39,9 @@ struct KeyboardThemeDefinition: Identifiable, Equatable {
 }
 
 /// Tolerant, stable persistence: explicit keys, and every field except
-/// id/name falls back to its Classic value, so themes written by newer app
-/// versions (with additional fields) still decode.
+/// id/name and the optional `keyBorder` falls back to its Classic value, so
+/// themes written by newer app versions (with additional fields) still decode.
+/// `keyBorder` is optional — an absent key means "no border", matching Classic.
 extension KeyboardThemeDefinition: Codable {
     private enum CodingKeys: String, CodingKey {
         case id, name
