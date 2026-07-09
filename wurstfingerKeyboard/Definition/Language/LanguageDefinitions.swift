@@ -545,6 +545,7 @@ enum LanguageDefinitions {
     /// `LanguageDescriptor.makeDefinition()` (see `KeyboardRegistry`).
     static let all: [LanguageDescriptor] = [
         spanishCatalan,
+        arabic,
         croatian,
         english,
         estonianFinnish,
@@ -554,6 +555,7 @@ enum LanguageDefinitions {
         greek,
         hebrew,
         italian,
+        persian,
         polish,
         portuguese,
         russian,
@@ -561,6 +563,7 @@ enum LanguageDefinitions {
         swedish,
         tagalog,
         ukrainian,
+        urdu,
         vietnamese,
     ].sorted { $0.title < $1.title }
 }
@@ -682,6 +685,182 @@ extension LanguageDefinitions {
                 GridSlot.bottomCenter: [.swipeUp: "w", .swipeLeft: "é", .swipeRight: "z"],
                 GridSlot.bottomRight: [.swipeUpLeft: "f"],
             ]
+        )
+    }
+
+    // MARK: Arabic script (RTL)
+
+    static let arabic = LanguageDescriptor(
+        id: "ar",
+        title: "العربية (Arabic)",
+        localeIdentifier: "ar"
+    ) { meta in
+        GridKeyboardFactory.layout(
+            id: meta.id,
+            title: meta.title,
+            localeIdentifier: meta.localeIdentifier,
+            centerCharacters: [
+                ["ه", "ب", "م"],
+                ["ي", "ا", "ر"],
+                ["و", "ن", "د"],
+            ],
+            directionalOverrides: [
+                GridSlot.topLeft: [.swipeRight: "ـ", .swipeDown: "ة", .swipeDownRight: "ق"],
+                GridSlot.topCenter: [
+                    .swipeUp: "ُ", .swipeUpLeft: "ِ", .swipeUpRight: "َ",
+                    .swipeDown: "خ", .swipeDownLeft: "ض",
+                ],
+                GridSlot.topRight: [.swipeDownLeft: "إ"],
+                GridSlot.midLeft: [
+                    .swipeUpRight: "ص", .swipeRight: "ح", .swipeDown: "ى",
+                    .swipeDownRight: "ط",
+                ],
+                GridSlot.center: [
+                    .swipeUp: "ج", .swipeUpLeft: "ف", .swipeUpRight: "ش",
+                    .swipeLeft: "س", .swipeRight: "آ", .swipeDown: "ت",
+                    .swipeDownLeft: "ل", .swipeDownRight: "ك",
+                ],
+                GridSlot.midRight: [.swipeUpLeft: "ٰ", .swipeLeft: "ز", .swipeDownLeft: "ع"],
+                GridSlot.bottomLeft: [.swipeUp: "ّ", .swipeUpLeft: "ٓ", .swipeUpRight: "ؤ"],
+                GridSlot.bottomCenter: [
+                    .swipeUp: "ث", .swipeUpLeft: "ظ", .swipeUpRight: "غ",
+                    .swipeLeft: "ء", .swipeRight: "أ", .swipeDownRight: "ئ",
+                ],
+                GridSlot.bottomRight: [
+                    .swipeUp: "ً", .swipeUpLeft: "ۋ", .swipeUpRight: "ْ",
+                    .swipeLeft: "ذ",
+                ],
+            ],
+            returnOverrides: [
+                GridSlot.topCenter: [.swipeUp: "ٌ", .swipeUpLeft: "ٍ", .swipeUpRight: "ً"],
+                GridSlot.midLeft: [.swipeDown: "ئ"],
+                GridSlot.bottomCenter: [.swipeRight: "إ"],
+                GridSlot.bottomRight: [.swipeUpLeft: "گ"],
+            ],
+            supportsCapitalization: false,
+            numericBackToAlphaLabel: "ابت",
+            numericDigits: NumericLayouts.arabicIndicDigits
+        )
+    }
+
+    static let persian = LanguageDescriptor(
+        id: "fa_IR",
+        title: "فارسی (Persian)",
+        localeIdentifier: "fa_IR"
+    ) { meta in
+        GridKeyboardFactory.layout(
+            id: meta.id,
+            title: meta.title,
+            localeIdentifier: meta.localeIdentifier,
+            centerCharacters: [
+                ["ه", "ب", "م"],
+                ["ی", "ا", "ر"],
+                ["و", "ن", "د"],
+            ],
+            directionalOverrides: [
+                GridSlot.topLeft: [.swipeRight: "ـ", .swipeDown: "ۀ", .swipeDownRight: "ق"],
+                GridSlot.topCenter: [
+                    .swipeUp: "ُ", .swipeUpLeft: "ِ", .swipeUpRight: "َ",
+                    .swipeDown: "خ", .swipeDownLeft: "ض", .swipeDownRight: "پ",
+                ],
+                GridSlot.topRight: [.swipeDownLeft: "چ"],
+                GridSlot.midLeft: [.swipeUpRight: "ص", .swipeRight: "ش", .swipeDownRight: "ط"],
+                GridSlot.center: [
+                    .swipeUp: "ح", .swipeUpLeft: "ف", .swipeUpRight: "ج",
+                    .swipeLeft: "س", .swipeRight: "آ", .swipeDown: "ت",
+                    .swipeDownLeft: "ل", .swipeDownRight: "ک",
+                ],
+                GridSlot.midRight: [.swipeUpLeft: "ژ", .swipeLeft: "ز", .swipeDownLeft: "ع"],
+                GridSlot.bottomLeft: [.swipeUp: "ّ", .swipeUpLeft: "ٓ", .swipeUpRight: "ؤ"],
+                GridSlot.bottomCenter: [
+                    .swipeUp: "ث", .swipeUpLeft: "ظ", .swipeUpRight: "غ",
+                    .swipeLeft: "ء", .swipeRight: "أ", .swipeDownRight: "ئ",
+                ],
+                GridSlot.bottomRight: [
+                    .swipeUp: "ً", .swipeUpLeft: "گ", .swipeUpRight: "ْ",
+                    .swipeLeft: "ذ",
+                ],
+            ],
+            returnOverrides: [
+                GridSlot.topLeft: [.swipeDown: "ة", .swipeDownRight: "ف"],
+                GridSlot.topCenter: [
+                    .swipeUp: "ٌ", .swipeUpLeft: "ٍ", .swipeUpRight: "ً",
+                    .swipeDown: "ح", .swipeDownLeft: "ص", .swipeDownRight: "ب",
+                ],
+                GridSlot.topRight: [.swipeDownLeft: "ج"],
+                GridSlot.midLeft: [.swipeUpRight: "ض", .swipeRight: "س", .swipeDownRight: "ظ"],
+                GridSlot.center: [
+                    .swipeUp: "خ", .swipeUpLeft: "ق", .swipeUpRight: "چ",
+                    .swipeLeft: "ش", .swipeRight: "ا", .swipeDown: "ث",
+                    .swipeDownRight: "گ",
+                ],
+                GridSlot.midRight: [.swipeLeft: "ر", .swipeDownLeft: "غ"],
+                GridSlot.bottomCenter: [
+                    .swipeUp: "ت", .swipeUpLeft: "ط", .swipeUpRight: "ع",
+                    .swipeRight: "إ",
+                ],
+                GridSlot.bottomRight: [.swipeUpLeft: "ک", .swipeLeft: "د"],
+            ],
+            supportsCapitalization: false,
+            numericBackToAlphaLabel: "ابپ",
+            numericDigits: NumericLayouts.persianDigits
+        )
+    }
+
+    static let urdu = LanguageDescriptor(
+        id: "ur",
+        title: "اردو (Urdu)",
+        localeIdentifier: "ur"
+    ) { meta in
+        GridKeyboardFactory.layout(
+            id: meta.id,
+            title: meta.title,
+            localeIdentifier: meta.localeIdentifier,
+            centerCharacters: [
+                ["ه", "ب", "م"],
+                ["ی", "ا", "ر"],
+                ["و", "ن", "د"],
+            ],
+            directionalOverrides: [
+                GridSlot.topLeft: [
+                    .swipeUp: "ٹ", .swipeRight: "ـ", .swipeDown: "ۀ",
+                    .swipeDownRight: "ق",
+                ],
+                GridSlot.topCenter: [
+                    .swipeUp: "ُ", .swipeUpLeft: "ِ", .swipeUpRight: "َ",
+                    .swipeDown: "خ", .swipeDownLeft: "ض", .swipeDownRight: "پ",
+                ],
+                GridSlot.topRight: [.swipeDownLeft: "چ"],
+                GridSlot.midLeft: [
+                    .swipeUp: "ۓ", .swipeUpRight: "ص", .swipeRight: "ح",
+                    .swipeDown: "ے", .swipeDownRight: "ط",
+                ],
+                GridSlot.center: [
+                    .swipeUp: "ج", .swipeUpLeft: "ف", .swipeUpRight: "ش",
+                    .swipeLeft: "س", .swipeRight: "آ", .swipeDown: "ت",
+                    .swipeDownLeft: "ل", .swipeDownRight: "ک",
+                ],
+                GridSlot.midRight: [
+                    .swipeUp: "ڑ", .swipeUpLeft: "ژ", .swipeLeft: "ز",
+                    .swipeDown: "ڈ", .swipeDownLeft: "ع",
+                ],
+                GridSlot.bottomLeft: [.swipeUp: "ّ", .swipeUpLeft: "ٓ", .swipeUpRight: "ؤ"],
+                GridSlot.bottomCenter: [
+                    .swipeUp: "ث", .swipeUpLeft: "ظ", .swipeUpRight: "غ",
+                    .swipeLeft: "ء", .swipeRight: "ں", .swipeDownRight: "ئ",
+                ],
+                GridSlot.bottomRight: [
+                    .swipeUp: "ً", .swipeUpLeft: "گ", .swipeUpRight: "ْ",
+                    .swipeLeft: "ذ",
+                ],
+            ],
+            returnOverrides: [
+                GridSlot.topLeft: [.swipeDown: "ة"],
+                GridSlot.topCenter: [.swipeUp: "ٌ", .swipeUpLeft: "ٍ", .swipeUpRight: "ً"],
+            ],
+            supportsCapitalization: false,
+            numericBackToAlphaLabel: "ابپ",
+            numericDigits: NumericLayouts.persianDigits
         )
     }
 }

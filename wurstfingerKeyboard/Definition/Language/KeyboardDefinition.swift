@@ -39,6 +39,12 @@ struct KeyboardDefinition: Codable, Equatable {
     /// re-deriving the per-language label.
     let numericBackToAlphaLabel: String
 
+    /// Digit set (indexed by value 0–9) for the numeric layer. Retained on the
+    /// definition — like `numericBackToAlphaLabel` — so a numpad-style swap
+    /// rebuilds the numeric mode with the correct script digits instead of
+    /// falling back to Western ASCII. Defaults to `NumericLayouts.westernDigits`.
+    let numericDigits: [String]
+
     init(
         title: String,
         id: String,
@@ -46,7 +52,8 @@ struct KeyboardDefinition: Codable, Equatable {
         modes: [String: KeyboardMode],
         defaultMode: String,
         settings: KeyboardDefinitionSettings,
-        numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel
+        numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel,
+        numericDigits: [String] = NumericLayouts.westernDigits
     ) {
         self.title = title
         self.id = id
@@ -55,6 +62,7 @@ struct KeyboardDefinition: Codable, Equatable {
         self.defaultMode = defaultMode
         self.settings = settings
         self.numericBackToAlphaLabel = numericBackToAlphaLabel
+        self.numericDigits = numericDigits
     }
 
     /// Convenience: Mode lookup
@@ -70,7 +78,8 @@ struct KeyboardDefinition: Codable, Equatable {
         return KeyboardDefinition(
             title: title, id: id, localeIdentifier: localeIdentifier,
             modes: updated, defaultMode: defaultMode, settings: settings,
-            numericBackToAlphaLabel: numericBackToAlphaLabel
+            numericBackToAlphaLabel: numericBackToAlphaLabel,
+            numericDigits: numericDigits
         )
     }
 }

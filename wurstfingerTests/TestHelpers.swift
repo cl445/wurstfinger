@@ -139,7 +139,7 @@ final class InMemoryUserDefaults: UserDefaults {
 /// affordance (no shifted/capsLock modes, no shift binding) and
 /// auto-capitalization disabled in their definition settings.
 enum CaselessLanguages {
-    static let ids: Set<String> = ["he_IL"]
+    static let ids: Set<String> = ["he_IL", "ar", "fa_IR", "ur"]
 }
 
 /// Creates a KeyboardViewModel wired to a MockTextTarget for testing.

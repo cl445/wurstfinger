@@ -53,6 +53,7 @@ extension KeyboardViewModel {
         let style = raw.flatMap(NumpadStyle.init(rawValue:)) ?? .phone
         guard style == .classic else { return definition }
         let classicNumeric = NumericLayouts.classic(
+            digits: definition.numericDigits,
             backToAlphaLabel: definition.numericBackToAlphaLabel
         )
         return definition.replacingMode(ModeNames.numeric, with: classicNumeric)
