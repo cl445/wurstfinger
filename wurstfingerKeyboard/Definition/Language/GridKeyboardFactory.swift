@@ -34,6 +34,9 @@ enum GridKeyboardFactory {
     ///     mode that switches back to the main (alphabetic) layer. Defaults to
     ///     the Latin "abc"; non-Latin layouts (Hebrew, Russian, …) should
     ///     supply a script-appropriate label.
+    ///   - numericDigits: Digit set (indexed by value 0–9) used in the numeric
+    ///     layer. Defaults to Western ASCII digits; Arabic, Persian, and Urdu
+    ///     layouts should pass their script-specific digit set.
     ///   - inputMethod: Which input method is applied to committed characters.
     ///     Defaults to `.direct`; Vietnamese layouts should pass `.telex` so
     ///     that `TelexMiddleware` activates for this keyboard at runtime.
