@@ -71,6 +71,6 @@ struct SquareKeyboardWidthTests {
             )
             #expect(abs(visibleHeight - cellSize) < 0.001)
         }
-        #expect(checked > 0, "no single-span cells were checked for \(config)")
+        #expect(checked > 0, "no single-span cells were checked for cellSize \(cellSize)")
     }
 }

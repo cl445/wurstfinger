@@ -54,13 +54,24 @@ struct ExpertSettingsView: View {
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
-    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
-    private var keyboardScale = DeviceLayoutUtils.defaultKeyboardScale
+    @AppStorage(SettingsKey.keyboardWidthPoints.rawValue, store: SharedDefaults.store)
+    private var keyboardWidth = DeviceLayoutUtils.defaultKeyboardWidth
 
     /// The key height the user actually sees, derived from the shared layout
-    /// calculation and the stored scale.
+    /// metrics resolved from the stored width + aspect-ratio wish. Resolved
+    /// unclamped (no container/screen context) so the indicator reflects the
+    /// device- and orientation-independent wish, matching the size slider.
     private var effectiveKeyHeight: Double {
-        KeyboardConstants.Calculations.keyHeight(aspectRatio: keyAspectRatio) * keyboardScale
+        // The MessagEase grid is 4 columns wide (matches the reference
+        // metrics); the height indicator is column-count independent in
+        // practice, but resolve() needs a concrete value.
+        Double(KeyboardLayoutMetrics.resolve(
+            wishWidth: keyboardWidth,
+            aspectRatio: keyAspectRatio,
+            columns: 4,
+            availableWidth: 0,
+            screenHeight: 0
+        ).cellHeight)
     }
 
     var body: some View {
