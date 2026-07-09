@@ -147,6 +147,23 @@ extension KeyboardViewModel {
             }
         ))
 
+        // 3b. Combine (sequential base+mark→combined, e.g. Devanagari vowel
+        //     lengthening, Japanese kana voicing). Inert unless the definition
+        //     carries a combine rule set.
+        let combineRuleSet = definition.settings.combineRuleSet
+        middlewares.append(CombineMiddleware(
+            isActive: { combineRuleSet != nil },
+            documentContextBefore: { [weak self] in
+                self?.textInputTarget?.documentContextBeforeInput
+            },
+            deleteBackward: { [weak self] in
+                self?.textInputTarget?.deleteBackward()
+            },
+            combine: { previous, trigger in
+                combineRuleSet?.rules[trigger]?[previous]
+            }
+        ))
+
         // 4. Advanced text (delete-forward, capitalize, clipboard). The
         //    clipboard confirmation tick fires from the middleware's success
         //    paths (not upfront in the haptic middleware) so guarded no-ops

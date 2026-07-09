@@ -239,8 +239,21 @@ struct NativeDigitLayerTests {
         #expect(LanguageDefinitions.persian.makeDefinition().numericDigits == NumericLayouts.persianDigits)
         #expect(LanguageDefinitions.urdu.makeDefinition().numericDigits == NumericLayouts.persianDigits)
         #expect(LanguageDefinitions.thai.makeDefinition().numericDigits == NumericLayouts.thaiDigits)
+        #expect(LanguageDefinitions.hindi.makeDefinition().numericDigits == NumericLayouts.devanagariDigits)
         // The new non-Arabic-script languages keep Western digits.
         #expect(LanguageDefinitions.greek.makeDefinition().numericDigits == NumericLayouts.westernDigits)
+    }
+
+    @Test func hindiCarriesVowelLengtheningCombineRules() {
+        let settings = LanguageDefinitions.hindi.makeDefinition().settings
+        // Sequential combine: short vowel typed twice → long vowel (इ + इ → ई).
+        #expect(settings.combineRuleSet?.rules["इ"]?["इ"] == "ई")
+        #expect(settings.combineRuleSet?.rules["उ"]?["उ"] == "ऊ")
+        #expect(settings.combineRuleSet?.rules["ऋ"]?["ऋ"] == "ॠ")
+        #expect(settings.combineRuleSet?.rules["ऌ"]?["ऌ"] == "ॡ")
+        #expect(settings.combineRuleSet?.rules["ऍ"]?["ऍ"] == "ऎ")
+        // Languages without combine leave it nil.
+        #expect(LanguageDefinitions.thai.makeDefinition().settings.combineRuleSet == nil)
     }
 }
 

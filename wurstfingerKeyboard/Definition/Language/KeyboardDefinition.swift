@@ -125,13 +125,23 @@ struct KeyboardDefinitionSettings: Codable, Equatable {
     /// `.direct`; set to `.telex` for Vietnamese Telex composition.
     let inputMethod: InputMethodKind
 
+    /// Sequential-combine rules (`trigger → base → result`) applied by
+    /// `CombineMiddleware`: when the just-typed character (`trigger`) follows a
+    /// matching `base` already in the document, both collapse to `result`.
+    /// Used by scripts that build characters from a base plus a following mark
+    /// — Devanagari vowel lengthening (इ + इ → ई), Japanese kana voicing.
+    /// nil = no sequential combine (the default for most languages).
+    let combineRuleSet: ComposeRuleSet?
+
     init(
         autoCapitalize: Bool,
         composeRuleOverrides: ComposeRuleSet?,
-        inputMethod: InputMethodKind = .direct
+        inputMethod: InputMethodKind = .direct,
+        combineRuleSet: ComposeRuleSet? = nil
     ) {
         self.autoCapitalize = autoCapitalize
         self.composeRuleOverrides = composeRuleOverrides
         self.inputMethod = inputMethod
+        self.combineRuleSet = combineRuleSet
     }
 }

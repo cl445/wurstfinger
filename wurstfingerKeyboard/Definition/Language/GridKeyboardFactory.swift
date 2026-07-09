@@ -48,7 +48,8 @@ enum GridKeyboardFactory {
         supportsCapitalization: Bool = true,
         numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel,
         numericDigits: [String] = NumericLayouts.westernDigits,
-        inputMethod: InputMethodKind = .direct
+        inputMethod: InputMethodKind = .direct,
+        combineRuleSet: ComposeRuleSet? = nil
     ) -> KeyboardDefinition {
         precondition(
             centerCharacters.count == 3 && centerCharacters.allSatisfy { $0.count == 3 },
@@ -177,7 +178,8 @@ enum GridKeyboardFactory {
             settings: KeyboardDefinitionSettings(
                 autoCapitalize: supportsCapitalization,
                 composeRuleOverrides: composeRuleOverrides,
-                inputMethod: inputMethod
+                inputMethod: inputMethod,
+                combineRuleSet: combineRuleSet
             ),
             numericBackToAlphaLabel: numericBackToAlphaLabel,
             numericDigits: numericDigits

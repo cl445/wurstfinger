@@ -554,6 +554,7 @@ enum LanguageDefinitions {
         german,
         greek,
         hebrew,
+        hindi,
         italian,
         persian,
         polish,
@@ -957,4 +958,76 @@ extension LanguageDefinitions {
             numericDigits: NumericLayouts.thaiDigits
         )
     }
+
+    // MARK: Hindi
+
+    static let hindi = LanguageDescriptor(
+        id: "hi_IN",
+        title: "हिन्दी (Hindi)",
+        localeIdentifier: "hi_IN"
+    ) { meta in
+        GridKeyboardFactory.layout(
+            id: meta.id,
+            title: meta.title,
+            localeIdentifier: meta.localeIdentifier,
+            centerCharacters: [
+                ["म", "न", "ल"],
+                ["ह", "क", "र"],
+                ["त", "प", "स"],
+            ],
+            directionalOverrides: [
+                GridSlot.topLeft: [
+                    .swipeUp: "ः", .swipeUpRight: "ँ", .swipeLeft: "ृ",
+                    .swipeRight: "अ", .swipeDown: "ओ", .swipeDownLeft: "ञ",
+                    .swipeDownRight: "द",
+                ],
+                GridSlot.topCenter: [
+                    .swipeUp: "आ", .swipeUpLeft: "ऊ", .swipeUpRight: "उ",
+                    .swipeLeft: "ौ", .swipeRight: "ो", .swipeDown: "व",
+                    .swipeDownLeft: "ई", .swipeDownRight: "इ",
+                ],
+                GridSlot.topRight: [.swipeRight: "़", .swipeDownLeft: "ज", .swipeDownRight: "ख"],
+                GridSlot.midLeft: [
+                    .swipeUp: "ऑ", .swipeUpLeft: "ॅ", .swipeUpRight: "थ",
+                    .swipeRight: "ब", .swipeDown: "झ", .swipeDownLeft: "ढ",
+                    .swipeDownRight: "श",
+                ],
+                GridSlot.center: [
+                    .swipeUp: "ा", .swipeUpLeft: "ू", .swipeUpRight: "ु",
+                    .swipeLeft: "ी", .swipeRight: "ि", .swipeDown: "्",
+                    .swipeDownLeft: "ै", .swipeDownRight: "े",
+                ],
+                GridSlot.midRight: [
+                    .swipeUp: "ट", .swipeUpLeft: "छ", .swipeUpRight: "ड",
+                    .swipeLeft: "फ", .swipeDown: "।", .swipeDownRight: "ठ",
+                ],
+                GridSlot.bottomLeft: [
+                    .swipeUp: "ऐ", .swipeUpLeft: "ऋ", .swipeUpRight: "ं",
+                    .swipeLeft: "ण",
+                ],
+                GridSlot.bottomCenter: [
+                    .swipeUp: "ए", .swipeUpRight: "औ", .swipeRight: "ग",
+                    .swipeDownRight: "ष",
+                ],
+                GridSlot.bottomRight: [
+                    .swipeUp: "च", .swipeUpLeft: "य", .swipeUpRight: "भ",
+                    .swipeLeft: "ध", .swipeRight: "घ", .swipeDownLeft: "ॉ",
+                ],
+            ],
+            supportsCapitalization: false,
+            numericBackToAlphaLabel: "कखग",
+            numericDigits: NumericLayouts.devanagariDigits,
+            combineRuleSet: hindiCombineRules
+        )
+    }
+
+    /// Devanagari vowel lengthening (short vowel typed twice → long).
+    /// From MessagEase `hindiCombine`; `trigger` is the second-typed vowel.
+    private static let hindiCombineRules = ComposeRuleSet(rules: [
+        "इ": ["इ": "ई"],
+        "उ": ["उ": "ऊ"],
+        "ऋ": ["ऋ": "ॠ"],
+        "ऌ": ["ऌ": "ॡ"],
+        "ऍ": ["ऍ": "ऎ"],
+    ])
 }
