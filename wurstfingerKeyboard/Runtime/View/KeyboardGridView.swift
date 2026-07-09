@@ -27,21 +27,13 @@ struct KeyboardGridView: View {
     var languageLabel: String = ""
     var showLanguageLabel: Bool = false
 
-    /// Scale and aspect ratio are injected by `DataDrivenKeyboardRootView`
-    /// from the view model rather than read via `@AppStorage`: the root view
-    /// derives the keyboard *width* from the view model, and reading the same
+    /// Resolved layout metrics injected by `DataDrivenKeyboardRootView` from
+    /// the view model rather than read via `@AppStorage`: the root view
+    /// derives the keyboard *width* from the same metrics, and reading the
     /// settings from a second source desynchronizes width and row height
     /// whenever the view model is configured programmatically (screenshot and
     /// showcase modes with `shouldPersistSettings: false`).
-    var keyboardScale: Double = DeviceLayoutUtils.defaultKeyboardScale
-    var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
-
-    /// Height of a single grid row, matching `KeyView`'s effective key height so
-    /// portrait layouts are unchanged and a 2-row key is exactly twice as tall
-    /// (plus the inter-row spacing).
-    private var rowHeight: CGFloat {
-        KeyboardConstants.Calculations.keyHeight(aspectRatio: keyAspectRatio) * keyboardScale
-    }
+    let metrics: KeyboardLayoutMetrics
 
     var body: some View {
         let cells = GridLayoutSolver.solve(arrangement)
@@ -49,7 +41,7 @@ struct KeyboardGridView: View {
         KeyboardGridLayout(
             cells: cells,
             columns: arrangement.columns,
-            rowHeight: rowHeight,
+            rowHeight: metrics.rowHeight,
             horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
             verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
         ) {
@@ -70,8 +62,7 @@ struct KeyboardGridView: View {
                 onLongPress: onLongPress,
                 spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan),
                 visualInset: visualInset(for: cell, totalRows: totalRows),
-                keyboardScale: keyboardScale,
-                keyAspectRatio: keyAspectRatio,
+                metrics: metrics,
                 languageLabel: languageLabel,
                 showLanguageLabel: showLanguageLabel
             )

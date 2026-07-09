@@ -26,24 +26,16 @@ struct AppStoreScreenshotView: View {
             // Text input bar directly above keyboard
             textInputBar
 
-            // Keyboard at the bottom. The grid stretches its columns to fill
-            // the width the root view derives, so pass the width at which the
-            // cells come out exactly square (the square marketing look) —
-            // works together with keyboardScale = 1.0 set in
-            // configureFromEnvironment, otherwise the scale would apply twice.
-            DataDrivenKeyboardRootView(
-                viewModel: viewModel,
-                overrideWidth: KeyboardConstants.Calculations.squareKeyboardWidth(
-                    aspectRatio: viewModel.keyAspectRatio,
-                    scale: viewModel.keyboardScale,
-                    columns: viewModel.currentArrangement?.columns ?? 4
-                )
-            )
-            .frame(maxWidth: .infinity)
-            // `.contain` promotes the per-key accessibilityIdentifiers into
-            // a queryable container so UI tests can find keys by slot id.
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("screenshotKeyboard")
+            // Keyboard at the bottom. Its geometry is fully forced onto the
+            // non-persisting view model in configureFromEnvironment (square
+            // cells at the full reference key height), so the standard render
+            // path applies with no extra overrides here.
+            DataDrivenKeyboardRootView(viewModel: viewModel)
+                .frame(maxWidth: .infinity)
+                // `.contain` promotes the per-key accessibilityIdentifiers into
+                // a queryable container so UI tests can find keys by slot id.
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("screenshotKeyboard")
         }
         .ignoresSafeArea(edges: [.top, .bottom])
         .background(Color(.systemBackground))
@@ -174,14 +166,23 @@ struct AppStoreScreenshotView: View {
     private func configureFromEnvironment() {
         let env = ProcessInfo.processInfo.environment
 
-        // Unscaled keys; the keyboard width comes from squareKeyboardWidth
-        // in the body, so keys render 1:1 at full key height.
-        viewModel.keyboardScale = 1.0
-
         // Load the forced language (default: English for App Store screenshots)
         // on the view model only — the screenshot view must never persist into
         // the real shared app-group store (`shouldPersistSettings: false`).
         viewModel.loadDefinition(for: env["FORCE_LANGUAGE"] ?? "en_US")
+
+        // Square marketing cells (the marketing look): with point-anchored
+        // metrics, aspect ratio 1.0 makes the cells square at any width; the
+        // width below sizes them at exactly the full reference key height.
+        // Forcing all layout inputs on the non-persisting view model means
+        // shouldPersistSettings: false fully controls rendering — nothing is
+        // read from (or written to) the user's real settings store.
+        viewModel.keyAspectRatio = 1.0
+        viewModel.keyboardHorizontalPosition = 0.5
+        viewModel.keyboardWidth = KeyboardConstants.Calculations.squareKeyboardWidth(
+            cellSize: KeyboardConstants.Calculations.keyHeight(aspectRatio: 1.0),
+            columns: viewModel.currentArrangement?.columns ?? 4
+        )
 
         // Set keyboard mode
         if let forcedLayer = env["FORCE_LAYER"] {

@@ -2,10 +2,11 @@
 //  SquareKeyboardWidthTests.swift
 //  wurstfingerTests
 //
-//  Verifies that `Calculations.squareKeyboardWidth` produces exactly square
-//  grid cells when fed through the real portrait arrangement and the same
-//  frame math `KeyboardGridLayout` uses at render time. Guards the App Store
-//  screenshot geometry (keys must be 1:1, the square marketing look).
+//  Verifies the App Store screenshot geometry: resolving the point-anchored
+//  metrics at `Calculations.squareKeyboardWidth` with aspect ratio 1.0 must
+//  produce exactly square grid cells of the requested size, fed through the
+//  real portrait arrangement and the same frame math `KeyboardGridLayout`
+//  uses at render time (keys must be 1:1, the square marketing look).
 //
 
 import CoreGraphics
@@ -14,34 +15,36 @@ import Testing
 @testable import WurstfingerApp
 
 struct SquareKeyboardWidthTests {
-    @Test(arguments: [
-        (aspectRatio: CGFloat(1.0), scale: CGFloat(1.0)),
-        (aspectRatio: CGFloat(1.0), scale: CGFloat(0.6)),
-        (aspectRatio: CGFloat(1.5), scale: CGFloat(1.0)),
-    ])
-    func unitCellsAreSquareAtSquareKeyboardWidth(
-        config: (aspectRatio: CGFloat, scale: CGFloat)
-    ) throws {
+    @Test(arguments: [CGFloat(81), CGFloat(54), CGFloat(40)])
+    func unitCellsAreSquareAtSquareKeyboardWidth(cellSize: CGFloat) throws {
         let arrangement = try #require(StandardArrangements.grid3x3[.portrait])
-        let rowHeight = KeyboardConstants.Calculations.keyHeight(
-            aspectRatio: config.aspectRatio
-        ) * config.scale
+
+        // Wish exactly the width the screenshot mode forces; no fit-clamp
+        // engaged (generous container/screen), so the wish is the result.
+        let outerWidth = KeyboardConstants.Calculations.squareKeyboardWidth(
+            cellSize: cellSize,
+            columns: arrangement.columns
+        )
+        let metrics = KeyboardLayoutMetrics.resolve(
+            wishWidth: outerWidth,
+            aspectRatio: 1.0,
+            columns: arrangement.columns,
+            availableWidth: 10000,
+            screenHeight: 10000
+        )
+        #expect(abs(metrics.cellWidth - cellSize) < 0.001)
+        #expect(abs(metrics.cellHeight - cellSize) < 0.001)
 
         // The root view applies the horizontal padding inside the width frame,
         // so the grid itself receives the width minus both paddings.
-        let outerWidth = KeyboardConstants.Calculations.squareKeyboardWidth(
-            aspectRatio: config.aspectRatio,
-            scale: config.scale,
-            columns: arrangement.columns
-        )
-        let gridWidth = outerWidth - 2 * KeyboardConstants.Layout.horizontalPadding
+        let gridWidth = metrics.keyboardWidth - 2 * KeyboardConstants.Layout.horizontalPadding
 
         let cells = GridLayoutSolver.solve(arrangement)
         let frames = KeyboardGridLayout.cellFrames(
             cells: cells,
             columns: arrangement.columns,
             bounds: CGRect(x: 0, y: 0, width: gridWidth, height: .greatestFiniteMagnitude),
-            rowHeight: rowHeight,
+            rowHeight: metrics.rowHeight,
             horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
             verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
         )
@@ -66,8 +69,8 @@ struct SquareKeyboardWidthTests {
                 abs(visibleWidth - visibleHeight) < 0.001,
                 "cell \(cell.keyId): \(visibleWidth) x \(visibleHeight)"
             )
-            #expect(abs(visibleHeight - rowHeight) < 0.001)
+            #expect(abs(visibleHeight - cellSize) < 0.001)
         }
-        #expect(checked > 0, "no single-span cells were checked for \(config)")
+        #expect(checked > 0, "no single-span cells were checked for cellSize \(cellSize)")
     }
 }

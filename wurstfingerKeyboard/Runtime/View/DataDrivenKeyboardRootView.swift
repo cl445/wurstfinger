@@ -23,9 +23,12 @@ struct DataDrivenKeyboardRootView: View {
 
     var body: some View {
         let currentWidth = overrideWidth ?? viewModel.viewWidth
-        let baseWidth = min(currentWidth, viewModel.keyboardWidthCap)
-        let scaledWidth = baseWidth * viewModel.keyboardScale
-        let availableSpace = currentWidth - scaledWidth
+        // Single geometry source: the resolved metrics drive the keyboard
+        // width here and the row/cell sizes in the grid, so they can never
+        // desynchronize (the old split between the view-model width path and
+        // @AppStorage-read row heights was review finding M8/H3).
+        let metrics = viewModel.layoutMetrics(forContainerWidth: currentWidth)
+        let availableSpace = currentWidth - metrics.keyboardWidth
         let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
 
         ZStack {
@@ -51,13 +54,12 @@ struct DataDrivenKeyboardRootView: View {
                     },
                     languageLabel: viewModel.currentLanguageLabel,
                     showLanguageLabel: viewModel.hasMultipleLanguages,
-                    keyboardScale: viewModel.keyboardScale,
-                    keyAspectRatio: viewModel.keyAspectRatio
+                    metrics: metrics
                 )
                 .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
                 .padding(.top, KeyboardConstants.Layout.verticalPaddingTop)
                 .padding(.bottom, KeyboardConstants.Layout.verticalPaddingBottom)
-                .frame(width: scaledWidth)
+                .frame(width: metrics.keyboardWidth)
                 .offset(x: horizontalOffset)
             }
         }
