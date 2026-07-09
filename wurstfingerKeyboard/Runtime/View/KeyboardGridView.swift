@@ -35,6 +35,8 @@ struct KeyboardGridView: View {
     /// settings.
     let renderSettings: KeyRenderSettings
 
+    @Environment(\.keyboardTheme) private var theme
+
     /// Resolved layout metrics injected by `DataDrivenKeyboardRootView` from
     /// the view model rather than read via `@AppStorage`: the root view
     /// derives the keyboard *width* from the same metrics, and reading the
@@ -58,15 +60,17 @@ struct KeyboardGridView: View {
     var body: some View {
         let cells = GridLayoutSolver.solve(arrangement)
         let totalRows = cells.map { $0.row + $0.rowSpan }.max() ?? 0
-        KeyboardGridLayout(
-            cells: cells,
-            columns: arrangement.columns,
-            rowHeight: metrics.rowHeight,
-            horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
-            verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
-        ) {
-            ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
-                cellContent(for: cell, totalRows: totalRows)
+        glassWrapped {
+            KeyboardGridLayout(
+                cells: cells,
+                columns: arrangement.columns,
+                rowHeight: metrics.rowHeight,
+                horizontalSpacing: KeyboardConstants.Layout.gridHorizontalSpacing,
+                verticalSpacing: KeyboardConstants.Layout.gridVerticalSpacing
+            ) {
+                ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
+                    cellContent(for: cell, totalRows: totalRows)
+                }
             }
         }
         // Registered here rather than on the root view so it exists wherever a
@@ -79,6 +83,19 @@ struct KeyboardGridView: View {
                 recorder: gestureTrail,
                 headWidth: GestureTrailOverlay.headWidth(for: metrics)
             )
+        }
+    }
+
+    /// Wraps the key grid in a `GlassEffectContainer` when the active theme
+    /// uses the glass material, so all keys share one sampling region on
+    /// iOS 26 (glass cannot sample other glass). Color themes (Classic, Dark
+    /// Gold) and older systems render the grid unwrapped, unchanged.
+    @ViewBuilder
+    private func glassWrapped(@ViewBuilder _ content: () -> some View) -> some View {
+        if theme.usesGlassMaterial, #available(iOS 26.0, *) {
+            GlassEffectContainer { content() }
+        } else {
+            content()
         }
     }
 
