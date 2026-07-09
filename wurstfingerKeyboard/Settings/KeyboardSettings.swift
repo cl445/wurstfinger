@@ -36,6 +36,9 @@ enum SettingsKey: String {
     case hideLetters
     case hideStandardSymbols
     case hideExtraSymbols
+    /// Holding a letter key types the digit that key carries on the
+    /// numeric layer, without switching modes.
+    case longPressNumbersEnabled
 }
 
 // MARK: - Haptic Settings

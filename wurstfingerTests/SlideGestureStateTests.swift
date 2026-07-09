@@ -332,6 +332,41 @@ struct SlideGestureStateTests {
         #expect(update.isTouchDown)
         #expect(update.phases.isEmpty)
     }
+
+    // MARK: - Long-press displacement tracking
+
+    @Test func maxDisplacementTracksPeakDistanceFromOrigin() {
+        var state = SlideGestureState()
+        _ = state.handleChanged(
+            translation: CGSize(width: 30, height: 40), activationThreshold: threshold
+        ) // 50pt out ...
+        _ = state.handleChanged(
+            translation: CGSize(width: 3, height: 4), activationThreshold: threshold
+        ) // ... then back
+        // The running maximum must survive the return leg - a pending long
+        // press stays cancelled after an out-and-back movement.
+        #expect(state.maxDisplacement == 50)
+    }
+
+    @Test func maxDisplacementResetsAfterEnd() {
+        var state = SlideGestureState()
+        _ = state.handleChanged(
+            translation: CGSize(width: 100, height: 0), activationThreshold: threshold
+        )
+        _ = state.handleEnded(
+            translation: CGSize(width: 100, height: 0), activationThreshold: threshold
+        )
+        #expect(state.maxDisplacement == 0)
+    }
+
+    @Test func maxDisplacementResetsAfterCancellation() {
+        var state = SlideGestureState()
+        _ = state.handleChanged(
+            translation: CGSize(width: 100, height: 0), activationThreshold: threshold
+        )
+        _ = state.handleCancelled()
+        #expect(state.maxDisplacement == 0)
+    }
 }
 
 // MARK: - ViewModel handling of .cancelled

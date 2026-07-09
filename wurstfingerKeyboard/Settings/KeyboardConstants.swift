@@ -127,6 +127,22 @@ enum KeyboardConstants {
         static let positionBufferSize: Int = 120
     }
 
+    // MARK: - Long Press
+
+    enum LongPress {
+        /// How long the finger must rest on a key before a long press fires.
+        /// Deliberately above UIKit's 0.5s default: hesitating mid-word is
+        /// common on a gesture keyboard, and an accidental digit is worse
+        /// than a slightly slower intentional one (tuned on device).
+        static let duration: TimeInterval = 0.7
+
+        /// Maximum travel from touch-down before a pending long press is
+        /// cancelled. Matches `UILongPressGestureRecognizer.allowableMovement`
+        /// so natural finger wobble doesn't cancel the hold, while anything
+        /// resembling a swipe does.
+        static let movementTolerance: CGFloat = 10
+    }
+
     // MARK: - Space Key Gestures
 
     enum SpaceGestures {

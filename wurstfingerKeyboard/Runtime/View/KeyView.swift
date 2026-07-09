@@ -20,6 +20,10 @@ struct KeyView: View {
     let onGesture: (KeyConfig, GestureType, Bool) -> Void
     var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
+    /// Handles a long press on this key; returns whether it dispatched an
+    /// action (a handled long press consumes the touch). Long-press detection
+    /// only runs when this is set and the user setting is enabled.
+    var onLongPress: ((KeyConfig) -> Bool)?
     var spanRatio: CGFloat = 1.0
 
     /// Inset between the full touch cell and the key's visible bounds. The cell
@@ -55,6 +59,9 @@ struct KeyView: View {
 
     @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
     private var hideExtraSymbols = false
+
+    @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
+    private var longPressNumbersEnabled = false
 
     /// Whether the label of `binding` should be drawn, honouring the user's
     /// label-visibility toggles (numbers and functional keys always show).
@@ -106,6 +113,7 @@ struct KeyView: View {
                 slideType: key.slideType,
                 onSlide: { phase in onSlide?(key, phase) },
                 onTouchDown: { onTouchDown?() },
+                onLongPress: longPressHandler,
                 isActive: $isActive
             ))
         } else {
@@ -118,6 +126,7 @@ struct KeyView: View {
                 // 1×1, so scale the base aspect ratio by columnSpan/rowSpan
                 // (spanRatio) to classify swipes against the real geometry.
                 aspectRatio: CGFloat(keyAspectRatio) * spanRatio,
+                onLongPress: longPressHandler,
                 isActive: $isActive
             ))
         }
@@ -195,6 +204,13 @@ struct KeyView: View {
     /// gesture classification.
     private var usesSlideGesture: Bool {
         key.slideType != .none
+    }
+
+    /// Long-press handler for the gesture recognizer, or nil when the
+    /// opt-in setting is off or no handler is wired up (preview contexts).
+    private var longPressHandler: (() -> Bool)? {
+        guard longPressNumbersEnabled, let onLongPress else { return nil }
+        return { onLongPress(key) }
     }
 
     // MARK: - View Construction

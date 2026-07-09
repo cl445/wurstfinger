@@ -62,6 +62,10 @@ enum NumericLayouts {
                 label: "0", action: .commitText("0"),
                 category: .digit, returnAction: nil, accessibilityLabel: nil
             ),
+            .longPress: KeyBinding(
+                label: "0", action: .commitText("0"),
+                category: .digit, returnAction: nil, accessibilityLabel: nil
+            ),
         ],
         swipeMode: .none,
         slideType: .none,
@@ -208,11 +212,17 @@ enum NumericLayouts {
                     bindings[.circularCounterclockwise] = circBinding
                 }
 
-                // Tap → digit
-                bindings[.tap] = KeyBinding(
+                // Tap → digit. The same binding doubles as a long press:
+                // GhostKeyResolver falls back to this layer for gestures the
+                // letter layer leaves unbound, so holding a letter key types
+                // its digit without a mode switch. Long presses only occur
+                // with the opt-in "Type Numbers by Holding" setting enabled.
+                let digitBinding = KeyBinding(
                     label: digit, action: .commitText(digit),
                     category: .digit, returnAction: nil, accessibilityLabel: nil
                 )
+                bindings[.tap] = digitBinding
+                bindings[.longPress] = digitBinding
 
                 digitKeys[slotId] = KeyConfig(
                     id: slotId, bindings: bindings, swipeMode: .eightWay,
