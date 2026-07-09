@@ -598,6 +598,43 @@ extension LanguageDefinitions {
             "ヲ": "ヺ",
         ],
     ])
+
+    // MARK: Korean
+
+    static let korean = LanguageDescriptor(
+        id: "ko_KR",
+        title: "한국어 (Korean)",
+        localeIdentifier: "ko_KR"
+    ) { meta in
+        GridKeyboardFactory.layout(
+            id: meta.id,
+            title: meta.title,
+            localeIdentifier: meta.localeIdentifier,
+            centerCharacters: [
+                ["ㄷ", "ㄹ", "ㅈ"],
+                ["ㄱ", "ㅇ", "ㄴ"],
+                ["ㅁ", "ㅅ", "ㅎ"],
+            ],
+            directionalOverrides: [
+                GridSlot.topLeft: [.swipeDownRight: "ㅌ"],
+                GridSlot.topCenter: [.swipeDown: "ㅛ"],
+                GridSlot.topRight: [.swipeDownLeft: "ㅊ"],
+                GridSlot.midLeft: [.swipeRight: "ㅕ"],
+                GridSlot.center: [
+                    .swipeUp: "ㅗ", .swipeUpLeft: "ㅔ", .swipeUpRight: "ㅡ",
+                    .swipeLeft: "ㅓ", .swipeRight: "ㅏ", .swipeDown: "ㅜ",
+                    .swipeDownLeft: "ㅐ", .swipeDownRight: "ㅣ",
+                ],
+                GridSlot.midRight: [.swipeLeft: "ㅑ"],
+                GridSlot.bottomLeft: [.swipeUpRight: "ㅂ"],
+                GridSlot.bottomCenter: [.swipeUp: "ㅠ", .swipeRight: "ㅋ"],
+                GridSlot.bottomRight: [.swipeUpLeft: "ㅍ"],
+            ],
+            supportsCapitalization: false,
+            numericBackToAlphaLabel: "가나다",
+            inputMethod: .hangul
+        )
+    }
 }
 
 // MARK: - Registry
@@ -622,6 +659,7 @@ extension LanguageDefinitions {
         hiragana,
         italian,
         katakana,
+        korean,
         persian,
         polish,
         portuguese,

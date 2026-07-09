@@ -41,7 +41,8 @@ enum NumericLayouts {
         digits: [String] = westernDigits,
         backToAlphaLabel: String = defaultBackToAlphaLabel
     ) -> KeyboardMode {
-        buildMode(
+        precondition(digits.count == 10, "digits must contain exactly 10 glyphs (values 0–9)")
+        return buildMode(
             centerDigits: [
                 [digits[1], digits[2], digits[3]],
                 [digits[4], digits[5], digits[6]],
@@ -60,7 +61,8 @@ enum NumericLayouts {
         digits: [String] = westernDigits,
         backToAlphaLabel: String = defaultBackToAlphaLabel
     ) -> KeyboardMode {
-        buildMode(
+        precondition(digits.count == 10, "digits must contain exactly 10 glyphs (values 0–9)")
+        return buildMode(
             centerDigits: [
                 [digits[7], digits[8], digits[9]],
                 [digits[4], digits[5], digits[6]],

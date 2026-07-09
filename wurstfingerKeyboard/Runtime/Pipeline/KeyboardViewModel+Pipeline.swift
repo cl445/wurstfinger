@@ -147,12 +147,14 @@ extension KeyboardViewModel {
             }
         ))
 
-        // 3b. Combine (sequential base+mark→combined, e.g. Devanagari vowel
-        //     lengthening, Japanese kana voicing). Inert unless the definition
-        //     carries a combine rule set.
+        // 3b. Combine (sequential base+mark→combined). Two flavours share the
+        //     same middleware: a static rule table (Devanagari vowel lengthening,
+        //     Japanese kana voicing) or the algorithmic Korean Hangul automaton.
+        //     Inert unless the definition opts into one.
         let combineRuleSet = definition.settings.combineRuleSet
+        let combinesHangul = inputMethod == .hangul
         middlewares.append(CombineMiddleware(
-            isActive: { combineRuleSet != nil },
+            isActive: { combineRuleSet != nil || combinesHangul },
             documentContextBefore: { [weak self] in
                 self?.textInputTarget?.documentContextBeforeInput
             },
@@ -160,7 +162,10 @@ extension KeyboardViewModel {
                 self?.textInputTarget?.deleteBackward()
             },
             combine: { previous, trigger in
-                combineRuleSet?.rules[trigger]?[previous]
+                if combinesHangul {
+                    return HangulComposer.combine(previous: previous, jamo: trigger)
+                }
+                return combineRuleSet?.rules[trigger]?[previous]
             }
         ))
 
