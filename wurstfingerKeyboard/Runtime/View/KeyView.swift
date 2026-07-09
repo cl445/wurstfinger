@@ -89,36 +89,32 @@ struct KeyView: View {
 
     @ViewBuilder
     private var keyContent: some View {
-        let base = ZStack {
-            background
-            label
-            hintOverlay
-        }
-        // Inset the drawn key from the touch cell by `visualInset`, so the
-        // visible key keeps its position/size while the cell itself extends into
-        // the inter-key gaps (see KeyboardGridLayout.gapInsets).
-        .padding(visualInset)
-        // Fill the cell frame imposed by KeyboardGridLayout. The layout sizes
-        // rows from the same effective key height, so single-row keys are
-        // unchanged while a spanning key (e.g. landscape return) grows to cover
-        // multiple rows.
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityLabel)
-        .accessibilityIdentifier(key.id)
-        .accessibilityAddTraits(.isButton)
-        // The whole cell is the touch target. Adjacent cells tile the surface
-        // with no gaps, so a plain rectangle covers it fully.
-        .contentShape(Rectangle())
-        // Pin the key's alignment/padding surface to physical LTR so the
-        // directional hints (`hintAlignments` / `hintEdgePadding`, which use
-        // semantic leading/trailing) always match the physical swipe
-        // directions — even when a host renders this key under an RTL locale
-        // (e.g. KeyboardShowcaseView / AppStoreScreenshotView for localized
-        // screenshots, or SwiftUI previews). Defense-in-depth alongside the
-        // root pin in DataDrivenKeyboardRootView; nested identical pins are
-        // harmless.
-        .environment(\.layoutDirection, .leftToRight)
+        let base = keyLayers
+            // Inset the drawn key from the touch cell by `visualInset`, so the
+            // visible key keeps its position/size while the cell itself extends into
+            // the inter-key gaps (see KeyboardGridLayout.gapInsets).
+            .padding(visualInset)
+            // Fill the cell frame imposed by KeyboardGridLayout. The layout sizes
+            // rows from the same effective key height, so single-row keys are
+            // unchanged while a spanning key (e.g. landscape return) grows to cover
+            // multiple rows.
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityIdentifier(key.id)
+            .accessibilityAddTraits(.isButton)
+            // The whole cell is the touch target. Adjacent cells tile the surface
+            // with no gaps, so a plain rectangle covers it fully.
+            .contentShape(Rectangle())
+            // Pin the key's alignment/padding surface to physical LTR so the
+            // directional hints (`hintAlignments` / `hintEdgePadding`, which use
+            // semantic leading/trailing) always match the physical swipe
+            // directions — even when a host renders this key under an RTL locale
+            // (e.g. KeyboardShowcaseView / AppStoreScreenshotView for localized
+            // screenshots, or SwiftUI previews). Defense-in-depth alongside the
+            // root pin in DataDrivenKeyboardRootView; nested identical pins are
+            // harmless.
+            .environment(\.layoutDirection, .leftToRight)
 
         if usesSlideGesture {
             base.modifier(SlideGestureHandler(
@@ -216,32 +212,67 @@ struct KeyView: View {
 
     // MARK: - View Construction
 
+    /// Whether this key should render as native Liquid Glass (iOS 26 with a
+    /// material fill). The glass then wraps the label layer directly, so the
+    /// label stays crisp and picks up glass vibrancy — applying it to a
+    /// separate background layer instead blurs the label.
+    private var usesNativeGlass: Bool {
+        if #available(iOS 26.0, *) {
+            return (isActive ? theme.keyFillActive : theme.keyFill) == .material
+        }
+        return false
+    }
+
+    /// The stacked key layers. Native glass wraps the label/hint content with
+    /// `glassEffect` (label as content = crisp); every other style keeps the
+    /// pre-engine order of a background layer beneath the labels.
+    @ViewBuilder
+    private var keyLayers: some View {
+        if usesNativeGlass, #available(iOS 26.0, *) {
+            ZStack {
+                label
+                hintOverlay
+            }
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: theme.cornerRadius))
+        } else {
+            ZStack {
+                background
+                label
+                hintOverlay
+            }
+        }
+    }
+
     @ViewBuilder
     private var background: some View {
         let shape = RoundedRectangle(cornerRadius: theme.cornerRadius)
         let fill = isActive ? theme.keyFillActive : theme.keyFill
-        if let border = theme.keyBorder, theme.keyBorderWidth > 0 {
-            keyFill(shape, fill)
-                .overlay(
-                    shape.strokeBorder(border, lineWidth: theme.keyBorderWidth)
-                )
-        } else {
-            // No border overlay in the view tree at all — themes without a
-            // border (Classic) render exactly as before the theme engine.
-            keyFill(shape, fill)
+        switch fill {
+        case let .color(color):
+            colorBackground(shape, color)
+        case .material:
+            // Reached only before iOS 26 (native glass takes the other branch):
+            // the bar material with a hairline border, pixel-identical to the
+            // pre-engine Liquid Glass rendering.
+            if let border = theme.keyBorder, theme.keyBorderWidth > 0 {
+                shape.fill(.bar)
+                    .overlay(shape.strokeBorder(border, lineWidth: theme.keyBorderWidth))
+            } else {
+                shape.fill(.bar)
+            }
         }
     }
 
-    /// Fills the key shape. The bar material is applied directly rather than
-    /// through `AnyShapeStyle`, because the wrapper changes how the material
-    /// samples its backdrop and would shift Liquid Glass off its baseline.
+    /// Solid or translucent color fill, with an optional hairline border.
     @ViewBuilder
-    private func keyFill(_ shape: RoundedRectangle, _ fill: ResolvedFill) -> some View {
-        switch fill {
-        case let .color(color):
+    private func colorBackground(_ shape: RoundedRectangle, _ color: Color) -> some View {
+        if let border = theme.keyBorder, theme.keyBorderWidth > 0 {
             shape.fill(color)
-        case .material:
-            shape.fill(.bar)
+                .overlay(shape.strokeBorder(border, lineWidth: theme.keyBorderWidth))
+        } else {
+            // No border overlay in the view tree at all — themes without a
+            // border (Classic) render exactly as before the theme engine.
+            shape.fill(color)
         }
     }
 
