@@ -125,6 +125,12 @@ enum BuiltInThemes {
 }
 
 extension KeyboardThemeDefinition {
+    /// Whether this theme is compiled in. Derived from the id, never trusted
+    /// from persisted data — built-ins are not editable or deletable.
+    var isBuiltIn: Bool {
+        BuiltInThemes.ids.contains(id)
+    }
+
     /// Localized display name for built-ins; user themes show their stored
     /// name verbatim.
     var displayName: String {
