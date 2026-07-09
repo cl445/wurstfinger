@@ -562,6 +562,7 @@ enum LanguageDefinitions {
         spanish,
         swedish,
         tagalog,
+        thai,
         ukrainian,
         urdu,
         vietnamese,
@@ -861,6 +862,99 @@ extension LanguageDefinitions {
             supportsCapitalization: false,
             numericBackToAlphaLabel: "ابپ",
             numericDigits: NumericLayouts.persianDigits
+        )
+    }
+
+    // MARK: Thai
+
+    static let thai = LanguageDescriptor(
+        id: "th_TH",
+        title: "ไทย (Thai)",
+        localeIdentifier: "th_TH"
+    ) { meta in
+        GridKeyboardFactory.layout(
+            id: meta.id,
+            title: meta.title,
+            localeIdentifier: meta.localeIdentifier,
+            centerCharacters: [
+                ["า", "น", "ั"],
+                ["ก", "อ", "ร"],
+                ["ม", "เ", "ง"],
+            ],
+            directionalOverrides: [
+                GridSlot.topLeft: [
+                    .swipeUp: "ุ", .swipeUpRight: "ิ", .swipeLeft: "ฝ",
+                    .swipeDown: "ู", .swipeDownLeft: "ฟ", .swipeDownRight: "ี",
+                ],
+                GridSlot.topCenter: [
+                    .swipeUp: "ณ", .swipeUpLeft: "็", .swipeUpRight: "์",
+                    .swipeDown: "ล", .swipeDownRight: "ข",
+                ],
+                GridSlot.topRight: [
+                    .swipeUpLeft: "ฮ", .swipeRight: "ฐ", .swipeDown: "ะ",
+                    .swipeDownLeft: "ๆ", .swipeDownRight: "ภ",
+                ],
+                GridSlot.midLeft: [
+                    .swipeUp: "ื", .swipeUpLeft: "ึ", .swipeUpRight: "โ",
+                    .swipeRight: "ค", .swipeDown: "ใ", .swipeDownLeft: "ฤ",
+                    .swipeDownRight: "ไ",
+                ],
+                GridSlot.center: [
+                    .swipeUp: "้", .swipeUpLeft: "่", .swipeUpRight: "ป",
+                    .swipeLeft: "ช", .swipeRight: "บ", .swipeDown: "ด",
+                    .swipeDownLeft: "ห", .swipeDownRight: "จ",
+                ],
+                GridSlot.midRight: [
+                    .swipeUpLeft: "ผ", .swipeUpRight: "ถ", .swipeLeft: "ท",
+                    .swipeDownLeft: "พ", .swipeDownRight: "ธ",
+                ],
+                GridSlot.bottomLeft: [
+                    .swipeUp: "ำ", .swipeUpLeft: "ญ", .swipeUpRight: "ย",
+                    .swipeLeft: "๊", .swipeDown: "๋",
+                ],
+                GridSlot.bottomCenter: [.swipeUp: "ว", .swipeLeft: "แ", .swipeRight: "ต"],
+                GridSlot.bottomRight: [
+                    .swipeUp: "ฉ", .swipeUpLeft: "ส", .swipeUpRight: "ซ",
+                    .swipeRight: "ศ", .swipeDownLeft: "ษ",
+                ],
+            ],
+            returnOverrides: [
+                GridSlot.topLeft: [
+                    .swipeUp: "ู", .swipeUpRight: "ี", .swipeLeft: "ฺ",
+                    .swipeDown: "ุ", .swipeDownLeft: "พ", .swipeDownRight: "ิ",
+                ],
+                GridSlot.topCenter: [
+                    .swipeUp: "โ", .swipeUpLeft: "ใ", .swipeUpRight: "ไ",
+                    .swipeDown: "ฦ", .swipeDownRight: "ญ",
+                ],
+                GridSlot.topRight: [
+                    .swipeUpLeft: "ฆ", .swipeRight: "ฃ", .swipeDown: "ข",
+                    .swipeDownLeft: "ฯ", .swipeDownRight: "ถ",
+                ],
+                GridSlot.midLeft: [
+                    .swipeUp: "ึ", .swipeUpLeft: "ื", .swipeUpRight: "จ",
+                    .swipeRight: "ข", .swipeDown: "ๅ", .swipeDownLeft: "ฦ",
+                    .swipeDownRight: "ฤ",
+                ],
+                GridSlot.center: [
+                    .swipeUp: "๋", .swipeUpLeft: "๊", .swipeUpRight: "ผ",
+                    .swipeLeft: "ฉ", .swipeRight: "ษ", .swipeDown: "ฎ",
+                    .swipeDownLeft: "ฮ", .swipeDownRight: "ช",
+                ],
+                GridSlot.midRight: [
+                    .swipeUpLeft: "ฝ", .swipeUpRight: "ภ", .swipeDownLeft: "ฟ",
+                    .swipeDownRight: "ณ",
+                ],
+                GridSlot.bottomLeft: [
+                    .swipeUp: "์", .swipeUpLeft: "แ", .swipeUpRight: "๎",
+                    .swipeLeft: "็",
+                ],
+                GridSlot.bottomCenter: [.swipeUp: "ๆ", .swipeRight: "ํ"],
+                GridSlot.bottomRight: [.swipeUp: "ฌ", .swipeRight: "ซ", .swipeDownLeft: "ำ"],
+            ],
+            supportsCapitalization: false,
+            numericBackToAlphaLabel: "กขค",
+            numericDigits: NumericLayouts.thaiDigits
         )
     }
 }

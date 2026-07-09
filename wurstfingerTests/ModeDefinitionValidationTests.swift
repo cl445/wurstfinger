@@ -238,6 +238,7 @@ struct NativeDigitLayerTests {
         #expect(LanguageDefinitions.arabic.makeDefinition().numericDigits == NumericLayouts.arabicIndicDigits)
         #expect(LanguageDefinitions.persian.makeDefinition().numericDigits == NumericLayouts.persianDigits)
         #expect(LanguageDefinitions.urdu.makeDefinition().numericDigits == NumericLayouts.persianDigits)
+        #expect(LanguageDefinitions.thai.makeDefinition().numericDigits == NumericLayouts.thaiDigits)
         // The new non-Arabic-script languages keep Western digits.
         #expect(LanguageDefinitions.greek.makeDefinition().numericDigits == NumericLayouts.westernDigits)
     }
