@@ -1014,6 +1014,7 @@ extension LanguageDefinitions {
                     .swipeLeft: "ध", .swipeRight: "घ", .swipeDownLeft: "ॉ",
                 ],
             ],
+            supportsCapitalization: false,
             numericBackToAlphaLabel: "कखग",
             numericDigits: NumericLayouts.devanagariDigits,
             combineRuleSet: hindiCombineRules
