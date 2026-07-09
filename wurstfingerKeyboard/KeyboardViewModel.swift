@@ -20,11 +20,14 @@ enum KeyboardHapticEvent {
     /// silence. Text actions are silent here: their haptic already fired on
     /// touch-down, and firing again on dispatch would double every keystroke.
     /// Only actions that change keyboard or system state get a distinct
-    /// confirmation tick.
+    /// confirmation tick. Clipboard actions are silent here too: whether
+    /// copy/cut/paste actually does anything is only known inside
+    /// `AdvancedTextMiddleware` (full access, non-empty selection or
+    /// pasteboard), so their tick fires from its success paths instead.
     static func forPipelineAction(_ action: KeyAction) -> KeyboardHapticEvent? {
         switch action {
         case .switchMode, .switchToNextLanguage, .advanceToNextInputMode,
-             .dismissKeyboard, .copy, .cut, .paste:
+             .dismissKeyboard:
             .stateChange
         default:
             nil
@@ -304,7 +307,10 @@ final class KeyboardViewModel: ObservableObject {
         let currentId = currentDefinition?.id
             ?? sharedDefaults.string(forKey: SettingsKey.selectedLanguageId.rawValue)
             ?? "en_US"
-        let nextId = LanguageSettings(userDefaults: sharedDefaults).nextLanguageId(after: currentId)
+        // Static lookup on the already-normalized enabled list: constructing
+        // a throwaway LanguageSettings here would re-run init normalization
+        // (an app-group read/write cycle) on every globe swipe.
+        let nextId = LanguageSettings.nextLanguageId(after: currentId, in: enabledLanguageIds)
 
         if nextId != currentId {
             sharedDefaults.set(nextId, forKey: SettingsKey.selectedLanguageId.rawValue)

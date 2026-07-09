@@ -46,6 +46,9 @@ struct DataDrivenKeyboardRootView: View {
                     onSlide: { key, phase in
                         viewModel.handleSlide(key, phase: phase)
                     },
+                    onLongPress: { key in
+                        viewModel.handleGesture(.longPress, keyId: key.id, isReturn: false)
+                    },
                     languageLabel: viewModel.currentLanguageLabel,
                     showLanguageLabel: viewModel.hasMultipleLanguages
                 )

@@ -85,6 +85,10 @@ enum NumericLayouts {
                     label: digit, action: .commitText(digit),
                     category: .digit, returnAction: nil, accessibilityLabel: nil
                 ),
+                .longPress: KeyBinding(
+                    label: digit, action: .commitText(digit),
+                    category: .digit, returnAction: nil, accessibilityLabel: nil
+                ),
             ],
             swipeMode: .none,
             slideType: .none,
@@ -144,6 +148,10 @@ enum NumericLayouts {
             label: "¼", action: .commitText("¼"), category: nil,
             returnAction: nil, accessibilityLabel: nil
         ),
+        // Intentional: the numeric center key's circle gesture types a
+        // plain lowercase "a" (the long-established convention for this
+        // key in this layout family), even though every sibling is a
+        // math/superscript symbol. Do not "fix" this to "ª".
         GridSlot.center: KeyBinding(
             label: "a", action: .commitText("a"), category: nil,
             returnAction: nil, accessibilityLabel: nil
@@ -229,11 +237,17 @@ enum NumericLayouts {
                     bindings[.circularCounterclockwise] = circBinding
                 }
 
-                // Tap → digit
-                bindings[.tap] = KeyBinding(
+                // Tap → digit. The same binding doubles as a long press:
+                // GhostKeyResolver falls back to this layer for gestures the
+                // letter layer leaves unbound, so holding a letter key types
+                // its digit without a mode switch. Long presses only occur
+                // with the opt-in "Type Numbers by Holding" setting enabled.
+                let digitBinding = KeyBinding(
                     label: digit, action: .commitText(digit),
                     category: .digit, returnAction: nil, accessibilityLabel: nil
                 )
+                bindings[.tap] = digitBinding
+                bindings[.longPress] = digitBinding
 
                 digitKeys[slotId] = KeyConfig(
                     id: slotId, bindings: bindings, swipeMode: .eightWay,
@@ -253,8 +267,7 @@ enum NumericLayouts {
             name: ModeNames.numeric,
             keys: allKeys,
             arrangements: StandardArrangements.numeric3x3,
-            autoTransitions: [:],
-            doubleTapMode: nil
+            autoTransitions: [:]
         )
     }
 }

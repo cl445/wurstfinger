@@ -23,6 +23,12 @@ struct GestureClassification {
 struct KeyGestureSequence {
     private var positions: RingBuffer<CGPoint>
 
+    /// Largest distance from the touch-down origin seen so far. Tracked as a
+    /// running maximum (rather than derived from the buffer) so it survives
+    /// ring-buffer eviction and out-and-back paths; used to cancel a pending
+    /// long press once the finger has clearly left its resting position.
+    private(set) var maxDisplacement: CGFloat = 0
+
     init(capacity: Int = KeyboardConstants.Gesture.positionBufferSize) {
         positions = RingBuffer<CGPoint>(capacity: capacity)
     }
@@ -40,12 +46,16 @@ struct KeyGestureSequence {
             positions.append(.zero)
         }
         positions.append(CGPoint(x: translation.width, y: translation.height))
+        maxDisplacement = max(maxDisplacement, hypot(translation.width, translation.height))
         return isTouchDown
     }
 
     /// Records the final sample and classifies the completed sequence.
     mutating func handleEnded(translation: CGSize, aspectRatio: CGFloat) -> GestureClassification {
-        defer { positions.removeAll() }
+        defer {
+            positions.removeAll()
+            maxDisplacement = 0
+        }
         if positions.isEmpty {
             positions.append(.zero)
         }
@@ -62,6 +72,7 @@ struct KeyGestureSequence {
     /// path, misclassifying a tap as the previous gesture's swipe.
     mutating func handleCancelled() {
         positions.removeAll()
+        maxDisplacement = 0
     }
 }
 
@@ -79,7 +90,18 @@ struct KeyGestureRecognizer: ViewModifier {
     /// Key aspect ratio forwarded to the preprocessor for normalization.
     let aspectRatio: CGFloat
 
+    /// Called when the finger has rested on the key for
+    /// `KeyboardConstants.LongPress.duration` without moving beyond
+    /// `movementTolerance`. Returns whether the long press was handled; a
+    /// handled long press consumes the touch, so releasing produces no tap.
+    /// An unhandled one (no long-press binding resolves for the key) leaves
+    /// the touch untouched and it classifies normally on release. `nil`
+    /// disables long-press detection entirely.
+    var onLongPress: (() -> Bool)?
+
     @State private var sequence = KeyGestureSequence()
+    @State private var pendingLongPress: DispatchWorkItem?
+    @State private var longPressConsumedTouch = false
     @Binding var isActive: Bool
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
@@ -98,10 +120,24 @@ struct KeyGestureRecognizer: ViewModifier {
                     .onChanged { value in
                         if sequence.handleChanged(translation: value.translation) {
                             onTouchDown()
+                            scheduleLongPress()
+                        } else if pendingLongPress != nil,
+                                  sequence.maxDisplacement > KeyboardConstants.LongPress.movementTolerance {
+                            cancelPendingLongPress()
                         }
                         isActive = true
                     }
                     .onEnded { value in
+                        cancelPendingLongPress()
+                        if longPressConsumedTouch {
+                            // The long press already dispatched its action;
+                            // discard the touch instead of classifying it, so
+                            // releasing doesn't produce a second key event.
+                            longPressConsumedTouch = false
+                            sequence.handleCancelled()
+                            isActive = false
+                            return
+                        }
                         let classification = sequence.handleEnded(
                             translation: value.translation,
                             aspectRatio: aspectRatio
@@ -116,9 +152,39 @@ struct KeyGestureRecognizer: ViewModifier {
                 // cancelled the touches. Discard the partial gesture without
                 // classifying it.
                 guard !inFlight, sequence.isTracking else { return }
+                cancelPendingLongPress()
+                longPressConsumedTouch = false
                 sequence.handleCancelled()
                 isActive = false
             }
+    }
+
+    // MARK: - Long Press
+
+    private func scheduleLongPress() {
+        guard onLongPress != nil else { return }
+        cancelPendingLongPress()
+        let workItem = DispatchWorkItem { fireLongPress() }
+        pendingLongPress = workItem
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + KeyboardConstants.LongPress.duration,
+            execute: workItem
+        )
+    }
+
+    private func cancelPendingLongPress() {
+        pendingLongPress?.cancel()
+        pendingLongPress = nil
+    }
+
+    private func fireLongPress() {
+        pendingLongPress = nil
+        // The touch may have ended or been cancelled between scheduling and
+        // firing; a stale fire must not dispatch anything.
+        guard sequence.isTracking,
+              sequence.maxDisplacement <= KeyboardConstants.LongPress.movementTolerance,
+              onLongPress?() == true else { return }
+        longPressConsumedTouch = true
     }
 
     /// Guarantees the touch-down origin `(0,0)` is the first sample.

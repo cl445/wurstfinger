@@ -57,6 +57,29 @@ struct KeyGestureSequenceTests {
         #expect(isTouchDown)
     }
 
+    @Test func maxDisplacementTracksPeakDistanceFromOrigin() {
+        var sequence = KeyGestureSequence()
+        _ = sequence.handleChanged(translation: CGSize(width: 30, height: 40)) // 50pt out …
+        _ = sequence.handleChanged(translation: CGSize(width: 3, height: 4)) // … then back
+        // The running maximum must survive the return leg — a pending long
+        // press stays cancelled after an out-and-back movement.
+        #expect(sequence.maxDisplacement == 50)
+    }
+
+    @Test func maxDisplacementResetsAfterEnd() {
+        var sequence = KeyGestureSequence()
+        feedRightwardSwipe(into: &sequence)
+        _ = sequence.handleEnded(translation: CGSize(width: 60, height: 0), aspectRatio: 1.0)
+        #expect(sequence.maxDisplacement == 0)
+    }
+
+    @Test func maxDisplacementResetsAfterCancellation() {
+        var sequence = KeyGestureSequence()
+        feedRightwardSwipe(into: &sequence)
+        sequence.handleCancelled()
+        #expect(sequence.maxDisplacement == 0)
+    }
+
     @Test func tapAfterCancelledSwipeClassifiesAsTap() {
         var sequence = KeyGestureSequence()
         // A rightward swipe is cancelled by the system mid-gesture …

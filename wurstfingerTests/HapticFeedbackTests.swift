@@ -64,11 +64,19 @@ struct PipelineHapticEventTests {
         #expect(KeyboardHapticEvent.forPipelineAction(.none) == nil)
     }
 
+    /// Clipboard actions must not tick upfront: whether copy/cut/paste
+    /// actually does anything is only known inside AdvancedTextMiddleware,
+    /// which fires the confirmation tick from its success paths.
+    @Test func clipboardActionsAreSilentInThePipelineMapping() {
+        #expect(KeyboardHapticEvent.forPipelineAction(.copy) == nil)
+        #expect(KeyboardHapticEvent.forPipelineAction(.cut) == nil)
+        #expect(KeyboardHapticEvent.forPipelineAction(.paste) == nil)
+    }
+
     @Test func stateChangingActionsGetConfirmationTick() {
         let actions: [KeyAction] = [
             .switchMode("numeric"), .switchToNextLanguage,
             .advanceToNextInputMode, .dismissKeyboard,
-            .copy, .cut, .paste,
         ]
         for action in actions {
             #expect(KeyboardHapticEvent.forPipelineAction(action) == .stateChange)

@@ -9,29 +9,11 @@ import Foundation
 import Testing
 @testable import WurstfingerApp
 
-struct DiscreteGestureClassificationTests {
-    @Test func returnRatioBelowThresholdIsReturnSwipe() {
-        // finalX near zero, maxDisplacement large -> return swipe
-        let maxDisplacement: CGFloat = 50
-        let finalX: CGFloat = 5
-        let ratio = abs(finalX) / abs(maxDisplacement)
-        #expect(ratio < KeyboardConstants.SpaceGestures.returnSwipeThreshold)
-    }
-
-    @Test func returnRatioAboveThresholdIsRegularSwipe() {
-        // finalX close to maxDisplacement -> regular swipe
-        let maxDisplacement: CGFloat = 50
-        let finalX: CGFloat = 45
-        let ratio = abs(finalX) / abs(maxDisplacement)
-        #expect(ratio >= KeyboardConstants.SpaceGestures.returnSwipeThreshold)
-    }
-
-    @Test func returnSwipeThresholdIsReasonable() {
-        let threshold = KeyboardConstants.SpaceGestures.returnSwipeThreshold
-        #expect(threshold > 0)
-        #expect(threshold < 1)
-    }
-}
+// Note: a `DiscreteGestureClassificationTests` suite used to live here. Its
+// tests recomputed the production return-ratio formula inside the test (or
+// asserted a constant lies in (0, 1)), so they could never catch a
+// classification regression. The actual return-vs-regular swipe behavior is
+// exercised end-to-end by `DiscreteCursorMovementTests` below (review L20).
 
 @Suite(.serialized)
 struct CursorMovementPipelineTests {
@@ -112,7 +94,7 @@ struct CursorMovementPipelineTests {
 @Suite(.serialized)
 struct DiscreteCursorMovementTests {
     private func makeDiscreteViewModel() -> (KeyboardViewModel, MockTextTarget) {
-        let defaults = UserDefaults(suiteName: "test.\(UUID().uuidString)")!
+        let defaults = InMemoryUserDefaults()
         defaults.set(
             CursorMovementStyle.discrete.rawValue,
             forKey: SettingsKey.cursorMovementStyle.rawValue

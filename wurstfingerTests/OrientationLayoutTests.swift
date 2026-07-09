@@ -21,7 +21,7 @@ struct OrientationLayoutTests {
     /// in viewWillLayoutSubviews(), so SwiftUI re-evaluates the layout.
     @Test("viewWidth publishes changes for orientation handling")
     func viewWidthPublishesChanges() {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        let viewModel = KeyboardViewModel(userDefaults: InMemoryUserDefaults(), shouldPersistSettings: false)
 
         var observedWidths: [CGFloat] = []
         let cancellable = viewModel.$viewWidth
@@ -38,7 +38,7 @@ struct OrientationLayoutTests {
 
     @Test("Same viewWidth does not trigger redundant publish")
     func sameViewWidthNoRedundantPublish() {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        let viewModel = KeyboardViewModel(userDefaults: InMemoryUserDefaults(), shouldPersistSettings: false)
 
         var publishCount = 0
         let cancellable = viewModel.$viewWidth
@@ -60,7 +60,7 @@ struct OrientationLayoutTests {
 
     @Test("Keyboard-sized window keeps the screen's portrait width")
     func keyboardSizedWindowKeepsPortraitWidth() {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        let viewModel = KeyboardViewModel(userDefaults: InMemoryUserDefaults(), shouldPersistSettings: false)
 
         // The extension's window is only as tall as the keyboard itself
         // (issue behind #219's regression): its height must never cap the
@@ -80,7 +80,7 @@ struct OrientationLayoutTests {
 
     @Test("Narrow pane window caps the keyboard width")
     func narrowPaneWindowCapsWidth() {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        let viewModel = KeyboardViewModel(userDefaults: InMemoryUserDefaults(), shouldPersistSettings: false)
 
         // Slide Over / narrow Split View pane: the window width is the
         // available container width and wins over the screen.
@@ -90,7 +90,7 @@ struct OrientationLayoutTests {
 
     @Test("Nil window falls back to the device screen")
     func nilWindowFallsBackToScreen() {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        let viewModel = KeyboardViewModel(userDefaults: InMemoryUserDefaults(), shouldPersistSettings: false)
 
         viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 320, height: 300))
         viewModel.updateWindowBounds(nil)
@@ -100,7 +100,7 @@ struct OrientationLayoutTests {
 
     @Test("Same window bounds do not trigger redundant publish")
     func sameWindowBoundsNoRedundantPublish() {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        let viewModel = KeyboardViewModel(userDefaults: InMemoryUserDefaults(), shouldPersistSettings: false)
 
         var publishCount = 0
         let cancellable = viewModel.$keyboardWidthCap
@@ -116,7 +116,7 @@ struct OrientationLayoutTests {
 
     @Test("Degenerate window bounds are ignored")
     func degenerateWindowBoundsIgnored() {
-        let viewModel = KeyboardViewModel(shouldPersistSettings: false)
+        let viewModel = KeyboardViewModel(userDefaults: InMemoryUserDefaults(), shouldPersistSettings: false)
 
         viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 320, height: 300))
         viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: 0, height: 300))

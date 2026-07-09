@@ -117,28 +117,20 @@ struct wurstfingerTests {
 
     // MARK: - Haptic Persistence Tests
 
-    @Test @MainActor func hapticIntensitiesPersistToDefaults() throws {
-        let suite = "group.de.akator.wurstfinger.tests.hapticsPersist"
-        let defaults = try #require(UserDefaults(suiteName: suite))
-        defaults.removePersistentDomain(forName: suite)
-        defer { defaults.removePersistentDomain(forName: suite) }
+    @Test @MainActor func hapticIntensitiesPersistToDefaults() {
+        let defaults = InMemoryUserDefaults()
 
         let viewModel = KeyboardViewModel(userDefaults: defaults)
         viewModel.hapticIntensityTap = 0.8
         viewModel.hapticIntensityDrag = 1.1
-
-        defaults.synchronize()
 
         #expect(defaults.double(forKey: KeyboardViewModel.hapticTapIntensityKey) == 0.8)
         let dragDefault = defaults.double(forKey: KeyboardViewModel.hapticDragIntensityKey)
         #expect(abs(dragDefault - 1.0) < 0.0001)
     }
 
-    @Test @MainActor func previewViewModelDoesNotPersist() throws {
-        let suite = "group.de.akator.wurstfinger.tests.preview"
-        let defaults = try #require(UserDefaults(suiteName: suite))
-        defaults.removePersistentDomain(forName: suite)
-        defer { defaults.removePersistentDomain(forName: suite) }
+    @Test @MainActor func previewViewModelDoesNotPersist() {
+        let defaults = InMemoryUserDefaults()
 
         defaults.set(0.3, forKey: KeyboardViewModel.hapticTapIntensityKey)
 
@@ -150,11 +142,8 @@ struct wurstfingerTests {
         #expect(abs(persistedTap - 0.3) < 0.0001)
     }
 
-    @Test @MainActor func hapticIntensityClampsWithinBounds() throws {
-        let suite = "group.de.akator.wurstfinger.tests.clamp"
-        let defaults = try #require(UserDefaults(suiteName: suite))
-        defaults.removePersistentDomain(forName: suite)
-        defer { defaults.removePersistentDomain(forName: suite) }
+    @Test @MainActor func hapticIntensityClampsWithinBounds() {
+        let defaults = InMemoryUserDefaults()
 
         let viewModel = KeyboardViewModel(userDefaults: defaults)
 

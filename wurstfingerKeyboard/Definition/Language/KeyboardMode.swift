@@ -26,12 +26,10 @@ struct KeyboardMode: Codable, Equatable {
     /// Automatic mode transitions after input of a certain category.
     /// e.g. in "shifted" mode: [.letter: "main"] → after letter back to main.
     /// Empty dictionary = mode stays active (like caps lock or numeric).
+    ///
+    /// Note: double-tap-shift → caps lock is not a mode property; it is
+    /// implemented by rebinding shift-up in `GridKeyboardFactory`.
     let autoTransitions: [KeyCategory: String]
-
-    /// Double-tap on the switchMode key that leads to this mode → switch here.
-    /// e.g. shifted.doubleTapMode = "capsLock" → double-tap shift → caps lock.
-    /// nil = no double-tap behavior.
-    let doubleTapMode: String?
 
     // MARK: - Convenience
 
@@ -52,15 +50,13 @@ struct KeyboardMode: Codable, Equatable {
     /// Creates a copy with changed state machine properties.
     func with(
         name: String? = nil,
-        autoTransitions: [KeyCategory: String]? = nil,
-        doubleTapMode: String?? = nil
+        autoTransitions: [KeyCategory: String]? = nil
     ) -> KeyboardMode {
         KeyboardMode(
             name: name ?? self.name,
             keys: keys,
             arrangements: arrangements,
-            autoTransitions: autoTransitions ?? self.autoTransitions,
-            doubleTapMode: doubleTapMode ?? self.doubleTapMode
+            autoTransitions: autoTransitions ?? self.autoTransitions
         )
     }
 
@@ -78,7 +74,7 @@ struct KeyboardMode: Codable, Equatable {
         updatedKeys[keyId] = key
         return KeyboardMode(
             name: name, keys: updatedKeys, arrangements: arrangements,
-            autoTransitions: autoTransitions, doubleTapMode: doubleTapMode
+            autoTransitions: autoTransitions
         )
     }
 
@@ -103,7 +99,7 @@ struct KeyboardMode: Codable, Equatable {
         updatedKeys[GridSlot.midRight] = midRight
         return KeyboardMode(
             name: name, keys: updatedKeys, arrangements: arrangements,
-            autoTransitions: autoTransitions, doubleTapMode: doubleTapMode
+            autoTransitions: autoTransitions
         )
     }
 }

@@ -89,6 +89,26 @@ final class InMemoryUserDefaults: UserDefaults {
         storage[defaultName] = value
     }
 
+    // Typed setters route into the in-memory storage as well: without these
+    // overrides, a statically-typed call like `set(0.3, forKey:)` resolves to
+    // the non-overridden `set(Double,forKey:)` and silently writes to the real
+    // standard domain instead.
+    override func set(_ value: Double, forKey defaultName: String) {
+        set(value as NSNumber, forKey: defaultName)
+    }
+
+    override func set(_ value: Float, forKey defaultName: String) {
+        set(value as NSNumber, forKey: defaultName)
+    }
+
+    override func set(_ value: Int, forKey defaultName: String) {
+        set(value as NSNumber, forKey: defaultName)
+    }
+
+    override func set(_ value: Bool, forKey defaultName: String) {
+        set(value as NSNumber, forKey: defaultName)
+    }
+
     override func removeObject(forKey defaultName: String) {
         lock.lock(); defer { lock.unlock() }
         storage[defaultName] = nil
@@ -119,7 +139,7 @@ final class InMemoryUserDefaults: UserDefaults {
 /// affordance (no shifted/capsLock modes, no shift binding) and
 /// auto-capitalization disabled in their definition settings.
 enum CaselessLanguages {
-    static let ids: Set<String> = ["he_IL"]
+    static let ids: Set<String> = ["he_IL", "ar", "fa_IR", "ur"]
 }
 
 /// Creates a KeyboardViewModel wired to a MockTextTarget for testing.

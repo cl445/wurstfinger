@@ -172,104 +172,11 @@ struct LanguageSettingsTests {
     }
 }
 
-// MARK: - Primary Language Resolution Tests
-
-/// Tests the logic that resolves a language ID from UserDefaults into a locale identifier,
-/// matching the primaryLanguage getter in KeyboardViewController.
-struct PrimaryLanguageResolutionTests {
-    /// Helper that mirrors the primaryLanguage getter logic:
-    /// read language ID from UserDefaults → resolve to LanguageConfig → return locale identifier
-    private func resolvePrimaryLanguage(from defaults: UserDefaults) -> String {
-        let languageId = defaults.string(forKey: SettingsKey.selectedLanguageId.rawValue)
-        let config = languageId.flatMap { LanguageConfig.language(withId: $0) } ?? .english
-        return config.locale.identifier
-    }
-
-    private func createTestDefaults() -> (UserDefaults, String) {
-        let suiteName = "test.primaryLanguage.\(UUID().uuidString)"
-        return (UserDefaults(suiteName: suiteName)!, suiteName)
-    }
-
-    @Test("Returns German locale when German is selected")
-    func resolveGerman() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
-
-        defaults.set("de_DE", forKey: SettingsKey.selectedLanguageId.rawValue)
-        #expect(resolvePrimaryLanguage(from: defaults) == "de_DE")
-    }
-
-    @Test("Returns French locale when French is selected")
-    func resolveFrench() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
-
-        defaults.set("fr_FR", forKey: SettingsKey.selectedLanguageId.rawValue)
-        #expect(resolvePrimaryLanguage(from: defaults) == "fr_FR")
-    }
-
-    @Test("Returns Russian locale when Russian is selected")
-    func resolveRussian() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
-
-        defaults.set("ru_RU", forKey: SettingsKey.selectedLanguageId.rawValue)
-        #expect(resolvePrimaryLanguage(from: defaults) == "ru_RU")
-    }
-
-    @Test("Falls back to English when no language is stored")
-    func fallbackWhenNoLanguageStored() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
-
-        // Don't set any value — should fall back to English
-        #expect(resolvePrimaryLanguage(from: defaults) == "en_US")
-    }
-
-    @Test("Falls back to English for unknown language ID")
-    func fallbackForUnknownLanguageId() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
-
-        defaults.set("xx_XX", forKey: SettingsKey.selectedLanguageId.rawValue)
-        #expect(resolvePrimaryLanguage(from: defaults) == "en_US")
-    }
-
-    @Test("Picks up language change from UserDefaults without restart")
-    func picksUpLanguageChange() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
-
-        defaults.set("de_DE", forKey: SettingsKey.selectedLanguageId.rawValue)
-        #expect(resolvePrimaryLanguage(from: defaults) == "de_DE")
-
-        // Simulate host app changing language
-        defaults.set("fr_FR", forKey: SettingsKey.selectedLanguageId.rawValue)
-        #expect(resolvePrimaryLanguage(from: defaults) == "fr_FR")
-    }
-
-    @Test("All supported languages resolve to valid locale identifiers")
-    func allLanguagesResolveToValidLocale() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
-
-        for language in LanguageConfig.allLanguages {
-            defaults.set(language.id, forKey: SettingsKey.selectedLanguageId.rawValue)
-            let resolved = resolvePrimaryLanguage(from: defaults)
-            #expect(
-                resolved == language.locale.identifier,
-                "Language \(language.name) (\(language.id)) should resolve to \(language.locale.identifier), got \(resolved)"
-            )
-        }
-    }
-}
-
 // MARK: - Multi-Language Settings Tests
 
 struct MultiLanguageSettingsTests {
-    private func createTestDefaults() -> (UserDefaults, String) {
-        let suiteName = "test.multiLang.\(UUID().uuidString)"
-        return (UserDefaults(suiteName: suiteName)!, suiteName)
+    private func createTestDefaults() -> UserDefaults {
+        InMemoryUserDefaults()
     }
 
     private func createSettings(defaults: UserDefaults, selectedId: String = "en_US", enabledIds: [String]? = nil) -> LanguageSettings {
@@ -282,8 +189,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Migration: no enabled list seeds from selected language")
     func migrationSeedsFromSelected() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "de_DE")
         #expect(settings.enabledLanguageIds == ["de_DE"])
@@ -292,8 +198,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Loads existing enabled list from UserDefaults")
     func loadsEnabledList() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU", "de_DE"])
         #expect(settings.enabledLanguageIds == ["en_US", "ru_RU", "de_DE"])
@@ -301,8 +206,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Toggle enables a language")
     func toggleEnablesLanguage() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
         settings.toggleLanguage(.russian)
@@ -312,8 +216,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Toggle disables an enabled language")
     func toggleDisablesLanguage() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU", "de_DE"])
         let result = settings.toggleLanguage(.russian)
@@ -324,8 +227,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Cannot disable last remaining language")
     func cannotDisableLastLanguage() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
         let result = settings.toggleLanguage(.english)
@@ -335,8 +237,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Disabling selected language switches to first enabled")
     func disablingSelectedSwitchesToFirst() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "ru_RU", enabledIds: ["en_US", "ru_RU", "de_DE"])
         settings.toggleLanguage(.russian)
@@ -345,8 +246,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Selecting a language adds it to enabled if not present")
     func selectAddsToEnabled() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
         settings.selectLanguage(.russian)
@@ -356,8 +256,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Next language cycles through enabled list with 2 languages")
     func nextLanguageCyclesTwoLanguages() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
         #expect(settings.nextLanguageId(after: "en_US") == "ru_RU")
@@ -366,8 +265,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Next language cycles through enabled list with 3 languages")
     func nextLanguageCyclesThreeLanguages() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU", "de_DE"])
         #expect(settings.nextLanguageId(after: "en_US") == "ru_RU")
@@ -377,8 +275,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Next language cycles through many enabled languages")
     func nextLanguageCyclesManyLanguages() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let ids = ["en_US", "ru_RU", "de_DE", "fr_FR", "es_ES"]
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ids)
@@ -391,8 +288,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Next language returns same when only one enabled")
     func nextLanguageSingleLanguage() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
         #expect(settings.nextLanguageId(after: "en_US") == "en_US")
@@ -400,8 +296,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Next language falls back to first when current not in list")
     func nextLanguageFallsBackWhenNotInList() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
         #expect(settings.nextLanguageId(after: "de_DE") == "en_US")
@@ -409,8 +304,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("hasMultipleLanguages reflects enabled count")
     func hasMultipleLanguagesFlag() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let single = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
         #expect(single.hasMultipleLanguages == false)
@@ -421,8 +315,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("currentLanguageLabel returns uppercase language code")
     func languageLabelUppercase() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let enSettings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US"])
         #expect(enSettings.currentLanguageLabel == "EN")
@@ -436,8 +329,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("enabledLanguages returns resolved LanguageConfig objects")
     func enabledLanguagesResolved() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU", "de_DE"])
         let configs = settings.enabledLanguages
@@ -449,8 +341,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Stale IDs in enabled list are filtered out on load")
     func staleIdsFiltered() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "zz_ZZ", "ru_RU"])
         #expect(settings.enabledLanguageIds == ["en_US", "ru_RU"])
@@ -458,8 +349,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Init reselects the first enabled language when selected is not enabled")
     func selectedNotEnabledReselectsFirstEnabled() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         // Selected is ru_RU but enabled list only has en_US — this state arises
         // when the language was disabled elsewhere; the disable must win, so the
@@ -473,8 +363,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("Enabled list persistence round-trips through JSON")
     func enabledListPersistence() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let ids = ["en_US", "ru_RU", "de_DE", "fr_FR"]
         LanguageSettings.saveEnabledLanguageIds(ids, to: defaults)
@@ -484,8 +373,7 @@ struct MultiLanguageSettingsTests {
 
     @Test("isLanguageEnabled reflects enabled state")
     func isLanguageEnabledCheck() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
         #expect(settings.isLanguageEnabled(.english) == true)
@@ -497,9 +385,8 @@ struct MultiLanguageSettingsTests {
 // MARK: - Pinned Default Language Tests
 
 struct PinnedLanguageTests {
-    private func createTestDefaults() -> (UserDefaults, String) {
-        let suiteName = "test.pinned.\(UUID().uuidString)"
-        return (UserDefaults(suiteName: suiteName)!, suiteName)
+    private func createTestDefaults() -> UserDefaults {
+        InMemoryUserDefaults()
     }
 
     private func createSettings(
@@ -516,8 +403,7 @@ struct PinnedLanguageTests {
 
     @Test("Pin a language sets pinnedLanguageId")
     func pinSetsId() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"])
         settings.pinLanguage(.russian)
@@ -526,8 +412,7 @@ struct PinnedLanguageTests {
 
     @Test("Unpin by tapping the same language")
     func unpinSameLanguage() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
         settings.pinLanguage(.russian)
@@ -536,8 +421,7 @@ struct PinnedLanguageTests {
 
     @Test("Pin a different language replaces the previous pin")
     func pinDifferentLanguage() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"], pinnedId: "en_US")
         settings.pinLanguage(.russian)
@@ -546,8 +430,7 @@ struct PinnedLanguageTests {
 
     @Test("Pinning a disabled language enables it first")
     func pinDisabledLanguageEnablesIt() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, enabledIds: ["en_US"])
         settings.pinLanguage(.russian)
@@ -557,8 +440,7 @@ struct PinnedLanguageTests {
 
     @Test("Disabling the pinned language clears the pin")
     func disablingPinnedLanguageClearsPin() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
         settings.toggleLanguage(.russian)
@@ -567,8 +449,7 @@ struct PinnedLanguageTests {
 
     @Test("startupLanguageId returns pinned when set")
     func startupReturnsPinned() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
         #expect(settings.startupLanguageId == "ru_RU")
@@ -576,8 +457,7 @@ struct PinnedLanguageTests {
 
     @Test("startupLanguageId returns selectedLanguageId when no pin")
     func startupReturnsSelectedWhenNoPin() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
         #expect(settings.startupLanguageId == "en_US")
@@ -585,8 +465,7 @@ struct PinnedLanguageTests {
 
     @Test("applyStartupLanguage makes the pinned language the active selection")
     func applyStartupHonorsPin() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
         settings.applyStartupLanguage()
@@ -599,8 +478,7 @@ struct PinnedLanguageTests {
 
     @Test("applyStartupLanguage leaves the selection unchanged when no pin")
     func applyStartupNoPinKeepsSelection() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, selectedId: "en_US", enabledIds: ["en_US", "ru_RU"])
         settings.applyStartupLanguage()
@@ -610,8 +488,7 @@ struct PinnedLanguageTests {
 
     @Test("Stale pinned ID is cleared on load")
     func stalePinnedIdCleared() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"], pinnedId: "zz_ZZ")
         #expect(settings.pinnedLanguageId == nil)
@@ -619,8 +496,7 @@ struct PinnedLanguageTests {
 
     @Test("Pinned ID not in enabled list is cleared on load")
     func pinnedNotInEnabledCleared() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, enabledIds: ["en_US"], pinnedId: "ru_RU")
         #expect(settings.pinnedLanguageId == nil)
@@ -628,8 +504,7 @@ struct PinnedLanguageTests {
 
     @Test("pinnedLanguage returns resolved LanguageConfig")
     func pinnedLanguageResolved() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
         #expect(settings.pinnedLanguage?.id == "ru_RU")
@@ -637,8 +512,7 @@ struct PinnedLanguageTests {
 
     @Test("pinnedLanguage is nil when no pin")
     func pinnedLanguageNilWhenNoPin() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"])
         #expect(settings.pinnedLanguage == nil)
@@ -646,8 +520,7 @@ struct PinnedLanguageTests {
 
     @Test("Pin persists to UserDefaults")
     func pinPersists() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"])
         settings.pinLanguage(.russian)
@@ -657,8 +530,7 @@ struct PinnedLanguageTests {
 
     @Test("Unpin persists nil to UserDefaults")
     func unpinPersistsNil() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         let settings = createSettings(defaults: defaults, enabledIds: ["en_US", "ru_RU"], pinnedId: "ru_RU")
         settings.pinLanguage(.russian)
@@ -668,8 +540,7 @@ struct PinnedLanguageTests {
 
     @Test("KeyboardViewModel boots with pinned language, not selected")
     func viewModelBootsWithPinnedLanguage() {
-        let (defaults, suite) = createTestDefaults()
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = createTestDefaults()
 
         defaults.set("en_US", forKey: SettingsKey.selectedLanguageId.rawValue)
         LanguageSettings.saveEnabledLanguageIds(["en_US", "ru_RU"], to: defaults)
@@ -732,33 +603,61 @@ struct ResolvedLanguageIdTests {
     func fallsBackForNil() {
         #expect(LanguageSettings.resolvedLanguageId(nil) == LanguageSettings.detectSystemLanguage())
     }
+
+    @Test("Keeps every known language id")
+    func keepsAllKnownIds() {
+        for language in LanguageConfig.allLanguages {
+            #expect(LanguageSettings.resolvedLanguageId(language.id) == language.id)
+        }
+    }
+
+    /// Pins the contract `KeyboardViewController.primaryLanguage` relies on:
+    /// whatever `resolvedLanguageId` returns must be resolvable via the
+    /// lightweight `KeyboardRegistry.available` metadata, so the controller's
+    /// locale lookup never has to hit its English fallback for a resolved id.
+    ///
+    /// Conscious gap: the controller property itself (SharedDefaults read +
+    /// registry lookup + fallback) is not directly testable until the registry
+    /// and shared store are injectable — see the deferred injectable-registry
+    /// decision from the 2026-07-07 code review (H5/M12).
+    @Test("Resolved ids always have registry metadata with a matching locale")
+    func resolvedIdsAlwaysHaveRegistryMetadata() {
+        let metadataByID = Dictionary(
+            uniqueKeysWithValues: KeyboardRegistry.available.map { ($0.id, $0) }
+        )
+        let storedCandidates: [String?] = [nil, "", "xx_XX", "de_DE", "en_US", "vi_VN"]
+        for stored in storedCandidates {
+            let resolved = LanguageSettings.resolvedLanguageId(stored)
+            let info = metadataByID[resolved]
+            #expect(info != nil, "Resolved id \(resolved) (from \(stored ?? "nil")) missing in registry metadata")
+            let expectedLocale = LanguageConfig.language(withId: resolved)?.locale.identifier
+            #expect(info?.localeIdentifier == expectedLocale)
+        }
+    }
 }
 
 // MARK: - normalizedEnabledLanguageIds
 
 struct NormalizedEnabledLanguageIdsTests {
-    private func makeDefaults(selected: String, enabled: [String]?) -> (UserDefaults, String) {
-        let suite = "test.normalized.\(UUID().uuidString)"
-        let defaults = UserDefaults(suiteName: suite)!
+    private func makeDefaults(selected: String, enabled: [String]?) -> UserDefaults {
+        let defaults = InMemoryUserDefaults()
         defaults.set(selected, forKey: SettingsKey.selectedLanguageId.rawValue)
         if let enabled {
             LanguageSettings.saveEnabledLanguageIds(enabled, to: defaults)
         }
-        return (defaults, suite)
+        return defaults
     }
 
     @Test("Filters out stale/unknown enabled IDs")
     func filtersStaleIds() {
-        let (defaults, suite) = makeDefaults(selected: "de_DE", enabled: ["de_DE", "zz_ZZ", "en_US"])
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = makeDefaults(selected: "de_DE", enabled: ["de_DE", "zz_ZZ", "en_US"])
 
         #expect(LanguageSettings.normalizedEnabledLanguageIds(from: defaults) == ["de_DE", "en_US"])
     }
 
     @Test("Falls back to the selected language when the stored list is empty")
     func emptyFallsBackToSelected() {
-        let (defaults, suite) = makeDefaults(selected: "ru_RU", enabled: [])
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = makeDefaults(selected: "ru_RU", enabled: [])
 
         #expect(LanguageSettings.normalizedEnabledLanguageIds(from: defaults) == ["ru_RU"])
     }
@@ -768,16 +667,14 @@ struct NormalizedEnabledLanguageIdsTests {
         // selected = de_DE with de_DE absent from the enabled list means the
         // host app disabled German after the keyboard selected it — treating it
         // as enabled again would resurrect a language the user turned off.
-        let (defaults, suite) = makeDefaults(selected: "de_DE", enabled: ["en_US"])
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = makeDefaults(selected: "de_DE", enabled: ["en_US"])
 
         #expect(LanguageSettings.normalizedEnabledLanguageIds(from: defaults) == ["en_US"])
     }
 
     @Test("Does not persist — leaves the stored list untouched")
     func doesNotPersist() {
-        let (defaults, suite) = makeDefaults(selected: "de_DE", enabled: ["de_DE", "zz_ZZ"])
-        defer { defaults.removePersistentDomain(forName: suite) }
+        let defaults = makeDefaults(selected: "de_DE", enabled: ["de_DE", "zz_ZZ"])
 
         _ = LanguageSettings.normalizedEnabledLanguageIds(from: defaults)
         #expect(LanguageSettings.loadEnabledLanguageIds(from: defaults) == ["de_DE", "zz_ZZ"])
@@ -872,5 +769,91 @@ struct LanguageSettingsStalenessTests {
 
         #expect(settings.enabledLanguageIds.contains("de_DE"))
         #expect(settings.pinnedLanguageId == "de_DE")
+    }
+}
+
+// MARK: - Init Write Hygiene
+
+/// In-memory defaults that records every mutating call. Used to prove that
+/// constructing `LanguageSettings` on an already-normalized store performs
+/// no write at all — an unguarded app-group write would fire
+/// `UserDefaults.didChangeNotification` and make the keyboard extension
+/// reload its settings on every construction.
+private final class WriteRecordingDefaults: UserDefaults {
+    private var storage: [String: Any] = [:]
+    private(set) var writtenKeys: [String] = []
+
+    convenience init() {
+        self.init(suiteName: nil)!
+    }
+
+    override func object(forKey defaultName: String) -> Any? {
+        storage[defaultName]
+    }
+
+    override func set(_ value: Any?, forKey defaultName: String) {
+        writtenKeys.append(defaultName)
+        storage[defaultName] = value
+    }
+
+    override func removeObject(forKey defaultName: String) {
+        writtenKeys.append(defaultName)
+        storage[defaultName] = nil
+    }
+
+    override func string(forKey defaultName: String) -> String? {
+        object(forKey: defaultName) as? String
+    }
+
+    override func stringArray(forKey defaultName: String) -> [String]? {
+        object(forKey: defaultName) as? [String]
+    }
+
+    /// Seeds the store without recording the writes.
+    func seed(_ value: Any?, forKey key: String) {
+        storage[key] = value
+    }
+}
+
+struct LanguageSettingsInitWriteHygieneTests {
+    @Test("Init on an already-normalized store performs no write")
+    func initOnNormalizedStoreIsWriteFree() {
+        let defaults = WriteRecordingDefaults()
+        defaults.seed("en_US", forKey: SettingsKey.selectedLanguageId.rawValue)
+        defaults.seed(["en_US", "de_DE"], forKey: SettingsKey.enabledLanguageIds.rawValue)
+
+        _ = LanguageSettings(userDefaults: defaults)
+
+        #expect(defaults.writtenKeys.isEmpty)
+    }
+
+    @Test("Init on a normalized store with a valid pin performs no write")
+    func initWithValidPinIsWriteFree() {
+        let defaults = WriteRecordingDefaults()
+        defaults.seed("en_US", forKey: SettingsKey.selectedLanguageId.rawValue)
+        defaults.seed(["en_US", "de_DE"], forKey: SettingsKey.enabledLanguageIds.rawValue)
+        defaults.seed("de_DE", forKey: SettingsKey.pinnedLanguageId.rawValue)
+
+        _ = LanguageSettings(userDefaults: defaults)
+
+        #expect(defaults.writtenKeys.isEmpty)
+    }
+
+    @Test("Init still persists corrections for an inconsistent store")
+    func initPersistsNormalizationWhenStoreIsInconsistent() {
+        let defaults = WriteRecordingDefaults()
+        // Stale enabled entry + selection outside the enabled list + dangling pin.
+        defaults.seed("de_DE", forKey: SettingsKey.selectedLanguageId.rawValue)
+        defaults.seed(["en_US", "zz_ZZ"], forKey: SettingsKey.enabledLanguageIds.rawValue)
+        defaults.seed("zz_ZZ", forKey: SettingsKey.pinnedLanguageId.rawValue)
+
+        let settings = LanguageSettings(userDefaults: defaults)
+
+        #expect(settings.selectedLanguageId == "en_US")
+        #expect(settings.enabledLanguageIds == ["en_US"])
+        #expect(settings.pinnedLanguageId == nil)
+        #expect(defaults.writtenKeys.contains(SettingsKey.selectedLanguageId.rawValue))
+        #expect(defaults.writtenKeys.contains(SettingsKey.enabledLanguageIds.rawValue))
+        #expect(defaults.writtenKeys.contains(SettingsKey.pinnedLanguageId.rawValue))
     }
 }

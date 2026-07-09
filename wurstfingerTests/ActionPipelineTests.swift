@@ -65,8 +65,7 @@ private enum PipelineFixtures {
                     rows: [[KeyPlacement(keyId: keys.first?.id ?? "x")]]
                 ),
             ],
-            autoTransitions: autoTransitions,
-            doubleTapMode: nil
+            autoTransitions: autoTransitions
         )
     }
 
@@ -224,6 +223,61 @@ struct ComposeMiddlewareTests {
         #expect(deleted == 0, "No rule → no previous-character deletion")
     }
 
+    /// Composing never combines across a space. The rule set carries
+    /// Thumb-Key's space-consuming " " + x fallback rows, but the
+    /// middleware must skip them: "hello " + ´ → "hello ´".
+    @Test func preservesSpaceAndCommitsTriggerAfterSpace() {
+        let middleware = ComposeMiddleware(
+            compose: { previous, _ in
+                Issue.record("compose lookup must be skipped after a space")
+                return previous == " " ? "'" : nil
+            },
+            cycleAccent: { _ in nil },
+            previousCharacter: { " " },
+            deletePreviousCharacter: { Issue.record("Space must never be consumed by compose") }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .compose(trigger: "´")))
+
+        #expect(sink.received.first?.action == .commitText("´"))
+    }
+
+    @Test func stillComposesAfterLetterDespiteSpaceGuard() {
+        var deleted = 0
+        let middleware = ComposeMiddleware(
+            compose: { previous, trigger in
+                (previous == "e" && trigger == "´") ? "é" : nil
+            },
+            cycleAccent: { _ in nil },
+            previousCharacter: { "e" },
+            deletePreviousCharacter: { deleted += 1 }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .compose(trigger: "´")))
+
+        #expect(sink.received.first?.action == .commitText("é"))
+        #expect(deleted == 1)
+    }
+
+    @Test func commitsTriggerAtDocumentStart() {
+        let middleware = ComposeMiddleware(
+            compose: { _, _ in Issue.record("compose must not run at document start"); return nil },
+            cycleAccent: { _ in nil },
+            previousCharacter: { "" },
+            deletePreviousCharacter: { Issue.record("Must not delete at document start") }
+        )
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .compose(trigger: "´")))
+
+        #expect(sink.received.first?.action == .commitText("´"))
+    }
+
     @Test func insertsTriggerWhenNoPreviousCharacter() {
         let middleware = ComposeMiddleware(
             compose: { _, _ in "should not run" },
@@ -341,70 +395,48 @@ struct ComposeMiddlewareTests {
 
 // MARK: - TextInputMiddleware
 
-private final class MockTextInputTarget: TextInputTarget {
-    enum Event: Equatable {
-        case insertText(String)
-        case deleteBackward
-        case adjustCursor(Int)
-    }
-
-    var events: [Event] = []
-    var documentContextBeforeInput: String?
-    var documentContextAfterInput: String?
-    var selectedText: String?
-    var hasFullAccess: Bool = false
-
-    func insertText(_ text: String) {
-        events.append(.insertText(text))
-    }
-
-    func deleteBackward() {
-        events.append(.deleteBackward)
-    }
-
-    func adjustTextPosition(byCharacterOffset offset: Int) {
-        events.append(.adjustCursor(offset))
-    }
-}
+// These tests use the shared `MockTextTarget` (TestHelpers.swift). A private
+// event-only mock used to live here; it drifted from the shared one (no
+// document context / UTF-16 semantics), so it was removed (review M12).
 
 struct TextInputMiddlewareTests {
-    private func pipeline(target: MockTextInputTarget) -> ActionPipeline {
+    private func pipeline(target: MockTextTarget) -> ActionPipeline {
         let middleware = TextInputMiddleware(target: { target })
         return ActionPipeline(middlewares: [middleware])
     }
 
     @Test func commitTextInsertsText() {
-        let target = MockTextInputTarget()
+        let target = MockTextTarget()
         pipeline(target: target).process(PipelineFixtures.context(action: .commitText("hi")))
         #expect(target.events == [.insertText("hi")])
     }
 
     @Test func deleteBackwardDeletes() {
-        let target = MockTextInputTarget()
+        let target = MockTextTarget()
         pipeline(target: target).process(PipelineFixtures.context(action: .deleteBackward))
         #expect(target.events == [.deleteBackward])
     }
 
     @Test func spaceInsertsSpaceCharacter() {
-        let target = MockTextInputTarget()
+        let target = MockTextTarget()
         pipeline(target: target).process(PipelineFixtures.context(action: .space))
         #expect(target.events == [.insertText(" ")])
     }
 
     @Test func newlineInsertsLineBreak() {
-        let target = MockTextInputTarget()
+        let target = MockTextTarget()
         pipeline(target: target).process(PipelineFixtures.context(action: .newline))
         #expect(target.events == [.insertText("\n")])
     }
 
     @Test func moveCursorAdjustsPosition() {
-        let target = MockTextInputTarget()
+        let target = MockTextTarget()
         pipeline(target: target).process(PipelineFixtures.context(action: .moveCursor(offset: -3)))
         #expect(target.events == [.adjustCursor(-3)])
     }
 
     @Test func nonTextActionsAreIgnored() {
-        let target = MockTextInputTarget()
+        let target = MockTextTarget()
         let sink = RecordingMiddleware()
         let middleware = TextInputMiddleware(target: { target })
         let pipe = ActionPipeline(middlewares: [middleware, sink])
@@ -788,7 +820,7 @@ struct PipelineIntegrationTests {
     @Test func composeThenTextInputProducesCommittedCharacter() {
         // ComposeMiddleware rewrites the action; TextInputMiddleware then
         // inserts the rewritten text into the target.
-        let target = MockTextInputTarget()
+        let target = MockTextTarget()
         var deleted = 0
         let compose = ComposeMiddleware(
             compose: { prev, trig in (prev == "a" && trig == "¨") ? "ä" : nil },
@@ -807,7 +839,7 @@ struct PipelineIntegrationTests {
 
     @Test func fullPipelineRunsAllMiddlewaresInOrder() {
         var steps: [String] = []
-        let target = MockTextInputTarget()
+        let target = MockTextTarget()
         let compose = ComposeMiddleware(
             compose: { _, _ in nil },
             cycleAccent: { _ in nil },

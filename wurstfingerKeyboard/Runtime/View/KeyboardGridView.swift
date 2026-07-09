@@ -20,6 +20,8 @@ struct KeyboardGridView: View {
     let onGesture: (KeyConfig, GestureType, Bool) -> Void
     var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
+    /// Forwarded to `KeyView`; returns whether the long press was handled.
+    var onLongPress: ((KeyConfig) -> Bool)?
     /// Active-language hint for the switch key, supplied by `KeyboardViewModel`
     /// so it reflects the loaded definition rather than re-derived storage.
     var languageLabel: String = ""
@@ -62,6 +64,7 @@ struct KeyboardGridView: View {
                 onGesture: onGesture,
                 onTouchDown: onTouchDown,
                 onSlide: onSlide,
+                onLongPress: onLongPress,
                 spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan),
                 visualInset: visualInset(for: cell, totalRows: totalRows),
                 languageLabel: languageLabel,

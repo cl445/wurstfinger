@@ -737,6 +737,7 @@ extension LanguageDefinitions {
                 GridSlot.bottomCenter: [.swipeRight: "إ"],
                 GridSlot.bottomRight: [.swipeUpLeft: "گ"],
             ],
+            supportsCapitalization: false,
             numericBackToAlphaLabel: "ابت",
             numericDigits: NumericLayouts.arabicIndicDigits
         )
@@ -800,6 +801,7 @@ extension LanguageDefinitions {
                 ],
                 GridSlot.bottomRight: [.swipeUpLeft: "ک", .swipeLeft: "د"],
             ],
+            supportsCapitalization: false,
             numericBackToAlphaLabel: "ابپ",
             numericDigits: NumericLayouts.persianDigits
         )
@@ -856,6 +858,7 @@ extension LanguageDefinitions {
                 GridSlot.topLeft: [.swipeDown: "ة"],
                 GridSlot.topCenter: [.swipeUp: "ٌ", .swipeUpLeft: "ٍ", .swipeUpRight: "ً"],
             ],
+            supportsCapitalization: false,
             numericBackToAlphaLabel: "ابپ",
             numericDigits: NumericLayouts.persianDigits
         )

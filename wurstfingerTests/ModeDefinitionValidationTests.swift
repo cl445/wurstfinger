@@ -30,8 +30,7 @@ private func utilityKey(_ id: String, action: KeyAction) -> KeyConfig {
 /// Minimal valid mode with 4 keys and a portrait arrangement
 private func minimalMode(
     name: String = "main",
-    autoTransitions: [KeyCategory: String] = [:],
-    doubleTapMode: String? = nil
+    autoTransitions: [KeyCategory: String] = [:]
 ) -> KeyboardMode {
     let keys: [String: KeyConfig] = [
         "a": letterKey("a", "a"),
@@ -46,8 +45,7 @@ private func minimalMode(
     return KeyboardMode(
         name: name, keys: keys,
         arrangements: [.portrait: arrangement],
-        autoTransitions: autoTransitions,
-        doubleTapMode: doubleTapMode
+        autoTransitions: autoTransitions
     )
 }
 
@@ -96,8 +94,7 @@ struct KeyboardModeTests {
                 .portrait: #require(minimalMode().arrangements[.portrait]),
                 .landscape: landscapeArrangement,
             ],
-            autoTransitions: [:],
-            doubleTapMode: nil
+            autoTransitions: [:]
         )
         let result = mode.arrangement(for: .landscape)
         #expect(result == landscapeArrangement)
@@ -139,20 +136,8 @@ struct KeyboardModeTests {
         #expect(modified.keys == mode.keys)
     }
 
-    @Test func withChangesDoubleTapMode() {
-        let mode = minimalMode()
-        let modified = mode.with(doubleTapMode: "capsLock")
-        #expect(modified.doubleTapMode == "capsLock")
-    }
-
-    @Test func withClearsDoubleTapMode() {
-        let mode = minimalMode(doubleTapMode: "capsLock")
-        let modified = mode.with(doubleTapMode: .some(nil))
-        #expect(modified.doubleTapMode == nil)
-    }
-
     @Test func codableRoundtrip() throws {
-        let mode = minimalMode(autoTransitions: [.letter: "main"], doubleTapMode: "capsLock")
+        let mode = minimalMode(autoTransitions: [.letter: "main"])
         let data = try JSONEncoder().encode(mode)
         let decoded = try JSONDecoder().decode(KeyboardMode.self, from: data)
         #expect(decoded == mode)
@@ -283,7 +268,7 @@ struct ValidationTests {
             name: "test",
             keys: ["a": letterKey("a", "a")],
             arrangements: [.portrait: arrangement],
-            autoTransitions: [:], doubleTapMode: nil
+            autoTransitions: [:]
         )
         let errors = mode.validate()
         #expect(errors.contains(.missingKey(keyId: "nonexistent", context: .portrait)))
@@ -313,7 +298,7 @@ struct ValidationTests {
         let arrangement = GridArrangement(columns: 2, rows: [
             [KeyPlacement(keyId: "a"), KeyPlacement(keyId: "shift")],
         ])
-        let mode = KeyboardMode(name: "main", keys: keys, arrangements: [.portrait: arrangement], autoTransitions: [:], doubleTapMode: nil)
+        let mode = KeyboardMode(name: "main", keys: keys, arrangements: [.portrait: arrangement], autoTransitions: [:])
         let def = minimalDefinition(modes: [ModeNames.main: mode])
         let errors = def.validate()
         #expect(errors.contains(.missingMode("nonexistent")))
@@ -332,7 +317,7 @@ struct ValidationTests {
             swipeMode: .none, slideType: .none, style: .utility, tapCycleActions: nil
         )
         let arrangement = GridArrangement(columns: 1, rows: [[KeyPlacement(keyId: "shift")]])
-        let mode = KeyboardMode(name: "main", keys: ["shift": key], arrangements: [.portrait: arrangement], autoTransitions: [:], doubleTapMode: nil)
+        let mode = KeyboardMode(name: "main", keys: ["shift": key], arrangements: [.portrait: arrangement], autoTransitions: [:])
         let def = minimalDefinition(modes: [ModeNames.main: mode])
         #expect(def.validate().contains(.missingMode("nonexistent")))
     }
@@ -348,20 +333,13 @@ struct ValidationTests {
             tapCycleActions: [.commitText("c"), .switchMode("nonexistent")]
         )
         let arrangement = GridArrangement(columns: 1, rows: [[KeyPlacement(keyId: "cycle")]])
-        let mode = KeyboardMode(name: "main", keys: ["cycle": key], arrangements: [.portrait: arrangement], autoTransitions: [:], doubleTapMode: nil)
+        let mode = KeyboardMode(name: "main", keys: ["cycle": key], arrangements: [.portrait: arrangement], autoTransitions: [:])
         let def = minimalDefinition(modes: [ModeNames.main: mode])
         #expect(def.validate().contains(.missingMode("nonexistent")))
     }
 
     @Test func missingAutoTransitionTarget() {
         let mode = minimalMode(autoTransitions: [.letter: "nonexistent"])
-        let def = minimalDefinition(modes: [ModeNames.main: mode])
-        let errors = def.validate()
-        #expect(errors.contains(.missingMode("nonexistent")))
-    }
-
-    @Test func missingDoubleTapModeTarget() {
-        let mode = minimalMode(doubleTapMode: "nonexistent")
         let def = minimalDefinition(modes: [ModeNames.main: mode])
         let errors = def.validate()
         #expect(errors.contains(.missingMode("nonexistent")))
@@ -377,7 +355,7 @@ struct ValidationTests {
             name: "test",
             keys: ["a": letterKey("a", "a"), "b": letterKey("b", "b")],
             arrangements: [.portrait: arrangement],
-            autoTransitions: [:], doubleTapMode: nil
+            autoTransitions: [:]
         )
         let errors = mode.validate()
         #expect(errors.contains(.columnMismatch(row: 0, context: .portrait, expected: 3, got: 2)))
@@ -396,7 +374,7 @@ struct ValidationTests {
             name: "test",
             keys: ["a": letterKey("a", "a"), "b": letterKey("b", "b"), "c": letterKey("c", "c")],
             arrangements: [.portrait: arrangement],
-            autoTransitions: [:], doubleTapMode: nil
+            autoTransitions: [:]
         )
         #expect(mode.validate().filter { if case .columnMismatch = $0 { true } else { false } }.isEmpty)
     }
@@ -415,7 +393,7 @@ struct ValidationTests {
                 "c": letterKey("c", "c"), "d": letterKey("d", "d"),
             ],
             arrangements: [.portrait: arrangement],
-            autoTransitions: [:], doubleTapMode: nil
+            autoTransitions: [:]
         )
         let errors = mode.validate()
         #expect(errors.contains(.columnMismatch(row: 1, context: .portrait, expected: 2, got: 3)))
@@ -430,7 +408,7 @@ struct ValidationTests {
             name: "test",
             keys: ["a": letterKey("a", "a"), "b": letterKey("b", "b")],
             arrangements: [.portrait: arrangement],
-            autoTransitions: [:], doubleTapMode: nil
+            autoTransitions: [:]
         )
         let errors = mode.validate()
         #expect(errors.contains(.rowSpanOutOfBounds(keyId: "a", context: .portrait)))
@@ -446,7 +424,7 @@ struct ValidationTests {
             name: "test",
             keys: ["a": letterKey("a", "a")],
             arrangements: [.portrait: arrangement],
-            autoTransitions: [:], doubleTapMode: nil
+            autoTransitions: [:]
         )
         let errors = mode.validate()
         #expect(errors.contains(.duplicateKeyId("a")))
@@ -459,7 +437,7 @@ struct ValidationTests {
         let mode = KeyboardMode(
             name: "test", keys: [:],
             arrangements: [.portrait: arrangement],
-            autoTransitions: [:], doubleTapMode: nil
+            autoTransitions: [:]
         )
         let errors = mode.validate()
         #expect(errors.contains(.emptyKeyPool))
@@ -475,7 +453,7 @@ struct ValidationTests {
             name: "test",
             keys: ["a": letterKey("a", "a"), "b": letterKey("b", "b")],
             arrangements: [.landscape: arrangement], // No portrait!
-            autoTransitions: [:], doubleTapMode: nil
+            autoTransitions: [:]
         )
         let errors = mode.validate()
         #expect(errors.contains(.noPortraitArrangement))
