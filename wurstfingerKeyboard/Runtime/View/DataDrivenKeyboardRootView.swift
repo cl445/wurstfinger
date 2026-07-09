@@ -29,21 +29,26 @@ struct DataDrivenKeyboardRootView: View {
     @AppStorage(SettingsKey.selectedThemeDark.rawValue, store: SharedDefaults.store)
     private var selectedThemeDark = BuiltInThemes.classic.id
 
+    /// The keyboard follows the system color scheme. A keyboard extension can
+    /// also be asked for a specific appearance via
+    /// `textDocumentProxy.keyboardAppearance`; wiring the slot selection to
+    /// that instead of `colorScheme` is deferred to M2, when the gallery lets
+    /// the light/dark slots actually diverge (today both hold one selection,
+    /// so the distinction is a no-op).
     @Environment(\.colorScheme) private var colorScheme
 
     /// Resolved once here for the whole keyboard; key views read it from the
-    /// environment. Fallback cascade: assigned slot → other slot → Classic.
+    /// environment. Slot selection uses the shared `ThemeStore` cascade so the
+    /// rendered path is the one the tests exercise.
     private var resolvedTheme: ResolvedTheme {
         if let themeOverride {
             return themeOverride.resolved()
         }
-        let (primaryId, secondaryId) = colorScheme == .dark
-            ? (selectedThemeDark, selectedThemeLight)
-            : (selectedThemeLight, selectedThemeDark)
-        let definition = ThemeStore.theme(id: primaryId)
-            ?? ThemeStore.theme(id: secondaryId)
-            ?? BuiltInThemes.classic
-        return definition.resolved()
+        return ThemeStore.theme(
+            lightId: selectedThemeLight,
+            darkId: selectedThemeDark,
+            for: colorScheme
+        ).resolved()
     }
 
     var body: some View {
@@ -104,34 +109,26 @@ struct DataDrivenKeyboardRootView: View {
 
     // MARK: - Background
 
-    /// Minimum board opacity that still receives touches. A keyboard extension
-    /// only delivers touches over rendered pixels, and UIKit hit-testing
-    /// ignores anything with `alpha <= 0.01`, so a glass theme's board can't be
-    /// fully transparent or the inter-key gaps go dead (#198). This is just
-    /// above that threshold: enough to stay tappable, faint enough that the
-    /// `UIInputView(.keyboard)` backdrop shows through essentially unchanged.
-    private static let glassBoardOpacity = 0.02
-
-    /// The board behind the keys.
+    /// The board behind the keys — always the theme's own resolved
+    /// `boardBackground`. The resolver floors a color board to
+    /// `KeyboardThemeDefinition.minimumBoardOpacity` so it stays a rendered,
+    /// tappable surface: a keyboard extension only delivers touches over
+    /// rendered pixels, and UIKit hit-testing ignores `alpha <= 0.01`, so a
+    /// fully transparent board would drop taps in the inter-key gaps (#198).
+    /// Glass themes therefore declare a faint neutral board that reads as clear
+    /// over the `UIInputView(.keyboard)` backdrop while keeping the gaps live.
     ///
-    /// Glass themes paint an almost-invisible neutral fill over the
-    /// `UIInputView(.keyboard)` backdrop: the backdrop supplies the system
-    /// keyboard look, while this thin fill keeps the gaps tappable (see
-    /// `glassBoardOpacity`). Color themes paint their board as a plain `Color`
-    /// — matching the pre-engine board exactly, since `Color` and
-    /// `Rectangle().fill` have different ideal sizes and the difference would
-    /// shift the whole keyboard in the height-free showcase layout.
+    /// A color fill renders as a plain `Color`, matching the pre-engine board
+    /// exactly: `Color` and `Rectangle().fill` have different ideal sizes, and
+    /// in the height-free showcase layout the difference would shift the whole
+    /// keyboard, so only the (currently unused) material board needs a shape.
     @ViewBuilder
     private func keyboardBackground(_ theme: ResolvedTheme) -> some View {
-        if theme.usesGlassMaterial {
-            Color.gray.opacity(Self.glassBoardOpacity)
-        } else {
-            switch theme.boardBackground {
-            case let .color(color):
-                color
-            case .material:
-                Rectangle().fill(.bar)
-            }
+        switch theme.boardBackground {
+        case let .color(color):
+            color
+        case .material:
+            Rectangle().fill(.bar)
         }
     }
 }

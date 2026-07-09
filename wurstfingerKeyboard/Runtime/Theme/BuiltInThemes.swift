@@ -33,7 +33,11 @@ enum BuiltInThemes {
     static let liquidGlass = KeyboardThemeDefinition(
         id: "liquid-glass",
         name: "Liquid Glass",
-        boardBackground: .color(.semantic(.systemBackground, opacity: 0.02)),
+        // A faint neutral board: it reads as clear over the
+        // `UIInputView(.keyboard)` backdrop (so the keyboard matches the system
+        // row) while staying just opaque enough to keep the inter-key gaps
+        // tappable (see `keyboardBackground` / `minimumBoardOpacity`, #198).
+        boardBackground: .color(.semantic(.gray, opacity: 0.02)),
         keyFill: .material,
         keyFillActive: .material,
         keyBorder: .semantic(.primary, opacity: 0.1),

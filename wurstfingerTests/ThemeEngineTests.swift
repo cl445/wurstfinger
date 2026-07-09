@@ -42,16 +42,6 @@ struct HexColorTests {
         let string = try #require(HexColor.string(from: HexColor.color(from: original)))
         #expect(HexColor.parse(string) == original)
     }
-
-    @Test func luminanceOrdersLightAndDark() {
-        #expect(HexColor.luminance(of: 0xFFFFFF) > 0.9)
-        #expect(HexColor.luminance(of: 0x000000) < 0.1)
-    }
-
-    @Test func scalingDarkensAndClamps() {
-        #expect(HexColor.scaled(0xFFFFFF, by: 0.5) == 0x7F7F7F)
-        #expect(HexColor.scaled(0xFFFFFF, by: 2.0) == 0xFFFFFF)
-    }
 }
 
 // MARK: - Codable Wire Format

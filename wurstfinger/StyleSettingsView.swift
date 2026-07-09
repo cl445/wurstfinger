@@ -40,6 +40,15 @@ struct StyleSettingsView: View {
                         ForEach(BuiltInThemes.all) { theme in
                             themeOption(theme)
                         }
+
+                        if selectedThemeLight == BuiltInThemes.liquidGlass.id {
+                            if #unavailable(iOS 26.0) {
+                                Text("Liquid Glass is designed for iOS 26 and later. On earlier versions a simplified translucent style is used.")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                                    .padding(.horizontal, 16)
+                            }
+                        }
                     }
                 }
                 .padding(.vertical, 8)

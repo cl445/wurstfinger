@@ -254,30 +254,25 @@ struct KeyView: View {
         let fill = isActive ? theme.keyFillActive : theme.keyFill
         switch fill {
         case let .color(color):
-            colorBackground(shape, color)
+            filled(shape, with: color)
         case .material:
             // Reached only before iOS 26 (native glass takes the other branch):
             // the bar material with a hairline border, pixel-identical to the
             // pre-engine Liquid Glass rendering.
-            if let border = theme.keyBorder, theme.keyBorderWidth > 0 {
-                shape.fill(.bar)
-                    .overlay(shape.strokeBorder(border, lineWidth: theme.keyBorderWidth))
-            } else {
-                shape.fill(.bar)
-            }
+            filled(shape, with: .bar)
         }
     }
 
-    /// Solid or translucent color fill, with an optional hairline border.
+    /// Fills `shape` and overlays the theme's hairline border when it has one.
+    /// A theme without a border (Classic) gets no overlay in the view tree at
+    /// all, so it renders exactly as before the theme engine.
     @ViewBuilder
-    private func colorBackground(_ shape: RoundedRectangle, _ color: Color) -> some View {
+    private func filled(_ shape: RoundedRectangle, with fill: some ShapeStyle) -> some View {
         if let border = theme.keyBorder, theme.keyBorderWidth > 0 {
-            shape.fill(color)
+            shape.fill(fill)
                 .overlay(shape.strokeBorder(border, lineWidth: theme.keyBorderWidth))
         } else {
-            // No border overlay in the view tree at all — themes without a
-            // border (Classic) render exactly as before the theme engine.
-            shape.fill(color)
+            shape.fill(fill)
         }
     }
 

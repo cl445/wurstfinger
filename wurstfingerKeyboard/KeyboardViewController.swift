@@ -238,19 +238,17 @@ final class KeyboardViewController: UIInputViewController {
 
     private func configureHosting() {
         // A `.keyboard`-style input view renders the real system-keyboard
-        // backdrop (blur + adaptive tint). It sits behind the SwiftUI content
-        // as a genuine rendered surface, so themes with a transparent board
-        // (Liquid Glass) show through to a background that matches the system
-        // keyboard, and — because a keyboard extension only delivers touches
-        // over rendered pixels — the inter-key gaps stay tappable without the
-        // near-invisible board fill that used to be needed (#198).
+        // backdrop (blur + adaptive tint) behind the SwiftUI content, so a
+        // theme with a near-transparent board (Liquid Glass) shows through to a
+        // background that matches the system keyboard row. This is purely the
+        // *look*: touch delivery for the inter-key gaps comes from the SwiftUI
+        // board fill, because a keyboard extension delivers touches over
+        // SwiftUI-rendered pixels, not over this UIKit backdrop behind them
+        // (see DataDrivenKeyboardRootView.keyboardBackground + #198). It is left
+        // interactive only so it never swallows a stray touch itself; the
+        // SwiftUI content above always wins the hit-test.
         let backdrop = UIInputView(frame: .zero, inputViewStyle: .keyboard)
         backdrop.translatesAutoresizingMaskIntoConstraints = false
-        // Interactive on purpose: a keyboard extension only delivers touches
-        // over an interactive, rendered surface. Left non-interactive, the
-        // gaps between keys go dead again (#198). The SwiftUI key cells sit
-        // above this and win the hit-test wherever they tile, so the backdrop
-        // only ever receives touches that fall outside every key.
         view.addSubview(backdrop)
 
         let rootView = DataDrivenKeyboardRootView(viewModel: viewModel)

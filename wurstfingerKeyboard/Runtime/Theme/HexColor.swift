@@ -57,13 +57,16 @@ enum HexColor {
         )
     }
 
-    /// Formats as `#RRGGBB`, appending the alpha byte (`#RRGGBBAA`) only
-    /// when it is below 1.
+    /// Formats as `#RRGGBB`, appending the alpha byte (`#RRGGBBAA`) only when
+    /// it is not fully opaque. The opacity check is made on the rounded byte,
+    /// not the raw value: an alpha like 0.999 rounds to 0xFF, and emitting
+    /// `#RRGGBBFF` would re-parse to 1.0 anyway — so it is formatted as the
+    /// opaque `#RRGGBB`, keeping the round-trip idempotent.
     static func string(from components: Components) -> String {
-        if components.alpha >= 1 {
+        let alphaByte = UInt32((min(max(components.alpha, 0), 1) * 255).rounded())
+        if alphaByte >= 255 {
             return String(format: "#%06X", components.rgb)
         }
-        let alphaByte = UInt32((min(max(components.alpha, 0), 1) * 255).rounded())
         return String(format: "#%06X%02X", components.rgb, alphaByte)
     }
 
@@ -82,24 +85,5 @@ enum HexColor {
         }
         let rgb = (byte(red) << 16) | (byte(green) << 8) | byte(blue)
         return string(from: Components(rgb: rgb, alpha: Double(alpha)))
-    }
-
-    /// Relative luminance (0...1), sufficient for light/dark decisions.
-    static func luminance(of rgb: UInt32) -> Double {
-        let red = Double((rgb >> 16) & 0xFF) / 255
-        let green = Double((rgb >> 8) & 0xFF) / 255
-        let blue = Double(rgb & 0xFF) / 255
-        return 0.2126 * red + 0.7152 * green + 0.0722 * blue
-    }
-
-    /// Multiplies each RGB channel by `factor`, clamping to 0...255.
-    static func scaled(_ rgb: UInt32, by factor: Double) -> UInt32 {
-        func scale(_ channel: UInt32) -> UInt32 {
-            UInt32(min(max(Double(channel) * factor, 0), 255))
-        }
-        let red = scale((rgb >> 16) & 0xFF)
-        let green = scale((rgb >> 8) & 0xFF)
-        let blue = scale(rgb & 0xFF)
-        return (red << 16) | (green << 8) | blue
     }
 }
