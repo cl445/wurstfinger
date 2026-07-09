@@ -37,11 +37,12 @@ struct KeyView: View {
     @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyle: KeyboardStyle = .classic
 
-    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
-    private var keyboardScale: Double = DeviceLayoutUtils.defaultKeyboardScale
-
-    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
-    private var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
+    /// Injected by `KeyboardGridView` from the view model (same reasoning as
+    /// there: an `@AppStorage` read desynchronizes from the width path when
+    /// the view model is configured programmatically). Feeds the gesture
+    /// classification geometry and the font scaling.
+    var keyboardScale: Double = DeviceLayoutUtils.defaultKeyboardScale
+    var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
 
     /// Short language label (e.g. "DE") shown on the switch key, and whether to
     /// show it. Driven by the active keyboard locale via `KeyboardViewModel`

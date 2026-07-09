@@ -50,7 +50,9 @@ struct DataDrivenKeyboardRootView: View {
                         viewModel.handleGesture(.longPress, keyId: key.id, isReturn: false)
                     },
                     languageLabel: viewModel.currentLanguageLabel,
-                    showLanguageLabel: viewModel.hasMultipleLanguages
+                    showLanguageLabel: viewModel.hasMultipleLanguages,
+                    keyboardScale: viewModel.keyboardScale,
+                    keyAspectRatio: viewModel.keyAspectRatio
                 )
                 .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)
                 .padding(.top, KeyboardConstants.Layout.verticalPaddingTop)

@@ -27,11 +27,14 @@ struct KeyboardGridView: View {
     var languageLabel: String = ""
     var showLanguageLabel: Bool = false
 
-    @AppStorage(SettingsKey.keyboardScale.rawValue, store: SharedDefaults.store)
-    private var keyboardScale: Double = DeviceLayoutUtils.defaultKeyboardScale
-
-    @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
-    private var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
+    /// Scale and aspect ratio are injected by `DataDrivenKeyboardRootView`
+    /// from the view model rather than read via `@AppStorage`: the root view
+    /// derives the keyboard *width* from the view model, and reading the same
+    /// settings from a second source desynchronizes width and row height
+    /// whenever the view model is configured programmatically (screenshot and
+    /// showcase modes with `shouldPersistSettings: false`).
+    var keyboardScale: Double = DeviceLayoutUtils.defaultKeyboardScale
+    var keyAspectRatio: Double = DeviceLayoutUtils.defaultKeyAspectRatio
 
     /// Height of a single grid row, matching `KeyView`'s effective key height so
     /// portrait layouts are unchanged and a 2-row key is exactly twice as tall
@@ -67,6 +70,8 @@ struct KeyboardGridView: View {
                 onLongPress: onLongPress,
                 spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan),
                 visualInset: visualInset(for: cell, totalRows: totalRows),
+                keyboardScale: keyboardScale,
+                keyAspectRatio: keyAspectRatio,
                 languageLabel: languageLabel,
                 showLanguageLabel: showLanguageLabel
             )
