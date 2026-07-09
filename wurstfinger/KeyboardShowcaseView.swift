@@ -90,9 +90,16 @@ struct KeyboardShowcaseView: View {
         forceLanguage ?? LanguageSettings.resolvedLanguageId(storedId)
     }
 
+    /// Explicit theme injection for screenshots: FORCE_THEME names a theme id
+    /// ("classic", "liquid-glass", "dark-gold"). Defaults to Classic so
+    /// leftover simulator state can never recolor screenshot output.
+    private let forcedTheme: KeyboardThemeDefinition = ProcessInfo.processInfo
+        .environment["FORCE_THEME"]
+        .flatMap { BuiltInThemes.theme(id: $0) } ?? BuiltInThemes.classic
+
     var body: some View {
         VStack(spacing: 0) {
-            DataDrivenKeyboardRootView(viewModel: viewModel)
+            DataDrivenKeyboardRootView(viewModel: viewModel, themeOverride: forcedTheme)
                 .frame(maxWidth: .infinity)
                 .background(Color(.systemBackground))
                 // `.contain` promotes the per-key accessibilityIdentifiers into
