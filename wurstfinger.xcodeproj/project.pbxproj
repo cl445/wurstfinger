@@ -303,6 +303,16 @@
 				he,
 				vi,
 				fil,
+				el,
+				pt,
+				uk,
+				ar,
+				fa,
+				ur,
+				th,
+				hi,
+				ja,
+				ko,
 			);
 			mainGroup = 427511892EAAF62000C5635A;
 			minimizedProjectReferenceProxies = 1;

@@ -16,6 +16,7 @@ import Testing
 /// Keep in sync with `knownRegions` in the Xcode project.
 private let requiredLanguages: Set<String> = [
     "de", "fr", "es", "it", "ru", "pl", "sv", "fi", "hr", "he", "vi", "fil",
+    "el", "pt", "uk", "ar", "fa", "ur", "th", "hi", "ja", "ko",
 ]
 
 /// All String Catalogs in the repo, relative to the project root.
