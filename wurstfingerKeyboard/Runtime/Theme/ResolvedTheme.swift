@@ -30,6 +30,12 @@ struct ResolvedTheme: Equatable {
     let hintSymbol: Color
     let hintIconProminent: Color
     let hintIconSubtle: Color
+
+    /// Whether any key fill is the bar/glass material, so the grid wraps its
+    /// keys in a `GlassEffectContainer` on iOS 26 (shared sampling region).
+    var usesGlassMaterial: Bool {
+        keyFill == .material || keyFillActive == .material
+    }
 }
 
 extension KeyboardThemeDefinition {
