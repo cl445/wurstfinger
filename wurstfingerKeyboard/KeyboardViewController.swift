@@ -237,6 +237,22 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func configureHosting() {
+        // A `.keyboard`-style input view renders the real system-keyboard
+        // backdrop (blur + adaptive tint). It sits behind the SwiftUI content
+        // as a genuine rendered surface, so themes with a transparent board
+        // (Liquid Glass) show through to a background that matches the system
+        // keyboard, and — because a keyboard extension only delivers touches
+        // over rendered pixels — the inter-key gaps stay tappable without the
+        // near-invisible board fill that used to be needed (#198).
+        let backdrop = UIInputView(frame: .zero, inputViewStyle: .keyboard)
+        backdrop.translatesAutoresizingMaskIntoConstraints = false
+        // Interactive on purpose: a keyboard extension only delivers touches
+        // over an interactive, rendered surface. Left non-interactive, the
+        // gaps between keys go dead again (#198). The SwiftUI key cells sit
+        // above this and win the hit-test wherever they tile, so the backdrop
+        // only ever receives touches that fall outside every key.
+        view.addSubview(backdrop)
+
         let rootView = DataDrivenKeyboardRootView(viewModel: viewModel)
         let controller = UIHostingController(rootView: AnyView(rootView))
         controller.view.translatesAutoresizingMaskIntoConstraints = false
@@ -246,6 +262,10 @@ final class KeyboardViewController: UIInputViewController {
         view.addSubview(controller.view)
 
         NSLayoutConstraint.activate([
+            backdrop.topAnchor.constraint(equalTo: view.topAnchor),
+            backdrop.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backdrop.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backdrop.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             controller.view.topAnchor.constraint(equalTo: view.topAnchor),
             controller.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             controller.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),

@@ -223,6 +223,11 @@ struct KeyView: View {
         return false
     }
 
+    /// A subtle neutral tint on the glass, so the keys gain a bit of presence
+    /// and stand out from the backdrop instead of reading as fully clear glass
+    /// — while staying native Liquid Glass that blends with the system row.
+    private static let glassTint = Color.gray.opacity(0.12)
+
     /// The stacked key layers. Native glass wraps the label/hint content with
     /// `glassEffect` (label as content = crisp); every other style keeps the
     /// pre-engine order of a background layer beneath the labels.
@@ -233,7 +238,7 @@ struct KeyView: View {
                 label
                 hintOverlay
             }
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: theme.cornerRadius))
+            .glassEffect(.regular.tint(Self.glassTint), in: RoundedRectangle(cornerRadius: theme.cornerRadius))
         } else {
             ZStack {
                 background
