@@ -84,7 +84,7 @@ struct LanguageSettingsTests {
 
     @Test("Falls back to English for unsupported language")
     func fallbackToEnglish() {
-        let result = LanguageSettings.detectSystemLanguage(preferredLanguages: ["ja-JP"])
+        let result = LanguageSettings.detectSystemLanguage(preferredLanguages: ["zh-CN"])
         #expect(result == "en_US")
     }
 
@@ -102,7 +102,7 @@ struct LanguageSettingsTests {
 
     @Test("Skips unsupported and picks first supported")
     func skipsUnsupportedPicksSupported() {
-        let result = LanguageSettings.detectSystemLanguage(preferredLanguages: ["ja-JP", "de-DE", "en-US"])
+        let result = LanguageSettings.detectSystemLanguage(preferredLanguages: ["zh-CN", "de-DE", "en-US"])
         #expect(result == "de_DE")
     }
 

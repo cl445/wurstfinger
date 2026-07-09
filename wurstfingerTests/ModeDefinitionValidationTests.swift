@@ -255,6 +255,17 @@ struct NativeDigitLayerTests {
         // Languages without combine leave it nil.
         #expect(LanguageDefinitions.thai.makeDefinition().settings.combineRuleSet == nil)
     }
+
+    @Test func kanaCarriesDakutenVoicingCombineRules() {
+        // Dakuten voicing: base kana + ゛ → voiced kana (か + ゛ → が).
+        let hira = LanguageDefinitions.hiragana.makeDefinition().settings
+        #expect(hira.combineRuleSet?.rules["゛"]?["か"] == "が")
+        #expect(hira.combineRuleSet?.rules["゛"]?["は"] == "ば")
+        let kata = LanguageDefinitions.katakana.makeDefinition().settings
+        #expect(kata.combineRuleSet?.rules["゛"]?["カ"] == "ガ")
+        // Japanese kana keeps Western digits (no native digit layer).
+        #expect(LanguageDefinitions.hiragana.makeDefinition().numericDigits == NumericLayouts.westernDigits)
+    }
 }
 
 // MARK: - Validation Tests

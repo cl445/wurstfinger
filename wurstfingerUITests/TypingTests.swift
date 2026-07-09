@@ -118,6 +118,16 @@ final class TypingTests: XCTestCase {
         assertTypedText(equals: "ई")
     }
 
+    /// Japanese kana voicing: type か (center, up-left) then the dakuten mark ゛
+    /// (bottom-center, up-left) → the two combine into が via CombineMiddleware.
+    @MainActor
+    func testHiraganaDakutenCombines() {
+        relaunch(language: "ja_JP")
+        swipe(on: "center", dx: -40, dy: -40) // up-left → か
+        swipe(on: "bottomCenter", dx: -40, dy: -40) // up-left → ゛, combines → が
+        assertTypedText(equals: "が")
+    }
+
     /// Tapping letter keys appends each key's character in order.
     @MainActor
     func testTappingKeysSpellsTheirLabels() {
