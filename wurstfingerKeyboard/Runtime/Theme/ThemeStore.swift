@@ -56,33 +56,54 @@ enum ThemeStore {
         return userThemes(defaults: defaults).first { $0.id == id }
     }
 
-    /// The theme for the given appearance, applying the fallback cascade:
-    /// assigned slot → other slot → Classic.
-    static func selectedTheme(
+    /// Resolves the theme for the given appearance from two explicit slot ids,
+    /// applying the fallback cascade: assigned slot → other slot → Classic.
+    /// This is the single source of truth for slot selection; both the live
+    /// keyboard (`DataDrivenKeyboardRootView`) and `selectedTheme(for:)` call it
+    /// so the tested path is the rendered path.
+    static func theme(
+        lightId: String,
+        darkId: String,
         for colorScheme: ColorScheme,
         defaults: UserDefaults = SharedDefaults.store
     ) -> KeyboardThemeDefinition {
-        let lightId = defaults.string(forKey: SettingsKey.selectedThemeLight.rawValue) ?? BuiltInThemes.classic.id
-        let darkId = defaults.string(forKey: SettingsKey.selectedThemeDark.rawValue) ?? lightId
         let (primary, secondary) = colorScheme == .dark ? (darkId, lightId) : (lightId, darkId)
         return theme(id: primary, defaults: defaults)
             ?? theme(id: secondary, defaults: defaults)
             ?? BuiltInThemes.classic
     }
 
+    /// The theme for the given appearance, reading the slot ids from defaults.
+    /// An unset dark slot follows the light slot (both slots track one
+    /// selection until the gallery adds separate assignment in M2).
+    static func selectedTheme(
+        for colorScheme: ColorScheme,
+        defaults: UserDefaults = SharedDefaults.store
+    ) -> KeyboardThemeDefinition {
+        let lightId = defaults.string(forKey: SettingsKey.selectedThemeLight.rawValue) ?? BuiltInThemes.classic.id
+        let darkId = defaults.string(forKey: SettingsKey.selectedThemeDark.rawValue) ?? lightId
+        return theme(lightId: lightId, darkId: darkId, for: colorScheme, defaults: defaults)
+    }
+
     // MARK: - Migration
 
     /// One-time migration from the legacy `keyboardStyle` setting to the
-    /// theme assignment. Idempotent and race-safe: host app and extension may
-    /// both run this concurrently — both derive the same deterministic values
-    /// and only write when the new keys are still absent.
+    /// light/dark theme assignment. Idempotent for sequential runs (host app
+    /// and extension both run it); the derived values are deterministic, so a
+    /// second run is a no-op. A concurrent first run has a narrow theoretical
+    /// TOCTOU window, but it only opens on the very first launch before any
+    /// theme is stored, so it is not reachable in practice.
     static func migrateIfNeeded(defaults: UserDefaults = SharedDefaults.store) {
         guard let legacy = defaults.string(forKey: SettingsKey.keyboardStyle.rawValue) else {
             return
         }
+        // Only seed the slots if no selection exists yet; if another run (or the
+        // user) already set one, leave it and just drop the stale legacy key.
         if defaults.string(forKey: SettingsKey.selectedThemeLight.rawValue) == nil {
             let id = switch legacy {
             case "liquidGlass": BuiltInThemes.liquidGlass.id
+            // "darkGold" never shipped as a keyboardStyle value; kept so an
+            // unreleased dev build's stored value still migrates sensibly.
             case "darkGold": BuiltInThemes.darkGold.id
             default: BuiltInThemes.classic.id
             }
