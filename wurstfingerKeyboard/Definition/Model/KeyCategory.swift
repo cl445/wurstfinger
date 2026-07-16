@@ -37,7 +37,7 @@ extension KeyAction {
         case .deleteBackward, .deleteForward, .moveCursor,
              .advanceToNextInputMode, .dismissKeyboard, .switchToNextLanguage:
             return .utility
-        case .copy, .paste, .cut: return .utility
+        case .copy, .paste, .cut, .cutAll: return .utility
         case .none: return .utility
         }
     }

@@ -53,8 +53,20 @@ enum CommonKeys {
         accessibilityLabel: String(localized: "New line")
     )
 
-    /// Clipboard swipe bindings shared between the symbols key and numeric back-to-main key.
-    static let clipboardSwipes: [GestureType: KeyBinding] = [
+    /// Cut-all, bound to both circle directions below.
+    ///
+    /// Circling one key is easier to aim than circling a letter, and the key
+    /// already owns the clipboard, so the gesture reads as "cut, but for
+    /// everything". The direction is deliberately not distinguished: a thumb
+    /// circle rarely comes out the way it was intended, and mapping the two
+    /// directions to different clipboard actions would make a slip destructive.
+    private static let cutAll = KeyBinding(
+        label: "", action: .cutAll, category: .utility,
+        returnAction: nil, accessibilityLabel: String(localized: "Cut all")
+    )
+
+    /// Clipboard bindings shared between the symbols key and numeric back-to-main key.
+    static let clipboardBindings: [GestureType: KeyBinding] = [
         .swipeUp: KeyBinding(
             label: "", action: .copy, category: .utility,
             returnAction: nil, accessibilityLabel: String(localized: "Copy")
@@ -67,12 +79,14 @@ enum CommonKeys {
             label: "", action: .paste, category: .utility,
             returnAction: nil, accessibilityLabel: String(localized: "Paste")
         ),
+        .circularClockwise: cutAll,
+        .circularCounterclockwise: cutAll,
     ]
 
     static let symbols = KeyConfig.utility(
         UtilitySlot.symbols, label: "123", action: .switchMode(ModeNames.numeric),
         swipeMode: .eightWay,
-        swipes: clipboardSwipes
+        swipes: clipboardBindings
     )
 
     static let spacebar = KeyConfig(

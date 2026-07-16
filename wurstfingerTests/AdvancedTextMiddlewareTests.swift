@@ -403,6 +403,103 @@ final class AdvancedTextMiddlewareClipboardTests {
         #expect(UIPasteboard.general.string == marker) // pasteboard untouched
         #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
     }
+
+    // MARK: cut-all
+
+    @Test func cutAllCopiesContextOnBothSidesOfCursorAndEmptiesIt() {
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        target.documentContextBeforeInput = "hallo "
+        target.documentContextAfterInput = "welt"
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
+
+        middleware.process(AdvancedTextFixtures.context(.cutAll)) { _ in }
+
+        #expect(UIPasteboard.general.string == "hallo welt")
+        // Cursor parked past "welt" (4 UTF-16 units), then all 10 characters deleted.
+        #expect(target.events == [.adjustCursor(4)] + Array(repeating: .deleteBackward, count: 10))
+        #expect(target.documentContextBeforeInput == "")
+        #expect(target.documentContextAfterInput == "")
+        #expect(successTicks == 1)
+    }
+
+    @Test func cutAllDoesNotMoveCursorWhenNothingFollowsIt() {
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        target.documentContextBeforeInput = "hallo"
+        target.documentContextAfterInput = ""
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.cutAll)) { _ in }
+
+        #expect(UIPasteboard.general.string == "hallo")
+        #expect(target.events == Array(repeating: .deleteBackward, count: 5))
+    }
+
+    @Test func cutAllTreatsFusedGraphemeClusterAcrossCursorAsOneCharacter() {
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        // The cursor sits between a base letter and its combining acute accent,
+        // which join into the single cluster "é" — one deleteBackward, not two.
+        target.documentContextBeforeInput = "e"
+        target.documentContextAfterInput = "\u{0301}"
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.cutAll)) { _ in }
+
+        #expect(UIPasteboard.general.string == "e\u{0301}")
+        #expect(target.events == [.adjustCursor(1), .deleteBackward])
+    }
+
+    @Test func cutAllDeletesMultiUnitEmojiAsOneCharacter() {
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        target.documentContextBeforeInput = ""
+        // ZWJ family: 11 UTF-16 units, one grapheme cluster.
+        target.documentContextAfterInput = "👨‍👩‍👧‍👦"
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.cutAll)) { _ in }
+
+        #expect(UIPasteboard.general.string == "👨‍👩‍👧‍👦")
+        #expect(target.events == [.adjustCursor(11), .deleteBackward])
+    }
+
+    @Test func cutAllIsNoopWithoutFullAccess() {
+        let marker = "untouched-\(UUID().uuidString)"
+        UIPasteboard.general.string = marker
+
+        let target = MockTextTarget()
+        target.hasFullAccess = false
+        target.documentContextBeforeInput = "secret"
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
+
+        middleware.process(AdvancedTextFixtures.context(.cutAll)) { _ in }
+
+        #expect(target.events.isEmpty)
+        #expect(UIPasteboard.general.string == marker) // pasteboard untouched
+        #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
+    }
+
+    @Test func cutAllIsNoopWhenDocumentIsEmpty() {
+        let marker = "untouched-\(UUID().uuidString)"
+        UIPasteboard.general.string = marker
+
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        target.documentContextBeforeInput = nil
+        target.documentContextAfterInput = nil
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
+
+        middleware.process(AdvancedTextFixtures.context(.cutAll)) { _ in }
+
+        #expect(target.events.isEmpty)
+        #expect(UIPasteboard.general.string == marker) // pasteboard untouched
+        #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
+    }
 }
 
 // MARK: - Paste size cap
