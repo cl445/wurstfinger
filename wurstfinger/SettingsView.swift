@@ -318,9 +318,18 @@ struct SettingsView: View {
     }
 
     private var cutAllFooter: String {
-        isFullAccessDenied
-            ? String(localized: "Cutting to the clipboard requires Full Access")
-            : String(localized: "Circle the 123 key to cut the text around the cursor. Swipe down on the same key to paste it back.")
+        if isFullAccessDenied {
+            return String(localized: "Cutting to the clipboard requires Full Access")
+        }
+        // The key keeps its clipboard gestures in both modes, so the text names
+        // it by the label it carries in the letter mode, where the gesture is
+        // found, and then says it survives the switch. Naming the numeric-mode
+        // label instead is not possible: it is per language (abc, абв, かな).
+        return String(localized: """
+        Circle the 123 key to cut the text around the cursor. \
+        Swipe down on the same key to paste it back. \
+        Both gestures stay on the key after it switches the keyboard to numbers.
+        """)
     }
 
     private var numpadStyleDescription: String {

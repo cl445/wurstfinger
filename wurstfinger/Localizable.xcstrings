@@ -17939,139 +17939,139 @@
         }
       }
     },
-    "Circle the 123 key to cut the text around the cursor. Swipe down on the same key to paste it back.": {
+    "Circle the 123 key to cut the text around the cursor. Swipe down on the same key to paste it back. Both gestures stay on the key after it switches the keyboard to numbers.": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "ارسم دائرة على مفتاح 123 لقص النص حول المؤشر. اسحب لأسفل على المفتاح نفسه للصقه مرة أخرى."
+            "value": "ارسم دائرة على مفتاح 123 لقص النص حول المؤشر. اسحب لأسفل على المفتاح نفسه للصقه مرة أخرى. تبقى الإيماءتان على المفتاح بعد أن يبدّل لوحة المفاتيح إلى الأرقام."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kreise die 123-Taste ein, um den Text um den Cursor auszuschneiden. Streiche auf derselben Taste nach unten, um ihn wieder einzufügen."
+            "value": "Kreise die 123-Taste ein, um den Text um den Cursor auszuschneiden. Streiche auf derselben Taste nach unten, um ihn wieder einzufügen. Beide Gesten bleiben auf der Taste, auch nachdem sie die Tastatur auf Zahlen umgestellt hat."
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Κάντε κυκλική κίνηση στο πλήκτρο 123 για αποκοπή του κειμένου γύρω από τον δρομέα. Σύρετε προς τα κάτω στο ίδιο πλήκτρο για να το επικολλήσετε ξανά."
+            "value": "Κάντε κυκλική κίνηση στο πλήκτρο 123 για αποκοπή του κειμένου γύρω από τον δρομέα. Σύρετε προς τα κάτω στο ίδιο πλήκτρο για να το επικολλήσετε ξανά. Και οι δύο κινήσεις παραμένουν στο πλήκτρο αφού αυτό αλλάξει το πληκτρολόγιο σε αριθμούς."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Traza un círculo en la tecla 123 para cortar el texto alrededor del cursor. Desliza hacia abajo en la misma tecla para volver a pegarlo."
+            "value": "Traza un círculo en la tecla 123 para cortar el texto alrededor del cursor. Desliza hacia abajo en la misma tecla para volver a pegarlo. Ambos gestos siguen en la tecla después de que cambie el teclado a números."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "روی کلید 123 دایره بکشید تا متن اطراف مکان‌نما بریده شود. برای چسباندن دوباره، روی همان کلید به پایین بکشید."
+            "value": "روی کلید 123 دایره بکشید تا متن اطراف مکان‌نما بریده شود. برای چسباندن دوباره، روی همان کلید به پایین بکشید. هر دو حرکت پس از آنکه کلید صفحه‌کلید را به اعداد تغییر دهد، روی همان کلید باقی می‌مانند."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Piirrä ympyrä 123-näppäimeen, niin kohdistimen ympärillä oleva teksti leikataan. Liu’uta samaa näppäintä alaspäin liittääksesi sen takaisin."
+            "value": "Piirrä ympyrä 123-näppäimeen, niin kohdistimen ympärillä oleva teksti leikataan. Liu’uta samaa näppäintä alaspäin liittääksesi sen takaisin. Molemmat eleet säilyvät näppäimellä sen jälkeen, kun se on vaihtanut näppäimistön numeroihin."
           }
         },
         "fil": {
           "stringUnit": {
             "state": "translated",
-            "value": "Umikot sa 123 key para gupitin ang teksto sa paligid ng cursor. Mag-swipe pababa sa parehong key para i-paste ito ulit."
+            "value": "Umikot sa 123 key para gupitin ang teksto sa paligid ng cursor. Mag-swipe pababa sa parehong key para i-paste ito ulit. Nananatili ang dalawang galaw sa key kahit matapos nitong palitan ang keyboard sa mga numero."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tracez un cercle sur la touche 123 pour couper le texte autour du curseur. Balayez vers le bas sur la même touche pour le recoller."
+            "value": "Tracez un cercle sur la touche 123 pour couper le texte autour du curseur. Balayez vers le bas sur la même touche pour le recoller. Les deux gestes restent sur la touche après qu’elle a basculé le clavier sur les chiffres."
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "שרטטו מעגל על מקש 123 כדי לגזור את הטקסט סביב הסמן. החליקו מטה על אותו מקש כדי להדביק אותו בחזרה."
+            "value": "שרטטו מעגל על מקש 123 כדי לגזור את הטקסט סביב הסמן. החליקו מטה על אותו מקש כדי להדביק אותו בחזרה. שתי המחוות נשארות על המקש גם אחרי שהוא מחליף את המקלדת למספרים."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "कर्सर के आसपास का टेक्स्ट काटने के लिए 123 कुंजी पर गोला बनाएँ। उसे वापस चिपकाने के लिए उसी कुंजी पर नीचे स्वाइप करें।"
+            "value": "कर्सर के आसपास का टेक्स्ट काटने के लिए 123 कुंजी पर गोला बनाएँ। उसे वापस चिपकाने के लिए उसी कुंजी पर नीचे स्वाइप करें। कुंजी द्वारा कीबोर्ड को अंकों पर बदलने के बाद भी दोनों हावभाव उसी कुंजी पर बने रहते हैं।"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napravi kružni pokret po tipki 123 za izrezivanje teksta oko pokazivača. Povuci prema dolje po istoj tipki da ga zalijepiš natrag."
+            "value": "Napravi kružni pokret po tipki 123 za izrezivanje teksta oko pokazivača. Povuci prema dolje po istoj tipki da ga zalijepiš natrag. Obje geste ostaju na tipki i nakon što ona prebaci tipkovnicu na brojke."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Traccia un cerchio sul tasto 123 per tagliare il testo attorno al cursore. Scorri verso il basso sullo stesso tasto per incollarlo di nuovo."
+            "value": "Traccia un cerchio sul tasto 123 per tagliare il testo attorno al cursore. Scorri verso il basso sullo stesso tasto per incollarlo di nuovo. Entrambi i gesti restano sul tasto anche dopo che ha portato la tastiera ai numeri."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "123キーで円を描くと、カーソル周辺のテキストを切り取ります。同じキーを下にスワイプすると貼り付け直せます。"
+            "value": "123キーで円を描くと、カーソル周辺のテキストを切り取ります。同じキーを下にスワイプすると貼り付け直せます。 このキーがキーボードを数字に切り替えたあとも、両方のジェスチャーはそのまま使えます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "123 키에서 원을 그리면 커서 주변 텍스트를 잘라냅니다. 같은 키를 아래로 쓸어내리면 다시 붙여넣습니다."
+            "value": "123 키에서 원을 그리면 커서 주변 텍스트를 잘라냅니다. 같은 키를 아래로 쓸어내리면 다시 붙여넣습니다. 이 키가 키보드를 숫자로 전환한 뒤에도 두 제스처는 그대로 유지됩니다."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zakreśl kółko na klawiszu 123, aby wyciąć tekst wokół kursora. Przesuń w dół na tym samym klawiszu, aby wkleić go z powrotem."
+            "value": "Zakreśl kółko na klawiszu 123, aby wyciąć tekst wokół kursora. Przesuń w dół na tym samym klawiszu, aby wkleić go z powrotem. Oba gesty pozostają na klawiszu także po przełączeniu klawiatury na cyfry."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Trace um círculo na tecla 123 para cortar o texto à volta do cursor. Deslize para baixo na mesma tecla para o colar de novo."
+            "value": "Trace um círculo na tecla 123 para cortar o texto à volta do cursor. Deslize para baixo na mesma tecla para o colar de novo. Ambos os gestos permanecem na tecla depois de esta mudar o teclado para números."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Обведите клавишу 123, чтобы вырезать текст вокруг курсора. Свайп вниз по той же клавише вернёт его."
+            "value": "Обведите клавишу 123, чтобы вырезать текст вокруг курсора. Свайп вниз по той же клавише вернёт его. Оба жеста остаются на клавише и после переключения на цифры."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rita en cirkel på 123-tangenten för att klippa ut texten runt markören. Svep nedåt på samma tangent för att klistra in den igen."
+            "value": "Rita en cirkel på 123-tangenten för att klippa ut texten runt markören. Svep nedåt på samma tangent för att klistra in den igen. Båda gesterna finns kvar på tangenten även efter att den växlat tangentbordet till siffror."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "วนนิ้วบนปุ่ม 123 เพื่อตัดข้อความรอบเคอร์เซอร์ ปัดลงบนปุ่มเดียวกันเพื่อวางกลับ"
+            "value": "วนนิ้วบนปุ่ม 123 เพื่อตัดข้อความรอบเคอร์เซอร์ ปัดลงบนปุ่มเดียวกันเพื่อวางกลับ ทั้งสองท่าทางยังคงอยู่บนปุ่มนี้แม้หลังจากที่ปุ่มสลับแป้นพิมพ์เป็นตัวเลขแล้ว"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Обведіть клавішу 123, щоб вирізати текст навколо курсора. Проведіть вниз по тій самій клавіші, щоб вставити його назад."
+            "value": "Обведіть клавішу 123, щоб вирізати текст навколо курсора. Проведіть вниз по тій самій клавіші, щоб вставити його назад. Обидва жести залишаються на клавіші й після перемикання на цифри."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "کرسر کے ارد گرد متن کاٹنے کے لیے 123 کلید پر دائرہ بنائیں۔ اسے واپس چسپاں کرنے کے لیے اسی کلید پر نیچے سوائپ کریں۔"
+            "value": "کرسر کے ارد گرد متن کاٹنے کے لیے 123 کلید پر دائرہ بنائیں۔ اسے واپس چسپاں کرنے کے لیے اسی کلید پر نیچے سوائپ کریں۔ کلید کے کی بورڈ کو ہندسوں پر بدلنے کے بعد بھی دونوں اشارے اسی کلید پر برقرار رہتے ہیں۔"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vẽ vòng tròn trên phím 123 để cắt văn bản quanh con trỏ. Vuốt xuống trên cùng phím đó để dán lại."
+            "value": "Vẽ vòng tròn trên phím 123 để cắt văn bản quanh con trỏ. Vuốt xuống trên cùng phím đó để dán lại. Cả hai cử chỉ vẫn nằm trên phím sau khi phím chuyển bàn phím sang số."
           }
         }
       }
