@@ -44,6 +44,10 @@ enum SettingsKey: String {
     /// Holding a letter key types the digit that key carries on the
     /// numeric layer, without switching modes.
     case longPressNumbersEnabled
+    /// Circling the clipboard key cuts the text around the cursor.
+    /// Opt-in: the action is destructive and unaided by undo, so it stays off
+    /// until asked for rather than surprising anyone who circles the key.
+    case cutAllEnabled
 }
 
 // MARK: - Haptic Settings

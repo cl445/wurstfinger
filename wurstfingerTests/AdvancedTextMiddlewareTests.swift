@@ -24,12 +24,14 @@ private enum AdvancedTextFixtures {
     static func middleware(
         target: MockTextTarget,
         localeId: String = "de_DE",
+        cutAllEnabled: Bool = true,
         onClipboardSuccess: @escaping () -> Void = {}
     ) -> AdvancedTextMiddleware {
         AdvancedTextMiddleware(
             target: { target },
             locale: { Locale(identifier: localeId) },
-            onClipboardSuccess: onClipboardSuccess
+            onClipboardSuccess: onClipboardSuccess,
+            isCutAllEnabled: { cutAllEnabled }
         )
     }
 }
@@ -464,6 +466,40 @@ final class AdvancedTextMiddlewareClipboardTests {
 
         #expect(UIPasteboard.general.string == "👨‍👩‍👧‍👦")
         #expect(target.events == [.adjustCursor(11), .deleteBackward])
+    }
+
+    @Test func cutAllIsNoopWhenDisabledInSettings() {
+        let marker = "untouched-\(UUID().uuidString)"
+        UIPasteboard.general.string = marker
+
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        target.documentContextBeforeInput = "secret"
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(
+            target: target,
+            cutAllEnabled: false
+        ) { successTicks += 1 }
+
+        middleware.process(AdvancedTextFixtures.context(.cutAll)) { _ in }
+
+        #expect(target.events.isEmpty)
+        #expect(UIPasteboard.general.string == marker) // pasteboard untouched
+        #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
+    }
+
+    /// The switch gates cut-all only — the plain clipboard swipes on the same
+    /// key must keep working when it is off.
+    @Test func disablingCutAllLeavesPlainCutWorking() {
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        target.selectedText = "picked"
+        let middleware = AdvancedTextFixtures.middleware(target: target, cutAllEnabled: false)
+
+        middleware.process(AdvancedTextFixtures.context(.cut)) { _ in }
+
+        #expect(UIPasteboard.general.string == "picked")
+        #expect(target.events == [.deleteBackward])
     }
 
     @Test func cutAllIsNoopWithoutFullAccess() {

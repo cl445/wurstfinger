@@ -19,15 +19,18 @@ struct AdvancedTextMiddleware: ActionMiddleware {
     private let targetProvider: () -> TextInputTarget?
     private let localeProvider: () -> Locale
     private let onClipboardSuccess: () -> Void
+    private let isCutAllEnabled: () -> Bool
 
     init(
         target: @escaping () -> TextInputTarget?,
         locale: @escaping () -> Locale,
-        onClipboardSuccess: @escaping () -> Void = {}
+        onClipboardSuccess: @escaping () -> Void = {},
+        isCutAllEnabled: @escaping () -> Bool = { true }
     ) {
         targetProvider = target
         localeProvider = locale
         self.onClipboardSuccess = onClipboardSuccess
+        self.isCutAllEnabled = isCutAllEnabled
     }
 
     func process(_ context: ActionContext, next: (ActionContext) -> Void) {
@@ -141,7 +144,7 @@ struct AdvancedTextMiddleware: ActionMiddleware {
     /// delete: the pasteboard copy makes an accidental circle recoverable
     /// with the paste swipe on the same key.
     private func handleCutAll(target: TextInputTarget) {
-        guard target.hasFullAccess else { return }
+        guard isCutAllEnabled(), target.hasFullAccess else { return }
         let before = target.documentContextBeforeInput ?? ""
         let after = target.documentContextAfterInput ?? ""
         let all = before + after
