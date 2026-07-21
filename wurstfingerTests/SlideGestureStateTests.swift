@@ -267,6 +267,50 @@ struct SlideGestureStateTests {
         #expect(phase == .tap)
     }
 
+    // MARK: - Up-swipe latch re-arm (finding #11)
+
+    @Test func incidentalUpFlickThenDominantHorizontalDragReArmsSlide() {
+        var state = SlideGestureState()
+        // An incidental up-flick commits the up-swipe peak (-35, beyond the
+        // 30 pt threshold) without latching a slide. Previously the peak guard
+        // never decayed, so a subsequent clearly-horizontal drag stayed stuck
+        // as an up-swipe and the cursor never moved. The dominant-horizontal
+        // re-arm now latches the slide.
+        let flick = state.handleChanged(
+            translation: CGSize(width: 2, height: -35), activationThreshold: threshold
+        )
+        #expect(flick.phases.isEmpty)
+        let latch = state.handleChanged(
+            translation: CGSize(width: 100, height: -20), activationThreshold: threshold
+        )
+        #expect(latch.phases.first == .began)
+        let phase = state.handleEnded(
+            translation: CGSize(width: 100, height: -20), activationThreshold: threshold
+        )
+        #expect(phase == .ended)
+    }
+
+    @Test func smallHorizontalDriftAfterUpPeakStillDoesNotReArm() {
+        var state = SlideGestureState()
+        // Regression fence for the re-arm: return-leg drift (|x| ≈ 10, below
+        // the 30 pt re-arm floor) must NOT latch — this is the same shape as
+        // `returnUpSwipeWithDriftAtLiftOffStaysAReturnUpSwipe`, asserting the
+        // re-arm threshold does not loosen it into a slide.
+        let samples: [CGSize] = [
+            CGSize(width: 6, height: -45),
+            CGSize(width: 9, height: -15),
+            CGSize(width: 10, height: -6),
+        ]
+        for sample in samples {
+            let update = state.handleChanged(translation: sample, activationThreshold: threshold)
+            #expect(update.phases.isEmpty)
+        }
+        let phase = state.handleEnded(
+            translation: CGSize(width: 10, height: -6), activationThreshold: threshold
+        )
+        #expect(phase == .swipeUp(isReturn: true))
+    }
+
     // MARK: - Touch cancellation (Bug 1)
 
     @Test func cancellationMidSlideReportsCancelled() {

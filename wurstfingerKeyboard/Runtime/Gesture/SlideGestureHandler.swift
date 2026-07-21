@@ -81,11 +81,23 @@ struct SlideGestureState {
         // latch the slide even though the peak committed the up-swipe long
         // ago. Once the upward peak crossed the up-swipe threshold, the
         // gesture belongs to `handleEnded`'s vertical classification and must
-        // never latch.
+        // never latch — *unless* the finger then makes a clearly dominant
+        // horizontal move.
+        //
+        // Re-arm (finding #11): the committed up-peak latch never decayed, so
+        // an incidental up-flick followed by a genuine sideways drag stayed
+        // stuck as an up-swipe and the cursor never moved. Re-allow latching
+        // only when the current horizontal travel is both large in absolute
+        // terms (≥ the 30 pt up-swipe threshold) and strongly horizontal
+        // (> 2× the vertical). Return-leg drift (~10 pt sideways) stays well
+        // below the 30 pt floor, so this does not re-introduce the return-up
+        // mis-latch the peak guard was added to fix.
+        let dominantHorizontalSlide = abs(currentX) >= swipeUpThreshold
+            && abs(currentX) > abs(translation.height) * 2
         if !isSliding,
-           -upwardPeakY < swipeUpThreshold,
            abs(currentX) >= activationThreshold,
-           abs(currentX) > abs(translation.height) {
+           abs(currentX) > abs(translation.height),
+           -upwardPeakY < swipeUpThreshold || dominantHorizontalSlide {
             isSliding = true
             // Anchor at the threshold crossing (not the full translation) so
             // the travel beyond the threshold is reported on the same tick
@@ -175,8 +187,7 @@ struct SlideGestureHandler: ViewModifier {
     @Binding var isActive: Bool
 
     @State private var state = SlideGestureState()
-    @State private var pendingLongPress: DispatchWorkItem?
-    @State private var longPressConsumedTouch = false
+    @State private var longPress = LongPressScheduler()
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
     /// guarantees `@GestureState` is reset when the system cancels the
@@ -195,7 +206,7 @@ struct SlideGestureHandler: ViewModifier {
                         // A fired long press owns the rest of this touch:
                         // don't feed the state machine, or the movement would
                         // start a cursor slide after the digit was typed.
-                        if longPressConsumedTouch {
+                        if longPress.consumedTouch {
                             isActive = true
                             return
                         }
@@ -206,10 +217,10 @@ struct SlideGestureHandler: ViewModifier {
                         if update.isTouchDown {
                             onTouchDown()
                             scheduleLongPress()
-                        } else if pendingLongPress != nil,
+                        } else if longPress.isScheduled,
                                   state.isSliding
                                   || state.maxDisplacement > KeyboardConstants.LongPress.movementTolerance {
-                            cancelPendingLongPress()
+                            longPress.cancel()
                         }
                         for phase in update.phases {
                             onSlide(phase)
@@ -217,11 +228,11 @@ struct SlideGestureHandler: ViewModifier {
                         isActive = true
                     }
                     .onEnded { value in
-                        cancelPendingLongPress()
-                        if longPressConsumedTouch {
+                        longPress.cancel()
+                        if longPress.consumedTouch {
                             // Reset silently: no phase is reported, so the
                             // release produces neither a tap nor a slide end.
-                            longPressConsumedTouch = false
+                            longPress.clearConsumed()
                             _ = state.handleCancelled()
                             isActive = false
                             return
@@ -240,8 +251,8 @@ struct SlideGestureHandler: ViewModifier {
                 // if the sequence stops while a drag is still marked as in
                 // flight, the system cancelled the touches.
                 guard !inFlight else { return }
-                cancelPendingLongPress()
-                longPressConsumedTouch = false
+                longPress.cancel()
+                longPress.clearConsumed()
                 if let phase = state.handleCancelled() {
                     onSlide(phase)
                 }
@@ -251,30 +262,20 @@ struct SlideGestureHandler: ViewModifier {
 
     // MARK: - Long Press
 
+    /// Arms the shared scheduler with this handler's fire guard. The guard
+    /// reads live `@State` (`state`) at fire time through the property wrapper
+    /// — identical to the previous `fireLongPress()` semantics. The
+    /// `!state.isSliding` axis is preserved: it is the one guard that
+    /// legitimately differs from `KeyGestureRecognizer` (which has no sliding
+    /// concept).
     private func scheduleLongPress() {
         guard onLongPress != nil else { return }
-        cancelPendingLongPress()
-        let workItem = DispatchWorkItem { fireLongPress() }
-        pendingLongPress = workItem
-        DispatchQueue.main.asyncAfter(
-            deadline: .now() + KeyboardConstants.LongPress.duration,
-            execute: workItem
-        )
-    }
-
-    private func cancelPendingLongPress() {
-        pendingLongPress?.cancel()
-        pendingLongPress = nil
-    }
-
-    private func fireLongPress() {
-        pendingLongPress = nil
-        // The touch may have ended, slid, or been cancelled between
-        // scheduling and firing; a stale fire must not dispatch anything.
-        guard state.dragStarted, !state.isSliding,
-              state.maxDisplacement <= KeyboardConstants.LongPress.movementTolerance,
-              onLongPress?() == true else { return }
-        longPressConsumedTouch = true
+        longPress.schedule {
+            state.dragStarted
+                && !state.isSliding
+                && state.maxDisplacement <= KeyboardConstants.LongPress.movementTolerance
+                && onLongPress?() == true
+        }
     }
 
     private var activationThreshold: CGFloat {
