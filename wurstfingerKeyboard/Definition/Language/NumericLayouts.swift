@@ -80,7 +80,7 @@ enum NumericLayouts {
         KeyConfig.utility(
             UtilitySlot.symbols, label: label, action: .switchMode(ModeNames.main),
             swipeMode: .eightWay,
-            swipes: CommonKeys.clipboardSwipes
+            swipes: CommonKeys.clipboardBindings
         )
     }
 

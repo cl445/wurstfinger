@@ -52,6 +52,11 @@ enum KeyAction: Codable, Equatable {
     /// Clipboard
     case copy, paste, cut
 
+    /// Cut everything the document proxy exposes, without a prior selection.
+    /// The proxy offers no way to select text, so this reads the context
+    /// around the cursor instead — see `AdvancedTextMiddleware.handleCutAll`.
+    case cutAll
+
     /// No action (empty slot)
     case none
 }

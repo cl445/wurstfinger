@@ -17,7 +17,7 @@ struct TestAreaView: View {
                 VStack(spacing: 20) {
                     // How to switch keyboard
                     VStack(alignment: .leading, spacing: 12) {
-                        Label("Switch Keyboard", systemImage: "info.circle")
+                        Label("Switching Keyboards", systemImage: "info.circle")
                             .font(.headline)
 
                         HStack(spacing: 8) {

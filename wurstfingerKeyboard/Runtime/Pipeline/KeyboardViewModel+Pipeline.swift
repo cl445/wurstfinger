@@ -176,7 +176,14 @@ extension KeyboardViewModel {
         middlewares.append(AdvancedTextMiddleware(
             target: { [weak self] in self?.textInputTarget },
             locale: { [weak self] in self?.pipelineLocale ?? Locale.current },
-            onClipboardSuccess: { [weak self] in self?.feedbackStateChange() }
+            onClipboardSuccess: { [weak self] in self?.feedbackStateChange() },
+            // Read on use, not captured at build time: the pipeline is only
+            // rebuilt on definition or target changes, so a captured value
+            // would keep the old setting until the next reload. Cut-all runs
+            // once per deliberate circle, so the read is off the hot path.
+            isCutAllEnabled: { [weak self] in
+                self?.sharedDefaults.bool(forKey: SettingsKey.cutAllEnabled.rawValue) ?? false
+            }
         ))
 
         // 4c. Double-space → period (the iOS "." Shortcut). Runs right before

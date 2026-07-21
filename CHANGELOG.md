@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+
+- Cut-all circular gesture on the clipboard key — circling it cuts the text around the cursor, off by default and gated behind a new Gestures setting (#260)
+
+### Fixed
+
+- Case-insensitive String Catalog key collision that broke symbol generation on Xcode 26 (#260)
+
 ## v1.3.1 — 2026-07-04
 
 ### Added
