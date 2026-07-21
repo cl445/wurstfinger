@@ -101,13 +101,42 @@ struct GermanLayoutTests {
         let letterRows = arrangement.rows.map { row in
             row.compactMap { main.keys[$0.keyId]?.bindings[.tap]?.action }
                 .compactMap { action -> String? in
-                    if case let .commitText(text) = action { return text }
+                    if case let .commitText(text) = action {
+                        return text
+                    }
                     return nil
                 }
         }
         #expect(letterRows[0] == ["a", "n", "i"])
         #expect(letterRows[1] == ["h", "d", "r"])
         #expect(letterRows[2] == ["t", "e", "s"])
+    }
+}
+
+// MARK: - Finnish Layout Tests
+
+struct FinnishLayoutTests {
+    static let finnish = LanguageDefinitions.finnish.makeDefinition()
+
+    /// The three Finnish vowels follow the MessagEase Nordic arrangement:
+    /// Å and Ä share the a-key (swipe up / down), Ö sits directly below on
+    /// the h-key (swipe down). See issue #262.
+    @Test func nordicVowels() throws {
+        let main = try #require(Self.finnish.modes[ModeNames.main])
+        #expect(main.keys[GridSlot.topLeft]?.bindings[.swipeUp]?.action == .commitText("å"))
+        #expect(main.keys[GridSlot.topLeft]?.bindings[.swipeDown]?.action == .commitText("ä"))
+        #expect(main.keys[GridSlot.midLeft]?.bindings[.swipeDown]?.action == .commitText("ö"))
+    }
+
+    @Test func shiftedNordicVowels() throws {
+        let shifted = try #require(Self.finnish.modes[ModeNames.shifted])
+        #expect(shifted.keys[GridSlot.topLeft]?.bindings[.swipeUp]?.action == .commitText("Å"))
+        #expect(shifted.keys[GridSlot.topLeft]?.bindings[.swipeDown]?.action == .commitText("Ä"))
+        #expect(shifted.keys[GridSlot.midLeft]?.bindings[.swipeDown]?.action == .commitText("Ö"))
+    }
+
+    @Test func localeIsFinnish() {
+        #expect(Self.finnish.localeIdentifier == "fi_FI")
     }
 }
 
