@@ -133,7 +133,7 @@ enum LanguageDefinitions {
                 ["t", "e", "s"],
             ],
             directionalOverrides: [
-                GridSlot.topLeft: [.swipeDown: "ä", .swipeDownRight: "v"],
+                GridSlot.topLeft: [.swipeUp: "å", .swipeDown: "ä", .swipeDownRight: "v"],
                 GridSlot.topCenter: [.swipeDown: "l"],
                 GridSlot.topRight: [.swipeDownLeft: "x"],
                 GridSlot.midLeft: [.swipeDown: "ö", .swipeRight: "k"],
