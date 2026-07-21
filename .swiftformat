@@ -33,6 +33,10 @@
 # Keep opening braces on same line (consistent with SwiftLint opening_brace rule)
 --disable wrapMultilineStatementBraces
 
+# Keep concise single-line if/switch expression and statement bodies
+# (e.g. `if case let .x(v) = $0 { v } else { nil }`), used throughout the codebase
+--disable wrapIfStatementBodies,wrapIfExpressionBodies
+
 # Self
 --self remove
 
