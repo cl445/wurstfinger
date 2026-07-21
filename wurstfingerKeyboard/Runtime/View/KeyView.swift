@@ -107,6 +107,15 @@ struct KeyView: View {
         // The whole cell is the touch target. Adjacent cells tile the surface
         // with no gaps, so a plain rectangle covers it fully.
         .contentShape(Rectangle())
+        // Pin the key's alignment/padding surface to physical LTR so the
+        // directional hints (`hintAlignments` / `hintEdgePadding`, which use
+        // semantic leading/trailing) always match the physical swipe
+        // directions — even when a host renders this key under an RTL locale
+        // (e.g. KeyboardShowcaseView / AppStoreScreenshotView for localized
+        // screenshots, or SwiftUI previews). Defense-in-depth alongside the
+        // root pin in DataDrivenKeyboardRootView; nested identical pins are
+        // harmless.
+        .environment(\.layoutDirection, .leftToRight)
 
         if usesSlideGesture {
             base.modifier(SlideGestureHandler(
@@ -251,8 +260,14 @@ struct KeyView: View {
     // MARK: - Hint Overlay
 
     /// Mapping from swipe `GestureType` to the SwiftUI `Alignment` where
-    /// the hint label should be placed.
-    private static let hintAlignments: [GestureType: Alignment] = [
+    /// the hint label should be placed. These are PHYSICAL edges: the render
+    /// tree is pinned to `.leftToRight` (see `keyContent`) so `.leading`
+    /// resolves to the physical left and `.trailing` to the physical right
+    /// regardless of the system language. Must never be mirrored for RTL —
+    /// the swipe gesture classification is physical, so mirroring the hints
+    /// would show a glyph on the opposite edge from the swipe that produces
+    /// it. `internal` (not `private`) so the guard tests can lock the mapping.
+    static let hintAlignments: [GestureType: Alignment] = [
         .swipeUp: .top,
         .swipeDown: .bottom,
         .swipeLeft: .leading,
@@ -283,8 +298,11 @@ struct KeyView: View {
 
     /// Directional edge padding for hint labels. Padding is only applied on
     /// the edges where the hint is aligned, keeping hints close to the key
-    /// border and away from the center label.
-    private static func hintEdgePadding(
+    /// border and away from the center label. The `leading`/`trailing` insets
+    /// resolve to physical left/right because the render tree is pinned to
+    /// `.leftToRight`; like `hintAlignments`, this table must not be mirrored
+    /// for RTL. `internal` (not `private`) so the guard tests can lock it.
+    static func hintEdgePadding(
         for gesture: GestureType, horizontal: CGFloat, vertical: CGFloat
     ) -> EdgeInsets {
         switch gesture {

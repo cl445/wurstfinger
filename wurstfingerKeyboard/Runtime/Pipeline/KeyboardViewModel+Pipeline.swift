@@ -126,7 +126,8 @@ extension KeyboardViewModel {
             },
             deletePreviousCharacter: { [weak self] in
                 self?.textInputTarget?.deleteBackward()
-            }
+            },
+            selectedText: { [weak self] in self?.textInputTarget?.selectedText }
         ))
 
         // 3. Telex (only active for Telex languages)
@@ -139,6 +140,7 @@ extension KeyboardViewModel {
             deleteBackward: { [weak self] in
                 self?.textInputTarget?.deleteBackward()
             },
+            selectedText: { [weak self] in self?.textInputTarget?.selectedText },
             composeDigraph: { prev2, prev1, trigger in
                 ComposeEngine.composeTelexDigraph(prev2: prev2, prev1: prev1, trigger: trigger)
             },
@@ -150,24 +152,31 @@ extension KeyboardViewModel {
         // 3b. Combine (sequential base+mark→combined). Two flavours share the
         //     same middleware: a static rule table (Devanagari vowel lengthening,
         //     Japanese kana voicing) or the algorithmic Korean Hangul automaton.
-        //     Inert unless the definition opts into one.
+        //     Only appended when the definition opts into one, so the ~40 other
+        //     layouts never allocate the middleware or evaluate its closures.
+        //     Deferred cleanup (review): unify Combine/Telex (same
+        //     single-lookback shape) and resolve the hangul-vs-ruleset combiner
+        //     once in the definition layer instead of branching in the closure.
         let combineRuleSet = definition.settings.combineRuleSet
         let combinesHangul = inputMethod == .hangul
-        middlewares.append(CombineMiddleware(
-            isActive: { combineRuleSet != nil || combinesHangul },
-            documentContextBefore: { [weak self] in
-                self?.textInputTarget?.documentContextBeforeInput
-            },
-            deleteBackward: { [weak self] in
-                self?.textInputTarget?.deleteBackward()
-            },
-            combine: { previous, trigger in
-                if combinesHangul {
-                    return HangulComposer.combine(previous: previous, jamo: trigger)
+        if combineRuleSet != nil || combinesHangul {
+            middlewares.append(CombineMiddleware(
+                isActive: { true },
+                documentContextBefore: { [weak self] in
+                    self?.textInputTarget?.documentContextBeforeInput
+                },
+                deleteBackward: { [weak self] in
+                    self?.textInputTarget?.deleteBackward()
+                },
+                selectedText: { [weak self] in self?.textInputTarget?.selectedText },
+                combine: { previous, trigger in
+                    if combinesHangul {
+                        return HangulComposer.combine(previous: previous, jamo: trigger)
+                    }
+                    return combineRuleSet?.rules[trigger]?[previous]
                 }
-                return combineRuleSet?.rules[trigger]?[previous]
-            }
-        ))
+            ))
+        }
 
         // 4. Advanced text (delete-forward, capitalize, clipboard). The
         //    clipboard confirmation tick fires from the middleware's success

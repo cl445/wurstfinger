@@ -223,25 +223,27 @@ struct ComposeMiddlewareTests {
         #expect(deleted == 0, "No rule → no previous-character deletion")
     }
 
-    /// Composing never combines across a space. The rule set carries
-    /// Thumb-Key's space-consuming " " + x fallback rows, but the
-    /// middleware must skip them: "hello " + ´ → "hello ´".
-    @Test func preservesSpaceAndCommitsTriggerAfterSpace() {
+    /// The middleware is a pure executor of the compose rule table — space
+    /// handling lives in the data, not a middleware guard (finding #6). When
+    /// the rule table resolves a preceding space (e.g. the shipped
+    /// " " + ´ → ' normalization), the space is consumed and the replacement
+    /// committed. Modifiers with no " " row simply return nil (see
+    /// `insertsTriggerWhenNoRuleMatches`), preserving the space.
+    @Test func composesAfterSpaceWhenRuleMatches() {
+        var deleted = 0
         let middleware = ComposeMiddleware(
-            compose: { previous, _ in
-                Issue.record("compose lookup must be skipped after a space")
-                return previous == " " ? "'" : nil
-            },
+            compose: { previous, _ in previous == " " ? "'" : nil },
             cycleAccent: { _ in nil },
             previousCharacter: { " " },
-            deletePreviousCharacter: { Issue.record("Space must never be consumed by compose") }
+            deletePreviousCharacter: { deleted += 1 }
         )
         let sink = RecordingMiddleware()
         let pipeline = ActionPipeline(middlewares: [middleware, sink])
 
         pipeline.process(PipelineFixtures.context(action: .compose(trigger: "´")))
 
-        #expect(sink.received.first?.action == .commitText("´"))
+        #expect(sink.received.first?.action == .commitText("'"))
+        #expect(deleted == 1, "A matched rule after a space consumes the space")
     }
 
     @Test func stillComposesAfterLetterDespiteSpaceGuard() {

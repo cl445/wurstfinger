@@ -36,28 +36,45 @@ struct ComposeMiddleware: ActionMiddleware {
     /// compose rule matches and consumes the preceding letter.
     let deletePreviousCharacter: () -> Void
 
+    /// Returns the currently selected text, or nil/empty when there is no
+    /// selection. When a selection is active the trigger must replace the
+    /// selection verbatim, so the compose lookup (which deletes the previous
+    /// character) is skipped and the raw trigger is committed instead.
+    /// Defaults to "no selection" so existing call sites need not thread it
+    /// through.
+    var selectedText: () -> String? = { nil }
+
     func process(_ context: ActionContext, next: (ActionContext) -> Void) {
         switch context.action {
         case let .compose(trigger):
             var transformed = context
             let previous = previousCharacter()
-            // Combining across a space is never wanted: "hello " + ´ must
-            // yield "hello ´" with the space preserved. The rule set
-            // inherits space-consuming " " + x fallback rows from
-            // Thumb-Key, so the lookup is skipped entirely when a space
-            // precedes the cursor.
-            if !previous.isEmpty, previous != " ", let replacement = compose(previous, trigger) {
+            // This middleware is a pure executor of the compose rule table:
+            // space handling lives entirely in the rule data (e.g. the
+            // " " + ´ → ' and " " + ˋ → ` normalizations), so no special
+            // space branch is needed here. A rule match deletes the matched
+            // previous character and commits its replacement; otherwise the
+            // trigger is inserted as plain text.
+            //
+            // An active selection is the one exception: deleting the previous
+            // character would corrupt the selection replacement, so when text
+            // is selected the raw trigger is committed to replace it.
+            if !previous.isEmpty, selectedText()?.isEmpty ?? true,
+               let replacement = compose(previous, trigger) {
                 deletePreviousCharacter()
                 transformed.action = .commitText(replacement)
             } else {
-                // No rule (or preceding space) — insert the trigger as plain text.
+                // No rule (or an active selection) — insert the trigger as
+                // plain text so it replaces any selection verbatim.
                 transformed.action = .commitText(trigger)
             }
             next(transformed)
 
         case .cycleAccents:
             let previous = previousCharacter()
-            guard !previous.isEmpty, let replacement = cycleAccent(previous) else {
+            guard !previous.isEmpty, selectedText()?.isEmpty ?? true,
+                  let replacement = cycleAccent(previous)
+            else {
                 next(context)
                 return
             }

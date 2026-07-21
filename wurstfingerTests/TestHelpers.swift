@@ -26,11 +26,23 @@ final class MockTextTarget: TextInputTarget {
 
     func insertText(_ text: String) {
         events.append(.insertText(text))
+        // Model UIKit: inserting text replaces the active selection. Clearing
+        // `selectedText` lets pipeline tests assert that a raw trigger (rather
+        // than a lookback combine) replaced the selection.
+        if selectedText != nil { selectedText = nil }
         documentContextBeforeInput = (documentContextBeforeInput ?? "") + text
     }
 
     func deleteBackward() {
+        // Append the event FIRST (order-preserving: AdvancedTextMiddleware
+        // cut asserts `events == [.deleteBackward]`), then model UIKit's
+        // "delete removes the selection as one unit" — a selected range is
+        // cleared without touching `documentContextBeforeInput`.
         events.append(.deleteBackward)
+        if selectedText != nil {
+            selectedText = nil
+            return
+        }
         if let ctx = documentContextBeforeInput, !ctx.isEmpty {
             documentContextBeforeInput = String(ctx.dropLast())
         }
