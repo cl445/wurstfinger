@@ -32,13 +32,20 @@ struct DoubleSpacePeriodMiddlewareTests {
 
     /// Runs one action through the middleware, returning the forwarded action,
     /// the target's recorded events, and the resulting pre-cursor context.
-    private func run(before: String?, enabled: Bool = true, action: KeyAction = .space)
+    private func run(
+        before: String?,
+        enabled: Bool = true,
+        action: KeyAction = .space,
+        selection: String? = nil
+    )
         -> (forwarded: KeyAction, events: [MockTextTarget.Event], contextAfter: String?) {
         let target = MockTextTarget()
         target.documentContextBeforeInput = before
+        target.selectedText = selection
         let middleware = DoubleSpacePeriodMiddleware(
             isEnabled: { enabled },
             documentContextBefore: { target.documentContextBeforeInput },
+            selectedText: { target.selectedText },
             deleteBackward: { target.deleteBackward() }
         )
         var forwarded: KeyAction = .none
@@ -64,6 +71,18 @@ struct DoubleSpacePeriodMiddlewareTests {
         #expect(result.forwarded == .space)
         #expect(result.events.isEmpty)
         #expect(result.contextAfter == "hello. ")
+    }
+
+    @Test("Passes a space through untouched while text is selected")
+    func passesThroughWithActiveSelection() {
+        // With a selection, `deleteBackward` would delete the selected text
+        // instead of the pending space, so the space must keep its plain
+        // replace-selection semantics even when the pre-selection context
+        // matches the substitution rule.
+        let result = run(before: "hello ", selection: "world")
+        #expect(result.forwarded == .space)
+        #expect(result.events.isEmpty)
+        #expect(result.contextAfter == "hello ")
     }
 
     @Test("Passes a third space through untouched")

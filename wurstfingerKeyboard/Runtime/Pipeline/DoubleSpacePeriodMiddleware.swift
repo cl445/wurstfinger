@@ -35,12 +35,19 @@ struct DoubleSpacePeriodMiddleware: ActionMiddleware {
     /// last two characters are inspected.
     let documentContextBefore: () -> String?
 
+    /// Returns the currently selected text, if any. With an active selection
+    /// the substitution must not fire: `deleteBackward` would delete the
+    /// selection instead of the pending space, so a space press has to keep
+    /// its plain replace-selection-with-space semantics.
+    let selectedText: () -> String?
+
     /// Deletes the pending trailing space before the rewritten commit.
     let deleteBackward: () -> Void
 
     func process(_ context: ActionContext, next: (ActionContext) -> Void) {
         guard isEnabled(),
               case .space = context.action,
+              selectedText()?.isEmpty != false,
               let text = documentContextBefore(),
               Self.shouldSubstitute(before: text)
         else {
