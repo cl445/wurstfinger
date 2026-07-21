@@ -37,12 +37,13 @@ struct CombineMiddlewareSelectionTests {
     @Test func combineMiddlewareForwardsRawTriggerOverSelection_direct() {
         var deletes = 0
         var captured: KeyAction?
-        let middleware = CombineMiddleware(
+        let middleware = SequentialCompositionMiddleware(
             isActive: { true },
             documentContextBefore: { "한" },
             deleteBackward: { deletes += 1 },
             selectedText: { "X" },
-            combine: { previous, trigger in
+            composeDigraph: nil,
+            composeSingle: { previous, trigger in
                 HangulComposer.combine(previous: previous, jamo: trigger)
             }
         )
@@ -60,12 +61,13 @@ struct CombineMiddlewareSelectionTests {
     @Test func combineRunsWhenNoSelection_direct() {
         var deletes = 0
         var captured: KeyAction?
-        let middleware = CombineMiddleware(
+        let middleware = SequentialCompositionMiddleware(
             isActive: { true },
             documentContextBefore: { "한" },
             deleteBackward: { deletes += 1 },
             selectedText: { nil },
-            combine: { previous, trigger in
+            composeDigraph: nil,
+            composeSingle: { previous, trigger in
                 HangulComposer.combine(previous: previous, jamo: trigger)
             }
         )

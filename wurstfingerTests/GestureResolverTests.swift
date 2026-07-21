@@ -43,12 +43,13 @@ private enum Fixtures {
     static func binding(
         label: String = "x",
         action: KeyAction,
+        category: KeyCategory? = nil,
         returnAction: KeyAction? = nil
     ) -> KeyBinding {
         KeyBinding(
             label: label,
             action: action,
-            category: nil,
+            category: category,
             returnAction: returnAction,
             accessibilityLabel: nil
         )
@@ -287,6 +288,64 @@ struct GhostKeyResolverTests {
             Fixtures.key(id: "a", bindings: [.tap: Fixtures.binding(action: .commitText("ghost"))]),
         ])
         #expect(GhostKeyResolver(fallbackMode: fallback).resolve(keyId: "a", gesture: .tap, in: primary) == nil)
+    }
+
+    // MARK: Long-press → fallback digit tap (numeric-layer mirror removed)
+
+    @Test func longPressMapsToFallbackDigitTap() {
+        // The letter key has no long-press binding; the fallback (numeric)
+        // key exposes only a `.digit` tap. A hold must surface that digit
+        // without the numeric layer mirroring the tap as an explicit
+        // `.longPress` binding.
+        let primary = Fixtures.mode(name: "main", keys: [
+            Fixtures.key(id: "a", bindings: [.tap: Fixtures.binding(action: .commitText("a"))]),
+        ])
+        let fallback = Fixtures.mode(name: "numeric", keys: [
+            Fixtures.key(id: "a", bindings: [
+                .tap: Fixtures.binding(action: .commitText("1"), category: .digit),
+            ]),
+        ])
+        #expect(
+            GhostKeyResolver(fallbackMode: fallback)
+                .resolve(keyId: "a", gesture: .longPress, in: primary)?.action == .commitText("1")
+        )
+    }
+
+    @Test func longPressDoesNotMapToNonDigitFallbackTap() {
+        // A utility fallback tap (return/globe/…) must NOT be surfaced by a
+        // hold: an unresolved long press has to report no binding so the key
+        // keeps its normal tap on release.
+        let primary = Fixtures.mode(name: "main", keys: [
+            Fixtures.key(id: "ret", bindings: [:]),
+        ])
+        let fallback = Fixtures.mode(name: "numeric", keys: [
+            Fixtures.key(id: "ret", bindings: [
+                .tap: Fixtures.binding(action: .newline, category: .utility),
+            ]),
+        ])
+        #expect(
+            GhostKeyResolver(fallbackMode: fallback)
+                .resolve(keyId: "ret", gesture: .longPress, in: primary) == nil
+        )
+    }
+
+    @Test func explicitFallbackLongPressStillWins() {
+        // When the fallback key carries its own long-press binding (e.g. the
+        // space bar's native-zero hold), that explicit binding is returned
+        // verbatim rather than the tap-digit fallback.
+        let primary = Fixtures.mode(name: "main", keys: [
+            Fixtures.key(id: "space", bindings: [.tap: Fixtures.binding(action: .space)]),
+        ])
+        let fallback = Fixtures.mode(name: "numeric", keys: [
+            Fixtures.key(id: "space", bindings: [
+                .tap: Fixtures.binding(action: .space),
+                .longPress: Fixtures.binding(action: .commitText("0"), category: .digit),
+            ]),
+        ])
+        #expect(
+            GhostKeyResolver(fallbackMode: fallback)
+                .resolve(keyId: "space", gesture: .longPress, in: primary)?.action == .commitText("0")
+        )
     }
 }
 

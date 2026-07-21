@@ -481,49 +481,53 @@ extension LanguageDefinitions {
             id: meta.id,
             title: meta.title,
             localeIdentifier: meta.localeIdentifier,
-            centerCharacters: [
-                ["く", "つ", "い"],
-                ["ふ", "る", "ら"],
-                ["と", "ん", "す"],
-            ],
-            directionalOverrides: [
-                GridSlot.topLeft: [.swipeRight: "ー", .swipeDown: "や", .swipeDownRight: "さ"],
-                GridSlot.topCenter: [
-                    .swipeUp: "そ", .swipeUpLeft: "め", .swipeUpRight: "も",
-                    .swipeDown: "ま",
-                ],
-                GridSlot.topRight: [.swipeDownLeft: "ひ"],
-                GridSlot.midLeft: [
-                    .swipeLeft: "せ", .swipeRight: "き", .swipeDown: "わ",
-                    .swipeDownLeft: "へ", .swipeDownRight: "に",
-                ],
-                GridSlot.center: [
-                    .swipeUp: "あ", .swipeUpLeft: "か", .swipeUpRight: "し",
-                    .swipeLeft: "は", .swipeRight: "り", .swipeDown: "れ",
-                    .swipeDownLeft: "た", .swipeDownRight: "ほ",
-                ],
-                GridSlot.midRight: [
-                    .swipeUpLeft: "ゆ", .swipeLeft: "ろ", .swipeRight: "み",
-                    .swipeDownRight: "ち",
-                ],
-                GridSlot.bottomLeft: [
-                    .swipeUp: "の", .swipeUpLeft: "ゝ", .swipeUpRight: "む",
-                    .swipeLeft: "を", .swipeRight: "う", .swipeDown: "な",
-                ],
-                GridSlot.bottomCenter: [
-                    .swipeUp: "て", .swipeUpLeft: "゛", .swipeLeft: "ね",
-                    .swipeRight: "け",
-                ],
-                GridSlot.bottomRight: [
-                    .swipeUp: "え", .swipeUpLeft: "こ", .swipeLeft: "よ",
-                    .swipeRight: "ぬ", .swipeDownLeft: "お",
-                ],
-            ],
+            centerCharacters: hiraganaCenterCharacters,
+            directionalOverrides: hiraganaDirectionalOverrides,
             supportsCapitalization: false,
             numericBackToAlphaLabel: "かな",
             combineRuleSet: hiraganaCombineRules
         )
     }
+
+    private static let hiraganaCenterCharacters: [[String]] = [
+        ["く", "つ", "い"],
+        ["ふ", "る", "ら"],
+        ["と", "ん", "す"],
+    ]
+
+    private static let hiraganaDirectionalOverrides: [String: [GestureType: String]] = [
+        GridSlot.topLeft: [.swipeRight: "ー", .swipeDown: "や", .swipeDownRight: "さ"],
+        GridSlot.topCenter: [
+            .swipeUp: "そ", .swipeUpLeft: "め", .swipeUpRight: "も",
+            .swipeDown: "ま",
+        ],
+        GridSlot.topRight: [.swipeDownLeft: "ひ"],
+        GridSlot.midLeft: [
+            .swipeLeft: "せ", .swipeRight: "き", .swipeDown: "わ",
+            .swipeDownLeft: "へ", .swipeDownRight: "に",
+        ],
+        GridSlot.center: [
+            .swipeUp: "あ", .swipeUpLeft: "か", .swipeUpRight: "し",
+            .swipeLeft: "は", .swipeRight: "り", .swipeDown: "れ",
+            .swipeDownLeft: "た", .swipeDownRight: "ほ",
+        ],
+        GridSlot.midRight: [
+            .swipeUpLeft: "ゆ", .swipeLeft: "ろ", .swipeRight: "み",
+            .swipeDownRight: "ち",
+        ],
+        GridSlot.bottomLeft: [
+            .swipeUp: "の", .swipeUpLeft: "ゝ", .swipeUpRight: "む",
+            .swipeLeft: "を", .swipeRight: "う", .swipeDown: "な",
+        ],
+        GridSlot.bottomCenter: [
+            .swipeUp: "て", .swipeUpLeft: "゛", .swipeLeft: "ね",
+            .swipeRight: "け",
+        ],
+        GridSlot.bottomRight: [
+            .swipeUp: "え", .swipeUpLeft: "こ", .swipeLeft: "よ",
+            .swipeRight: "ぬ", .swipeDownLeft: "お",
+        ],
+    ]
 
     /// Dakuten voicing (kana + ゛ → voiced kana), from MessagEase hiraganaCombine.
     /// A second ゛ cascades the ha-row voiced kana to their handakuten form
@@ -550,48 +554,43 @@ extension LanguageDefinitions {
             id: meta.id,
             title: meta.title,
             localeIdentifier: meta.localeIdentifier,
-            centerCharacters: [
-                ["ク", "ツ", "イ"],
-                ["フ", "ル", "ラ"],
-                ["ト", "ン", "ス"],
-            ],
-            directionalOverrides: [
-                GridSlot.topLeft: [.swipeRight: "ー", .swipeDown: "ヤ", .swipeDownRight: "サ"],
-                GridSlot.topCenter: [
-                    .swipeUp: "ソ", .swipeUpLeft: "メ", .swipeUpRight: "モ",
-                    .swipeDown: "マ",
-                ],
-                GridSlot.topRight: [.swipeDownLeft: "ヒ"],
-                GridSlot.midLeft: [
-                    .swipeLeft: "セ", .swipeRight: "キ", .swipeDown: "ワ",
-                    .swipeDownLeft: "ヘ", .swipeDownRight: "ニ",
-                ],
-                GridSlot.center: [
-                    .swipeUp: "ア", .swipeUpLeft: "カ", .swipeUpRight: "シ",
-                    .swipeLeft: "ハ", .swipeRight: "リ", .swipeDown: "レ",
-                    .swipeDownLeft: "タ", .swipeDownRight: "ホ",
-                ],
-                GridSlot.midRight: [
-                    .swipeUpLeft: "ユ", .swipeLeft: "ロ", .swipeRight: "ミ",
-                    .swipeDownRight: "チ",
-                ],
-                GridSlot.bottomLeft: [
-                    .swipeUp: "ノ", .swipeUpLeft: "ヽ", .swipeUpRight: "ム",
-                    .swipeLeft: "ヲ", .swipeRight: "ウ", .swipeDown: "ナ",
-                ],
-                GridSlot.bottomCenter: [
-                    .swipeUp: "テ", .swipeUpLeft: "゛", .swipeLeft: "ネ",
-                    .swipeRight: "ケ", .swipeDownRight: "・",
-                ],
-                GridSlot.bottomRight: [
-                    .swipeUp: "エ", .swipeUpLeft: "コ", .swipeLeft: "ヨ",
-                    .swipeRight: "ヌ", .swipeDownLeft: "オ",
-                ],
-            ],
+            centerCharacters: katakanaCenterCharacters,
+            directionalOverrides: katakanaDirectionalOverrides,
             supportsCapitalization: false,
             numericBackToAlphaLabel: "カナ",
             combineRuleSet: katakanaCombineRules
         )
+    }
+
+    /// Katakana shares hiragana's key arrangement glyph-for-glyph, so its
+    /// center characters and swipe overrides are *derived* from the hiragana
+    /// tables via ICU `.hiraganaToKatakana` rather than hand-maintained. This
+    /// keeps the two kana layouts from drifting apart. A characterization test
+    /// (`KatakanaDerivationTests`) pins the derived tables to the previously
+    /// hand-authored values, proving zero behavior change.
+    ///
+    /// Two genuine katakana-only deltas are layered on top: the ・ separator on
+    /// `bottomCenter.swipeDownRight` (below) and the wa-row voiced combine
+    /// entries in `katakanaCombineRules` (which the transform cannot supply).
+    static let katakanaCenterCharacters: [[String]] =
+        hiraganaCenterCharacters.map { $0.map(katakanize) }
+
+    static let katakanaDirectionalOverrides: [String: [GestureType: String]] = {
+        var derived = hiraganaDirectionalOverrides.mapValues { overrides in
+            overrides.mapValues(katakanize)
+        }
+        // Katakana-only delta: the ・ (nakaguro) separator has no hiragana
+        // counterpart, so it is added rather than derived.
+        derived[GridSlot.bottomCenter, default: [:]][.swipeDownRight] = "・"
+        return derived
+    }()
+
+    /// Maps a single hiragana glyph to its katakana counterpart. The shared
+    /// sound/iteration marks (゛ ゜ → unchanged, ゝ → ヽ) and the prolonged-sound
+    /// mark ー are handled by the ICU transform; a glyph the transform cannot
+    /// map is returned unchanged.
+    private static func katakanize(_ glyph: String) -> String {
+        glyph.applyingTransform(.hiraganaToKatakana, reverse: false) ?? glyph
     }
 
     /// Dakuten voicing (kana + ゛ → voiced kana), from MessagEase katakanaCombine.
