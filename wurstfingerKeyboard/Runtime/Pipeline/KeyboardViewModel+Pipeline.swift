@@ -186,6 +186,24 @@ extension KeyboardViewModel {
             }
         ))
 
+        // 4c. Double-space → period (the iOS "." Shortcut). Runs right before
+        //     the text-input middleware so it can rewrite the pending `.space`
+        //     into `. `. Inert unless enabled in settings.
+        middlewares.append(DoubleSpacePeriodMiddleware(
+            isEnabled: { [weak self] in
+                self?.sharedDefaults.bool(forKey: SettingsKey.doubleSpacePeriodEnabled.rawValue) ?? false
+            },
+            documentContextBefore: { [weak self] in
+                self?.textInputTarget?.documentContextBeforeInput
+            },
+            selectedText: { [weak self] in
+                self?.textInputTarget?.selectedText
+            },
+            deleteBackward: { [weak self] in
+                self?.textInputTarget?.deleteBackward()
+            }
+        ))
+
         // 5. Basic text input (commitText, deleteBackward, space, newline, moveCursor)
         middlewares.append(TextInputMiddleware(
             target: { [weak self] in self?.textInputTarget }
@@ -348,7 +366,9 @@ extension KeyboardViewModel {
             return
         }
         // 2. Uppercase of center character (letter keys)
-        if tryCircularUppercase(key: key) { return }
+        if tryCircularUppercase(key: key) {
+            return
+        }
         // 3. Fallback to opposite direction's binding
         if let binding = key.bindings[opposite] {
             dispatchBinding(binding)
@@ -549,7 +569,9 @@ extension KeyboardViewModel {
         var seenWord = false
         for char in text {
             if char.isWhitespace {
-                if seenWord { break }
+                if seenWord {
+                    break
+                }
             } else {
                 seenWord = true
             }
@@ -566,7 +588,9 @@ extension KeyboardViewModel {
         var seenWord = false
         for char in text.reversed() {
             if char.isWhitespace {
-                if seenWord { break }
+                if seenWord {
+                    break
+                }
             } else {
                 seenWord = true
             }

@@ -43,6 +43,9 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
     private var longPressNumbersEnabled = false
 
+    @AppStorage(SettingsKey.doubleSpacePeriodEnabled.rawValue, store: SharedDefaults.store)
+    private var doubleSpacePeriodEnabled = false
+
     @AppStorage(SettingsKey.cutAllEnabled.rawValue, store: SharedDefaults.store)
     private var cutAllEnabled = false
 
@@ -104,6 +107,14 @@ struct SettingsView: View {
                     icon: "textformat.size.larger", color: .teal,
                     title: "Auto-Capitalize",
                     subtitle: String(localized: "Capitalize after sentence-ending punctuation")
+                )
+            }
+
+            Toggle(isOn: $doubleSpacePeriodEnabled) {
+                SettingsRow(
+                    icon: "space", color: .mint,
+                    title: "Double-Space Period",
+                    subtitle: String(localized: "Type two spaces to insert a period")
                 )
             }
 

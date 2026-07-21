@@ -44,6 +44,10 @@ enum SettingsKey: String {
     /// Holding a letter key types the digit that key carries on the
     /// numeric layer, without switching modes.
     case longPressNumbersEnabled
+    /// Typing a second consecutive space inserts a period followed by a
+    /// space (the iOS "." Shortcut), when the character before the pending
+    /// space is a letter or digit.
+    case doubleSpacePeriodEnabled
     /// Circling the clipboard key cuts the text around the cursor.
     /// Opt-in: the action is destructive and unaided by undo, so it stays off
     /// until asked for rather than surprising anyone who circles the key.
