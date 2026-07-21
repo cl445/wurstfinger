@@ -62,6 +62,33 @@ struct HangulComposerTests {
         #expect(HangulComposer.combine(previous: "ㄱ", jamo: "ㄴ") == nil)
     }
 
+    // MARK: - Tense (쌍) consonants via same-consonant doubling
+
+    @Test func tenseConsonantsFromDoubling() {
+        // Repeating a base consonant produces its tense (doubled) form.
+        #expect(HangulComposer.combine(previous: "ㄱ", jamo: "ㄱ") == "ㄲ")
+        #expect(HangulComposer.combine(previous: "ㄷ", jamo: "ㄷ") == "ㄸ")
+        #expect(HangulComposer.combine(previous: "ㅂ", jamo: "ㅂ") == "ㅃ")
+        #expect(HangulComposer.combine(previous: "ㅅ", jamo: "ㅅ") == "ㅆ")
+        #expect(HangulComposer.combine(previous: "ㅈ", jamo: "ㅈ") == "ㅉ")
+        // Different consonants must still not merge.
+        #expect(HangulComposer.combine(previous: "ㄱ", jamo: "ㄴ") == nil)
+    }
+
+    @Test func tenseFinalGrowsFromRepeatedTrailingConsonant() {
+        // 갔 (ㄱㅏㅆ): the ㅆ batchim forms from a repeated ㅅ.
+        #expect(HangulComposer.combine(previous: "갓", jamo: "ㅅ") == "갔")
+        // Only ㄲ/ㅆ are valid tense finals; ㄷㄷ etc. never grow a batchim.
+        #expect(HangulComposer.combine(previous: "닫", jamo: "ㄷ") == nil)
+    }
+
+    @Test func typesHangulWordWithTenseJamo() {
+        // 있다: ㅇ ㅣ ㅅ ㅅ ㄷ ㅏ (tense final ㅆ).
+        #expect(type(["ㅇ", "ㅣ", "ㅅ", "ㅅ", "ㄷ", "ㅏ"]) == "있다")
+        // 깎: ㄱ ㄱ ㅏ ㄱ ㄱ (tense lead ㄲ and tense final ㄲ).
+        #expect(type(["ㄱ", "ㄱ", "ㅏ", "ㄱ", "ㄱ"]) == "깎")
+    }
+
     @Test func nonHangulPreviousIsIgnored() {
         #expect(HangulComposer.combine(previous: "a", jamo: "ㄱ") == nil)
         #expect(HangulComposer.combine(previous: " ", jamo: "ㅏ") == nil)

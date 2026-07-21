@@ -40,9 +40,14 @@ struct CommonKeysTests {
     }
 
     @Test func spacebarHasMoveCursorSlide() {
-        let space = CommonKeys.spacebar
+        let space = CommonKeys.spacebar()
         #expect(space.slideType == .moveCursor)
         #expect(space.bindings[.tap]?.action == .space)
+    }
+
+    @Test func spacebarLongPressUsesSuppliedZeroDigit() {
+        #expect(CommonKeys.spacebar().bindings[.longPress]?.action == .commitText("0"))
+        #expect(CommonKeys.spacebar(zeroDigit: "٠").bindings[.longPress]?.action == .commitText("٠"))
     }
 
     @Test func symbolsKeySwitchesToNumeric() {

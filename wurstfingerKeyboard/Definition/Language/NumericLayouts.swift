@@ -111,7 +111,7 @@ enum NumericLayouts {
             UtilitySlot.delete: CommonKeys.delete,
             UtilitySlot.return: CommonKeys.return,
             UtilitySlot.symbols: backToMain(label: backToAlphaLabel),
-            UtilitySlot.space: CommonKeys.spacebar,
+            UtilitySlot.space: CommonKeys.spacebar(zeroDigit: zeroDigit),
             GridSlot.zero: zeroKey(digit: zeroDigit),
         ]
     }

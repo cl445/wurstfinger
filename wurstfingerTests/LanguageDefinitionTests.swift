@@ -211,6 +211,34 @@ struct CaselessScriptTests {
             "\(layout.id) must keep the shift-up binding on midRight"
         )
     }
+
+    // The caseless strip must only remove the auto-generated shift affordance,
+    // not a real language letter a directional override placed on midRight.
+
+    @Test func hindiMidRightKeepsTaAndDanda() throws {
+        let main = try #require(LanguageDefinitions.hindi.makeDefinition().modes[ModeNames.main])
+        let midRight = try #require(main.keys[GridSlot.midRight])
+        #expect(midRight.bindings[.swipeUp]?.action == .commitText("ट"))
+        #expect(midRight.bindings[.swipeDown]?.action == .commitText("।"))
+    }
+
+    @Test func urduMidRightKeepsRrehAndDdal() throws {
+        let main = try #require(LanguageDefinitions.urdu.makeDefinition().modes[ModeNames.main])
+        let midRight = try #require(main.keys[GridSlot.midRight])
+        #expect(midRight.bindings[.swipeUp]?.action == .commitText("ڑ"))
+        #expect(midRight.bindings[.swipeDown]?.action == .commitText("ڈ"))
+    }
+
+    @Test func koreanComplexVowelsReachableAsReturnSwipes() throws {
+        let main = try #require(LanguageDefinitions.korean.makeDefinition().modes[ModeNames.main])
+        let center = try #require(main.keys[GridSlot.center])
+        // ㅐ (swipeDownLeft) return-swipe → ㅒ, ㅔ (swipeUpLeft) return-swipe → ㅖ,
+        // matching the MessagEase Korean layout.
+        #expect(center.bindings[.swipeDownLeft]?.action == .commitText("ㅐ"))
+        #expect(center.bindings[.swipeDownLeft]?.returnAction == .commitText("ㅒ"))
+        #expect(center.bindings[.swipeUpLeft]?.action == .commitText("ㅔ"))
+        #expect(center.bindings[.swipeUpLeft]?.returnAction == .commitText("ㅖ"))
+    }
 }
 
 // MARK: - NumericLayouts Tests

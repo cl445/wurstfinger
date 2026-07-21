@@ -502,6 +502,28 @@ struct ValidationTests {
     }
 }
 
+// MARK: - Japanese Kana / Locale Tests
+
+struct KanaAndLocaleTests {
+    @Test func kanaHandakutenAndSokuonReachable() {
+        let hira = LanguageDefinitions.hiragana.makeDefinition().settings
+        // Handakuten cascade は→ば→ぱ and sokuon つ→づ→っ on the same ゛ key.
+        #expect(hira.combineRuleSet?.rules["゛"]?["ば"] == "ぱ")
+        #expect(hira.combineRuleSet?.rules["゛"]?["づ"] == "っ")
+
+        let kata = LanguageDefinitions.katakana.makeDefinition().settings
+        #expect(kata.combineRuleSet?.rules["゛"]?["バ"] == "パ")
+        #expect(kata.combineRuleSet?.rules["゛"]?["ヅ"] == "ッ")
+    }
+
+    @Test func katakanaLocaleIsBcp47() {
+        // The registry key stays unique, but the locale tag must be valid BCP-47.
+        #expect(LanguageDefinitions.katakana.id == "ja_JP_katakana")
+        #expect(LanguageDefinitions.katakana.localeIdentifier == "ja_JP")
+        #expect(LanguageDefinitions.katakana.makeDefinition().localeIdentifier == "ja_JP")
+    }
+}
+
 // MARK: - Supporting Type Tests
 
 struct SupportingTypeTests {

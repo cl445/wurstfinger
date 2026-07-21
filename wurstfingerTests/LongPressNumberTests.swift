@@ -26,6 +26,23 @@ struct LongPressBindingTests {
             #expect(mode.key(for: GridSlot.zero)?.bindings[.longPress]?.action == .commitText("0"))
         }
     }
+
+    @Test func spaceLongPressUsesNativeZeroOnArabicDefinition() throws {
+        // The space-bar hold-for-zero must follow the layout's own digit set:
+        // Arabic → ٠ (U+0660), not ASCII "0", in both the main and numeric mode.
+        let def = try #require(KeyboardRegistry.load(id: "ar"))
+        let mainSpace = def.modes[ModeNames.main]?.key(for: UtilitySlot.space)
+        #expect(mainSpace?.bindings[.longPress]?.action == .commitText("٠"))
+        let numericSpace = def.modes[ModeNames.numeric]?.key(for: UtilitySlot.space)
+        #expect(numericSpace?.bindings[.longPress]?.action == .commitText("٠"))
+    }
+
+    @Test func spaceLongPressStaysAsciiZeroOnLatinDefinition() throws {
+        // Regression guard: western layouts keep ASCII "0" on space-hold.
+        let def = try #require(KeyboardRegistry.load(id: "de_DE"))
+        let space = def.modes[ModeNames.main]?.key(for: UtilitySlot.space)
+        #expect(space?.bindings[.longPress]?.action == .commitText("0"))
+    }
 }
 
 // MARK: - Pipeline (gesture → digit)
@@ -96,6 +113,21 @@ struct LongPressNumberPipelineTests {
         vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
         vm.handleGesture(.longPress, keyId: UtilitySlot.space, isReturn: false)
         #expect(target.events.contains(.insertText("0")))
+    }
+
+    @Test func longPressOnSpaceBarTypesNativeZeroArabic() {
+        let (vm, target) = makeViewModel(languageId: "ar")
+        let handled = vm.handleGesture(.longPress, keyId: UtilitySlot.space, isReturn: false)
+        #expect(handled)
+        #expect(target.events == [.insertText("٠")])
+    }
+
+    @Test func longPressOnSpaceBarTypesNativeZeroInNumericModeArabic() {
+        let (vm, target) = makeViewModel(languageId: "ar")
+        vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.numeric)
+        vm.handleGesture(.longPress, keyId: UtilitySlot.space, isReturn: false)
+        #expect(target.events.contains(.insertText("٠")))
     }
 
     @Test func longPressOnDeleteReportsUnhandled() {

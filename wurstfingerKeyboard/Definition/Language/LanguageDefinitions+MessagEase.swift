@@ -526,19 +526,25 @@ extension LanguageDefinitions {
     }
 
     /// Dakuten voicing (kana + ゛ → voiced kana), from MessagEase hiraganaCombine.
+    /// A second ゛ cascades the ha-row voiced kana to their handakuten form
+    /// (ば→ぱ …) and the voiced づ to the sokuon っ, so the single ゛ key reaches
+    /// ぱぴぷぺぽ and っ (matching the global ゛ table).
     private static let hiraganaCombineRules = ComposeRuleSet(rules: [
         "゛": [
             "か": "が", "き": "ぎ", "く": "ぐ", "け": "げ", "こ": "ご", "さ": "ざ",
             "し": "じ", "す": "ず", "せ": "ぜ", "そ": "ぞ", "た": "だ", "ち": "ぢ",
             "つ": "づ", "て": "で", "と": "ど", "は": "ば", "ひ": "び", "ふ": "ぶ",
             "へ": "べ", "ほ": "ぼ", "う": "ゔ",
+            "ば": "ぱ", "び": "ぴ", "ぶ": "ぷ", "べ": "ぺ", "ぼ": "ぽ", "づ": "っ",
         ],
     ])
 
     static let katakana = LanguageDescriptor(
         id: "ja_JP_katakana",
         title: "日本語 カナ (Katakana)",
-        localeIdentifier: "ja_JP_katakana"
+        // The registry key (id) stays unique, but the locale drives uppercasing
+        // and system APIs, so it must be a valid BCP-47 tag — plain "ja_JP".
+        localeIdentifier: "ja_JP"
     ) { meta in
         GridKeyboardFactory.layout(
             id: meta.id,
@@ -589,6 +595,8 @@ extension LanguageDefinitions {
     }
 
     /// Dakuten voicing (kana + ゛ → voiced kana), from MessagEase katakanaCombine.
+    /// A second ゛ cascades the ha-row voiced kana to their handakuten form
+    /// (バ→パ …) and the voiced ヅ to the sokuon ッ.
     private static let katakanaCombineRules = ComposeRuleSet(rules: [
         "゛": [
             "カ": "ガ", "キ": "ギ", "ク": "グ", "ケ": "ゲ", "コ": "ゴ", "サ": "ザ",
@@ -596,6 +604,7 @@ extension LanguageDefinitions {
             "ツ": "ヅ", "テ": "デ", "ト": "ド", "ハ": "バ", "ヒ": "ビ", "フ": "ブ",
             "ヘ": "ベ", "ホ": "ボ", "ウ": "ヴ", "ワ": "ヷ", "ヰ": "ヸ", "ヱ": "ヹ",
             "ヲ": "ヺ",
+            "バ": "パ", "ビ": "ピ", "ブ": "プ", "ベ": "ペ", "ボ": "ポ", "ヅ": "ッ",
         ],
     ])
 
@@ -629,6 +638,13 @@ extension LanguageDefinitions {
                 GridSlot.bottomLeft: [.swipeUpRight: "ㅂ"],
                 GridSlot.bottomCenter: [.swipeUp: "ㅠ", .swipeRight: "ㅋ"],
                 GridSlot.bottomRight: [.swipeUpLeft: "ㅍ"],
+            ],
+            returnOverrides: [
+                // Complex vowels are reached by a return swipe on the plain
+                // vowel (ㅐ→ㅒ, ㅔ→ㅖ), matching the MessagEase Korean layout.
+                // Tense consonants (ㄲㄸㅃㅆㅉ) are produced instead by repeating
+                // the base consonant, handled in HangulComposer.
+                GridSlot.center: [.swipeDownLeft: "ㅒ", .swipeUpLeft: "ㅖ"],
             ],
             supportsCapitalization: false,
             numericBackToAlphaLabel: "가나다",
