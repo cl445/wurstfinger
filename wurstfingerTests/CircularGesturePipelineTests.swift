@@ -128,3 +128,60 @@ struct CircularGesturePipelineTests {
         #expect(target.events == [.insertText("ẞ")])
     }
 }
+
+// MARK: - Cut-all
+
+/// The clipboard key's circular bindings, asserted on the definition rather
+/// than by circling it end-to-end: dispatching cut-all writes to the
+/// process-wide `UIPasteboard.general`, which would race the serialized
+/// clipboard suite in `AdvancedTextMiddlewareTests`. The cut itself is covered
+/// there; what matters here is that both directions reach it.
+struct CircularCutAllBindingTests {
+    private func symbolsKey(_ vm: KeyboardViewModel) -> KeyConfig? {
+        vm.activeModeFromDefinition?.key(for: UtilitySlot.symbols)
+    }
+
+    /// Both directions are bound explicitly, so neither relies on
+    /// `handleCircular`'s opposite-direction fallback.
+    @Test func symbolsKeyBindsBothCircleDirectionsToCutAll() {
+        let (vm, _) = makeViewModel(languageId: "de_DE")
+
+        guard let key = symbolsKey(vm) else {
+            Issue.record("Expected a symbols key in the main mode")
+            return
+        }
+
+        #expect(key.bindings[.circularClockwise]?.action == .cutAll)
+        #expect(key.bindings[.circularCounterclockwise]?.action == .cutAll)
+    }
+
+    /// The numeric layer's back-to-main key shares the same clipboard bindings.
+    @Test func numericBackKeyBindsBothCircleDirectionsToCutAll() {
+        let (vm, _) = makeViewModel(languageId: "de_DE")
+
+        vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
+        #expect(vm.activeModeName == ModeNames.numeric)
+
+        guard let key = symbolsKey(vm) else {
+            Issue.record("Expected a back-to-main key in the numeric mode")
+            return
+        }
+
+        #expect(key.bindings[.circularClockwise]?.action == .cutAll)
+        #expect(key.bindings[.circularCounterclockwise]?.action == .cutAll)
+    }
+
+    /// Circling the key must not fall through to its tap action (the mode
+    /// switch). Full access is off, so cut-all no-ops before the pasteboard.
+    @Test func circleOnSymbolsKeyDoesNotSwitchMode() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        target.hasFullAccess = false
+        target.documentContextBeforeInput = "hallo"
+
+        vm.handleGesture(.circularCounterclockwise, keyId: UtilitySlot.symbols, isReturn: false)
+
+        #expect(vm.activeModeName == ModeNames.main)
+        #expect(target.events.isEmpty)
+        #expect(target.documentContextBeforeInput == "hallo")
+    }
+}

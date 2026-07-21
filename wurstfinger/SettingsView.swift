@@ -43,6 +43,18 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
     private var longPressNumbersEnabled = false
 
+    @AppStorage(SettingsKey.cutAllEnabled.rawValue, store: SharedDefaults.store)
+    private var cutAllEnabled = false
+
+    @AppStorage(SettingsKey.keyboardFullAccess.rawValue, store: SharedDefaults.store)
+    private var hasFullAccess = false
+
+    /// Mirrors `HapticSettingsView`: an unset key means the keyboard has not
+    /// reported its Full Access status yet, which must not read as "denied".
+    private var hasSyncedFullAccess: Bool {
+        SharedDefaults.store.object(forKey: SettingsKey.keyboardFullAccess.rawValue) != nil
+    }
+
     private let licenseURL = URL(string: "https://github.com/cl445/wurstfinger/blob/main/LICENSE")!
 
     @AppStorage(SettingsKey.expertModeEnabled.rawValue, store: SharedDefaults.store)
@@ -61,6 +73,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 generalSection
+                gesturesSection
                 appearanceSection
                 feedbackSection
                 expertSection
@@ -114,6 +127,22 @@ struct SettingsView: View {
             }
         } header: {
             Text("General")
+        }
+    }
+
+    private var gesturesSection: some View {
+        Section {
+            Toggle(isOn: $cutAllEnabled) {
+                SettingsRow(icon: "scissors", color: .red, title: "Cut All by Circling")
+            }
+            .disabled(isFullAccessDenied)
+        } header: {
+            Text("Gestures")
+        } footer: {
+            // The explanation lives here rather than as a row subtitle: a
+            // Toggle caps the height of its label, which clips the text in
+            // languages whose title wraps. A footer is free to wrap.
+            Text(cutAllFooter)
         }
     }
 
@@ -280,6 +309,27 @@ struct SettingsView: View {
         case .discrete:
             return String(localized: "Swipe per character, return-swipe per word")
         }
+    }
+
+    /// Full Access is known to be missing — as opposed to not yet reported,
+    /// which happens before the keyboard has been opened once.
+    private var isFullAccessDenied: Bool {
+        hasSyncedFullAccess && !hasFullAccess
+    }
+
+    private var cutAllFooter: String {
+        if isFullAccessDenied {
+            return String(localized: "Cutting to the clipboard requires Full Access")
+        }
+        // The key keeps its clipboard gestures in both modes, so the text names
+        // it by the label it carries in the letter mode, where the gesture is
+        // found, and then says it survives the switch. Naming the numeric-mode
+        // label instead is not possible: it is per language (abc, абв, かな).
+        return String(localized: """
+        Circle the 123 key to cut the text around the cursor. \
+        Swipe down on the same key to paste it back. \
+        Both gestures stay on the key after it switches the keyboard to numbers.
+        """)
     }
 
     private var numpadStyleDescription: String {

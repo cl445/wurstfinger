@@ -19,15 +19,18 @@ struct AdvancedTextMiddleware: ActionMiddleware {
     private let targetProvider: () -> TextInputTarget?
     private let localeProvider: () -> Locale
     private let onClipboardSuccess: () -> Void
+    private let isCutAllEnabled: () -> Bool
 
     init(
         target: @escaping () -> TextInputTarget?,
         locale: @escaping () -> Locale,
-        onClipboardSuccess: @escaping () -> Void = {}
+        onClipboardSuccess: @escaping () -> Void = {},
+        isCutAllEnabled: @escaping () -> Bool = { true }
     ) {
         targetProvider = target
         localeProvider = locale
         self.onClipboardSuccess = onClipboardSuccess
+        self.isCutAllEnabled = isCutAllEnabled
     }
 
     func process(_ context: ActionContext, next: (ActionContext) -> Void) {
@@ -49,6 +52,8 @@ struct AdvancedTextMiddleware: ActionMiddleware {
             handlePaste(target: target)
         case .cut:
             handleCut(target: target)
+        case .cutAll:
+            handleCutAll(target: target)
         default:
             break
         }
@@ -122,6 +127,44 @@ struct AdvancedTextMiddleware: ActionMiddleware {
             target.deleteBackward()
             onClipboardSuccess()
         }
+    }
+
+    /// Cuts everything the proxy exposes around the cursor: the surrounding
+    /// context goes to the pasteboard and is then deleted.
+    ///
+    /// This is as close to "select all and cut" as an extension can get. The
+    /// proxy has no API to set a selection, so `handleCut` above can only act
+    /// on a selection the user made by hand; here the text is read from the
+    /// two context properties instead. Those reach no further than the current
+    /// paragraph, so in a multi-paragraph field this cuts that paragraph
+    /// rather than the whole document — single-line fields, where the feature
+    /// earns its keep, are unaffected.
+    ///
+    /// Deletion is destructive and unaided by undo, hence cut rather than
+    /// delete: the pasteboard copy makes an accidental circle recoverable
+    /// with the paste swipe on the same key.
+    private func handleCutAll(target: TextInputTarget) {
+        guard isCutAllEnabled(), target.hasFullAccess else { return }
+        let before = target.documentContextBeforeInput ?? ""
+        let after = target.documentContextAfterInput ?? ""
+        let all = before + after
+        guard !all.isEmpty else { return }
+
+        UIPasteboard.general.string = all
+
+        // Deletion only runs backwards, so park the cursor past the trailing
+        // context first. The offset is in UTF-16 code units (see the protocol).
+        if !after.isEmpty {
+            target.adjustTextPosition(byCharacterOffset: after.utf16.count)
+        }
+        // Counted over the joined string, not the two halves: a combining mark
+        // leading `after` fuses with the last character of `before` into one
+        // grapheme cluster, and deleteBackward removes clusters, so summing the
+        // halves separately would delete one character too many.
+        for _ in 0 ..< all.count {
+            target.deleteBackward()
+        }
+        onClipboardSuccess()
     }
 
     /// Returns `text` capped at `KeyboardConstants.TextInput.maxPasteUTF16Length`
