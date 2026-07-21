@@ -98,4 +98,72 @@ struct KeyboardHealthLogTests {
 
         #expect(entries.map(\.label) == ["cold-start"])
     }
+
+    /// Recording a second entry must not rewrite the bytes of the first: the
+    /// hot path is an O(1) append, not a full read-decode-encode-rewrite of a
+    /// JSON array.
+    @Test func recordWritesAppendOnlyDoesNotRewritePriorBytes() throws {
+        let url = makeTestFileURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let log = KeyboardHealthLog(fileURL: url, maxEntries: 100)
+
+        log.record("first")
+        _ = log.entries() // drain the async append
+        let data1 = try Data(contentsOf: url)
+        log.record("second")
+        _ = log.entries()
+        let data2 = try Data(contentsOf: url)
+
+        #expect(data2.count > data1.count)
+        #expect(data2.prefix(data1.count) == data1)
+        // Not a JSON array: an append-only JSONL file never opens with `[` (0x5B).
+        #expect(data1.first != 0x5B)
+
+        let decoder = JSONDecoder()
+        let perLine = data2.split(separator: 0x0A)
+            .compactMap { try? decoder.decode(KeyboardHealthLog.Entry.self, from: Data($0)) }
+        #expect(perLine.map(\.label) == ["first", "second"])
+    }
+
+    /// The on-disk file is physically compacted once it grows past the
+    /// size threshold, so it never accumulates one line per lifetime event,
+    /// while `entries()` still returns only the last `maxEntries`.
+    @Test func appendOnlyFileIsPhysicallyCompactedWhileEntriesReturnsLastMax() throws {
+        let url = makeTestFileURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let log = KeyboardHealthLog(fileURL: url, maxEntries: 3)
+
+        for index in 0 ..< 100 {
+            log.record("event-\(index)")
+        }
+        _ = log.entries() // drain
+
+        #expect(log.entries().map(\.label) == ["event-97", "event-98", "event-99"])
+
+        let decoder = JSONDecoder()
+        let perLine = try Data(contentsOf: url).split(separator: 0x0A)
+            .compactMap { try? decoder.decode(KeyboardHealthLog.Entry.self, from: Data($0)) }
+        #expect(perLine.count >= 1)
+        #expect(perLine.count <= 2 * 3 + 2)
+    }
+
+    /// The file URL provider must not be invoked at construction — that is
+    /// what keeps the shared instance's `containerURL(...)` IPC off the
+    /// main/spawn thread. It is resolved lazily on first file access.
+    @Test func fileURLProviderIsNotResolvedAtInit() {
+        var resolveCount = 0
+        let url = makeTestFileURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let log = KeyboardHealthLog(fileURLProvider: {
+            resolveCount += 1
+            return url
+        })
+
+        #expect(resolveCount == 0)
+
+        log.record("e")
+        _ = log.entries() // ioQueue.sync — any deferred resolution has completed
+
+        #expect(resolveCount >= 1)
+    }
 }

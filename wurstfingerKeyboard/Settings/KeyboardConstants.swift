@@ -209,6 +209,15 @@ enum KeyboardConstants {
         static let minHeight: CGFloat = 100
         /// Maximum height for keyboard preview in settings.
         static let maxHeight: CGFloat = 400
+
+        /// Frame height for the settings preview given the rendered keyboard's
+        /// content height. Applies only the lower bound — there is deliberately
+        /// no upper cap, so the preview grows to match the real keyboard
+        /// exactly (which lays out at its content height with no upper clamp)
+        /// instead of clipping tall content.
+        static func frameHeight(forContentHeight contentHeight: CGFloat) -> CGFloat {
+            max(minHeight, contentHeight)
+        }
     }
 
     // MARK: - Keyboard Calculations

@@ -66,7 +66,7 @@ struct InteractiveKeyboardPreview: View {
         // the frame height always matches the rendered content height.
         let containerWidth = DeviceLayoutUtils.screenBounds.width - 32
         let metrics = previewViewModel.layoutMetrics(forContainerWidth: containerWidth)
-        return min(KeyboardConstants.Preview.maxHeight, max(KeyboardConstants.Preview.minHeight, metrics.totalHeight))
+        return KeyboardConstants.Preview.frameHeight(forContentHeight: metrics.totalHeight)
     }
 
     var body: some View {
