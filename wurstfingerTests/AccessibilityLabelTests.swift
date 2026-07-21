@@ -123,15 +123,30 @@ struct AccessibilityLabelTests {
         }
     }
 
-    @Test func globeActivationAdvancesTheInputMode() throws {
+    /// The globe's tap opens (and closes) the emoji layer, so an assistive
+    /// activation already does something and needs no substitute gesture —
+    /// `accessibilityActivationOverride` is nil by design here. The
+    /// input-method switch it used to stand in for stays reachable as the
+    /// named custom action carried by the swipe-left binding's label.
+    @Test func globeOffersTheInputModeSwitchAsACustomAction() throws {
         for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 guard let globe = mode.keys[UtilitySlot.globe] else { continue }
+                // Annotated so `.none` reads as the key action, not `Optional.none`.
+                let tapAction: KeyAction = globe.bindings[.tap]?.action ?? .none
                 #expect(
-                    globe.accessibilityActivationOverride == .swipeLeft,
-                    "\(def.id)/\(modeName) globe does not route activation to the input-mode switch"
+                    tapAction != .none,
+                    "\(def.id)/\(modeName) globe tap is inert — activation would do nothing"
+                )
+                #expect(
+                    globe.accessibilityActivationOverride == nil,
+                    "\(def.id)/\(modeName) globe substitutes a gesture although its tap is live"
                 )
                 #expect(globe.bindings[.swipeLeft]?.action == .advanceToNextInputMode)
+                #expect(
+                    globe.accessibilityActions.contains { $0.gesture == .swipeLeft },
+                    "\(def.id)/\(modeName) globe does not offer the input-mode switch as an action"
+                )
             }
         }
     }
@@ -183,13 +198,14 @@ struct AccessibilityLabelTests {
     }
 
     /// End to end through the real resolver chain and pipeline: the gesture the
-    /// globe declares has to actually reach the input-mode switch.
-    @Test func globeActivationReachesTheInputModeSwitch() throws {
+    /// globe offers under the "switch keyboard" name has to actually reach the
+    /// input-mode switch.
+    @Test func globeInputModeActionReachesTheInputModeSwitch() throws {
         var advanced = 0
         let (viewModel, _) = makeViewModel(advanceToNextInputMode: { advanced += 1 })
         let globe = try #require(viewModel.activeModeFromDefinition?.key(for: UtilitySlot.globe))
-        let gesture = try #require(globe.accessibilityActivationOverride)
-        viewModel.handleGesture(gesture, keyId: UtilitySlot.globe, isReturn: false)
+        let action = try #require(globe.accessibilityActions.first { $0.gesture == .swipeLeft })
+        viewModel.handleGesture(action.gesture, keyId: UtilitySlot.globe, isReturn: false)
         #expect(advanced == 1)
     }
 }

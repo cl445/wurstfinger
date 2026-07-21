@@ -49,8 +49,7 @@ enum EmojiLayouts {
             name: ModeNames.emoji,
             keys: keys,
             arrangements: StandardArrangements.emoji3x3,
-            autoTransitions: [:],
-            doubleTapMode: nil
+            autoTransitions: [:]
         )
     }
 
@@ -75,21 +74,21 @@ enum EmojiLayouts {
 
     /// Globe key variant for the emoji layer: tapping the smiley again
     /// returns to the main layer (toggle behavior). Swipes stay identical.
+    ///
+    /// Copies the shared key and swaps only the tap binding, the same way
+    /// `KeyConfig.autoShifted` derives the shifted layer. Rebuilding the struct
+    /// field by field would silently drop whatever `KeyConfig` gains later —
+    /// today that is `accessibilityActivationGesture`.
     private static func toggleGlobe() -> KeyConfig {
-        let globe = CommonKeys.globe
-        var bindings = globe.bindings
-        if let tap = bindings[.tap] {
-            bindings[.tap] = KeyBinding(
+        var globe = CommonKeys.globe
+        if let tap = globe.bindings[.tap] {
+            globe.bindings[.tap] = KeyBinding(
                 label: tap.label, action: .switchMode(ModeNames.main),
                 category: tap.category, returnAction: nil,
                 accessibilityLabel: tap.accessibilityLabel
             )
         }
-        return KeyConfig(
-            id: globe.id, bindings: bindings, swipeMode: globe.swipeMode,
-            slideType: globe.slideType, style: globe.style,
-            tapCycleActions: globe.tapCycleActions
-        )
+        return globe
     }
 
     /// Back-to-alphabet key on the symbols slot, mirroring the numeric layer.
@@ -97,7 +96,7 @@ enum EmojiLayouts {
         KeyConfig.utility(
             UtilitySlot.symbols, label: label, action: .switchMode(ModeNames.main),
             swipeMode: .eightWay,
-            swipes: CommonKeys.clipboardSwipes
+            swipes: CommonKeys.clipboardBindings
         )
     }
 }
