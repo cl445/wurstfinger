@@ -40,8 +40,14 @@ struct DataDrivenKeyboardRootView: View {
                 KeyboardGridView(
                     arrangement: arrangement,
                     keys: mode.keys,
-                    onGesture: { key, gesture, isReturn in
-                        viewModel.handleGesture(gesture, keyId: key.id, isReturn: isReturn)
+                    onGesture: { key, classification in
+                        viewModel.handleGesture(
+                            classification.gesture,
+                            keyId: key.id,
+                            isReturn: classification.isReturn,
+                            touchdown: classification.touchdown,
+                            features: classification.features
+                        )
                     },
                     onTouchDown: {
                         viewModel.feedbackTap()
@@ -54,6 +60,11 @@ struct DataDrivenKeyboardRootView: View {
                     },
                     languageLabel: viewModel.currentLanguageLabel,
                     showLanguageLabel: viewModel.hasMultipleLanguages,
+                    offsets: viewModel.currentTouchCorrectionOffsets(),
+                    // The grid receives this width as its layout bounds (the
+                    // outer frame minus the horizontal padding) — used for the
+                    // visible Key-Target-Resizing compensation (§5.5).
+                    availableWidth: metrics.keyboardWidth - 2 * KeyboardConstants.Layout.horizontalPadding,
                     metrics: metrics
                 )
                 .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)

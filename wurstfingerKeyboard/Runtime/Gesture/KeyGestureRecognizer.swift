@@ -14,6 +14,13 @@ import SwiftUI
 struct GestureClassification {
     let gesture: GestureType
     let isReturn: Bool
+    /// Touchdown location normalized to the key's frame (`[0,1]²`, 0.5 = center).
+    /// Feeds offset learning (`e = touchdown − center`, §4.1). Defaults to center
+    /// (used by callers that don't supply a real touchdown, e.g. tests).
+    var touchdown: CGPoint = .init(x: 0.5, y: 0.5)
+    /// Discriminating gesture features for telemetry (§13); `nil` when the
+    /// classification was built from synthetic features without plumbing.
+    var features: GestureFeatures?
 }
 
 /// Touch-sequence state backing `KeyGestureRecognizer`.
@@ -101,6 +108,8 @@ struct KeyGestureRecognizer: ViewModifier {
 
     @State private var sequence = KeyGestureSequence()
     @State private var longPress = LongPressScheduler()
+    /// The key's rendered cell size, used to normalize the touchdown to `[0,1]²`.
+    @State private var cellSize: CGSize = .zero
     @Binding var isActive: Bool
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
@@ -111,6 +120,13 @@ struct KeyGestureRecognizer: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { cellSize = proxy.size }
+                        .onChange(of: proxy.size) { _, newSize in cellSize = newSize }
+                }
+            )
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .updating($sequenceInFlight) { _, inFlight, _ in
@@ -137,10 +153,14 @@ struct KeyGestureRecognizer: ViewModifier {
                             isActive = false
                             return
                         }
-                        let classification = sequence.handleEnded(
+                        var classification = sequence.handleEnded(
                             translation: value.translation,
                             aspectRatio: aspectRatio
                         )
+                        // The touchdown (start location) is local to the cell;
+                        // normalize so the learner can compute `e = touchdown −
+                        // center` in pitch fractions (§4.1, §5.5).
+                        classification.touchdown = Self.normalizedTouchdown(value.startLocation, in: cellSize)
                         isActive = false
                         onGestureRecognized(classification)
                     }
@@ -170,6 +190,16 @@ struct KeyGestureRecognizer: ViewModifier {
                 && sequence.maxDisplacement <= KeyboardConstants.LongPress.movementTolerance
                 && onLongPress?() == true
         }
+    }
+
+    /// Normalizes a cell-local point to `[0,1]²` (0.5 = cell center). Falls back
+    /// to the center if the size is not yet known.
+    static func normalizedTouchdown(_ point: CGPoint, in size: CGSize) -> CGPoint {
+        guard size.width > 0, size.height > 0 else { return CGPoint(x: 0.5, y: 0.5) }
+        return CGPoint(
+            x: min(max(point.x / size.width, 0), 1),
+            y: min(max(point.y / size.height, 0), 1)
+        )
     }
 
     /// Guarantees the touch-down origin `(0,0)` is the first sample.
@@ -216,7 +246,9 @@ struct KeyGestureRecognizer: ViewModifier {
         let processed = preprocessor.preprocess(positions)
         let features = GestureFeatures.extract(from: processed, thresholds: thresholds)
 
-        return classify(features: features)
+        var classification = classify(features: features)
+        classification.features = features
+        return classification
     }
 
     /// Classifies already-extracted features. Useful for testing with

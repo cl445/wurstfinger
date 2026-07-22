@@ -17,7 +17,7 @@ import SwiftUI
 /// swipe/tap/circular gesture classification.
 struct KeyView: View {
     let key: KeyConfig
-    let onGesture: (KeyConfig, GestureType, Bool) -> Void
+    let onGesture: (KeyConfig, GestureClassification) -> Void
     var onTouchDown: (() -> Void)?
     var onSlide: ((KeyConfig, SlidePhase) -> Void)?
     /// Handles a long press on this key; returns whether it dispatched an
@@ -130,7 +130,7 @@ struct KeyView: View {
         } else {
             base.modifier(KeyGestureRecognizer(
                 onGestureRecognized: { classification in
-                    onGesture(key, classification.gesture, classification.isReturn)
+                    onGesture(key, classification)
                 },
                 onTouchDown: { onTouchDown?() },
                 // Account for the spanned cell: a multi-row/-column key is not
