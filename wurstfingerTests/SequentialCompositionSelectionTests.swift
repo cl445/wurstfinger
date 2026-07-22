@@ -1,5 +1,5 @@
 //
-//  CombineMiddlewareSelectionTests.swift
+//  SequentialCompositionSelectionTests.swift
 //  WurstfingerTests
 //
 //  Verifies that sequential combine composition never corrupts an active
@@ -13,7 +13,7 @@ import Testing
 @testable import WurstfingerApp
 
 @Suite(.serialized)
-struct CombineMiddlewareSelectionTests {
+struct SequentialCompositionSelectionTests {
     /// End-to-end through the Korean (Hangul) pipeline: with "한" selected as
     /// "X" in front of the cursor, typing "ㅏ" must replace the selection with
     /// the raw jamo, not run the Hangul automaton over the lookback character.
@@ -37,12 +37,13 @@ struct CombineMiddlewareSelectionTests {
     @Test func combineMiddlewareForwardsRawTriggerOverSelection_direct() {
         var deletes = 0
         var captured: KeyAction?
-        let middleware = CombineMiddleware(
+        let middleware = SequentialCompositionMiddleware(
             isActive: { true },
             documentContextBefore: { "한" },
             deleteBackward: { deletes += 1 },
             selectedText: { "X" },
-            combine: { previous, trigger in
+            composeDigraph: nil,
+            composeSingle: { previous, trigger in
                 HangulComposer.combine(previous: previous, jamo: trigger)
             }
         )
@@ -60,12 +61,13 @@ struct CombineMiddlewareSelectionTests {
     @Test func combineRunsWhenNoSelection_direct() {
         var deletes = 0
         var captured: KeyAction?
-        let middleware = CombineMiddleware(
+        let middleware = SequentialCompositionMiddleware(
             isActive: { true },
             documentContextBefore: { "한" },
             deleteBackward: { deletes += 1 },
             selectedText: { nil },
-            combine: { previous, trigger in
+            composeDigraph: nil,
+            composeSingle: { previous, trigger in
                 HangulComposer.combine(previous: previous, jamo: trigger)
             }
         )

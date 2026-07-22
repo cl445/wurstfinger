@@ -105,11 +105,12 @@ enum InputMethodKind: String, Codable, Equatable {
     case direct
 
     /// Vietnamese Telex: single-char and digraph lookback composition
-    /// handled by `TelexMiddleware`.
+    /// handled by `SequentialCompositionMiddleware`.
     case telex
 
     /// Korean Hangul: jamo → syllable composition handled by
-    /// `CombineMiddleware` driven by the `HangulComposer` automaton.
+    /// `SequentialCompositionMiddleware` driven by the `HangulComposer`
+    /// automaton (resolved via `sequentialCombiner`).
     case hangul
 }
 
@@ -130,8 +131,9 @@ struct KeyboardDefinitionSettings: Codable, Equatable {
     let inputMethod: InputMethodKind
 
     /// Sequential-combine rules (`trigger → base → result`) applied by
-    /// `CombineMiddleware`: when the just-typed character (`trigger`) follows a
-    /// matching `base` already in the document, both collapse to `result`.
+    /// `SequentialCompositionMiddleware` (via `sequentialCombiner`): when the
+    /// just-typed character (`trigger`) follows a matching `base` already in the
+    /// document, both collapse to `result`.
     /// Used by scripts that build characters from a base plus a following mark
     /// — Devanagari vowel lengthening (इ + इ → ई), Japanese kana voicing.
     /// nil = no sequential combine (the default for most languages).
@@ -147,5 +149,41 @@ struct KeyboardDefinitionSettings: Codable, Equatable {
         self.composeRuleOverrides = composeRuleOverrides
         self.inputMethod = inputMethod
         self.combineRuleSet = combineRuleSet
+    }
+}
+
+extension KeyboardDefinitionSettings {
+    /// The single sequential-combine strategy for this definition, or `nil`
+    /// when the definition does not compose base + following characters.
+    ///
+    /// Resolving this here — rather than branching inside the pipeline builder
+    /// — keeps the choice between a static rule table and an algorithmic
+    /// composer in one place: a new algorithmic input method (like Hangul) is
+    /// added by extending this switch, and a definition that declares *both* a
+    /// `combineRuleSet` and an algorithmic `inputMethod` can no longer silently
+    /// drop its table (the assertion below fires loudly in debug instead).
+    ///
+    /// Feeds `SequentialCompositionMiddleware.composeSingle`.
+    var sequentialCombiner: ((_ previous: String, _ trigger: String) -> String?)? {
+        // A static rule table wins; the assertion catches a definition that
+        // also declares an algorithmic input method so its table can never be
+        // silently dropped.
+        if let combineRuleSet {
+            assert(
+                inputMethod != .hangul,
+                "A definition must not declare both a combineRuleSet and an algorithmic combiner (\(inputMethod))"
+            )
+            return { previous, trigger in combineRuleSet.rules[trigger]?[previous] }
+        }
+
+        switch inputMethod {
+        case .hangul:
+            return { previous, trigger in HangulComposer.combine(previous: previous, jamo: trigger) }
+        case .direct, .telex:
+            // `.telex` composes via its own two-char digraph path
+            // (`SequentialCompositionMiddleware.composeDigraph`), not this
+            // single-lookback combiner.
+            return nil
+        }
     }
 }

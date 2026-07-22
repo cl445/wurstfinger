@@ -89,11 +89,11 @@ enum NumericLayouts {
         KeyConfig(
             id: GridSlot.zero,
             bindings: [
+                // Tap only. A hold on a letter key reaches this digit via
+                // `GhostKeyResolver`, which maps a `.longPress` to the fallback
+                // key's `.tap` when that tap emits a digit — so the numeric
+                // layer no longer mirrors every digit as an explicit long press.
                 .tap: KeyBinding(
-                    label: digit, action: .commitText(digit),
-                    category: .digit, returnAction: nil, accessibilityLabel: nil
-                ),
-                .longPress: KeyBinding(
                     label: digit, action: .commitText(digit),
                     category: .digit, returnAction: nil, accessibilityLabel: nil
                 ),
@@ -245,17 +245,16 @@ enum NumericLayouts {
                     bindings[.circularCounterclockwise] = circBinding
                 }
 
-                // Tap → digit. The same binding doubles as a long press:
-                // GhostKeyResolver falls back to this layer for gestures the
-                // letter layer leaves unbound, so holding a letter key types
-                // its digit without a mode switch. Long presses only occur
+                // Tap → digit. `GhostKeyResolver` falls back to this layer for
+                // gestures the letter layer leaves unbound; for a `.longPress`
+                // it maps to this `.digit` tap, so holding a letter key types
+                // its digit without a mode switch and without mirroring the tap
+                // as an explicit long-press binding. Long presses only occur
                 // with the opt-in "Type Numbers by Holding" setting enabled.
-                let digitBinding = KeyBinding(
+                bindings[.tap] = KeyBinding(
                     label: digit, action: .commitText(digit),
                     category: .digit, returnAction: nil, accessibilityLabel: nil
                 )
-                bindings[.tap] = digitBinding
-                bindings[.longPress] = digitBinding
 
                 digitKeys[slotId] = KeyConfig(
                     id: slotId, bindings: bindings, swipeMode: .eightWay,

@@ -412,16 +412,17 @@ struct ComposeMiddlewareTests {
     }
 }
 
-// MARK: - CombineMiddleware
+// MARK: - SequentialCompositionMiddleware (combine flavour)
 
-struct CombineMiddlewareTests {
+struct SequentialCompositionCombineTests {
     @Test func combinesWhenRuleMatches() {
         var deleted = 0
-        let middleware = CombineMiddleware(
+        let middleware = SequentialCompositionMiddleware(
             isActive: { true },
             documentContextBefore: { "इ" },
             deleteBackward: { deleted += 1 },
-            combine: { previous, trigger in
+            composeDigraph: nil,
+            composeSingle: { previous, trigger in
                 (previous == "इ" && trigger == "इ") ? "ई" : nil
             }
         )
@@ -435,11 +436,12 @@ struct CombineMiddlewareTests {
     }
 
     @Test func passesThroughWhenNoRuleMatches() {
-        let middleware = CombineMiddleware(
+        let middleware = SequentialCompositionMiddleware(
             isActive: { true },
             documentContextBefore: { "अ" },
             deleteBackward: { Issue.record("Must not delete when no rule matches") },
-            combine: { _, _ in nil }
+            composeDigraph: nil,
+            composeSingle: { _, _ in nil }
         )
         let sink = RecordingMiddleware()
         let pipeline = ActionPipeline(middlewares: [middleware, sink])
@@ -450,11 +452,12 @@ struct CombineMiddlewareTests {
     }
 
     @Test func inertWhenInactive() {
-        let middleware = CombineMiddleware(
+        let middleware = SequentialCompositionMiddleware(
             isActive: { false },
             documentContextBefore: { Issue.record("Must not read context when inactive"); return "इ" },
             deleteBackward: { Issue.record("Must not delete when inactive") },
-            combine: { _, _ in Issue.record("Must not combine when inactive"); return nil }
+            composeDigraph: nil,
+            composeSingle: { _, _ in Issue.record("Must not combine when inactive"); return nil }
         )
         let sink = RecordingMiddleware()
         let pipeline = ActionPipeline(middlewares: [middleware, sink])
@@ -465,11 +468,12 @@ struct CombineMiddlewareTests {
     }
 
     @Test func passesThroughWithoutPreviousCharacter() {
-        let middleware = CombineMiddleware(
+        let middleware = SequentialCompositionMiddleware(
             isActive: { true },
             documentContextBefore: { "" },
             deleteBackward: { Issue.record("Must not delete without a previous char") },
-            combine: { _, _ in Issue.record("Must not combine without a previous char"); return nil }
+            composeDigraph: nil,
+            composeSingle: { _, _ in Issue.record("Must not combine without a previous char"); return nil }
         )
         let sink = RecordingMiddleware()
         let pipeline = ActionPipeline(middlewares: [middleware, sink])
@@ -554,9 +558,9 @@ struct TextInputMiddlewareTests {
     }
 }
 
-// MARK: - TelexMiddleware
+// MARK: - SequentialCompositionMiddleware (Telex flavour)
 
-struct TelexMiddlewareTests {
+struct SequentialCompositionTelexTests {
     /// Shared spy capturing deleteBackward calls and exposing a mutable
     /// documentContextBefore. Tests configure the context, dispatch through
     /// the pipeline, and then inspect what the middleware forwarded.
@@ -574,7 +578,7 @@ struct TelexMiddlewareTests {
         digraph: @escaping (String, String, String) -> (String, Int)? = { _, _, _ in nil },
         single: @escaping (String, String) -> String? = { _, _ in nil }
     ) -> (ActionPipeline, RecordingMiddleware) {
-        let telex = TelexMiddleware(
+        let telex = SequentialCompositionMiddleware(
             isActive: isActive,
             documentContextBefore: { spy.context },
             deleteBackward: { spy.deleteBackward() },

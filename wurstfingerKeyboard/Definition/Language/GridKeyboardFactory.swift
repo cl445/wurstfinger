@@ -39,7 +39,8 @@ enum GridKeyboardFactory {
     ///     layouts should pass their script-specific digit set.
     ///   - inputMethod: Which input method is applied to committed characters.
     ///     Defaults to `.direct`; Vietnamese layouts should pass `.telex` so
-    ///     that `TelexMiddleware` activates for this keyboard at runtime.
+    ///     that `SequentialCompositionMiddleware` activates for this keyboard
+    ///     at runtime.
     static func layout(
         id: String,
         title: String,

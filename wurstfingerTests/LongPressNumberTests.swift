@@ -16,14 +16,21 @@ import Testing
 // MARK: - Definition Layer
 
 struct LongPressBindingTests {
-    @Test func numericLayerExposesDigitsAsLongPress() {
+    @Test func numericLayerDigitsAreTapDigitsWithoutMirroredLongPress() {
+        // The numeric layer no longer mirrors each digit `.tap` as an identical
+        // `.longPress` binding: `GhostKeyResolver` surfaces the `.digit` tap to
+        // a hold instead. Verify the digits are present as category `.digit`
+        // taps and carry no explicit long-press binding.
         for mode in [NumericLayouts.phone(), NumericLayouts.classic()] {
             for slot in GridSlot.allSlots.flatMap(\.self) {
                 let key = mode.key(for: slot)
-                #expect(key?.bindings[.longPress] != nil, "slot \(slot)")
-                #expect(key?.bindings[.longPress] == key?.bindings[.tap], "slot \(slot)")
+                #expect(key?.bindings[.tap]?.category == .digit, "slot \(slot)")
+                #expect(key?.bindings[.longPress] == nil, "slot \(slot)")
             }
-            #expect(mode.key(for: GridSlot.zero)?.bindings[.longPress]?.action == .commitText("0"))
+            let zero = mode.key(for: GridSlot.zero)
+            #expect(zero?.bindings[.tap]?.action == .commitText("0"))
+            #expect(zero?.bindings[.tap]?.category == .digit)
+            #expect(zero?.bindings[.longPress] == nil)
         }
     }
 
@@ -152,5 +159,16 @@ struct LongPressNumberPipelineTests {
     @Test func handledGestureReportsTrue() {
         let (vm, _) = makeViewModel()
         #expect(vm.handleGesture(.tap, keyId: GridSlot.topLeft, isReturn: false))
+    }
+
+    @Test func longPressOnLetterKeyTypesNativeDigitArabic() {
+        // Regression lock for the removed numeric-layer `.longPress` mirror:
+        // holding a letter key must still surface the layout's native digit via
+        // GhostKeyResolver mapping the hold to the fallback `.digit` tap. Arabic
+        // top-left carries ١ (Arabic-Indic 1).
+        let (vm, target) = makeViewModel(languageId: "ar")
+        let handled = vm.handleGesture(.longPress, keyId: GridSlot.topLeft, isReturn: false)
+        #expect(handled)
+        #expect(target.events == [.insertText("١")])
     }
 }
