@@ -73,6 +73,14 @@ enum HangulComposer {
     // absent here. Deliberately kept out of `compoundFinal` so `splitFinal`
     // still moves ㄲ/ㅆ onto a following vowel as a whole unit (밖 + ㅏ → 바까,
     // not 박가).
+    //
+    // Known tradeoff: with only single-character lookback and no tense-jamo
+    // key, doubling is the *only* way to type a ㄲ/ㅆ batchim (있다, 갔다, 밖,
+    // 깎 — past-tense verbs make ㅆ batchim extremely common). The cost is that
+    // a ㄱ-final syllable immediately followed by a ㄱ-initial one is tensed
+    // instead of starting a new syllable, so 학교 (ㅎㅏㄱㄱㅛ) folds to 하꾜, and
+    // likewise 축구/국가/식구. Making 있다 typeable outweighs the collision, so
+    // the behavior is kept and pinned by `tenseFinalCollisionIsKnownLimitation`.
     private static let tenseFinal: [String: Character] = [
         "ㄱㄱ": "ㄲ", "ㅅㅅ": "ㅆ",
     ]

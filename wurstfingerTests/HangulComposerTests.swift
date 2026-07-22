@@ -89,6 +89,16 @@ struct HangulComposerTests {
         #expect(type(["ㄱ", "ㄱ", "ㅏ", "ㄱ", "ㄱ"]) == "깎")
     }
 
+    @Test func tenseFinalCollisionIsKnownLimitation() {
+        // Documented tradeoff (see `tenseFinal`): a ㄱ-final syllable directly
+        // followed by a ㄱ-initial one is tensed to a ㄲ batchim rather than
+        // starting a new syllable, because single-character lookback cannot
+        // tell 밖 (real ㄲ batchim) apart from 학+ㄱ. So 학교 (ㅎㅏㄱㄱㅛ) folds to
+        // 하꾜. This is the price of making ㄲ/ㅆ batchim (있다, 밖) typeable at
+        // all; the test pins it so the collision is not mistaken for a new bug.
+        #expect(type(["ㅎ", "ㅏ", "ㄱ", "ㄱ", "ㅛ"]) == "하꾜")
+    }
+
     @Test func nonHangulPreviousIsIgnored() {
         #expect(HangulComposer.combine(previous: "a", jamo: "ㄱ") == nil)
         #expect(HangulComposer.combine(previous: " ", jamo: "ㅏ") == nil)
