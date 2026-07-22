@@ -18,19 +18,15 @@
 
 set -e
 
-# Colors for output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# Change to project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/simulator-capture.sh
+source "$SCRIPT_DIR/lib/simulator-capture.sh"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
 
 echo -e "${BLUE}📱 Wurstfinger App Store Screenshot Generator${NC}"
 echo ""
-
-# Change to project root
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$PROJECT_ROOT"
 
 # Configuration
 SCHEME="Wurstfinger"
@@ -54,19 +50,13 @@ for target in "${TARGETS[@]}"; do
 done
 echo ""
 
-# Get device UDID
-get_device_udid() {
-    local device_name="$1"
-    xcrun simctl list devices available | grep "$device_name" | head -n 1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' || true
-}
-
 # Ensure cleanup runs on any exit (normal, error, or signal)
 CURRENT_UDID=""
 cleanup() {
     echo ""
     echo -e "${BLUE}🧹 Cleaning up...${NC}"
     if [ -n "$CURRENT_UDID" ]; then
-        xcrun simctl status_bar "$CURRENT_UDID" clear 2>/dev/null || true
+        sim_status_bar_clear "$CURRENT_UDID"
         xcrun simctl shutdown "$CURRENT_UDID" 2>/dev/null || true
     fi
     rm -rf "$DERIVED_DATA"
@@ -84,7 +74,7 @@ for target in "${TARGETS[@]}"; do
 
     echo -e "${BLUE}🔄 Capturing $SIZE_PREFIX screenshots on $DEVICE_NAME${NC}"
 
-    UDID=$(get_device_udid "$DEVICE_NAME")
+    UDID=$(sim_udid_for_name "$DEVICE_NAME")
     if [ -z "$UDID" ]; then
         echo -e "${RED}❌ Device not found: $DEVICE_NAME${NC}"
         echo "Available devices:"
@@ -96,28 +86,20 @@ for target in "${TARGETS[@]}"; do
 
     # Boot simulator
     echo "  Booting simulator..."
-    xcrun simctl boot "$UDID" 2>/dev/null || true
-    xcrun simctl bootstatus "$UDID" -b 2>/dev/null || true
+    sim_boot_and_wait "$UDID"
 
     # Override status bar to get consistent screenshots (Apple's standard 9:41)
     echo "  Setting consistent status bar..."
-    xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100
+    sim_status_bar_941 "$UDID"
 
     # Run screenshot tests
     echo "  Running screenshot tests..."
-    rm -rf "$DERIVED_DATA"
-
-    set +e
-    xcodebuild test \
-        -scheme "$SCHEME" \
-        -destination "platform=iOS Simulator,id=$UDID" \
-        -only-testing:"$TEST_TARGET" \
-        -derivedDataPath "$DERIVED_DATA" \
-        CODE_SIGNING_ALLOWED=NO \
-        2>&1 | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi
-    # $? after a pipe is the formatter's exit code (always 0); we need xcodebuild's.
-    TEST_RESULT=${PIPESTATUS[0]}
-    set -e
+    TEST_RESULT=0
+    run_screenshot_tests \
+        "$SCHEME" \
+        "platform=iOS Simulator,id=$UDID" \
+        "$TEST_TARGET" \
+        "$DERIVED_DATA" || TEST_RESULT=$?
 
     if [ "$TEST_RESULT" -ne 0 ]; then
         # These screenshots ship to the App Store (deliver uploads with
@@ -129,15 +111,13 @@ for target in "${TARGETS[@]}"; do
     fi
 
     # Find and extract screenshots from xcresult
-    RESULTS_BUNDLE=$(find "$DERIVED_DATA" -name "*.xcresult" -type d | head -n 1)
+    RESULTS_BUNDLE=$(find_xcresult_bundle "$DERIVED_DATA")
     if [ -z "$RESULTS_BUNDLE" ]; then
         echo -e "${RED}❌ No results bundle found${NC}"
         exit 1
     fi
 
-    rm -rf "$TEMP_SCREENSHOTS"
-    mkdir -p "$TEMP_SCREENSHOTS"
-    xcrun xcresulttool export attachments --path "$RESULTS_BUNDLE" --output-path "$TEMP_SCREENSHOTS"
+    export_xcresult_attachments "$RESULTS_BUNDLE" "$TEMP_SCREENSHOTS"
 
     PNG_COUNT=$(find "$TEMP_SCREENSHOTS" -name "*.png" -type f | wc -l | tr -d ' ')
     echo "  Found $PNG_COUNT PNG files"
@@ -146,44 +126,30 @@ for target in "${TARGETS[@]}"; do
         exit 1
     fi
 
-    # xcresulttool exports attachments under opaque UUID filenames; the
-    # attachment name (which embeds the screenshot number, …-keyboard-01-…)
-    # only exists in manifest.json. Sorting the files directly would produce
-    # a random screenshot order, so order by the manifest names instead.
+    # Order screenshots by the manifest's human-readable names (which embed
+    # the screenshot number). The exported UUID filenames alone would sort
+    # randomly. `manifest_names_to_files` emits sorted `name<TAB>file` lines;
+    # we take the exported file column. Use a while-read loop rather than
+    # `mapfile`, which is a bash 4+ builtin absent from macOS's stock bash 3.2.
+    ORDERED_EXPORTS=()
+    while IFS= read -r line; do
+        ORDERED_EXPORTS+=("$line")
+    done < <(manifest_names_to_files "$TEMP_SCREENSHOTS/manifest.json" | cut -f2)
+    if [ "${#ORDERED_EXPORTS[@]}" -eq 0 ]; then
+        echo -e "${RED}❌ manifest.json contained no attachments${NC}"
+        exit 1
+    fi
+
     COUNTER=1
-    while IFS= read -r exported; do
+    for exported in "${ORDERED_EXPORTS[@]}"; do
         filename=$(printf "%s_%02d.png" "$SIZE_PREFIX" $COUNTER)
         cp "$TEMP_SCREENSHOTS/$exported" "$PRIMARY_DIR/$filename"
         echo "    ✓ $filename ($exported)"
         COUNTER=$((COUNTER + 1))
-    done < <(python3 - "$TEMP_SCREENSHOTS/manifest.json" <<'PYEOF'
-import json
-import sys
-
-
-def walk(node, out):
-    if isinstance(node, dict):
-        if "exportedFileName" in node and "suggestedHumanReadableName" in node:
-            out.append((node["suggestedHumanReadableName"], node["exportedFileName"]))
-        for value in node.values():
-            walk(value, out)
-    elif isinstance(node, list):
-        for value in node:
-            walk(value, out)
-
-
-attachments = []
-with open(sys.argv[1]) as f:
-    walk(json.load(f), attachments)
-if not attachments:
-    sys.exit("manifest.json contained no attachments")
-for _, exported in sorted(attachments):
-    print(exported)
-PYEOF
-)
+    done
 
     # Shut down before switching to the next device
-    xcrun simctl status_bar "$UDID" clear 2>/dev/null || true
+    sim_status_bar_clear "$UDID"
     xcrun simctl shutdown "$UDID" 2>/dev/null || true
     CURRENT_UDID=""
     echo ""

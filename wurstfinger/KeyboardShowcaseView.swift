@@ -81,6 +81,15 @@ struct KeyboardShowcaseView: View {
     private let isDeadZoneTest = ProcessInfo.processInfo.environment["DEAD_ZONE_TEST"] != nil
     private let isTypingTest = ProcessInfo.processInfo.environment["TYPING_TEST"] != nil
 
+    /// Resolves the showcase's language id. A `FORCE_LANGUAGE` override (UI
+    /// tests) wins verbatim — it may name an id not in the registry, so it must
+    /// NOT be routed through the registry-validating helper. Otherwise the
+    /// stored id is resolved via `LanguageSettings.resolvedLanguageId`, which
+    /// falls back to the detected system language when the stored id is stale.
+    static func resolvedShowcaseLanguageId(forceLanguage: String?, storedId: String?) -> String {
+        forceLanguage ?? LanguageSettings.resolvedLanguageId(storedId)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             DataDrivenKeyboardRootView(viewModel: viewModel)
@@ -123,9 +132,10 @@ struct KeyboardShowcaseView: View {
             // stored selection. The forced id is applied to the view model
             // only — the showcase must never persist into the real shared
             // app-group store (`shouldPersistSettings: false`).
-            let languageId = ProcessInfo.processInfo.environment["FORCE_LANGUAGE"]
-                ?? SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
-                ?? LanguageSettings.detectSystemLanguage()
+            let languageId = Self.resolvedShowcaseLanguageId(
+                forceLanguage: ProcessInfo.processInfo.environment["FORCE_LANGUAGE"],
+                storedId: SharedDefaults.store.string(forKey: SettingsKey.selectedLanguageId.rawValue)
+            )
             viewModel.loadDefinition(for: languageId)
 
             // Set keyboard mode from environment if specified (for UI tests)

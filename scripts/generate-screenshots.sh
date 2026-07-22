@@ -7,19 +7,15 @@
 
 set -e
 
-# Colors for output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# Change to project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/simulator-capture.sh
+source "$SCRIPT_DIR/lib/simulator-capture.sh"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
 
 echo -e "${BLUE}🖼️  Wurstfinger Screenshot Generator${NC}"
 echo ""
-
-# Change to project root
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$PROJECT_ROOT"
 
 # Configuration
 SCHEME="Wurstfinger"
@@ -48,17 +44,7 @@ echo "  Output: $DOCS_DIR"
 echo ""
 
 # Find target simulator UDID by name
-TARGET_UDID=$(xcrun simctl list devices available -j | python3 -c "
-import json, sys
-name = '$DEVICE_NAME'
-devices = json.load(sys.stdin)['devices']
-for runtime_devices in devices.values():
-    for d in runtime_devices:
-        if d.get('name') == name and d.get('isAvailable', True):
-            print(d['udid'])
-            raise SystemExit(0)
-raise SystemExit(1)
-" 2>/dev/null || true)
+TARGET_UDID=$(sim_udid_for_name "$DEVICE_NAME")
 
 # Marker file so we can count only screenshots created by this run
 # (pre-existing .webp files in $DOCS_DIR must not count as success).
@@ -69,7 +55,7 @@ cleanup() {
     echo ""
     echo -e "${BLUE}🧹 Cleaning up...${NC}"
     if [ -n "$TARGET_UDID" ]; then
-        xcrun simctl status_bar "$TARGET_UDID" clear 2>/dev/null || true
+        sim_status_bar_clear "$TARGET_UDID"
     fi
     rm -rf "$DERIVED_DATA"
     rm -f "$RUN_MARKER"
@@ -79,7 +65,7 @@ trap cleanup EXIT
 # Override status bar to get consistent screenshots (Apple's standard 9:41)
 echo -e "${BLUE}⏰ Setting consistent status bar...${NC}"
 if [ -n "$TARGET_UDID" ]; then
-    xcrun simctl status_bar "$TARGET_UDID" override --time "9:41" --batteryState charged --batteryLevel 100
+    sim_status_bar_941 "$TARGET_UDID"
     echo "  Set status bar to 9:41 on $TARGET_UDID ($DEVICE_NAME)"
 else
     echo "  ⚠️  Could not find simulator '$DEVICE_NAME', skipping status bar override"
@@ -94,17 +80,8 @@ echo -e "${BLUE}📱 Simulator status before test:${NC}"
 xcrun simctl list devices booted || echo "No booted devices"
 echo ""
 
-TEST_OUTPUT=$(mktemp)
-set +e
-xcodebuild test \
-  -scheme "$SCHEME" \
-  -destination "$DESTINATION" \
-  -only-testing:"$TEST_TARGET" \
-  -derivedDataPath "$DERIVED_DATA" \
-  CODE_SIGNING_ALLOWED=NO \
-  2>&1 | tee "$TEST_OUTPUT" | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi
-TEST_EXIT_CODE=${PIPESTATUS[0]}
-set -e
+TEST_EXIT_CODE=0
+run_screenshot_tests "$SCHEME" "$DESTINATION" "$TEST_TARGET" "$DERIVED_DATA" || TEST_EXIT_CODE=$?
 
 if [ "$TEST_EXIT_CODE" -ne 0 ]; then
   echo -e "${RED}⚠️  UI tests failed (exit code: $TEST_EXIT_CODE), but continuing to check for screenshots...${NC}"
@@ -114,7 +91,7 @@ echo ""
 echo -e "${BLUE}📤 Exporting screenshots...${NC}"
 
 # Find the test results bundle
-RESULTS_BUNDLE=$(find "$DERIVED_DATA" -name "*.xcresult" -type d | head -n 1)
+RESULTS_BUNDLE=$(find_xcresult_bundle "$DERIVED_DATA")
 
 if [ -z "$RESULTS_BUNDLE" ]; then
   echo -e "${RED}❌ Error: Could not find test results bundle${NC}"
@@ -129,23 +106,26 @@ echo -e "${BLUE}🔍 Extracting screenshots with proper names...${NC}"
 
 # Export all attachments
 TEMP_EXPORT="/tmp/screenshot-exports"
-rm -rf "$TEMP_EXPORT"
-xcrun xcresulttool export attachments --path "$RESULTS_BUNDLE" --output-path "$TEMP_EXPORT"
+export_xcresult_attachments "$RESULTS_BUNDLE" "$TEMP_EXPORT"
 
 # Map exported files to proper names based on manifest
 COPIED=0
 if [ -f "$TEMP_EXPORT/manifest.json" ]; then
-    # Parse manifest, crop, and convert to WebP
+    # Parse manifest (via the shared recursive walk), crop, convert to WebP.
+    # The name/file pairs go to a temp file rather than a pipe: the Python
+    # heredoc already occupies stdin, so it reads the pairs from PAIRS_FILE.
+    PAIRS_FILE=$(mktemp)
+    manifest_names_to_files "$TEMP_EXPORT/manifest.json" > "$PAIRS_FILE"
     export TEMP_EXPORT
     export DOCS_DIR
+    export PAIRS_FILE
     python3 << 'EOF'
-import json
 import os
 import re
+
 import numpy as np
 from PIL import Image
 
-manifest_path = os.environ['TEMP_EXPORT'] + '/manifest.json'
 docs_dir = os.environ['DOCS_DIR']
 
 # Screenshots that come from the tab-based app (Home/Test/Settings/Setup) —
@@ -229,43 +209,45 @@ def crop_screenshot(img, base_name):
     return largest_content_block_crop(img)
 
 
-with open(manifest_path, 'r') as f:
-    manifest = json.load(f)
+# Attachment name/file pairs come from `manifest_names_to_files`, written to
+# PAIRS_FILE as tab-separated `suggestedHumanReadableName<TAB>exportedFileName`.
+with open(os.environ['PAIRS_FILE']) as pairs:
+    lines = pairs.read().splitlines()
 
-for test_result in manifest:
-    for attachment in test_result.get('attachments', []):
-        exported_file = attachment['exportedFileName']
-        suggested_name = attachment['suggestedHumanReadableName']
+for line in lines:
+    if not line:
+        continue
+    suggested_name, exported_file = line.split('\t', 1)
 
-        # Skip non-image files (videos, etc.)
-        if not exported_file.lower().endswith(('.png', '.jpg', '.jpeg')):
-            print(f"  ⏭ Skipping non-image: {exported_file}")
-            continue
+    # Skip non-image files (videos, etc.)
+    if not exported_file.lower().endswith(('.png', '.jpg', '.jpeg')):
+        print(f"  ⏭ Skipping non-image: {exported_file}")
+        continue
 
-        # Extract base name (e.g., "keyboard-lower-light" from "keyboard-lower-light_0_UUID.png")
-        base_name = suggested_name.split('_')[0]
+    # Extract base name (e.g., "keyboard-lower-light" from "keyboard-lower-light_0_UUID.png")
+    base_name = suggested_name.split('_')[0]
 
-        src_path = os.path.join(os.environ['TEMP_EXPORT'], exported_file)
-        temp_png = os.path.join(os.environ['TEMP_EXPORT'], f'{base_name}-temp.png')
-        final_webp = os.path.join(docs_dir, f'{base_name}.webp')
+    src_path = os.path.join(os.environ['TEMP_EXPORT'], exported_file)
+    final_webp = os.path.join(docs_dir, f'{base_name}.webp')
 
-        if os.path.exists(src_path):
-            img = Image.open(src_path)
+    if os.path.exists(src_path):
+        img = Image.open(src_path)
 
-            # Convert to RGB if necessary
-            if img.mode in ('RGBA', 'LA', 'P'):
-                background = Image.new('RGB', img.size, (255, 255, 255))
-                if img.mode == 'P':
-                    img = img.convert('RGBA')
-                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-                img = background
+        # Convert to RGB if necessary
+        if img.mode in ('RGBA', 'LA', 'P'):
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            if img.mode == 'P':
+                img = img.convert('RGBA')
+            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = background
 
-            img = crop_screenshot(img, base_name)
+        img = crop_screenshot(img, base_name)
 
-            # Save as WebP with good quality
-            img.save(final_webp, 'WEBP', quality=85)
-            print(f"  ✓ Created {base_name}.webp ({img.width}x{img.height})")
+        # Save as WebP with good quality
+        img.save(final_webp, 'WEBP', quality=85)
+        print(f"  ✓ Created {base_name}.webp ({img.width}x{img.height})")
 EOF
+    rm -f "$PAIRS_FILE"
 
     # Count only files created (or overwritten) by this run
     COPIED=$(find "$DOCS_DIR" -maxdepth 1 -name "*.webp" -type f -newer "$RUN_MARKER" | wc -l | tr -d ' ')

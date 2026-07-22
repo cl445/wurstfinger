@@ -52,15 +52,30 @@ struct KeyboardHealthLog {
 
     static let fileName = "keyboard-health-log.json"
 
-    /// Shared instance persisting into the app group container.
-    static let shared = KeyboardHealthLog(
-        fileURL: FileManager.default
+    /// Shared instance persisting into the app group container. The
+    /// `containerURL(...)` lookup is out-of-process IPC; it is deferred into a
+    /// provider closure so it runs lazily inside the `ioQueue` on first file
+    /// access, never synchronously on the main thread during the latency-
+    /// critical extension spawn.
+    static let shared = KeyboardHealthLog(fileURLProvider: {
+        FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: SharedDefaults.suiteName)?
             .appendingPathComponent(fileName)
-    )
+    })
 
-    private let fileURL: URL?
+    private let fileURLProvider: () -> URL?
     private let maxEntries: Int
+
+    /// Approximate encoded size of one entry, used to size the compaction
+    /// threshold. Only needs to be within an order of magnitude.
+    private static let approxBytesPerEntry = 160
+
+    /// Compaction fires once the file grows past this many bytes, i.e. roughly
+    /// once every `maxEntries` appends — keeping the append hot path O(1)
+    /// amortized while bounding the file to ~`2 * maxEntries` entries on disk.
+    private var trimThresholdBytes: Int {
+        2 * maxEntries * Self.approxBytesPerEntry
+    }
 
     /// Serializes all file access across instances. `record` hops onto it
     /// asynchronously; `entries()`/`clear()` sync through it, so reads always
@@ -75,7 +90,11 @@ struct KeyboardHealthLog {
     #endif
 
     init(fileURL: URL?, maxEntries: Int = KeyboardHealthLog.defaultMaxEntries) {
-        self.fileURL = fileURL
+        self.init(fileURLProvider: { fileURL }, maxEntries: maxEntries)
+    }
+
+    init(fileURLProvider: @escaping () -> URL?, maxEntries: Int = KeyboardHealthLog.defaultMaxEntries) {
+        self.fileURLProvider = fileURLProvider
         self.maxEntries = maxEntries
     }
 
@@ -94,41 +113,83 @@ struct KeyboardHealthLog {
             let message = "[\(label)] used: \(used) MB, available: \(available) MB"
             Self.logger.log("\(message, privacy: .public)")
         #endif
-        Self.ioQueue.async {
-            var all = readEntries()
-            all.append(entry)
-            if all.count > maxEntries {
-                all.removeFirst(all.count - maxEntries)
-            }
-            write(all)
-        }
+        Self.ioQueue.async { appendEntry(entry) }
     }
 
-    /// All recorded entries, oldest first. Empty when the file is missing or
-    /// unreadable (corruption is silently discarded — this is diagnostics,
-    /// it must never take the keyboard down).
+    /// All recorded entries, oldest first, capped at `maxEntries`. Empty when
+    /// the file is missing or unreadable (corruption is silently discarded —
+    /// this is diagnostics, it must never take the keyboard down).
+    ///
+    /// The `suffix(maxEntries)` cap keeps the read bound even when the on-disk
+    /// file has grown past `maxEntries` between physical compactions.
     func entries() -> [Entry] {
-        Self.ioQueue.sync { readEntries() }
+        Self.ioQueue.sync {
+            guard let fileURL = fileURLProvider() else { return [] }
+            return Array(readEntries(fileURL).suffix(maxEntries))
+        }
     }
 
     /// Removes all recorded entries.
     func clear() {
-        guard let fileURL else { return }
         Self.ioQueue.sync {
+            guard let fileURL = fileURLProvider() else { return }
             try? FileManager.default.removeItem(at: fileURL)
         }
     }
 
     // MARK: - Private
 
-    /// Raw read; must only run on `ioQueue`.
-    private func readEntries() -> [Entry] {
-        guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return [] }
-        return (try? JSONDecoder().decode([Entry].self, from: data)) ?? []
+    /// Appends a single entry to the newline-delimited JSON (JSONL) file with
+    /// a `seekToEnd` + `write` — O(1), no full-file read on the hot path.
+    /// Must only run on `ioQueue`.
+    private func appendEntry(_ entry: Entry) {
+        guard let fileURL = fileURLProvider(),
+              let encoded = try? JSONEncoder().encode(entry) else { return }
+        if let handle = try? FileHandle(forWritingTo: fileURL) {
+            defer { try? handle.close() }
+            let end = (try? handle.seekToEnd()) ?? 0
+            var payload = Data()
+            // Separate the new line from a prior line or legacy array bytes.
+            if end > 0 { payload.append(0x0A) }
+            payload.append(encoded)
+            try? handle.write(contentsOf: payload)
+        } else {
+            // First write / file absent.
+            try? encoded.write(to: fileURL, options: .atomic)
+        }
+        compactIfNeeded(fileURL)
     }
 
-    private func write(_ entries: [Entry]) {
-        guard let fileURL, let data = try? JSONEncoder().encode(entries) else { return }
+    /// Physically rewrites the file to the last `maxEntries` entries once it
+    /// grows past `trimThresholdBytes`. Gated on a cheap `stat` (no content
+    /// read), so a full read+rewrite happens only ~once per `maxEntries`
+    /// appends — O(1) amortized per event. Must only run on `ioQueue`.
+    private func compactIfNeeded(_ fileURL: URL) {
+        let size = (try? FileManager.default.attributesOfItem(atPath: fileURL.path))?[.size] as? Int ?? 0
+        guard size > trimThresholdBytes else { return }
+        let kept = Array(readEntries(fileURL).suffix(maxEntries))
+        write(kept, to: fileURL)
+    }
+
+    /// Raw JSONL read; must only run on `ioQueue`. `split(separator:)` omits
+    /// empty subsequences, so leading/double newlines and undecodable legacy
+    /// segments are tolerated (corruption-discard contract preserved).
+    private func readEntries(_ fileURL: URL) -> [Entry] {
+        guard let data = try? Data(contentsOf: fileURL) else { return [] }
+        let decoder = JSONDecoder()
+        return data.split(separator: 0x0A).compactMap { try? decoder.decode(Entry.self, from: Data($0)) }
+    }
+
+    /// Atomically rewrites the whole file as newline-delimited JSON. Only used
+    /// by compaction — never on the append hot path.
+    private func write(_ entries: [Entry], to fileURL: URL) {
+        let encoder = JSONEncoder()
+        var data = Data()
+        for entry in entries {
+            guard let line = try? encoder.encode(entry) else { continue }
+            data.append(line)
+            data.append(0x0A)
+        }
         try? data.write(to: fileURL, options: .atomic)
     }
 
