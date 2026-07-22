@@ -72,4 +72,14 @@ struct MultiLanguageTypingTests {
             )
         }
     }
+
+    /// A second ゛ voicing cascades は→ば→ぱ through CombineMiddleware; the
+    /// handakuten must not commit the raw ゛ mark.
+    @Test func hiraganaHandakutenThroughPipeline() {
+        let (vm, target) = makeViewModel(languageId: "ja_JP")
+        vm.dispatchAction(.commitText("は"))
+        vm.dispatchAction(.commitText("゛"))
+        vm.dispatchAction(.commitText("゛"))
+        #expect(target.documentContextBeforeInput == "ぱ")
+    }
 }

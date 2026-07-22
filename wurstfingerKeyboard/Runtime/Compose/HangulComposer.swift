@@ -61,6 +61,30 @@ enum HangulComposer {
         return out
     }()
 
+    // Same-consonant doubling → tense (쌍) consonant, typed by repeating the
+    // base jamo (ㄱㄱ→ㄲ …). Standalone form, used when two lone consonants are
+    // typed with no syllable to attach to.
+    private static let tenseDouble: [Character: Character] = [
+        "ㄱ": "ㄲ", "ㄷ": "ㄸ", "ㅂ": "ㅃ", "ㅅ": "ㅆ", "ㅈ": "ㅉ",
+    ]
+
+    // Tense finals reachable by repeating a trailing consonant. Only ㄲ and ㅆ
+    // are valid 받침 (batchim); ㄸ/ㅃ/ㅉ never occur as finals, so they are
+    // absent here. Deliberately kept out of `compoundFinal` so `splitFinal`
+    // still moves ㄲ/ㅆ onto a following vowel as a whole unit (밖 + ㅏ → 바까,
+    // not 박가).
+    //
+    // Known tradeoff: with only single-character lookback and no tense-jamo
+    // key, doubling is the *only* way to type a ㄲ/ㅆ batchim (있다, 갔다, 밖,
+    // 깎 — past-tense verbs make ㅆ batchim extremely common). The cost is that
+    // a ㄱ-final syllable immediately followed by a ㄱ-initial one is tensed
+    // instead of starting a new syllable, so 학교 (ㅎㅏㄱㄱㅛ) folds to 하꾜, and
+    // likewise 축구/국가/식구. Making 있다 typeable outweighs the collision, so
+    // the behavior is kept and pinned by `tenseFinalCollisionIsKnownLimitation`.
+    private static let tenseFinal: [String: Character] = [
+        "ㄱㄱ": "ㄲ", "ㅅㅅ": "ㅆ",
+    ]
+
     // MARK: - Classification
 
     private static func choseongIndex(_ c: Character) -> Int? {
@@ -152,10 +176,17 @@ enum HangulComposer {
         if let cf = compoundFinal[String(tail) + String(j)] {
             return compose(lead, vowel, cf)
         }
+        // A repeated trailing consonant tenses the final (ㄱㄱ→ㄲ, ㅅㅅ→ㅆ).
+        if let tf = tenseFinal[String(tail) + String(j)] {
+            return compose(lead, vowel, tf)
+        }
         return nil // Otherwise the consonant begins a new syllable.
     }
 
     private static func foldIntoLoneJamo(prev: Character, jamo j: Character) -> String? {
+        if prev == j, let tense = tenseDouble[prev] {
+            return String(tense) // Repeated consonant → standalone tense jamo.
+        }
         if isConsonant(prev), isVowel(j) {
             return compose(prev, j, nil) // Leading consonant + vowel → syllable.
         }

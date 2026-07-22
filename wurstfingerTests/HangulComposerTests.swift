@@ -62,6 +62,43 @@ struct HangulComposerTests {
         #expect(HangulComposer.combine(previous: "ㄱ", jamo: "ㄴ") == nil)
     }
 
+    // MARK: - Tense (쌍) consonants via same-consonant doubling
+
+    @Test func tenseConsonantsFromDoubling() {
+        // Repeating a base consonant produces its tense (doubled) form.
+        #expect(HangulComposer.combine(previous: "ㄱ", jamo: "ㄱ") == "ㄲ")
+        #expect(HangulComposer.combine(previous: "ㄷ", jamo: "ㄷ") == "ㄸ")
+        #expect(HangulComposer.combine(previous: "ㅂ", jamo: "ㅂ") == "ㅃ")
+        #expect(HangulComposer.combine(previous: "ㅅ", jamo: "ㅅ") == "ㅆ")
+        #expect(HangulComposer.combine(previous: "ㅈ", jamo: "ㅈ") == "ㅉ")
+        // Different consonants must still not merge.
+        #expect(HangulComposer.combine(previous: "ㄱ", jamo: "ㄴ") == nil)
+    }
+
+    @Test func tenseFinalGrowsFromRepeatedTrailingConsonant() {
+        // 갔 (ㄱㅏㅆ): the ㅆ batchim forms from a repeated ㅅ.
+        #expect(HangulComposer.combine(previous: "갓", jamo: "ㅅ") == "갔")
+        // Only ㄲ/ㅆ are valid tense finals; ㄷㄷ etc. never grow a batchim.
+        #expect(HangulComposer.combine(previous: "닫", jamo: "ㄷ") == nil)
+    }
+
+    @Test func typesHangulWordWithTenseJamo() {
+        // 있다: ㅇ ㅣ ㅅ ㅅ ㄷ ㅏ (tense final ㅆ).
+        #expect(type(["ㅇ", "ㅣ", "ㅅ", "ㅅ", "ㄷ", "ㅏ"]) == "있다")
+        // 깎: ㄱ ㄱ ㅏ ㄱ ㄱ (tense lead ㄲ and tense final ㄲ).
+        #expect(type(["ㄱ", "ㄱ", "ㅏ", "ㄱ", "ㄱ"]) == "깎")
+    }
+
+    @Test func tenseFinalCollisionIsKnownLimitation() {
+        // Documented tradeoff (see `tenseFinal`): a ㄱ-final syllable directly
+        // followed by a ㄱ-initial one is tensed to a ㄲ batchim rather than
+        // starting a new syllable, because single-character lookback cannot
+        // tell 밖 (real ㄲ batchim) apart from 학+ㄱ. So 학교 (ㅎㅏㄱㄱㅛ) folds to
+        // 하꾜. This is the price of making ㄲ/ㅆ batchim (있다, 밖) typeable at
+        // all; the test pins it so the collision is not mistaken for a new bug.
+        #expect(type(["ㅎ", "ㅏ", "ㄱ", "ㄱ", "ㅛ"]) == "하꾜")
+    }
+
     @Test func nonHangulPreviousIsIgnored() {
         #expect(HangulComposer.combine(previous: "a", jamo: "ㄱ") == nil)
         #expect(HangulComposer.combine(previous: " ", jamo: "ㅏ") == nil)

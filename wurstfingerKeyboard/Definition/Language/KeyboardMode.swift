@@ -78,6 +78,15 @@ struct KeyboardMode: Codable, Equatable {
         )
     }
 
+    /// Returns a copy with a binding removed only when its action matches
+    /// `expected`. Used to strip an auto-generated affordance (e.g. the shift
+    /// binding on a caseless layout's midRight key) without clobbering a
+    /// language letter that a directional override placed on the same gesture.
+    func removingBinding(keyId: String, gesture: GestureType, ifAction expected: KeyAction) -> KeyboardMode {
+        guard keys[keyId]?.bindings[gesture]?.action == expected else { return self }
+        return removingBinding(keyId: keyId, gesture: gesture)
+    }
+
     /// Returns a copy where the shift-up binding on midRight is replaced.
     /// Used to point shifted → capsLock and capsLock → capsLock (no-op).
     func replacingShiftUpBinding(label: String, action: KeyAction) -> KeyboardMode {

@@ -89,27 +89,33 @@ enum CommonKeys {
         swipes: clipboardBindings
     )
 
-    static let spacebar = KeyConfig(
-        id: UtilitySlot.space,
-        bindings: [
-            .tap: KeyBinding(
-                label: "␣", action: .space, category: .utility,
-                returnAction: nil, accessibilityLabel: String(localized: "Space")
-            ),
-            // The hold-for-digit feature pairs 0 with the space bar (no
-            // letter-layer slot maps to 0 otherwise). Long presses
-            // only occur with the opt-in setting enabled, so this is inert by
-            // default; .longPress has no hint alignment, so nothing renders.
-            .longPress: KeyBinding(
-                label: "0", action: .commitText("0"),
-                category: .digit, returnAction: nil, accessibilityLabel: nil
-            ),
-        ],
-        swipeMode: .none,
-        slideType: .moveCursor,
-        style: .spacebar,
-        tapCycleActions: nil
-    )
+    /// Space bar. The `zeroDigit` parameterizes the hold-for-digit output so
+    /// each layout can emit its own native zero (e.g. Arabic ٠); it defaults to
+    /// ASCII "0". `GridKeyboardFactory` and `NumericLayouts` pass the layout's
+    /// first numeric digit.
+    static func spacebar(zeroDigit: String = "0") -> KeyConfig {
+        KeyConfig(
+            id: UtilitySlot.space,
+            bindings: [
+                .tap: KeyBinding(
+                    label: "␣", action: .space, category: .utility,
+                    returnAction: nil, accessibilityLabel: String(localized: "Space")
+                ),
+                // The hold-for-digit feature pairs 0 with the space bar (no
+                // letter-layer slot maps to 0 otherwise). Long presses
+                // only occur with the opt-in setting enabled, so this is inert by
+                // default; .longPress has no hint alignment, so nothing renders.
+                .longPress: KeyBinding(
+                    label: zeroDigit, action: .commitText(zeroDigit),
+                    category: .digit, returnAction: nil, accessibilityLabel: nil
+                ),
+            ],
+            swipeMode: .none,
+            slideType: .moveCursor,
+            style: .spacebar,
+            tapCycleActions: nil
+        )
+    }
 
     /// All utility keys as dictionary, mergeable with language keys.
     static let allUtilityKeys: [String: KeyConfig] = [
@@ -117,7 +123,7 @@ enum CommonKeys {
         UtilitySlot.delete: delete,
         UtilitySlot.return: `return`,
         UtilitySlot.symbols: symbols,
-        UtilitySlot.space: spacebar,
+        UtilitySlot.space: spacebar(),
     ]
 
     // MARK: - Default Slot Bindings

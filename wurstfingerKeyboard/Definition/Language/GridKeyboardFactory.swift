@@ -129,7 +129,11 @@ enum GridKeyboardFactory {
             Set(letterKeys.keys).isDisjoint(with: CommonKeys.allUtilityKeys.keys),
             "letter and utility key IDs must not overlap"
         )
-        let allKeys = letterKeys.merging(CommonKeys.allUtilityKeys) { letter, _ in letter }
+        var allKeys = letterKeys.merging(CommonKeys.allUtilityKeys) { letter, _ in letter }
+        // Bind the space-bar hold-for-zero to this layout's own digit set so
+        // non-Latin layouts type their native zero (e.g. Arabic ٠) instead of
+        // ASCII "0". `.first ?? "0"` avoids an index crash on a short digit set.
+        allKeys[UtilitySlot.space] = CommonKeys.spacebar(zeroDigit: numericDigits.first ?? "0")
 
         // 3. Build base mode with all keys (includes shift-down on midRight)
         let baseMode = KeyboardMode(
@@ -163,12 +167,20 @@ enum GridKeyboardFactory {
             modes[ModeNames.main] = baseMode
                 .removingBinding(keyId: GridSlot.midRight, gesture: .swipeDown)
         } else {
-            // Caseless script: no shifted/capsLock modes and no shift
-            // affordance on the midRight key (neither the ⇧ shift-up
-            // binding nor the ⇩ back-to-main hint).
+            // Caseless script: no shifted/capsLock modes. Strip only the
+            // auto-generated shift affordance from midRight (the ⇧ shift-up
+            // binding and the ⇩ back-to-main hint from CommonKeys); a language
+            // letter that a directional override placed on those gestures
+            // (e.g. Hindi ट/।, Urdu ڑ/ڈ) must survive.
             modes[ModeNames.main] = baseMode
-                .removingBinding(keyId: GridSlot.midRight, gesture: .swipeUp)
-                .removingBinding(keyId: GridSlot.midRight, gesture: .swipeDown)
+                .removingBinding(
+                    keyId: GridSlot.midRight, gesture: .swipeUp,
+                    ifAction: .switchMode(ModeNames.shifted)
+                )
+                .removingBinding(
+                    keyId: GridSlot.midRight, gesture: .swipeDown,
+                    ifAction: .switchMode(ModeNames.main)
+                )
         }
 
         // 7. Assemble definition
