@@ -468,6 +468,43 @@ final class AdvancedTextMiddlewareClipboardTests {
         #expect(target.events == [.adjustCursor(11), .deleteBackward])
     }
 
+    @Test func cutAllIncludesActiveSelectionInPasteboardAndDeletesIt() {
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        target.documentContextBeforeInput = "abc"
+        target.selectedText = "xyz"
+        target.documentContextAfterInput = "def"
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.cutAll)) { _ in }
+
+        #expect(UIPasteboard.general.string == "abcxyzdef")
+        // The selection is consumed by its own deleteBackward first; only then
+        // is the cursor parked past "def" and the remaining six characters
+        // deleted — otherwise the first backward delete would swallow the
+        // selection and the loop would run three deletes past the document.
+        #expect(
+            target.events == [.deleteBackward, .adjustCursor(3)]
+                + Array(repeating: .deleteBackward, count: 6)
+        )
+        #expect(target.documentContextBeforeInput == "")
+        #expect(target.documentContextAfterInput == "")
+    }
+
+    @Test func cutAllWithWholeTextSelectedActsLikeCut() {
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        target.documentContextBeforeInput = ""
+        target.selectedText = "everything"
+        target.documentContextAfterInput = ""
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.cutAll)) { _ in }
+
+        #expect(UIPasteboard.general.string == "everything")
+        #expect(target.events == [.deleteBackward])
+    }
+
     @Test func cutAllIsNoopWhenDisabledInSettings() {
         let marker = "untouched-\(UUID().uuidString)"
         UIPasteboard.general.string = marker
