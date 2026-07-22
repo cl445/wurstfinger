@@ -10,6 +10,22 @@
 
 import Foundation
 
+/// The estimator hyperparameters `RunningOffset` needs. Shared by the 2D
+/// touch-offset model (samples in pitch fractions) and the swipe-bias model
+/// (samples in radians) — the estimator itself is unit-agnostic.
+protocol RunningEstimatorConfig {
+    /// Plasticity cap: above this the running mean behaves like an EMA.
+    var nMax: Int { get }
+    /// Huber clip factor (× spread): bounds a single sample's influence.
+    var huberC: Double { get }
+    /// Outlier-gate threshold (× spread); rejects samples beyond it after warmup.
+    var kGate: Double { get }
+    /// EW-MAD rate for the robust spread estimate.
+    var betaMad: Double { get }
+    /// Samples before the variance-based outlier gate becomes active.
+    var warmup: Int { get }
+}
+
 /// One axis (x or y) of a key's offset estimate, in key-pitch fractions.
 struct RunningOffset: Codable, Equatable {
     /// Bounded-influence running mean of the offset (`m_k`).
@@ -30,7 +46,7 @@ struct RunningOffset: Codable, Equatable {
     /// - Returns: `true` if the sample was used, `false` if rejected by the
     ///   variance outlier gate (only active after `warmup`).
     @discardableResult
-    mutating func update(sample s: Double, config: TouchOffsetConfig) -> Bool {
+    mutating func update(sample s: Double, config: some RunningEstimatorConfig) -> Bool {
         // Variance outlier gate — only after enough samples for a stable spread.
         if count >= config.warmup, abs(s - mean) > config.kGate * spread {
             return false

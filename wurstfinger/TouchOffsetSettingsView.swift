@@ -21,10 +21,14 @@ struct TouchOffsetSettingsView: View {
     /// active learning regime, not just a view filter (§3.1/§6.3).
     @AppStorage(SettingsKey.touchOffsetPosture.rawValue, store: SharedDefaults.store)
     private var posture: PostureClass = .oneThumbRight
+    @AppStorage(SettingsKey.swipeBiasEnabled.rawValue, store: SharedDefaults.store)
+    private var swipeEnabled = false
     @State private var snapshot: TouchOffsetSnapshot = .empty(schemaVersion: TouchOffsetStore.currentSchemaVersion)
+    @State private var swipeSnapshot: SwipeBiasSnapshot = .empty(schemaVersion: SwipeBiasStore.currentSchemaVersion)
     @State private var showResetDialog = false
 
     private let store = TouchOffsetStore(defaults: SharedDefaults.store)
+    private let swipeStore = SwipeBiasStore(defaults: SharedDefaults.store)
     private let telemetryStore = GestureTelemetryStore(defaults: SharedDefaults.store)
     private let arrangement = StandardArrangements.grid3x3[.portrait]
 
@@ -40,6 +44,10 @@ struct TouchOffsetSettingsView: View {
         regimeKeys.values.reduce(0) { $0 + $1.count }
     }
 
+    private var totalSwipeSamples: Int {
+        (swipeSnapshot.regimes[regime.key] ?? [:]).values.reduce(0) { $0 + $1.count }
+    }
+
     var body: some View {
         Form {
             Section {
@@ -48,6 +56,16 @@ struct TouchOffsetSettingsView: View {
                 Text("Learns where you tend to tap each key and quietly adjusts the "
                     + "touch targets to match. Everything is learned **on this device** "
                     + "and never leaves it.")
+            }
+
+            Section {
+                Toggle("Correct my swipes", isOn: $swipeEnabled)
+            } footer: {
+                Text(("Learns the angle your swipes tend to drift by and compensates it, "
+                        + "so a swipe near a direction boundary lands in the direction you meant. ")
+                    + (totalSwipeSamples > 0
+                        ? "\(totalSwipeSamples) swipes learned for this posture."
+                        : "No swipe data yet for this posture."))
             }
 
             Section {
@@ -86,9 +104,10 @@ struct TouchOffsetSettingsView: View {
             Section {
                 Button("Reset this posture", role: .destructive) {
                     store.reset(regimeKey: regime.key)
+                    swipeStore.reset(regimeKey: regime.key)
                     reload()
                 }
-                .disabled(totalSamples == 0)
+                .disabled(totalSamples == 0 && totalSwipeSamples == 0)
                 Button("Reset everything", role: .destructive) {
                     showResetDialog = true
                 }
@@ -100,6 +119,7 @@ struct TouchOffsetSettingsView: View {
         .confirmationDialog("Reset all learned corrections?", isPresented: $showResetDialog, titleVisibility: .visible) {
             Button("Reset everything", role: .destructive) {
                 store.resetAll()
+                swipeStore.resetAll()
                 telemetryStore.reset()
                 reload()
             }
@@ -117,6 +137,7 @@ struct TouchOffsetSettingsView: View {
 
     private func reload() {
         snapshot = store.load()
+        swipeSnapshot = swipeStore.load()
     }
 }
 
