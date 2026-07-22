@@ -1,0 +1,13 @@
+Verze 1.2.0
+
+Hlavní novinky:
+• Konec mrtvých zón – každý pixel klávesnice nyní reaguje na dotek
+• Svižnější haptická odezva – vibrace se spustí při doteku, ne až po akci
+• Klávesnice zůstává správně zarovnaná po otočení na pozadí
+
+Opravy:
+• Francouzské rozložení: opraveno návratové přejetí na prostřední klávese
+• Automatická velká písmena po smazání opět fungují
+• Apostrof už nespouští režim akcentů/skládání
+• iOS nyní hlásí správný jazyk klávesnice
+• Různé další opravy gest a nastavení

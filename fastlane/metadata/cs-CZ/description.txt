@@ -1,0 +1,27 @@
+Wurstfinger: klávesnice pro silné prsty
+
+Unaveni překlepy? Wurstfinger je klávesnice ohleduplná k soukromí s velkými klávesami a gesty přejetí. Nahrazuje stísněnou mřížku QWERTY osvědčeným rozložením 3x3 optimalizovaným pro psaní palci.
+
+Na rozdíl od běžných klávesnic se Wurstfinger nespoléhá na invazivní predikci slov – přesnosti dosahuje ergonomickým návrhem. Velké a dobře rozmístěné klávesy znamenají méně chybných doteků a systém gest umožňuje přístup ke všem znakům bez hledání drobných tlačítek.
+
+FUNKCE:
+
+• Mřížka kláves 3x3 – navržená pro palce, ne pro přesné ukazovátko
+• Gesta přejetí – přístup k 8 dalším znakům na klávesu přejetím
+• 15 jazyků – katalánština, chorvatština, angličtina, estonsko-finská, finština, francouzština, němčina, hebrejština, italština, polština, ruština, španělština, švédština, tagalog a vietnamština (se vstupem Telex)
+• Pravidla skládání – vytvářejte akcenty kombinacemi (např. ' + a = á)
+• Kruhová gesta – nakreslete kruh pro velká písmena
+• Ovládání kurzoru – tažením po mezerníku posunete kurzor; podržením vyberete text
+• Haptická odezva – nastavitelná intenzita vibrací
+• Plně nastavitelné – upravte velikost klávesnice podle svých představ
+
+SOUKROMÍ NA PRVNÍM MÍSTĚ:
+
+• Žádný sběr dat
+• Žádný přístup k síti
+• Žádné sledování pomocí predikce slov
+• Veškeré zpracování probíhá lokálně ve vašem zařízení
+
+Wurstfinger vyžaduje trénink – počítejte s několika dny na vybudování svalové paměti. Jakmile ale tento práh překonáte, nebudete se chtít vrátit k běžné klávesnici. Gesta vám přejdou do krve a budete psát rychleji a s menším počtem chyb než kdy dřív.
+
+Vaše prsty vám poděkují!

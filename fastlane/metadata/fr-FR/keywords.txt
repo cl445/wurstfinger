@@ -1,0 +1,1 @@
+clavier,ThumbKey,saisie,glisser,pouce,ergonomique,confidentialité,gestes,grandes touches
