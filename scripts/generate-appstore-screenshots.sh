@@ -129,8 +129,12 @@ for target in "${TARGETS[@]}"; do
     # Order screenshots by the manifest's human-readable names (which embed
     # the screenshot number). The exported UUID filenames alone would sort
     # randomly. `manifest_names_to_files` emits sorted `name<TAB>file` lines;
-    # we take the exported file column.
-    mapfile -t ORDERED_EXPORTS < <(manifest_names_to_files "$TEMP_SCREENSHOTS/manifest.json" | cut -f2)
+    # we take the exported file column. Use a while-read loop rather than
+    # `mapfile`, which is a bash 4+ builtin absent from macOS's stock bash 3.2.
+    ORDERED_EXPORTS=()
+    while IFS= read -r line; do
+        ORDERED_EXPORTS+=("$line")
+    done < <(manifest_names_to_files "$TEMP_SCREENSHOTS/manifest.json" | cut -f2)
     if [ "${#ORDERED_EXPORTS[@]}" -eq 0 ]; then
         echo -e "${RED}❌ manifest.json contained no attachments${NC}"
         exit 1
