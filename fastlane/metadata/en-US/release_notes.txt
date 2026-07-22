@@ -1,15 +1,21 @@
-Version 1.3.1
+Version 1.4.0
 
 New:
+• 12 new keyboard languages: Arabic, Persian, Urdu, Thai, Hindi, Korean, Japanese (Hiragana & Katakana), Greek, Portuguese, and Ukrainian
+• Korean syllables and Japanese kana combine as you type; Arabic, Persian, and Urdu come with right-to-left layouts
+• Native digits for Arabic, Persian, Urdu, Hindi, and Thai
+• The app itself is now available in 10 more languages
+• Optional: hold a letter key to type its digit
+• Optional: double-space types a period
+• Optional: a circular gesture on the clipboard key cuts the whole text
 • Reworked haptics — exactly one pulse per keystroke and a much wider intensity range
 • Toggle label visibility directly with a gesture on the space bar
-• Compose hints (small accent labels) can now be hidden
 • Hebrew: final letters via return swipes
 
 Reliability:
-• Fixed double vibration per key press
+• The keyboard frees its memory when backgrounded, fixing cases where reopening it silently fell back to the system keyboard
+• Keyboard size is now anchored in points and stays consistent across devices
 • Fixed cursor movement across emoji
 • Fast swipe gestures are recognized more reliably
 • Auto-capitalization now engages at the right moments
 • Disabled languages stay disabled
-• Vietnamese tone rules no longer leak into other languages

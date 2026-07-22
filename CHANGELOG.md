@@ -1,14 +1,36 @@
 # Changelog
 
-## Unreleased
+## v1.4.0 — 2026-07-22
 
 ### Added
 
+- 12 new keyboard layouts: Arabic, Persian, and Urdu (right-to-left, #244), Thai (#247), Hindi with sequential vowel combining (#248), Greek, Portuguese, and Ukrainian (#243), Japanese Hiragana and Katakana (#249), Korean Hangul with syllable composition (#251)
+- Native digit layers for scripts with their own numerals — Arabic-Indic, Extended Arabic-Indic, Devanagari, and Thai (#241, #268)
+- Optional long-press on a letter key to type its digit (#240)
+- Optional double-space period shortcut (#267)
 - Cut-all circular gesture on the clipboard key — circling it cuts the text around the cursor, off by default and gated behind a new Gestures setting (#260)
+- App UI localized into the 10 new keyboard languages (#252, #261)
+- Release-safe keyboard health log for diagnosing extension suspensions (#230, append-only JSONL in #271)
+- Å restored on the Finnish layout (#265)
 
 ### Fixed
 
-- Case-insensitive String Catalog key collision that broke symbol generation on Xcode 26 (#260)
+- Input correctness across the new layouts: Hindi/Urdu letter bindings, Korean tense consonants, Japanese handakuten and sokuon, native digits on the space bar (#268)
+- Sequential composition with an active selection, compose space normalization, and RTL hint mirroring (#269)
+- Keyboard extension memory footprint at suspension — the SwiftUI hosting graph is shed before suspension so the keyboard survives the next resume instead of falling back to the system keyboard (#273)
+- One-shot shift semantics, Spanish auto-capitalization, and caseless Hebrew (#236)
+- Gesture edge cases: return-up hijack, ProMotion buffer sizing, aspect-ratio guard (#234)
+- Utility-left layout now moves only the utility keys (#233)
+- Host app preview wiring, settings copy, and screenshot language persistence (#235)
+- Case-insensitive String Catalog key collision that broke symbol generation on Xcode 26, plus repo-wide lint drift (#264)
+- Stretched App Store screenshots — square keys restored (#229)
+- Release pipeline: Xcode 26 selection, upload error handling, screenshot generation, CI keychain cleanup (#227, #228, #232)
+
+### Changed
+
+- Keyboard size anchored in points via a single layout metrics resolver; landscape rescales only on genuine overflow (#254, #270)
+- Composition pipeline consolidated behind a single combiner strategy (#272)
+- Pipeline, definition-layer, and test-hygiene polish from the full codebase review (#237, #238)
 
 ## v1.3.1 — 2026-07-04
 
