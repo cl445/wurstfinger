@@ -10,9 +10,11 @@ import Foundation
 /// Handles compose-related actions:
 ///
 /// - `.compose(trigger)`: checks `ComposeEngine` for a rule combining the
-///   previous character with the trigger. Inserts the trigger as plain text
-///   when no rule matches or when the previous character is a space (the
-///   space is never consumed).
+///   previous character with the trigger. Space handling lives in the rule
+///   data, so the lookup runs even when a space precedes the cursor: a
+///   matching row (e.g. `" " + ´ → '`) consumes the space, while a trigger
+///   with no matching row inserts as plain text and preserves the space. An
+///   active selection is committed over verbatim (the lookup is skipped).
 /// - `.cycleAccents`: cycles through accent variants of the previous character.
 ///
 /// All other actions pass through untouched.

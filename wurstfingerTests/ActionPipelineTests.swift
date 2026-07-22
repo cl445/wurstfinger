@@ -393,6 +393,23 @@ struct ComposeMiddlewareTests {
 
         #expect(sink.received.first?.action == .cycleAccents)
     }
+
+    @Test func cycleAccentsPassesThroughWhenSelectionActive() {
+        var middleware = ComposeMiddleware(
+            compose: { _, _ in nil },
+            cycleAccent: { _ in Issue.record("cycleAccent must not run with an active selection"); return nil },
+            previousCharacter: { "ä" },
+            deletePreviousCharacter: { Issue.record("Must not delete while a selection is active") }
+        )
+        middleware.selectedText = { "SEL" }
+        let sink = RecordingMiddleware()
+        let pipeline = ActionPipeline(middlewares: [middleware, sink])
+
+        pipeline.process(PipelineFixtures.context(action: .cycleAccents))
+
+        // An active selection skips accent cycling; the action is forwarded unchanged.
+        #expect(sink.received.first?.action == .cycleAccents)
+    }
 }
 
 // MARK: - CombineMiddleware
