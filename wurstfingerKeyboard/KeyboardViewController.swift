@@ -10,7 +10,7 @@ import SwiftUI
 import UIKit
 
 final class KeyboardViewController: UIInputViewController {
-    private var hostingController: UIHostingController<AnyView>?
+    private var hostingController: UIHostingController<DataDrivenKeyboardRootView>?
     private lazy var viewModel = KeyboardViewModel()
     private var heightConstraint: NSLayoutConstraint?
     private var documentProxyTarget: DocumentProxyTarget?
@@ -98,6 +98,11 @@ final class KeyboardViewController: UIInputViewController {
         // Reload definition only if language (or numpad style) changed while the
         // keyboard was backgrounded — avoids rebuilding the pipeline every time.
         loadDefinitionIfNeeded()
+        // Rebuild the SwiftUI host if it was torn down before suspension (see
+        // `shedMemoryBeforeSuspension`). Idempotent, so first appearance —
+        // where `viewDidLoad` already built it — is a no-op. Rebuild before the
+        // height constraint and layout pass below so the content exists first.
+        configureHosting()
         // Reopen on the default (letters) layer: a keyboard dismissed on the
         // numeric or shifted layer must not resurface there.
         viewModel.resetToDefaultMode()
@@ -153,9 +158,29 @@ final class KeyboardViewController: UIInputViewController {
     /// per-process-limit` kill, silent system-keyboard fallback. Suspending
     /// small is what makes the next resume survive; a memory warning never
     /// fires on suspension, so this cannot wait for didReceiveMemoryWarning.
+    ///
+    /// Evicting the definition cache alone freed only a few MB: a device-log
+    /// audit (2026-07-22) found the suspended process sitting at ~140 MB with
+    /// the *SwiftUI hosting graph* — not any app data structure — as the bulk
+    /// of the footprint. So the hosting controller is torn down here too and
+    /// rebuilt in `viewWillAppear`. The health-log entry records the footprint
+    /// *after* shedding, so it measures what actually survives to suspension.
     private func shedMemoryBeforeSuspension(_ event: String) {
         KeyboardRegistry.evictAll(except: selectedLanguageId)
+        teardownHosting()
         KeyboardHealthLog.shared.record(event)
+    }
+
+    /// Removes the SwiftUI hosting controller and releases its view graph.
+    /// The view model (and thus all keyboard state) is retained by `self`, so
+    /// a rebuild in `viewWillAppear` restores the same keyboard without
+    /// reloading the definition. No-op if hosting is already gone.
+    private func teardownHosting() {
+        guard let controller = hostingController else { return }
+        controller.willMove(toParent: nil)
+        controller.view.removeFromSuperview()
+        controller.removeFromParent()
+        hostingController = nil
     }
 
     /// The keyboard can be suspended without `viewDidDisappear` ever firing:
@@ -177,7 +202,12 @@ final class KeyboardViewController: UIInputViewController {
             forName: NSNotification.Name.NSExtensionHostWillEnterForeground,
             object: nil,
             queue: .main
-        ) { _ in
+        ) { [weak self] _ in
+            // Foreground return after a host-background suspension does not
+            // fire `viewWillAppear` (the view stayed in the hierarchy), so the
+            // hosting graph torn down in `shedMemoryBeforeSuspension` must be
+            // rebuilt here too — otherwise the keyboard returns blank.
+            self?.configureHosting()
             KeyboardHealthLog.shared.record("hostWillEnterForeground")
         })
     }
@@ -232,9 +262,18 @@ final class KeyboardViewController: UIInputViewController {
         true
     }
 
+    /// Builds the SwiftUI hosting controller and installs it as a child.
+    /// Idempotent: a no-op if hosting already exists, so `viewWillAppear` can
+    /// call it to rebuild after a suspension teardown without double-adding.
+    ///
+    /// The root view is hosted concretely (no `AnyView`) so SwiftUI keeps the
+    /// view's structural identity and does not pay the type-erased
+    /// AttributeGraph overhead — every byte matters under the extension's
+    /// jetsam budget.
     private func configureHosting() {
+        guard hostingController == nil else { return }
         let rootView = DataDrivenKeyboardRootView(viewModel: viewModel)
-        let controller = UIHostingController(rootView: AnyView(rootView))
+        let controller = UIHostingController(rootView: rootView)
         controller.view.translatesAutoresizingMaskIntoConstraints = false
         controller.view.backgroundColor = .clear
 
