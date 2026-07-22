@@ -100,8 +100,7 @@ struct KeyGestureRecognizer: ViewModifier {
     var onLongPress: (() -> Bool)?
 
     @State private var sequence = KeyGestureSequence()
-    @State private var pendingLongPress: DispatchWorkItem?
-    @State private var longPressConsumedTouch = false
+    @State private var longPress = LongPressScheduler()
     @Binding var isActive: Bool
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
@@ -121,19 +120,19 @@ struct KeyGestureRecognizer: ViewModifier {
                         if sequence.handleChanged(translation: value.translation) {
                             onTouchDown()
                             scheduleLongPress()
-                        } else if pendingLongPress != nil,
+                        } else if longPress.isScheduled,
                                   sequence.maxDisplacement > KeyboardConstants.LongPress.movementTolerance {
-                            cancelPendingLongPress()
+                            longPress.cancel()
                         }
                         isActive = true
                     }
                     .onEnded { value in
-                        cancelPendingLongPress()
-                        if longPressConsumedTouch {
+                        longPress.cancel()
+                        if longPress.consumedTouch {
                             // The long press already dispatched its action;
                             // discard the touch instead of classifying it, so
                             // releasing doesn't produce a second key event.
-                            longPressConsumedTouch = false
+                            longPress.clearConsumed()
                             sequence.handleCancelled()
                             isActive = false
                             return
@@ -152,8 +151,8 @@ struct KeyGestureRecognizer: ViewModifier {
                 // cancelled the touches. Discard the partial gesture without
                 // classifying it.
                 guard !inFlight, sequence.isTracking else { return }
-                cancelPendingLongPress()
-                longPressConsumedTouch = false
+                longPress.cancel()
+                longPress.clearConsumed()
                 sequence.handleCancelled()
                 isActive = false
             }
@@ -161,30 +160,16 @@ struct KeyGestureRecognizer: ViewModifier {
 
     // MARK: - Long Press
 
+    /// Arms the shared scheduler with this recognizer's fire guard. The guard
+    /// reads live `@State` (`sequence`) at fire time through the property
+    /// wrapper — identical to the previous `fireLongPress()` semantics.
     private func scheduleLongPress() {
         guard onLongPress != nil else { return }
-        cancelPendingLongPress()
-        let workItem = DispatchWorkItem { fireLongPress() }
-        pendingLongPress = workItem
-        DispatchQueue.main.asyncAfter(
-            deadline: .now() + KeyboardConstants.LongPress.duration,
-            execute: workItem
-        )
-    }
-
-    private func cancelPendingLongPress() {
-        pendingLongPress?.cancel()
-        pendingLongPress = nil
-    }
-
-    private func fireLongPress() {
-        pendingLongPress = nil
-        // The touch may have ended or been cancelled between scheduling and
-        // firing; a stale fire must not dispatch anything.
-        guard sequence.isTracking,
-              sequence.maxDisplacement <= KeyboardConstants.LongPress.movementTolerance,
-              onLongPress?() == true else { return }
-        longPressConsumedTouch = true
+        longPress.schedule {
+            sequence.isTracking
+                && sequence.maxDisplacement <= KeyboardConstants.LongPress.movementTolerance
+                && onLongPress?() == true
+        }
     }
 
     /// Guarantees the touch-down origin `(0,0)` is the first sample.

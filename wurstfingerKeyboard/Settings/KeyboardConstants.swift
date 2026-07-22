@@ -226,9 +226,11 @@ enum KeyboardConstants {
         /// paddings). Used by the App Store screenshot mode to reproduce the
         /// square marketing look at the full reference key height.
         static func squareKeyboardWidth(cellSize: CGFloat, columns: Int) -> CGFloat {
+            // Cells plus the constant horizontal chrome (paddings + column
+            // gaps). Shares `horizontalChrome` with the metrics resolver so the
+            // two can never diverge if the per-side padding model changes.
             (cellSize * CGFloat(columns)) +
-                (Layout.gridHorizontalSpacing * CGFloat(columns - 1)) +
-                (Layout.horizontalPadding * 2)
+                KeyboardLayoutMetrics.horizontalChrome(columns: columns)
         }
     }
 }

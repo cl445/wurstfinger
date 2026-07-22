@@ -288,6 +288,7 @@ final class KeyboardViewModel: ObservableObject {
     func layoutMetrics(forContainerWidth width: CGFloat) -> KeyboardLayoutMetrics {
         layoutSettings.resolveMetrics(
             columns: currentArrangement?.columns ?? 4,
+            rows: currentArrangement?.rows.count ?? KeyboardConstants.KeyDimensions.totalRows,
             availableWidth: width > 0 ? min(width, keyboardWidthCap) : keyboardWidthCap,
             screenHeight: DeviceLayoutUtils.screenBounds.height
         )

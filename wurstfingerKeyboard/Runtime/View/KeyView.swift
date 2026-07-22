@@ -40,8 +40,10 @@ struct KeyView: View {
     /// Resolved layout metrics injected by `KeyboardGridView` (same reasoning
     /// as there: an `@AppStorage` read desynchronizes from the width path
     /// when the view model is configured programmatically). Feeds the gesture
-    /// classification geometry and the font scaling.
-    var metrics: KeyboardLayoutMetrics = .reference
+    /// classification geometry and the font scaling. No default: every caller
+    /// must pass the resolved metrics explicitly so a `.reference` fallback can
+    /// never silently mask a wiring gap (production sites already do).
+    var metrics: KeyboardLayoutMetrics
 
     /// Short language label (e.g. "DE") shown on the switch key, and whether to
     /// show it. Driven by the active keyboard locale via `KeyboardViewModel`

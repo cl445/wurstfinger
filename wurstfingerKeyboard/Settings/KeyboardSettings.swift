@@ -244,11 +244,17 @@ final class LayoutSettings: ObservableObject {
     /// Resolves the persisted wish (width + aspect ratio) into concrete
     /// metrics for a render context. Pure: fit-clamps shrink the result but
     /// never write back to the store.
-    func resolveMetrics(columns: Int, availableWidth: CGFloat, screenHeight: CGFloat) -> KeyboardLayoutMetrics {
+    func resolveMetrics(
+        columns: Int,
+        rows: Int = KeyboardConstants.KeyDimensions.totalRows,
+        availableWidth: CGFloat,
+        screenHeight: CGFloat
+    ) -> KeyboardLayoutMetrics {
         KeyboardLayoutMetrics.resolve(
             wishWidth: keyboardWidth,
             aspectRatio: keyAspectRatio,
             columns: columns,
+            rows: rows,
             availableWidth: availableWidth,
             screenHeight: screenHeight
         )

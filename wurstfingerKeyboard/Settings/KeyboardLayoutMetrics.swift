@@ -58,10 +58,20 @@ struct KeyboardLayoutMetrics: Equatable {
         cellHeight * CGFloat(rows) + Self.verticalChrome(rows: rows)
     }
 
-    /// Maximum share of the *screen* height the keyboard may occupy. The
-    /// extension's own window is only keyboard-sized, so the height guard
-    /// must be evaluated against screen bounds, never window bounds.
+    /// Absolute floor for the height cap, as a share of the *screen* height:
+    /// the keyboard may always occupy at least this fraction regardless of the
+    /// reserved band below. The extension's own window is only keyboard-sized,
+    /// so the height guard must be evaluated against screen bounds, never
+    /// window bounds.
     static let maxScreenHeightFraction: CGFloat = 0.70
+
+    /// Fixed band of screen height reserved for the host document above the
+    /// keyboard (Option C). On tall screens this lets the keyboard grow to
+    /// `screenHeight - minReservedScreenHeight` — larger than the 0.70 floor —
+    /// so a large wish stays orientation-invariant instead of being shrunk in
+    /// landscape purely because the screen got shorter. On the shortest
+    /// landscapes the 0.70 floor governs (see `resolve`).
+    static let minReservedScreenHeight: CGFloat = 120
 
     /// Reference metrics at the iPhone default wish (270 pt, square cells)
     /// with no fit-clamp engaged. For tests and previews that need a valid
@@ -110,12 +120,26 @@ struct KeyboardLayoutMetrics: Equatable {
         var cellWidth = max((width - horizontalChrome) / CGFloat(columns), 1)
         var cellHeight = cellWidth / aspect
 
-        // Height guard: keep the keyboard within a fixed share of the screen
-        // (current orientation). Scale the cells proportionally — spacing and
-        // paddings are constants — so the aspect ratio is preserved exactly.
+        // Height guard (Option C — clamp only on genuine overflow): the cap is
+        // whichever is *more* generous of a fixed reserved band
+        // (`screenHeight - minReservedScreenHeight`) or the 0.70 floor. Taking
+        // the max keeps invariance for every wish that fits within
+        // `screenHeight - reserve`, and only shrinks on true landscape
+        // overflow. When it does shrink, the cells scale proportionally —
+        // spacing and paddings are constants — so the aspect ratio is
+        // preserved exactly.
+        //
+        // Shortest-landscape caveat: on the shortest landscapes the reserved
+        // band drops below the 0.70 floor (screenHeight ≲ 400 ⇒
+        // screenHeight - 120 < 0.70·screenHeight), so the floor governs and
+        // the very largest wishes still clamp there — Option C cannot make
+        // them invariant without letting the keyboard exceed the screen.
         let verticalChrome = Self.verticalChrome(rows: rows)
         if screenHeight > 0 {
-            let maxHeight = screenHeight * Self.maxScreenHeightFraction
+            let maxHeight = max(
+                screenHeight - Self.minReservedScreenHeight,
+                screenHeight * Self.maxScreenHeightFraction
+            )
             let contentHeight = cellHeight * CGFloat(rows) + verticalChrome
             if contentHeight > maxHeight {
                 let scale = max(maxHeight - verticalChrome, 0) / (cellHeight * CGFloat(rows))
