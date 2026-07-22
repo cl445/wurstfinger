@@ -64,6 +64,15 @@ struct DataDrivenKeyboardRootView: View {
             }
         }
         .frame(maxWidth: .infinity)
+        // Pin the entire keyboard render tree to physical LTR. Grid slot
+        // positions, the horizontalOffset math above, and the atan2 gesture
+        // classification are all physical/absolute, so this cannot affect
+        // layout — it only stops the directional hint alignments/paddings
+        // (which use semantic leading/trailing) from mirroring under an RTL
+        // system language, keeping hints aligned with the physical swipe
+        // directions. A lone hint glyph is direction-agnostic, so RTL text
+        // still renders correctly. (Finding #4.)
+        .environment(\.layoutDirection, .leftToRight)
     }
 
     // MARK: - Background

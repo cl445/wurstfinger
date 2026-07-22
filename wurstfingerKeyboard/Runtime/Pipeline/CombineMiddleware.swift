@@ -38,6 +38,14 @@ struct CombineMiddleware: ActionMiddleware {
     /// Deletes one character from the document (the consumed base character).
     let deleteBackward: () -> Void
 
+    /// Returns the currently selected text, or nil/empty when there is no
+    /// selection. When a selection is active the lookback base character is
+    /// not the character the combine should consume, so combining is skipped
+    /// and the raw trigger is forwarded to replace the selection instead.
+    /// Defaults to "no selection" so call sites that never surface a selection
+    /// (and the existing unit tests) need not thread it through.
+    var selectedText: () -> String? = { nil }
+
     /// Lookup: `(previous, trigger) -> result?`. Bound to a plain dictionary
     /// lookup over the definition's combine rule set.
     let combine: (_ previous: String, _ trigger: String) -> String?
@@ -46,6 +54,7 @@ struct CombineMiddleware: ActionMiddleware {
         guard isActive(),
               case let .commitText(text) = context.action,
               text.count == 1,
+              selectedText()?.isEmpty ?? true,
               let documentContext = documentContextBefore(),
               let previous = documentContext.last
         else {

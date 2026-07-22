@@ -36,6 +36,13 @@ struct TelexMiddleware: ActionMiddleware {
     /// composition consumes preceding characters.
     let deleteBackward: () -> Void
 
+    /// Returns the currently selected text, or nil/empty when there is no
+    /// selection. When a selection is active the trigger must replace the
+    /// selection verbatim, so Telex composition (which deletes lookback
+    /// characters) is skipped entirely. Defaults to "no selection" so existing
+    /// call sites need not thread it through.
+    var selectedText: () -> String? = { nil }
+
     /// Two-char lookback composition. Returns `(replacement, charsToDelete)`
     /// or `nil`. Bound to `ComposeEngine.composeTelexDigraph`.
     let composeDigraph: (_ prev2: String, _ prev1: String, _ trigger: String) -> (String, Int)?
@@ -48,6 +55,7 @@ struct TelexMiddleware: ActionMiddleware {
         guard isActive(),
               case let .commitText(text) = context.action,
               text.count == 1,
+              selectedText()?.isEmpty ?? true,
               let documentContext = documentContextBefore(),
               !documentContext.isEmpty
         else {

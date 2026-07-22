@@ -97,19 +97,24 @@ struct ComposeEngineTests {
         #expect(ComposeEngine.compose(previous: "!", trigger: "!") == "¡")
     }
 
-    // MARK: - Space Compose (trigger + space = trigger character)
+    // MARK: - Space Compose
 
+    /// Only the acute and grave compose keys normalize `space + modifier`
+    /// into a typographic character (´ → apostrophe, ˋ → backtick), matching
+    /// the shipped 1.3.1 behavior. The eight other modifiers (¨ ^ ~ ° ˘ $ ˇ !)
+    /// no longer carry a self-referential `" "` row, so composing them after a
+    /// space returns nil and the middleware preserves the space (finding #6).
     @Test func spaceComposeReturnsTriggerCharacter() {
-        #expect(ComposeEngine.compose(previous: " ", trigger: "¨") == "¨")
         #expect(ComposeEngine.compose(previous: " ", trigger: "´") == "'")
         #expect(ComposeEngine.compose(previous: " ", trigger: "ˋ") == "`")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "^") == "^")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "~") == "~")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "°") == "°")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "˘") == "˘")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "$") == "$")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "ˇ") == "ˇ")
-        #expect(ComposeEngine.compose(previous: " ", trigger: "!") == "!")
+        #expect(ComposeEngine.compose(previous: " ", trigger: "¨") == nil)
+        #expect(ComposeEngine.compose(previous: " ", trigger: "^") == nil)
+        #expect(ComposeEngine.compose(previous: " ", trigger: "~") == nil)
+        #expect(ComposeEngine.compose(previous: " ", trigger: "°") == nil)
+        #expect(ComposeEngine.compose(previous: " ", trigger: "˘") == nil)
+        #expect(ComposeEngine.compose(previous: " ", trigger: "$") == nil)
+        #expect(ComposeEngine.compose(previous: " ", trigger: "ˇ") == nil)
+        #expect(ComposeEngine.compose(previous: " ", trigger: "!") == nil)
     }
 
     // MARK: - Unknown Character Returns nil
