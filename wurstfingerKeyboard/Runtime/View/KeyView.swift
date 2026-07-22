@@ -80,7 +80,19 @@ struct KeyView: View {
         "🌐": "globe",
         "⌫": "delete.backward",
         "↵": "return",
+        "🙂": "face.smiling",
     ]
+
+    /// Per-symbol size adjustment: the round smiley glyph renders optically
+    /// larger than the other utility icons at the same point size.
+    private static let sfSymbolScale: [String: CGFloat] = [
+        "🙂": 0.7,
+    ]
+
+    /// Symbols rendered in the muted hint styling instead of the full label
+    /// color: the smiley shares its key with several globe functions and
+    /// must not outshine their hint glyphs.
+    private static let mutedSymbols: Set<String> = ["🙂"]
 
     var body: some View {
         keyContent
@@ -246,14 +258,19 @@ struct KeyView: View {
             // The centre label is hidden by the label-visibility setting.
             EmptyView()
         } else {
-            let font = Font.system(size: scaledFontSize, weight: .semibold, design: .rounded)
             if let sfName = Self.sfSymbolMap[primaryLabel] {
+                let scale = Self.sfSymbolScale[primaryLabel, default: 1]
+                let muted = Self.mutedSymbols.contains(primaryLabel)
                 Image(systemName: sfName)
-                    .font(font)
-                    .foregroundColor(.primary)
+                    .font(Font.system(
+                        size: scaledFontSize * scale,
+                        weight: muted ? .medium : .semibold,
+                        design: .rounded
+                    ))
+                    .foregroundStyle(muted ? Color.primary.opacity(0.5) : Color.primary)
             } else {
                 Text(primaryLabel)
-                    .font(font)
+                    .font(Font.system(size: scaledFontSize, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
             }
         }

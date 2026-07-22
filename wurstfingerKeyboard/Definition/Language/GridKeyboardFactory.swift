@@ -148,6 +148,7 @@ enum GridKeyboardFactory {
             ModeNames.numeric: NumericLayouts.phone(
                 digits: numericDigits, backToAlphaLabel: numericBackToAlphaLabel
             ),
+            ModeNames.emoji: EmojiLayouts.mode(backToAlphaLabel: numericBackToAlphaLabel),
         ]
 
         if supportsCapitalization {

@@ -14,17 +14,19 @@ enum CommonKeys {
 
     static let globe: KeyConfig = {
         var bindings: [GestureType: KeyBinding] = [:]
-        // Tap is intentionally inert: switching the input method lives on the
-        // swipe-left gesture below. The empty `.none` slot keeps the key's
-        // accessibility label without re-triggering the globe on a plain tap.
+        // Tap opens the emoji layer — the key's centre is otherwise unused
+        // (switching the input method lives on the swipe-left gesture below).
+        // The 🙂 label renders as a monochrome SF Symbol via
+        // `KeyView.sfSymbolMap`, matching other keyboards' emoji keys.
         bindings[.tap] = KeyBinding(
-            label: "", action: .none,
-            category: .utility, returnAction: nil,
-            accessibilityLabel: String(localized: "Switch keyboard")
+            label: "🙂", action: .switchMode(ModeNames.emoji),
+            category: .modifier, returnAction: nil,
+            accessibilityLabel: String(localized: "Emoji")
         )
         bindings[.swipeLeft] = KeyBinding(
             label: "", action: .advanceToNextInputMode,
-            category: .utility, returnAction: nil, accessibilityLabel: nil
+            category: .utility, returnAction: nil,
+            accessibilityLabel: String(localized: "Switch keyboard")
         )
         bindings[.swipeDown] = KeyBinding(
             label: "", action: .dismissKeyboard,
