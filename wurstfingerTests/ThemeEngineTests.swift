@@ -42,6 +42,20 @@ struct HexColorTests {
         let string = try #require(HexColor.string(from: HexColor.color(from: original)))
         #expect(HexColor.parse(string) == original)
     }
+
+    @Test func luminanceOrdersLightAndDark() {
+        #expect(HexColor.luminance(of: 0xFFFFFF) > 0.9)
+        #expect(HexColor.luminance(of: 0x000000) < 0.1)
+        // Dark Gold's key color is dark, so it earns a light border.
+        #expect(HexColor.luminance(of: 0x333A48) < 0.5)
+    }
+
+    @Test func scalingRoundsAndClamps() {
+        // Rounds (not truncates): this is exactly Dark Gold's board color.
+        #expect(HexColor.scaled(0x333A48, by: 0.725) == 0x252A34)
+        #expect(HexColor.scaled(0xFFFFFF, by: 2.0) == 0xFFFFFF)
+        #expect(HexColor.scaled(0x000000, by: 0.5) == 0x000000)
+    }
 }
 
 // MARK: - Codable Wire Format
@@ -108,7 +122,42 @@ struct BuiltInThemeTests {
         #expect(BuiltInThemes.classic.id == "classic")
         #expect(BuiltInThemes.liquidGlass.id == "liquid-glass")
         #expect(BuiltInThemes.darkGold.id == "dark-gold")
-        #expect(BuiltInThemes.all.count == 3)
+        #expect(BuiltInThemes.styles.count == 2)
+        #expect(BuiltInThemes.palettes.count == 16)
+        #expect(BuiltInThemes.all.count == 18)
+        // Dark Gold is palette 12 of the original set.
+        #expect(BuiltInThemes.palettes[12].id == "dark-gold")
+    }
+
+    /// Every palette has unique, parsable colors — a resolver fallback to a
+    /// Classic role (nil hex parse) must never happen for a built-in.
+    @Test func palettesHaveUniqueParsableColors() {
+        let ids = BuiltInThemes.palettes.map(\.id)
+        #expect(Set(ids).count == ids.count)
+        for palette in BuiltInThemes.palettes {
+            guard case .color = palette.keyFill else {
+                Issue.record("palette \(palette.id) keyFill is not a color")
+                continue
+            }
+            #expect(palette.mainLabel.resolvedColor() != nil, "palette \(palette.id) mainLabel")
+            #expect(palette.hintLetter.resolvedColor() != nil, "palette \(palette.id) hintLetter")
+        }
+    }
+
+    /// The palette conversion must reproduce the previously hand-written Dark
+    /// Gold definition byte-for-byte, so the on-device-approved look is stable.
+    @Test func darkGoldMatchesReferenceDefinition() {
+        let gold = BuiltInThemes.darkGold
+        #expect(gold.boardBackground == .color(.fixed(hex: "#252A34")))
+        #expect(gold.keyFill == .color(.fixed(hex: "#333A48")))
+        #expect(gold.keyFillActive == .color(.fixed(hex: "#4A5468")))
+        #expect(gold.keyBorder == .fixed(hex: "#FFFFFF1F"))
+        #expect(gold.mainLabel == .fixed(hex: "#D1AA05"))
+        #expect(gold.utilityLabel == .fixed(hex: "#FFFFFF"))
+        #expect(gold.hintLetter == .fixed(hex: "#FFFFFFE6"))
+        #expect(gold.hintSymbol == .fixed(hex: "#FFFFFFB3"))
+        #expect(gold.hintIconProminent == .fixed(hex: "#FFFFFF80"))
+        #expect(gold.hintIconSubtle == .fixed(hex: "#FFFFFF73"))
     }
 
     @Test func classicHasNoBorder() {

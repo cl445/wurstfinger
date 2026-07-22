@@ -86,4 +86,25 @@ enum HexColor {
         let rgb = (byte(red) << 16) | (byte(green) << 8) | byte(blue)
         return string(from: Components(rgb: rgb, alpha: Double(alpha)))
     }
+
+    /// Relative luminance (0...1) of a packed RGB value. Used to pick a light
+    /// or dark key border for a palette based on its key color.
+    static func luminance(of rgb: UInt32) -> Double {
+        let red = Double((rgb >> 16) & 0xFF) / 255
+        let green = Double((rgb >> 8) & 0xFF) / 255
+        let blue = Double(rgb & 0xFF) / 255
+        return 0.2126 * red + 0.7152 * green + 0.0722 * blue
+    }
+
+    /// Multiplies each RGB channel by `factor`, rounding and clamping to
+    /// 0...255. Used to derive a palette's board color from its key color.
+    static func scaled(_ rgb: UInt32, by factor: Double) -> UInt32 {
+        func scale(_ channel: UInt32) -> UInt32 {
+            UInt32(min(max((Double(channel) * factor).rounded(), 0), 255))
+        }
+        let red = scale((rgb >> 16) & 0xFF)
+        let green = scale((rgb >> 8) & 0xFF)
+        let blue = scale(rgb & 0xFF)
+        return (red << 16) | (green << 8) | blue
+    }
 }
