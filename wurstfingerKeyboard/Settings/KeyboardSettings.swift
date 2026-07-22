@@ -40,6 +40,10 @@ enum SettingsKey: String {
     case keyboardStyle
     case selectedThemeLight
     case selectedThemeDark
+    /// Whether the user assigns a separate theme for dark mode. Settings-UI
+    /// only: the keyboard always resolves per-slot; this just governs whether
+    /// the two slots are edited together or independently.
+    case themeSeparateDarkSlot
     case userThemes
     case keyboardFullAccess
     case cursorMovementStyle
