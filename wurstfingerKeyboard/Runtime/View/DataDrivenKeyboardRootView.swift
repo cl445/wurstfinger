@@ -21,6 +21,9 @@ struct DataDrivenKeyboardRootView: View {
     @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyle: KeyboardStyle = .classic
 
+    @AppStorage(SettingsKey.themeKeyColor.rawValue, store: SharedDefaults.store)
+    private var themeKeyHex = KeyboardThemePreset.standard.keyHex
+
     var body: some View {
         let currentWidth = overrideWidth ?? viewModel.viewWidth
         // Single geometry source: the resolved metrics drive the keyboard
@@ -91,6 +94,8 @@ struct DataDrivenKeyboardRootView: View {
             // on top still win the hit-test. ~2% over the glass backdrop reads
             // as clear.
             Color(.systemBackground).opacity(0.02)
+        case .darkGold:
+            KeyboardTheme.boardBackground(forKeyHex: themeKeyHex)
         }
     }
 }

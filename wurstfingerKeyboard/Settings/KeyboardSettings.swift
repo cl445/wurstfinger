@@ -52,6 +52,12 @@ enum SettingsKey: String {
     /// Opt-in: the action is destructive and unaided by undo, so it stays off
     /// until asked for rather than surprising anyone who circles the key.
     case cutAllEnabled
+    case themeKeyColor
+    case themeMainColor
+    case themeHintColor
+    case themePressedColor
+    case themeCornerRadius
+    case themeKeyEdges
 }
 
 // MARK: - Haptic Settings
@@ -343,6 +349,7 @@ enum CursorMovementStyle: String, CaseIterable {
 enum KeyboardStyle: String, CaseIterable {
     case classic // Traditional opaque key backgrounds
     case liquidGlass // iOS 26+ Liquid Glass effect (renders as a simplified translucent style on older iOS)
+    case darkGold // Themed palette, dark keys with golden letters (see KeyboardTheme)
 
     var displayName: String {
         switch self {
@@ -350,6 +357,8 @@ enum KeyboardStyle: String, CaseIterable {
             String(localized: "Classic")
         case .liquidGlass:
             String(localized: "Liquid Glass")
+        case .darkGold:
+            String(localized: "Dark Gold")
         }
     }
 
@@ -359,6 +368,8 @@ enum KeyboardStyle: String, CaseIterable {
             String(localized: "Traditional opaque keys")
         case .liquidGlass:
             String(localized: "Transparent glass effect (iOS 26+)")
+        case .darkGold:
+            String(localized: "Dark keys with golden letters")
         }
     }
 }
