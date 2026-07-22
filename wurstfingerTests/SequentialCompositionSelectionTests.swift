@@ -1,5 +1,5 @@
 //
-//  CombineMiddlewareSelectionTests.swift
+//  SequentialCompositionSelectionTests.swift
 //  WurstfingerTests
 //
 //  Verifies that sequential combine composition never corrupts an active
@@ -13,7 +13,7 @@ import Testing
 @testable import WurstfingerApp
 
 @Suite(.serialized)
-struct CombineMiddlewareSelectionTests {
+struct SequentialCompositionSelectionTests {
     /// End-to-end through the Korean (Hangul) pipeline: with "한" selected as
     /// "X" in front of the cursor, typing "ㅏ" must replace the selection with
     /// the raw jamo, not run the Hangul automaton over the lookback character.

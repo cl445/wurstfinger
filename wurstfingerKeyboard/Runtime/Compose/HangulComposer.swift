@@ -25,9 +25,9 @@ import Foundation
 /// `combine(previous:jamo:)` returns the string that should replace
 /// `previous + jamo`, or `nil` when the jamo cannot fold into `previous` and
 /// should be committed on its own (starting a fresh syllable). It plugs into
-/// `CombineMiddleware` exactly like a table lookup — the middleware deletes the
-/// single `previous` character and commits the (possibly multi-character)
-/// result.
+/// `SequentialCompositionMiddleware` exactly like a table lookup — the
+/// middleware deletes the single `previous` character and commits the
+/// (possibly multi-character) result.
 enum HangulComposer {
     // Compatibility-jamo tables in composition-index order.
     private static let choseong = Array("ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ")

@@ -412,9 +412,9 @@ struct ComposeMiddlewareTests {
     }
 }
 
-// MARK: - CombineMiddleware
+// MARK: - SequentialCompositionMiddleware (combine flavour)
 
-struct CombineMiddlewareTests {
+struct SequentialCompositionCombineTests {
     @Test func combinesWhenRuleMatches() {
         var deleted = 0
         let middleware = SequentialCompositionMiddleware(
@@ -558,9 +558,9 @@ struct TextInputMiddlewareTests {
     }
 }
 
-// MARK: - TelexMiddleware
+// MARK: - SequentialCompositionMiddleware (Telex flavour)
 
-struct TelexMiddlewareTests {
+struct SequentialCompositionTelexTests {
     /// Shared spy capturing deleteBackward calls and exposing a mutable
     /// documentContextBefore. Tests configure the context, dispatch through
     /// the pipeline, and then inspect what the middleware forwarded.
