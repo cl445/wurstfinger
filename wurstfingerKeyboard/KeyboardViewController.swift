@@ -48,6 +48,10 @@ final class KeyboardViewController: UIInputViewController {
         // Set background immediately to avoid flash
         view.backgroundColor = .clear
 
+        // Migrate the legacy style selection to the theme assignment before
+        // the root view reads it. Idempotent; the host app runs it too.
+        ThemeStore.migrateIfNeeded()
+
         // Wire up the data-driven pipeline
         let target = DocumentProxyTarget(controller: self)
         documentProxyTarget = target
@@ -233,6 +237,20 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func configureHosting() {
+        // A `.keyboard`-style input view renders the real system-keyboard
+        // backdrop (blur + adaptive tint) behind the SwiftUI content, so a
+        // theme with a near-transparent board (Liquid Glass) shows through to a
+        // background that matches the system keyboard row. This is purely the
+        // *look*: touch delivery for the inter-key gaps comes from the SwiftUI
+        // board fill, because a keyboard extension delivers touches over
+        // SwiftUI-rendered pixels, not over this UIKit backdrop behind them
+        // (see DataDrivenKeyboardRootView.keyboardBackground + #198). It is left
+        // interactive only so it never swallows a stray touch itself; the
+        // SwiftUI content above always wins the hit-test.
+        let backdrop = UIInputView(frame: .zero, inputViewStyle: .keyboard)
+        backdrop.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(backdrop)
+
         let rootView = DataDrivenKeyboardRootView(viewModel: viewModel)
         let controller = UIHostingController(rootView: AnyView(rootView))
         controller.view.translatesAutoresizingMaskIntoConstraints = false
@@ -242,6 +260,10 @@ final class KeyboardViewController: UIInputViewController {
         view.addSubview(controller.view)
 
         NSLayoutConstraint.activate([
+            backdrop.topAnchor.constraint(equalTo: view.topAnchor),
+            backdrop.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backdrop.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backdrop.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             controller.view.topAnchor.constraint(equalTo: view.topAnchor),
             controller.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             controller.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),

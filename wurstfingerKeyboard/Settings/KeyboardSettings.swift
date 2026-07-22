@@ -35,7 +35,12 @@ enum SettingsKey: String {
     case pinnedLanguageId
     case autoCapitalizeEnabled
     case expertModeEnabled
+    /// Legacy style selection — only read by `ThemeStore.migrateIfNeeded`,
+    /// then removed.
     case keyboardStyle
+    case selectedThemeLight
+    case selectedThemeDark
+    case userThemes
     case keyboardFullAccess
     case cursorMovementStyle
     case hideLetters
@@ -335,30 +340,4 @@ enum NumpadStyle: String, CaseIterable {
 enum CursorMovementStyle: String, CaseIterable {
     case continuous // Joystick-style: drag distance controls cursor position
     case discrete // MessagEase-style: one swipe = one character, return-swipe = one word
-}
-
-// MARK: - Keyboard Style
-
-/// Visual style for the keyboard appearance
-enum KeyboardStyle: String, CaseIterable {
-    case classic // Traditional opaque key backgrounds
-    case liquidGlass // iOS 26+ Liquid Glass effect (renders as a simplified translucent style on older iOS)
-
-    var displayName: String {
-        switch self {
-        case .classic:
-            String(localized: "Classic")
-        case .liquidGlass:
-            String(localized: "Liquid Glass")
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .classic:
-            String(localized: "Traditional opaque keys")
-        case .liquidGlass:
-            String(localized: "Transparent glass effect (iOS 26+)")
-        }
-    }
 }

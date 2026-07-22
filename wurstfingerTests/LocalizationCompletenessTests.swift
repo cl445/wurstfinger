@@ -81,6 +81,11 @@ struct LocalizationCompletenessTests {
         var problems: [String] = []
 
         for (key, entry) in catalog.strings {
+            // Entries marked "shouldTranslate": false stay in the source
+            // language everywhere (e.g. proper names like "Dark Gold").
+            if entry["shouldTranslate"] as? Bool == false {
+                continue
+            }
             let localizations = entry["localizations"] as? [String: Any] ?? [:]
             let present = Set(localizations.keys)
 

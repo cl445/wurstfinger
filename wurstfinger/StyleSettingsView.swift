@@ -2,14 +2,17 @@
 //  StyleSettingsView.swift
 //  wurstfinger
 //
-//  Visual style settings for the keyboard appearance
+//  Theme selection for the keyboard appearance.
 //
 
 import SwiftUI
 
 struct StyleSettingsView: View {
-    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
-    private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
+    @AppStorage(SettingsKey.selectedThemeLight.rawValue, store: SharedDefaults.store)
+    private var selectedThemeLight = BuiltInThemes.classic.id
+
+    @AppStorage(SettingsKey.selectedThemeDark.rawValue, store: SharedDefaults.store)
+    private var selectedThemeDark = BuiltInThemes.classic.id
 
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var previewAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
@@ -28,17 +31,17 @@ struct StyleSettingsView: View {
 
             ScrollView {
                 VStack(spacing: 24) {
-                    // Style Selection
+                    // Theme Selection
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Visual Style")
                             .font(.headline)
                             .padding(.horizontal, 16)
 
-                        ForEach(KeyboardStyle.allCases, id: \.self) { style in
-                            styleOption(style)
+                        ForEach(BuiltInThemes.all) { theme in
+                            themeOption(theme)
                         }
 
-                        if keyboardStyleRaw == KeyboardStyle.liquidGlass.rawValue {
+                        if selectedThemeLight == BuiltInThemes.liquidGlass.id {
                             if #unavailable(iOS 26.0) {
                                 Text("Liquid Glass is designed for iOS 26 and later. On earlier versions a simplified translucent style is used.")
                                     .font(.caption)
@@ -56,24 +59,29 @@ struct StyleSettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func styleOption(_ style: KeyboardStyle) -> some View {
+    private func themeOption(_ theme: KeyboardThemeDefinition) -> some View {
         Button {
-            keyboardStyleRaw = style.rawValue
+            // Both appearance slots follow one selection until the gallery
+            // gains its separate light/dark assignment (milestone M2).
+            selectedThemeLight = theme.id
+            selectedThemeDark = theme.id
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(style.displayName)
+                    Text(theme.displayName)
                         .font(.body)
                         .foregroundColor(.primary)
 
-                    Text(style.description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if let description = theme.displayDescription {
+                        Text(description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
 
                 Spacer()
 
-                if keyboardStyleRaw == style.rawValue {
+                if selectedThemeLight == theme.id {
                     Image(systemName: "checkmark")
                         .foregroundColor(.accentColor)
                         .fontWeight(.semibold)
@@ -83,7 +91,7 @@ struct StyleSettingsView: View {
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(keyboardStyleRaw == style.rawValue ? Color.accentColor.opacity(0.1) : Color.clear)
+                    .fill(selectedThemeLight == theme.id ? Color.accentColor.opacity(0.1) : Color.clear)
             )
         }
         .buttonStyle(.plain)
