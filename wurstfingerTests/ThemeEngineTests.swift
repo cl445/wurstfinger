@@ -278,3 +278,92 @@ struct ThemeMigrationTests {
         #expect(ThemeStore.theme(id: "user-abc", defaults: defaults) == theme)
     }
 }
+
+// MARK: - Editing
+
+struct ThemeEditingTests {
+    private func isolatedDefaults() throws -> UserDefaults {
+        let name = "theme-editing-tests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defaults.removePersistentDomain(forName: name)
+        return defaults
+    }
+
+    @Test func isBuiltInIsDerivedFromId() {
+        #expect(BuiltInThemes.classic.isBuiltIn)
+        #expect(BuiltInThemes.darkGold.isBuiltIn)
+        var user = BuiltInThemes.darkGold
+        user.id = UUID().uuidString
+        #expect(!user.isBuiltIn)
+    }
+
+    @Test func duplicateMakesEditableCopyPreservingColors() {
+        let source = BuiltInThemes.darkGold
+        let copy = ThemeStore.duplicate(source, existing: [])
+        #expect(copy.id != source.id)
+        #expect(!copy.isBuiltIn)
+        // Colors carry over untouched; only identity/name change.
+        #expect(copy.keyFill == source.keyFill)
+        #expect(copy.mainLabel == source.mainLabel)
+        #expect(copy.name != source.displayName)
+        #expect(copy.name.contains(source.displayName))
+    }
+
+    @Test func duplicateNamesStayUnique() {
+        let source = BuiltInThemes.darkGold
+        let first = ThemeStore.duplicate(source, existing: [])
+        let second = ThemeStore.duplicate(source, existing: [first])
+        #expect(first.name != second.name)
+    }
+
+    @Test func upsertAppendsThenReplacesById() {
+        var theme = BuiltInThemes.darkGold
+        theme.id = "user-1"
+        var list = ThemeStore.upsert(theme, into: [])
+        #expect(list.count == 1)
+        theme.name = "Renamed"
+        list = ThemeStore.upsert(theme, into: list)
+        #expect(list.count == 1)
+        #expect(list[0].name == "Renamed")
+    }
+
+    @Test func upsertRejectsBuiltInIds() {
+        let list = ThemeStore.upsert(BuiltInThemes.classic, into: [])
+        #expect(list.isEmpty)
+    }
+
+    @Test func deleteRepointsSelectedSlotsToClassic() throws {
+        let defaults = try isolatedDefaults()
+        var theme = BuiltInThemes.darkGold
+        theme.id = "user-selected"
+        ThemeStore.saveUserTheme(theme, defaults: defaults)
+        defaults.set(theme.id, forKey: SettingsKey.selectedThemeLight.rawValue)
+        defaults.set(theme.id, forKey: SettingsKey.selectedThemeDark.rawValue)
+
+        ThemeStore.deleteUserTheme(id: theme.id, defaults: defaults)
+        #expect(ThemeStore.userThemes(defaults: defaults).isEmpty)
+        #expect(defaults.string(forKey: SettingsKey.selectedThemeLight.rawValue) == BuiltInThemes.classic.id)
+        #expect(defaults.string(forKey: SettingsKey.selectedThemeDark.rawValue) == BuiltInThemes.classic.id)
+    }
+
+    @Test func deleteLeavesUnrelatedSelectionUntouched() throws {
+        let defaults = try isolatedDefaults()
+        var theme = BuiltInThemes.darkGold
+        theme.id = "user-doomed"
+        ThemeStore.saveUserTheme(theme, defaults: defaults)
+        defaults.set("dark-gold", forKey: SettingsKey.selectedThemeLight.rawValue)
+
+        ThemeStore.deleteUserTheme(id: theme.id, defaults: defaults)
+        #expect(defaults.string(forKey: SettingsKey.selectedThemeLight.rawValue) == "dark-gold")
+    }
+
+    @Test func colorBridgeProducesRoundTrippableFixedHex() throws {
+        let color = try #require(HexColor.color(from: "#3366CC"))
+        let bridged = ThemeColor.from(color)
+        guard case let .fixed(hex) = bridged else {
+            Issue.record("expected a fixed color, got \(bridged)")
+            return
+        }
+        #expect(HexColor.parse(hex)?.rgb == 0x3366CC)
+    }
+}

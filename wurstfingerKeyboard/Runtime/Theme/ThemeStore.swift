@@ -85,6 +85,65 @@ enum ThemeStore {
         return theme(lightId: lightId, darkId: darkId, for: colorScheme, defaults: defaults)
     }
 
+    // MARK: - Editing
+
+    /// A user-owned copy of any theme: a fresh UUID id, an un-taken " Copy"
+    /// name, and the source's colors. Built-in status is derived from the id,
+    /// so the copy is automatically editable and deletable.
+    static func duplicate(
+        _ source: KeyboardThemeDefinition,
+        existing: [KeyboardThemeDefinition]
+    ) -> KeyboardThemeDefinition {
+        var copy = source
+        copy.id = UUID().uuidString
+        copy.name = uniqueCopyName(base: source.displayName, existing: existing)
+        return copy
+    }
+
+    /// "<name> Copy", disambiguated with a numeric suffix if that name is
+    /// already taken, so duplicating twice never yields two identical names.
+    private static func uniqueCopyName(base: String, existing: [KeyboardThemeDefinition]) -> String {
+        let taken = Set(existing.map(\.name))
+        let first = String(format: String(localized: "%@ Copy"), base)
+        guard taken.contains(first) else { return first }
+        var index = 2
+        while taken.contains(String(format: String(localized: "%@ Copy %lld"), base, index)) {
+            index += 1
+        }
+        return String(format: String(localized: "%@ Copy %lld"), base, index)
+    }
+
+    /// Replaces the theme with the same id, or appends it. Built-in ids are
+    /// rejected (they can never become user themes).
+    static func upsert(
+        _ theme: KeyboardThemeDefinition,
+        into list: [KeyboardThemeDefinition]
+    ) -> [KeyboardThemeDefinition] {
+        guard !BuiltInThemes.ids.contains(theme.id) else { return list }
+        var list = list
+        if let index = list.firstIndex(where: { $0.id == theme.id }) {
+            list[index] = theme
+        } else {
+            list.append(theme)
+        }
+        return list
+    }
+
+    /// Inserts or updates a user theme in defaults.
+    static func saveUserTheme(_ theme: KeyboardThemeDefinition, defaults: UserDefaults = SharedDefaults.store) {
+        writeUserThemes(upsert(theme, into: userThemes(defaults: defaults)), defaults: defaults)
+    }
+
+    /// Removes a user theme and repoints any slot that selected it back to
+    /// Classic, so a deleted theme never leaves a slot resolving to nothing.
+    static func deleteUserTheme(id: String, defaults: UserDefaults = SharedDefaults.store) {
+        writeUserThemes(userThemes(defaults: defaults).filter { $0.id != id }, defaults: defaults)
+        let slots = [SettingsKey.selectedThemeLight, SettingsKey.selectedThemeDark]
+        for key in slots where defaults.string(forKey: key.rawValue) == id {
+            defaults.set(BuiltInThemes.classic.id, forKey: key.rawValue)
+        }
+    }
+
     // MARK: - Migration
 
     /// One-time migration from the legacy `keyboardStyle` setting to the
