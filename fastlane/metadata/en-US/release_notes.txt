@@ -14,7 +14,7 @@ New:
 
 Reliability:
 • The keyboard frees its memory when backgrounded, fixing cases where reopening it silently fell back to the system keyboard
-• Keyboard size is now anchored in points and stays consistent across devices
+• Keyboard size now stays consistent across devices
 • Fixed cursor movement across emoji
 • Fast swipe gestures are recognized more reliably
 • Auto-capitalization now engages at the right moments

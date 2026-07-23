@@ -14,7 +14,7 @@ Neu:
 
 Zuverlässigkeit:
 • Die Tastatur gibt im Hintergrund ihren Speicher frei — behebt Fälle, in denen beim erneuten Öffnen stillschweigend die Systemtastatur erschien
-• Die Tastaturgröße ist jetzt in Punkten verankert und bleibt über Geräte hinweg konsistent
+• Die Tastaturgröße bleibt jetzt über Geräte hinweg konsistent
 • Cursor-Bewegung über Emoji korrigiert
 • Schnelle Wischgesten werden zuverlässiger erkannt
 • Automatische Großschreibung greift jetzt in den richtigen Momenten
