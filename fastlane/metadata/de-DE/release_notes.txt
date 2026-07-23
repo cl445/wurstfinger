@@ -1,15 +1,21 @@
-Version 1.3.1
+Version 1.4.0
 
 Neu:
+• 10 neue Tastatursprachen: Arabisch, Persisch, Urdu, Thai, Hindi, Koreanisch, Japanisch (Hiragana & Katakana), Griechisch, Portugiesisch und Ukrainisch
+• Koreanische Silben und japanische Kana werden beim Tippen zusammengesetzt; Arabisch, Persisch und Urdu mit Rechts-nach-links-Layouts
+• Native Ziffern für Arabisch, Persisch, Urdu, Hindi und Thai
+• Die App selbst gibt es jetzt in 10 weiteren Sprachen
+• Optional: Buchstabentaste gedrückt halten tippt die Ziffer
+• Optional: Doppel-Leerzeichen tippt einen Punkt
+• Optional: Eine Kreisgeste auf der Zwischenablage-Taste schneidet den ganzen Text aus
 • Überarbeitete Haptik — genau ein Impuls pro Anschlag und ein deutlich breiterer Intensitätsbereich
 • Label-Sichtbarkeit direkt per Geste auf der Leertaste umschalten
-• Compose-Hinweise (kleine Akzent-Labels) lassen sich jetzt ausblenden
 • Hebräisch: Endbuchstaben per Rück-Wisch
 
 Zuverlässigkeit:
-• Doppelte Vibration pro Tastendruck behoben
+• Die Tastatur gibt im Hintergrund ihren Speicher frei — behebt Fälle, in denen beim erneuten Öffnen stillschweigend die Systemtastatur erschien
+• Die Tastaturgröße bleibt jetzt über Geräte hinweg konsistent
 • Cursor-Bewegung über Emoji korrigiert
 • Schnelle Wischgesten werden zuverlässiger erkannt
 • Automatische Großschreibung greift jetzt in den richtigen Momenten
 • Deaktivierte Sprachen bleiben deaktiviert
-• Vietnamesische Tonzeichen-Regeln wirken nicht mehr in andere Sprachen hinein
