@@ -1,7 +1,7 @@
 Version 1.4.0
 
 New:
-• 12 new keyboard languages: Arabic, Persian, Urdu, Thai, Hindi, Korean, Japanese (Hiragana & Katakana), Greek, Portuguese, and Ukrainian
+• 10 new keyboard languages: Arabic, Persian, Urdu, Thai, Hindi, Korean, Japanese (Hiragana & Katakana), Greek, Portuguese, and Ukrainian
 • Korean syllables and Japanese kana combine as you type; Arabic, Persian, and Urdu come with right-to-left layouts
 • Native digits for Arabic, Persian, Urdu, Hindi, and Thai
 • The app itself is now available in 10 more languages

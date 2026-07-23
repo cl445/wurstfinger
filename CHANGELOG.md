@@ -1,14 +1,14 @@
 # Changelog
 
-## v1.4.0 — 2026-07-22
+## v1.4.0 — 2026-07-23
 
 ### Added
 
-- 12 new keyboard layouts: Arabic, Persian, and Urdu (right-to-left, #244), Thai (#247), Hindi with sequential vowel combining (#248), Greek, Portuguese, and Ukrainian (#243), Japanese Hiragana and Katakana (#249), Korean Hangul with syllable composition (#251)
-- Native digit layers for scripts with their own numerals — Arabic-Indic, Extended Arabic-Indic, Devanagari, and Thai (#241, #268)
+- 11 new keyboard layouts: Arabic, Persian, and Urdu (right-to-left, #244), Thai (#247), Hindi with sequential vowel combining (#248), Greek, Portuguese, and Ukrainian (#243), Japanese Hiragana and Katakana (#249), Korean Hangul with syllable composition (#251)
+- Native digit layers for scripts with their own numerals — Arabic-Indic, Extended Arabic-Indic, Devanagari, and Thai (#244, #247, #248, #268)
 - Optional long-press on a letter key to type its digit (#240)
 - Optional double-space period shortcut (#267)
-- Cut-all circular gesture on the clipboard key — circling it cuts the text around the cursor, off by default and gated behind a new Gestures setting (#260)
+- Cut-all circular gesture on the clipboard key — circling it cuts the text around the cursor, off by default and gated behind a new Gestures setting (#260, active-selection handling in #274)
 - App UI localized into the 10 new keyboard languages (#252, #261)
 - Release-safe keyboard health log for diagnosing extension suspensions (#230, append-only JSONL in #271)
 - Å restored on the Finnish layout (#265)
