@@ -145,13 +145,22 @@ struct AdvancedTextMiddleware: ActionMiddleware {
     /// with the paste swipe on the same key.
     private func handleCutAll(target: TextInputTarget) {
         guard isCutAllEnabled(), target.hasFullAccess else { return }
+        // With an active selection the context properties describe the text
+        // *around* it, so the selection must be stitched back in for the
+        // pasteboard — and consumed by its own deleteBackward below, because
+        // the proxy deletes a selected range as one unit and the counting
+        // loop would otherwise run past the document.
         let before = target.documentContextBeforeInput ?? ""
+        let selected = target.selectedText ?? ""
         let after = target.documentContextAfterInput ?? ""
-        let all = before + after
+        let all = before + selected + after
         guard !all.isEmpty else { return }
 
         UIPasteboard.general.string = all
 
+        if !selected.isEmpty {
+            target.deleteBackward()
+        }
         // Deletion only runs backwards, so park the cursor past the trailing
         // context first. The offset is in UTF-16 code units (see the protocol).
         if !after.isEmpty {
@@ -161,7 +170,7 @@ struct AdvancedTextMiddleware: ActionMiddleware {
         // leading `after` fuses with the last character of `before` into one
         // grapheme cluster, and deleteBackward removes clusters, so summing the
         // halves separately would delete one character too many.
-        for _ in 0 ..< all.count {
+        for _ in 0 ..< (before + after).count {
             target.deleteBackward()
         }
         onClipboardSuccess()
