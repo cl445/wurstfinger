@@ -247,3 +247,63 @@ struct DiscreteCursorMovementTests {
         #expect(target.documentContextBeforeInput == "x")
     }
 }
+
+// MARK: - Continuous slides against a lagging document context
+
+/// Models the real `UITextDocumentProxy`: `adjustTextPosition` reaches the host
+/// application asynchronously, so the context read back inside the same runloop
+/// turn can still describe the caret before the move. `MockTextTarget` updates
+/// in place, which hides per-step context re-reads entirely.
+private final class FrozenContextTextTarget: TextInputTarget {
+    var offsets: [Int] = []
+    var documentContextBeforeInput: String?
+    var documentContextAfterInput: String?
+    var selectedText: String?
+    var hasFullAccess = false
+
+    func insertText(_ text: String) {}
+    func deleteBackward() {}
+    func adjustTextPosition(byCharacterOffset offset: Int) {
+        offsets.append(offset)
+    }
+}
+
+@Suite(.serialized)
+struct ContinuousCursorSnapshotTests {
+    private func makeViewModel() -> (KeyboardViewModel, FrozenContextTextTarget) {
+        let vm = KeyboardViewModel(userDefaults: InMemoryUserDefaults(), shouldPersistSettings: false)
+        let target = FrozenContextTextTarget()
+        vm.bindTextInputTarget(target)
+        vm.loadDefinition(for: "de_DE")
+        return (vm, target)
+    }
+
+    @Test func multiStepSlideMeasuresEveryClusterFromOneSnapshot() throws {
+        let (vm, target) = makeViewModel()
+        target.documentContextAfterInput = "👍x"
+        let key = try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))
+        vm.handleSlide(key, phase: .began)
+        vm.handleSlide(key, phase: .changed(deltaX: KeyboardConstants.SpaceGestures.dragStep * 2))
+        vm.handleSlide(key, phase: .ended)
+        // 👍 is a surrogate pair, x is one unit. Re-reading a context the host
+        // has not updated yet measures 👍 twice and jumps past x.
+        #expect(target.offsets == [2, 1])
+    }
+
+    @Test func nonFiniteDragDeltaMovesNothing() throws {
+        let (vm, target) = makeViewModel()
+        let key = try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))
+        vm.handleSlide(key, phase: .began)
+        vm.handleSlide(key, phase: .changed(deltaX: .nan))
+        vm.handleSlide(key, phase: .ended)
+        #expect(target.offsets.isEmpty)
+    }
+
+    @Test func clusterWidthsWalkAwayFromTheCaret() {
+        #expect(KeyboardViewModel.clusterWidths(in: "👍🏽x", count: 2, fromEnd: false) == [4, 1])
+        #expect(KeyboardViewModel.clusterWidths(in: "x👍", count: 2, fromEnd: true) == [2, 1])
+        // Beyond the known context: one code unit per step.
+        #expect(KeyboardViewModel.clusterWidths(in: "", count: 3, fromEnd: false) == [1, 1, 1])
+        #expect(KeyboardViewModel.clusterWidths(in: "abc", count: 0, fromEnd: false) == [])
+    }
+}

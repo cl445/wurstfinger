@@ -57,4 +57,54 @@ struct LongPressSchedulerTests {
             #expect(!scheduler.isScheduled)
         }
     }
+
+    @Test func cancelledWorkItemNeverFiresItsGuard() async {
+        await confirmation(expectedCount: 0) { fired in
+            let scheduler = LongPressScheduler()
+            scheduler.schedule(after: 0.02) {
+                fired()
+                return true
+            }
+            scheduler.cancel()
+            try? await Task.sleep(for: .milliseconds(200))
+            #expect(!scheduler.consumedTouch)
+            #expect(!scheduler.isScheduled)
+        }
+    }
+
+    /// Both halves matter: a teardown that only cancels the timer leaves the
+    /// consumed flag set, and the next touch on the key produces no tap.
+    @Test func abandonDropsTheArmedItemAndTheConsumedFlag() async {
+        await confirmation(expectedCount: 0) { fired in
+            let scheduler = LongPressScheduler()
+            scheduler.runFire { true }
+            #expect(scheduler.consumedTouch)
+            scheduler.schedule(after: 0.02) {
+                fired()
+                return true
+            }
+            scheduler.abandon()
+            try? await Task.sleep(for: .milliseconds(200))
+            #expect(!scheduler.isScheduled)
+            #expect(!scheduler.consumedTouch)
+        }
+    }
+
+    @Test func rescheduleCancelsThePreviouslyArmedItem() async {
+        await confirmation(expectedCount: 0) { superseded in
+            await confirmation { fired in
+                let scheduler = LongPressScheduler()
+                scheduler.schedule(after: 0.02) {
+                    superseded()
+                    return true
+                }
+                scheduler.schedule(after: 0.05) {
+                    fired()
+                    return true
+                }
+                try? await Task.sleep(for: .milliseconds(300))
+                #expect(scheduler.consumedTouch)
+            }
+        }
+    }
 }

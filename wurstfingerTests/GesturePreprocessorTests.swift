@@ -491,12 +491,14 @@ struct ExpertModeGatingTests {
     private func storeWithCustomValues(expertModeEnabled: Bool) -> InMemoryUserDefaults {
         let store = InMemoryUserDefaults()
         store.set(expertModeEnabled, forKey: SettingsKey.expertModeEnabled.rawValue)
+        // Inside the Expert ranges: out-of-range values are clamped (see
+        // ExpertValueClampingTests).
         store.set(9.0, forKey: GesturePreprocessorConfig.jitterThresholdKey)
-        store.set(120.0, forKey: GesturePreprocessorConfig.maxJumpDistanceKey)
+        store.set(90.0, forKey: GesturePreprocessorConfig.maxJumpDistanceKey)
         store.set(7, forKey: GesturePreprocessorConfig.smoothingWindowKey)
         store.set(42.0, forKey: GestureClassificationThresholds.minSwipeLengthKey)
-        store.set(0.9, forKey: GestureClassificationThresholds.maxReturnRatioKey)
-        store.set(0.75, forKey: GestureClassificationThresholds.minCircularityKey)
+        store.set(0.7, forKey: GestureClassificationThresholds.maxReturnRatioKey)
+        store.set(0.6, forKey: GestureClassificationThresholds.minCircularityKey)
         return store
     }
 
@@ -516,7 +518,7 @@ struct ExpertModeGatingTests {
         let config = GesturePreprocessorConfig.fromUserDefaults(store: store)
 
         #expect(config.jitterThreshold == 9.0)
-        #expect(config.maxJumpDistance == 120.0)
+        #expect(config.maxJumpDistance == 90.0)
         #expect(config.smoothingWindow == 7)
     }
 
@@ -545,8 +547,8 @@ struct ExpertModeGatingTests {
         let thresholds = GestureClassificationThresholds.fromUserDefaults(store: store)
 
         #expect(thresholds.minSwipeLength == 42.0)
-        #expect(thresholds.maxReturnRatio == 0.9)
-        #expect(thresholds.minCircularity == 0.75)
+        #expect(thresholds.maxReturnRatio == 0.7)
+        #expect(thresholds.minCircularity == 0.6)
     }
 
     @Test func customValuesSurviveExpertModeRoundTrip() {
@@ -569,6 +571,6 @@ struct ExpertModeGatingTests {
 
         store.set(true, forKey: SettingsKey.expertModeEnabled.rawValue)
         #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).jitterThreshold == 9.0)
-        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).maxJumpDistance == 120.0)
+        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).maxJumpDistance == 90.0)
     }
 }

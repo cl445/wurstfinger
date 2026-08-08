@@ -510,17 +510,48 @@ extension KeyboardViewModel {
 
     /// Continuous (joystick) mode: emit one character move per `dragStep` of
     /// accumulated travel.
+    ///
+    /// The surrounding context is read once per drag update and then walked
+    /// locally. `adjustTextPosition` reaches the host application
+    /// asynchronously, so when a single update owes more than one step, the
+    /// context read back for the second step can still describe the caret
+    /// *before* the first move — measuring the same cluster twice and skipping
+    /// a character or landing inside an emoji. Device-only: the mock target
+    /// updates its context in place.
     private func stepContinuousCursor() {
-        while spaceDragResidual <= -KeyboardConstants.SpaceGestures.dragStep {
-            dispatchAction(.moveCursor(offset: singleGraphemeOffset(direction: -1)))
+        let step = KeyboardConstants.SpaceGestures.dragStep
+        // A legitimate 120 Hz update owes one or two steps; the cap keeps a
+        // corrupt residual (non-finite or absurd) from trapping the `Int`
+        // conversion or emitting an unbounded burst. Whatever is left over
+        // stays in the residual and is emitted by the following update.
+        let raw = (spaceDragResidual / step).rounded(.towardZero)
+        guard raw.isFinite, raw != 0 else { return }
+        let steps = Int(min(max(raw, -Self.maxCursorStepsPerUpdate), Self.maxCursorStepsPerUpdate))
+        let direction = steps < 0 ? -1 : 1
+        let context = direction > 0
+            ? textInputTarget?.documentContextAfterInput
+            : textInputTarget?.documentContextBeforeInput
+        for width in Self.clusterWidths(in: context ?? "", count: abs(steps), fromEnd: direction < 0) {
+            dispatchAction(.moveCursor(offset: direction * width))
             feedbackDrag()
-            spaceDragResidual += KeyboardConstants.SpaceGestures.dragStep
         }
-        while spaceDragResidual >= KeyboardConstants.SpaceGestures.dragStep {
-            dispatchAction(.moveCursor(offset: singleGraphemeOffset(direction: 1)))
-            feedbackDrag()
-            spaceDragResidual -= KeyboardConstants.SpaceGestures.dragStep
-        }
+        spaceDragResidual -= CGFloat(steps) * step
+    }
+
+    /// Upper bound on cursor steps emitted from one drag update.
+    private static let maxCursorStepsPerUpdate: CGFloat = 32
+
+    /// UTF-16 widths of the first `count` grapheme clusters of `context`,
+    /// ordered away from the caret (`fromEnd` walks the text behind the caret
+    /// backwards). Steps beyond the known context fall back to one code unit
+    /// each — the same fallback `singleGraphemeOffset` uses when the host
+    /// exposes no context at all.
+    static func clusterWidths(in context: String, count: Int, fromEnd: Bool) -> [Int] {
+        guard count > 0 else { return [] }
+        let clusters = fromEnd
+            ? Array(context.suffix(count).reversed())
+            : Array(context.prefix(count))
+        return (0 ..< count).map { $0 < clusters.count ? clusters[$0].utf16.count : 1 }
     }
 
     /// UTF-16 offset that moves the cursor across exactly one grapheme cluster
@@ -631,7 +662,8 @@ extension KeyboardViewModel {
             handleGesture(.tap, keyId: key.id, isReturn: false)
         case .swipeUp:
             // The delete key has no vertical gestures; label toggles are a
-            // space-bar feature. Vertical flicks stay ignored.
+            // space-bar feature. `SlideGestureConfiguration.delete` never
+            // classifies one, so this case only keeps the switch exhaustive.
             break
         }
     }

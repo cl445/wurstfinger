@@ -103,10 +103,6 @@ enum KeyboardConstants {
     // MARK: - Gesture Recognition
 
     enum Gesture {
-        /// Minimum swipe distance to register as a swipe (not a tap).
-        /// ~55% of key height (54pt × 0.55 ≈ 30pt) to avoid accidental swipes.
-        static let minSwipeLength: CGFloat = 30
-
         /// Tolerance for circular gesture end-point matching.
         /// How close the finger must return to the start point to complete a circle.
         static let circleCompletionTolerance: CGFloat = 16
@@ -230,9 +226,12 @@ enum KeyboardConstants {
         static let returnSwipeThreshold: CGFloat = 0.3
 
         /// Minimum upward travel to classify a vertical space-bar swipe
-        /// (label-visibility toggle). Mirrors `Gesture.minSwipeLength` so the
-        /// space bar demands the same commitment as a key swipe.
-        static let swipeUpActivationThreshold: CGFloat = Gesture.minSwipeLength
+        /// (label-visibility toggle). Deliberately above the classifier's
+        /// swipe-vs-tap boundary (`GestureClassificationThresholds`
+        /// `.defaultMinSwipeLength`, 20pt): the space bar lies under the
+        /// thumbs and collects incidental upward drift, so the toggle asks for
+        /// a longer, more deliberate flick.
+        static let swipeUpActivationThreshold: CGFloat = 30
     }
 
     // MARK: - Delete Key Gestures

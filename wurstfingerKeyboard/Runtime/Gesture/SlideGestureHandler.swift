@@ -30,6 +30,47 @@ enum SlidePhase: Equatable {
     case cancelled
 }
 
+/// Thresholds a slide key classifies against.
+///
+/// Bundled per key rather than passed as loose arguments: the delete key has
+/// no up-swipe binding (`KeyboardViewModel.handleDeleteSlide` ignores
+/// `.swipeUp`), so handing it the space bar's up-swipe threshold makes a
+/// diagonal delete drag latch no slide and end as an up-swipe nobody
+/// consumes — deleting nothing at all.
+struct SlideGestureConfiguration: Equatable {
+    /// Horizontal travel that latches the continuous slide.
+    let activationThreshold: CGFloat
+
+    /// Upward travel that classifies a vertical swipe, or nil for keys
+    /// without an up-swipe binding — those never let the vertical axis block
+    /// the latch and never report `.swipeUp`.
+    let swipeUpThreshold: CGFloat?
+
+    static let moveCursor = SlideGestureConfiguration(
+        activationThreshold: KeyboardConstants.SpaceGestures.dragActivationThreshold,
+        swipeUpThreshold: KeyboardConstants.SpaceGestures.swipeUpActivationThreshold
+    )
+
+    static let delete = SlideGestureConfiguration(
+        activationThreshold: KeyboardConstants.DeleteGestures.slideActivationThreshold,
+        swipeUpThreshold: nil
+    )
+
+    /// A key without slide behavior: nothing can latch.
+    static let inactive = SlideGestureConfiguration(
+        activationThreshold: .infinity,
+        swipeUpThreshold: nil
+    )
+
+    static func `for`(_ slideType: SlideType) -> SlideGestureConfiguration {
+        switch slideType {
+        case .moveCursor: .moveCursor
+        case .delete: .delete
+        case .none: .inactive
+        }
+    }
+}
+
 /// State machine backing `SlideGestureHandler`.
 ///
 /// Extracted as a pure value type so tap/slide classification and
@@ -55,8 +96,7 @@ struct SlideGestureState {
     /// Processes one `onChanged` sample.
     mutating func handleChanged(
         translation: CGSize,
-        activationThreshold: CGFloat,
-        swipeUpThreshold: CGFloat = KeyboardConstants.SpaceGestures.swipeUpActivationThreshold
+        configuration: SlideGestureConfiguration
     ) -> Update {
         var update = Update()
         if !dragStarted {
@@ -91,19 +131,24 @@ struct SlideGestureState {
         // terms (≥ the 30 pt up-swipe threshold) and strongly horizontal
         // (> 2× the vertical). Return-leg drift (~10 pt sideways) stays well
         // below the 30 pt floor, so this does not re-introduce the return-up
-        // mis-latch the peak guard was added to fix.
-        let dominantHorizontalSlide = abs(currentX) >= swipeUpThreshold
-            && abs(currentX) > abs(translation.height) * 2
+        // mis-latch the peak guard was added to fix. A key without an up-swipe
+        // binding has no threshold at all, so neither guard applies to it.
+        let upSwipeCommitted = configuration.swipeUpThreshold.map { -upwardPeakY >= $0 } ?? false
+        let dominantHorizontalSlide = configuration.swipeUpThreshold.map {
+            abs(currentX) >= $0 && abs(currentX) > abs(translation.height) * 2
+        } ?? false
         if !isSliding,
-           abs(currentX) >= activationThreshold,
+           abs(currentX) >= configuration.activationThreshold,
            abs(currentX) > abs(translation.height),
-           -upwardPeakY < swipeUpThreshold || dominantHorizontalSlide {
+           !upSwipeCommitted || dominantHorizontalSlide {
             isSliding = true
             // Anchor at the threshold crossing (not the full translation) so
             // the travel beyond the threshold is reported on the same tick
             // instead of being dropped — otherwise the first `threshold`
             // points are a dead zone.
-            lastTranslationX = currentX < 0 ? -activationThreshold : activationThreshold
+            lastTranslationX = currentX < 0
+                ? -configuration.activationThreshold
+                : configuration.activationThreshold
             update.phases.append(.began)
         }
 
@@ -122,8 +167,7 @@ struct SlideGestureState {
     /// gesture qualifies as neither a slide, an up-swipe, nor a tap.
     mutating func handleEnded(
         translation: CGSize,
-        activationThreshold: CGFloat,
-        swipeUpThreshold: CGFloat = KeyboardConstants.SpaceGestures.swipeUpActivationThreshold
+        configuration: SlideGestureConfiguration
     ) -> SlidePhase? {
         defer { reset() }
         if isSliding { return .ended }
@@ -131,7 +175,7 @@ struct SlideGestureState {
         // activated, so cursor drags with vertical drift are unaffected. It
         // must precede the tap check: a return-up swipe ends near its origin
         // and would otherwise be classified as a tap.
-        if -upwardPeakY >= swipeUpThreshold {
+        if let swipeUpThreshold = configuration.swipeUpThreshold, -upwardPeakY >= swipeUpThreshold {
             // The finger "returned" when it came back at least
             // (1 - returnSwipeThreshold) of the way from the peak toward the
             // origin. Compared signed (peak is negative, y grows downward) so
@@ -147,7 +191,7 @@ struct SlideGestureState {
         // horizontal travel alone would classify a vertical flick (e.g.
         // 80 pt up on the space bar) as a tap and commit its center action.
         let displacement = hypot(translation.width, translation.height)
-        return displacement < activationThreshold ? .tap : nil
+        return displacement < configuration.activationThreshold ? .tap : nil
     }
 
     /// Processes a system cancellation of the touch sequence (`onEnded` is
@@ -226,7 +270,7 @@ struct SlideGestureHandler: ViewModifier {
                         }
                         let update = state.handleChanged(
                             translation: value.translation,
-                            activationThreshold: activationThreshold
+                            configuration: configuration
                         )
                         trail?.record(value.location, isTouchDown: update.isTouchDown, from: trailToken)
                         if update.isTouchDown {
@@ -255,7 +299,7 @@ struct SlideGestureHandler: ViewModifier {
                         }
                         if let phase = state.handleEnded(
                             translation: value.translation,
-                            activationThreshold: activationThreshold
+                            configuration: configuration
                         ) {
                             onSlide(phase)
                         }
@@ -268,20 +312,27 @@ struct SlideGestureHandler: ViewModifier {
                 // if the sequence stops while a drag is still marked as in
                 // flight, the system cancelled the touches.
                 guard !inFlight else { return }
-                longPress.cancel()
-                longPress.clearConsumed()
-                if let phase = state.handleCancelled() {
-                    onSlide(phase)
-                }
-                trail?.cancel(from: trailToken)
+                if let phase = abandonSequence() { onSlide(phase) }
                 isActive = false
             }
             // A key removed mid-gesture reaches neither `onEnded` nor the
-            // cancel path, so it hands the trail back here instead of leaving
-            // the overlay redrawing at the display rate.
+            // cancel path, so it hands its touch back here — trail included,
+            // and before the armed long press can fire into the next mode. No
+            // phase is reported: the consumer's drag flags are re-initialized
+            // by the next `.began`, exactly like the consumed-long-press branch.
             .onDisappear {
-                trail?.cancel(from: trailToken)
+                _ = abandonSequence()
             }
+    }
+
+    /// Drops everything the in-flight touch owns: the armed long press, the
+    /// drag state, and the trail. Returns the phase the consumer must hear
+    /// about (`.cancelled` while a drag was in flight), or nil.
+    private func abandonSequence() -> SlidePhase? {
+        longPress.abandon()
+        let phase = state.handleCancelled()
+        trail?.cancel(from: trailToken)
+        return phase
     }
 
     // MARK: - Long Press
@@ -302,14 +353,7 @@ struct SlideGestureHandler: ViewModifier {
         }
     }
 
-    private var activationThreshold: CGFloat {
-        switch slideType {
-        case .moveCursor:
-            KeyboardConstants.SpaceGestures.dragActivationThreshold
-        case .delete:
-            KeyboardConstants.DeleteGestures.slideActivationThreshold
-        case .none:
-            .infinity
-        }
+    private var configuration: SlideGestureConfiguration {
+        .for(slideType)
     }
 }
