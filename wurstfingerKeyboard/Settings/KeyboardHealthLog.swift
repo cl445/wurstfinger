@@ -28,9 +28,10 @@ import os
 /// `record` captures the footprint synchronously at the call site (so the
 /// measurement is attributed to the right lifecycle point) but persists on a
 /// serial utility queue — file I/O must not sit in the keyboard's launch
-/// path. A host-app clear racing an extension write can lose one side —
-/// acceptable for diagnostics, and the file stays bounded by `maxEntries`
-/// either way.
+/// path. The suspension path uses `recordAndFlush` instead: there the write
+/// must land before the process is frozen, and latency does not matter. A
+/// host-app clear racing an extension write can lose one side — acceptable
+/// for diagnostics, and the file stays bounded by `maxEntries` either way.
 struct KeyboardHealthLog {
     struct Entry: Codable, Equatable, Identifiable {
         let id: UUID
@@ -46,8 +47,10 @@ struct KeyboardHealthLog {
         let availableMB: Double
     }
 
-    /// Bounds the log file (~50 KB): a cold start records three entries, a
-    /// warm re-appearance one, so this covers days of typical usage.
+    /// Bounds the log file (~50 KB). A cold start records four entries, and
+    /// every open→close cycle three — `viewWillAppear`, `viewDidAppear`, and
+    /// the suspension entry that closes it — so this holds roughly a hundred
+    /// cycles: still days of typical usage.
     static let defaultMaxEntries = 300
 
     static let fileName = "keyboard-health-log.json"
@@ -100,6 +103,25 @@ struct KeyboardHealthLog {
 
     /// Records the current footprint under the given lifecycle label.
     func record(_ label: String) {
+        let entry = makeEntry(label)
+        Self.ioQueue.async { appendEntry(entry) }
+    }
+
+    /// Records like `record(_:)`, but returns only once the entry is on disk.
+    /// For the suspension path: a suspended process may never get CPU time
+    /// again — a resume-jetsam kills it on wake before queued writes run —
+    /// and the post-shedding footprint entry is exactly what those incidents
+    /// need. The serial queue also drains any earlier async records first.
+    /// Not for the launch path, where file I/O must stay off the main thread.
+    func recordAndFlush(_ label: String) {
+        let entry = makeEntry(label)
+        Self.ioQueue.sync { appendEntry(entry) }
+    }
+
+    /// Captures the footprint synchronously at the call site, so the
+    /// measurement is attributed to the right lifecycle point no matter when
+    /// the entry is persisted.
+    private func makeEntry(_ label: String) -> Entry {
         let entry = Entry(
             id: UUID(),
             date: Date(),
@@ -113,7 +135,7 @@ struct KeyboardHealthLog {
             let message = "[\(label)] used: \(used) MB, available: \(available) MB"
             Self.logger.log("\(message, privacy: .public)")
         #endif
-        Self.ioQueue.async { appendEntry(entry) }
+        return entry
     }
 
     /// All recorded entries, oldest first, capped at `maxEntries`. Empty when
