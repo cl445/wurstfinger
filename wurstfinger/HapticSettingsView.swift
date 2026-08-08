@@ -171,8 +171,9 @@ struct HapticSettingsView: View {
 }
 
 extension HapticIntensityLevel {
-    /// User-facing level name. Lives in the host app target because the
-    /// keyboard extension has no string catalog.
+    /// User-facing level name. Lives in the host app target: the extension's
+    /// own catalog carries only the strings the keyboard itself displays, so a
+    /// settings-only name must not be looked up from extension code.
     var displayName: String {
         switch self {
         case .off: String(localized: "Off")

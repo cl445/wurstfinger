@@ -1102,7 +1102,8 @@
             "value": "모두 잘라내기"
           }
         }
-      }
+      },
+      "comment": "ACCESSIBILITY label for the cut-all gesture (VoiceOver)"
     },
     "Paste": {
       "extractionState": "manual",

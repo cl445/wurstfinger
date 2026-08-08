@@ -91,6 +91,26 @@ struct StyleSettingsView: View {
     }
 }
 
+extension KeyboardStyle {
+    /// User-facing style name. Lives in the host app target: the extension's
+    /// own catalog carries only the strings the keyboard itself displays, so a
+    /// settings-only name must not be looked up from extension code.
+    var displayName: String {
+        switch self {
+        case .classic: String(localized: "Classic")
+        case .liquidGlass: String(localized: "Liquid Glass")
+        }
+    }
+
+    /// One-line explanation shown under the style name.
+    var description: String {
+        switch self {
+        case .classic: String(localized: "Traditional opaque keys")
+        case .liquidGlass: String(localized: "Transparent glass effect (iOS 26+)")
+        }
+    }
+}
+
 #Preview {
     NavigationStack {
         StyleSettingsView()

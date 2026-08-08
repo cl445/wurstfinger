@@ -5,6 +5,10 @@
 //  Expert settings for tuning gesture recognition parameters.
 //  Organized according to the gesture classification decision tree.
 //
+//  English only by decision: the tuning vocabulary (jitter threshold, angular
+//  span, oriented compactness) cannot be reviewed in 22 translations, and this is
+//  a diagnostic tool for power users. See docs/localization.md.
+//
 
 import SwiftUI
 
@@ -62,16 +66,7 @@ struct ExpertSettingsView: View {
     /// unclamped (no container/screen context) so the indicator reflects the
     /// device- and orientation-independent wish, matching the size slider.
     private var effectiveKeyHeight: Double {
-        // The MessagEase grid is 4 columns wide (matches the reference
-        // metrics); the height indicator is column-count independent in
-        // practice, but resolve() needs a concrete value.
-        Double(KeyboardLayoutMetrics.resolve(
-            wishWidth: keyboardWidth,
-            aspectRatio: keyAspectRatio,
-            columns: 4,
-            availableWidth: 0,
-            screenHeight: 0
-        ).cellHeight)
+        Double(SettingsLayoutMetrics.forStoredWish(width: keyboardWidth, aspectRatio: keyAspectRatio).cellHeight)
     }
 
     var body: some View {

@@ -8,10 +8,10 @@ FUNKTIONEN:
 
 • Großes 3x3-Tastenfeld - Optimiert für Daumen, nicht für Präzisionszeiger
 • Wischgesten - 8 zusätzliche Zeichen pro Taste durch Wischen
-• 14 Sprachen - Deutsch, Englisch, Spanisch, Französisch, Portugiesisch, Italienisch, Niederländisch, Schwedisch, Norwegisch, Dänisch, Finnisch, Polnisch, Tschechisch und Vietnamesisch
+• 26 Tastaturlayouts - Arabisch, Deutsch, Englisch, Estnisch-Finnisch, Finnisch, Französisch, Griechisch, Hebräisch, Hindi, Italienisch, Japanisch (Hiragana), Japanisch (Katakana), Koreanisch, Kroatisch, Persisch, Polnisch, Portugiesisch, Russisch, Schwedisch, Spanisch, Spanisch-Katalanisch, Tagalog, Thai, Ukrainisch, Urdu und Vietnamesisch (mit Telex-Eingabe)
 • Compose-Regeln - Akzente durch Kombinationen erstellen (z.B. ' + a = á)
 • Kreisbewegungen - Kreis zeichnen für Großbuchstaben
-• Cursor-Steuerung - Auf Leertaste ziehen zum Bewegen, lange drücken für Textauswahl
+• Cursor-Steuerung - Auf der Leertaste ziehen bewegt den Cursor, auf der Löschtaste ziehen löscht fortlaufend
 • Haptisches Feedback - Einstellbare Vibrationsintensität
 • Voll anpassbar - Tastaturgröße nach Wunsch skalieren
 

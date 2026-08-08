@@ -4,6 +4,8 @@
 //
 //  A visual playground for testing gesture recognition parameters.
 //
+//  English only, like the rest of the Expert section — see docs/localization.md.
+//
 
 import SwiftUI
 
@@ -18,14 +20,23 @@ struct GesturePlaygroundView: View {
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
 
-    // Key dimensions for the input area (simulating a standard key),
-    // derived from the shared layout calculation.
+    @AppStorage(SettingsKey.keyboardWidthPoints.rawValue, store: SharedDefaults.store)
+    private var keyboardWidth = DeviceLayoutUtils.defaultKeyboardWidth
+
+    /// The cell the keyboard actually renders for the stored wish — the same
+    /// resolution the Expert screen's key-height indicator reports. Gesture
+    /// thresholds are absolute point values, so a practice key of a different
+    /// size classifies a gesture differently than a real key would.
+    private var keyCell: KeyboardLayoutMetrics {
+        SettingsLayoutMetrics.forStoredWish(width: keyboardWidth, aspectRatio: keyAspectRatio)
+    }
+
     private var keyHeight: CGFloat {
-        KeyboardConstants.Calculations.keyHeight(aspectRatio: keyAspectRatio)
+        keyCell.cellHeight
     }
 
     private var keyWidth: CGFloat {
-        keyHeight * CGFloat(keyAspectRatio)
+        keyCell.cellWidth
     }
 
     @State private var isDragging = false
@@ -356,7 +367,7 @@ struct GesturePlaygroundView: View {
 
     private func processGesture() {
         // 1. Load Config (including aspect ratio, just like the real keyboard)
-        let config = GesturePreprocessorConfig.fromUserDefaults().with(aspectRatio: keyAspectRatio)
+        let config = GesturePreprocessorConfig.fromUserDefaults().with(aspectRatio: keyCell.cellAspectRatio)
         let preprocessor = GesturePreprocessor(config: config)
 
         // 2. Preprocess

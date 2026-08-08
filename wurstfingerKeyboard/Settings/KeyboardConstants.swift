@@ -21,8 +21,8 @@ enum KeyboardConstants {
         static let cornerRadius: CGFloat = 8
 
         /// Reference key aspect ratio (width/height) at which `height` is defined.
-        /// Used only as the baseline in `Calculations.keyHeight`; it is NOT the
-        /// user-facing default setting (that is `DeviceLayoutUtils.defaultKeyAspectRatio`).
+        /// Used only as the baseline of `Calculations.screenshotCellSize`; it is NOT
+        /// the user-facing default setting (that is `DeviceLayoutUtils.defaultKeyAspectRatio`).
         static let referenceAspectRatio: CGFloat = 1.5
 
         /// Total number of rows in the keyboard layout.
@@ -265,10 +265,10 @@ enum KeyboardConstants {
     // MARK: - Keyboard Calculations
 
     enum Calculations {
-        /// Calculates the adjusted key height based on aspect ratio
-        static func keyHeight(aspectRatio: CGFloat) -> CGFloat {
-            KeyDimensions.height * (KeyDimensions.referenceAspectRatio / aspectRatio)
-        }
+        /// Cell size the App Store screenshots render at: the reference key
+        /// height at the reference aspect ratio. A marketing constant, not a
+        /// layout value — the rendered cell comes from `KeyboardLayoutMetrics`.
+        static let screenshotCellSize: CGFloat = KeyDimensions.height * KeyDimensions.referenceAspectRatio
 
         /// Keyboard width at which the grid's cells come out exactly
         /// `cellSize` wide. Under the point-anchored metrics, square cells

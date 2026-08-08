@@ -180,7 +180,7 @@ struct AppStoreScreenshotView: View {
         viewModel.keyAspectRatio = 1.0
         viewModel.keyboardHorizontalPosition = 0.5
         viewModel.keyboardWidth = KeyboardConstants.Calculations.squareKeyboardWidth(
-            cellSize: KeyboardConstants.Calculations.keyHeight(aspectRatio: 1.0),
+            cellSize: KeyboardConstants.Calculations.screenshotCellSize,
             columns: viewModel.currentArrangement?.columns ?? 4
         )
 
