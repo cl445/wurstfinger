@@ -192,20 +192,24 @@ final class KeyboardViewController: UIInputViewController {
 
     /// Sheds weight before the process gets suspended: iOS enforces the
     /// per-process memory limit again when a suspended keyboard extension is
-    /// resumed by the next host. A device log capture (2026-07-07) showed
-    /// exactly this — resume by Spotlight, immediate `jetsam
-    /// per-process-limit` kill, silent system-keyboard fallback. Suspending
-    /// small is what makes the next resume survive; a memory warning never
-    /// fires on suspension, so this cannot wait for didReceiveMemoryWarning.
+    /// resumed by the next host, and a keyboard that suspended large is killed
+    /// on resume (`jetsam per-process-limit`, with a silent fallback to the
+    /// system keyboard). Suspending small is what makes the next resume
+    /// survive; a memory warning never fires on suspension, so this cannot
+    /// wait for `didReceiveMemoryWarning`.
     ///
-    /// Evicting the definition cache alone freed only a few MB: a device-log
-    /// audit (2026-07-22) found the suspended process sitting at ~140 MB with
-    /// the *SwiftUI hosting graph* — not any app data structure — as the bulk
-    /// of the footprint. So the hosting controller is torn down here too and
-    /// rebuilt in `viewWillAppear`. The health-log entry records the footprint
-    /// *after* shedding, so it measures what actually survives to suspension.
+    /// The definition caches account for only a few MB of a suspended
+    /// keyboard's footprint — the bulk of it is the *SwiftUI hosting graph*,
+    /// not any app data structure — so the hosting controller is torn down
+    /// here too and rebuilt in `viewWillAppear`. The health-log entry records
+    /// the footprint *after* shedding, so it measures what actually survives
+    /// to suspension.
     private func shedMemoryBeforeSuspension(_ event: String) {
         KeyboardRegistry.evictAll(except: selectedLanguageId)
+        // The memoized grid layouts hold arrangement storage shared with the
+        // definitions just evicted, so dropping them is part of the same
+        // shedding step. The next appearance re-solves in microseconds.
+        GridLayoutSolver.evictAll()
         installSuspensionPlaceholder()
         teardownHosting()
         // Flushed, not queued: the suspended process may never run again — a
@@ -305,6 +309,10 @@ final class KeyboardViewController: UIInputViewController {
         // active definition stays resident (the view model holds a strong
         // reference) and remains cached for fast reuse.
         KeyboardRegistry.evictAll(except: selectedLanguageId)
+        // Same for the memoized grid layouts: they pin the arrangement storage
+        // of the definitions evicted above and cost microseconds to rebuild,
+        // including the active one on the next render.
+        GridLayoutSolver.evictAll()
     }
 
     private func updateKeyboardHeight() {

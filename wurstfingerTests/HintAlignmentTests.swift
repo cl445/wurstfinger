@@ -2,16 +2,16 @@
 //  HintAlignmentTests.swift
 //  WurstfingerTests
 //
-//  Regression guards for the RTL fix (finding #4). The keyboard's render
-//  tree is pinned to physical `.leftToRight`, so the directional hint tables
-//  map each swipe direction to its PHYSICAL edge. These tests lock that
-//  mapping so a mistaken "RTL fix" that mirrors the tables (swapping
-//  leading/trailing) is caught in CI — mirroring would place a hint glyph on
-//  the opposite edge from the swipe that produces it.
+//  Guards for the directional hint tables. The keyboard's render tree is
+//  pinned to physical `.leftToRight`, so the tables map each swipe direction
+//  to its PHYSICAL edge. These tests lock that mapping so a mistaken "RTL fix"
+//  that mirrors the tables (swapping leading/trailing) is caught in CI —
+//  mirroring would place a hint glyph on the opposite edge from the swipe that
+//  produces it.
 //
 //  Note: the actual RTL flip is a rendering effect of SwiftUI's layout engine
-//  under an RTL locale and is verified manually/UI (hints are not
-//  accessibility-queryable). See the PR description.
+//  under an RTL locale and is verified manually/UI, since hints are not
+//  accessibility-queryable.
 //
 
 import SwiftUI
@@ -29,6 +29,22 @@ struct HintAlignmentTests {
         #expect(KeyView.hintAlignments[.swipeUpRight] == .topTrailing)
         #expect(KeyView.hintAlignments[.swipeDownLeft] == .bottomLeading)
         #expect(KeyView.hintAlignments[.swipeDownRight] == .bottomTrailing)
+    }
+
+    /// `hintOverlay` draws one hint per entry in `hintGestureOrder`, so a
+    /// direction missing from that list silently renders no hint at all, and a
+    /// duplicated one draws its hint twice. The list must therefore cover
+    /// `hintAlignments` exactly, without duplicates.
+    @Test func hintGestureOrderCoversEveryAlignedDirectionExactlyOnce() {
+        let order = KeyView.hintGestureOrder
+        #expect(Set(order) == Set(KeyView.hintAlignments.keys))
+        #expect(order.count == KeyView.hintAlignments.count)
+        // Rendering order is fixed, not dictionary-seeded — pinned explicitly
+        // so any per-process ordering creeping in fails here.
+        #expect(order == [
+            .swipeUp, .swipeDown, .swipeLeft, .swipeRight,
+            .swipeUpLeft, .swipeUpRight, .swipeDownLeft, .swipeDownRight,
+        ])
     }
 
     @Test func hintEdgePaddingAppliesInsetOnlyOnTheAlignedPhysicalEdge() {

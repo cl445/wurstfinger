@@ -8,22 +8,25 @@
 
 import SwiftUI
 
-/// Snapshot of the user settings a key needs to render, read once at the
-/// root view and passed down by value.
+/// Snapshot of the user settings a key needs to render, read once in
+/// `DataDrivenKeyboardRootView` and passed down by value.
 ///
-/// Previously every `KeyView` carried five `@AppStorage` wrappers, so each
-/// keyboard build registered ~5 defaults observations per key (~100 per
-/// layer) — all rebuilt on every hosting rebuild and all notified on every
-/// defaults write. One read site at the root keeps the semantics (the root
-/// re-renders on changes and passes fresh values) at a fraction of the
-/// graph size. Defaults match the `@AppStorage` defaults they replace, so
-/// previews and tests that construct keys directly render unchanged.
+/// The whole keyboard holds one defaults observation per setting, and the
+/// ~100 key views a layer builds hold none: the root re-renders when a
+/// setting changes and hands every key the fresh values.
 struct KeyRenderSettings: Equatable {
     var keyboardStyle: KeyboardStyle = .classic
     var hideLetters = false
     var hideStandardSymbols = false
     var hideExtraSymbols = false
     var longPressNumbersEnabled = false
+
+    /// The values a key renders with when nothing is stored yet. Single source
+    /// for those defaults: `DataDrivenKeyboardRootView` initializes its
+    /// `@AppStorage` wrappers from it, so the snapshot a test or preview builds
+    /// with `KeyRenderSettings()` cannot drift from what an untouched
+    /// installation actually renders.
+    static let stock = KeyRenderSettings()
 }
 
 /// Generic key view that renders any `KeyConfig`.
@@ -57,9 +60,12 @@ struct KeyView: View {
     @State private var isActive = false
 
     /// User settings affecting key rendering, injected by `KeyboardGridView`
-    /// (ultimately read once in `DataDrivenKeyboardRootView`) instead of five
-    /// per-key `@AppStorage` observations — see `KeyRenderSettings`.
-    var settings: KeyRenderSettings = .init()
+    /// (ultimately read once in `DataDrivenKeyboardRootView`) — see
+    /// `KeyRenderSettings`. No default, for the same reason as `metrics`: a
+    /// defaulted snapshot would let a missing injection compile and silently
+    /// render stock settings (labels shown, long-press numbers off) instead of
+    /// failing the build.
+    let settings: KeyRenderSettings
 
     /// Resolved layout metrics injected by `KeyboardGridView` (same reasoning
     /// as there: an `@AppStorage` read desynchronizes from the width path
@@ -294,6 +300,14 @@ struct KeyView: View {
         .swipeDownRight: .bottomTrailing,
     ]
 
+    /// The gestures `hintOverlay` draws, in a fixed order. A static list keeps
+    /// the hint layer order stable across launches (dictionary iteration order
+    /// is seeded per process) and allocates nothing per render; gestures a key
+    /// does not bind drop out via the `key.bindings[gesture]` lookup. Must
+    /// cover exactly `hintAlignments` — a missing entry silently hides that
+    /// hint. `internal` (not `private`) so the guard test can lock it.
+    static let hintGestureOrder: [GestureType] = GestureType.allCases.filter(\.isSwipe)
+
     /// Maps certain key actions to SF Symbol names for hint rendering.
     private static func hintIcon(for action: KeyAction) -> String? {
         switch action {
@@ -349,12 +363,11 @@ struct KeyView: View {
         let hPad = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * fontRatio
         let vPad = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
 
-        // No GeometryReader: each hint fills the cell via an infinity frame
-        // and pins to its directional alignment — the same geometry the
-        // previous proxy-sized frames produced, minus one layout container
-        // (and its extra layout pass) per key.
+        // Each hint fills the cell via an infinity frame and pins to its
+        // directional alignment, so the overlay needs no size measurement —
+        // and the key no extra layout container.
         return ZStack {
-            ForEach(Array(key.bindings.keys), id: \.self) { gesture in
+            ForEach(Self.hintGestureOrder, id: \.self) { gesture in
                 // Render a hint when it has a text label, or when the action
                 // maps to an icon (globe, dismiss, copy/cut/paste). Utility
                 // icon hints carry an empty label on purpose — their glyph is

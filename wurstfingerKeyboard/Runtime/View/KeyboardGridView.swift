@@ -27,11 +27,13 @@ struct KeyboardGridView: View {
     var languageLabel: String = ""
     var showLanguageLabel: Bool = false
 
-    /// Render settings snapshot forwarded to every `KeyView` — read once in
-    /// `DataDrivenKeyboardRootView` instead of per-key `@AppStorage` (see
-    /// `KeyRenderSettings`). Defaulted so previews and tests that build the
-    /// grid directly keep the stock appearance.
-    var renderSettings: KeyRenderSettings = .init()
+    /// Render settings snapshot forwarded to every `KeyView`, read once in
+    /// `DataDrivenKeyboardRootView` (see `KeyRenderSettings`). Undefaulted
+    /// like `metrics`: the snapshot must come from the one observing read
+    /// site, so a missing injection is a build error rather than a keyboard
+    /// that silently ignores the user's label-visibility and long-press
+    /// settings.
+    let renderSettings: KeyRenderSettings
 
     /// Resolved layout metrics injected by `DataDrivenKeyboardRootView` from
     /// the view model rather than read via `@AppStorage`: the root view
