@@ -139,11 +139,7 @@ struct KeyGestureRecognizer: ViewModifier {
                         }
                         let isTouchDown = sequence.handleChanged(translation: value.translation)
                         if isTouchDown {
-                            trail?.begin(
-                                at: value.location, from: trailToken,
-                                activationDistance: Self.tapBoundary(),
-                                aspectRatio: aspectRatio
-                            )
+                            trail?.begin(at: value.location, from: trailToken)
                         } else {
                             trail?.extend(to: value.location, from: trailToken)
                         }
@@ -240,15 +236,6 @@ struct KeyGestureRecognizer: ViewModifier {
     }
 
     // MARK: - Classification (Pure Function)
-
-    /// Travel at which `classify` stops calling a gesture a tap, measured in
-    /// the aspect-normalized space `classify` works in. The swipe trail starts
-    /// here, so a sloppy tap never flashes a streak and retuning
-    /// `minSwipeLength` in expert mode moves both together. Reads the store,
-    /// so callers evaluate it once per touch, never per drag sample.
-    static func tapBoundary(store: UserDefaults = SharedDefaults.store) -> CGFloat {
-        GestureClassificationThresholds.fromUserDefaults(store: store).minSwipeLength
-    }
 
     /// Classifies a sequence of touch positions into a `GestureType`, reading
     /// preprocessor config and thresholds from `SharedDefaults`.

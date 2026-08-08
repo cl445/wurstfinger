@@ -273,10 +273,7 @@ struct SlideGestureHandler: ViewModifier {
                             configuration: configuration
                         )
                         if update.isTouchDown {
-                            trail?.begin(
-                                at: value.location, from: trailToken,
-                                activationDistance: configuration.activationThreshold
-                            )
+                            trail?.begin(at: value.location, from: trailToken)
                             onTouchDown()
                             scheduleLongPress()
                         } else {

@@ -2,12 +2,13 @@
 //  GestureTrailOverlay.swift
 //  Wurstfinger
 //
-//  Draws the optional swipe trail on top of the key grid.
+//  Draws the optional gesture trail on top of the key grid: a dot under a
+//  press, a tapered ribbon under a swipe.
 //
 
 import SwiftUI
 
-/// Renders the swipe trail recorded by `GestureTrailRecorder`.
+/// Renders the trail recorded by `GestureTrailRecorder`.
 ///
 /// Sits in an `.overlay` on the grid layout, which is also where the recorder's
 /// coordinate space is registered — so the recorded points map onto this view's
@@ -55,12 +56,9 @@ struct GestureTrailOverlay: View {
         // opacity; bail before the geometry instead.
         guard !trail.isFinished(at: now) else { return }
         let points = trail.visiblePoints(at: now)
-        guard points.count >= 2 else { return }
+        guard !points.isEmpty else { return }
 
-        let path = GestureTrailGeometry.ribbon(
-            through: GestureTrailGeometry.smoothed(points),
-            headWidth: headWidth
-        )
+        let path = GestureTrailGeometry.shape(through: points, headWidth: headWidth)
         // One fill of one closed contour, so the alpha is uniform even where
         // the path crosses itself.
         context.opacity = KeyboardConstants.GestureTrail.opacity * trail.fadeOpacity(at: now)

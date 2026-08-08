@@ -2,7 +2,7 @@
 //  GestureTrail.swift
 //  Wurstfinger
 //
-//  Time-stamped sample buffer behind the optional swipe trail, plus the
+//  Time-stamped sample buffer behind the optional gesture trail, plus the
 //  age and fade math the overlay renders from.
 //
 
@@ -32,16 +32,6 @@ struct GestureTrail: Equatable {
     /// Time the finger lifted, or nil while it is still down.
     private(set) var releaseTime: TimeInterval?
 
-    /// Touch-down position. Retained separately from `samples` so it survives
-    /// the eviction of the oldest samples and tap suppression keeps measuring
-    /// against the true origin of the gesture.
-    private(set) var origin: CGPoint?
-
-    /// Largest straight-line distance from `origin` seen so far. A running
-    /// maximum rather than a distance to the current point, so an out-and-back
-    /// return swipe still counts as movement at the moment it turns around.
-    private(set) var maxDisplacement: CGFloat = 0
-
     var isEmpty: Bool {
         samples.isEmpty
     }
@@ -49,8 +39,6 @@ struct GestureTrail: Equatable {
     /// Starts a fresh gesture, discarding anything recorded before.
     mutating func begin(at point: CGPoint, time: TimeInterval) {
         samples = [GestureTrailSample(point: point, time: time)]
-        origin = point
-        maxDisplacement = 0
         releaseTime = nil
     }
 
@@ -59,8 +47,8 @@ struct GestureTrail: Equatable {
     /// Samples closer than `minimumSpacing` to the previous one are dropped:
     /// a resting finger keeps producing positions at the display refresh rate,
     /// and storing them would evict the moving part of the path from a
-    /// capacity-bounded buffer. The dropped sample still updates
-    /// `maxDisplacement`, so tap suppression is unaffected by the decimation.
+    /// capacity-bounded buffer. A touch that never exceeds the spacing keeps
+    /// its single touch-down sample, which is what the press dot is drawn from.
     mutating func extend(
         to point: CGPoint,
         time: TimeInterval,
@@ -70,9 +58,6 @@ struct GestureTrail: Equatable {
         guard let last = samples.last else {
             begin(at: point, time: time)
             return
-        }
-        if let origin {
-            maxDisplacement = max(maxDisplacement, hypot(point.x - origin.x, point.y - origin.y))
         }
         guard hypot(point.x - last.point.x, point.y - last.point.y) >= minimumSpacing else { return }
         samples.append(GestureTrailSample(point: point, time: time))
@@ -89,8 +74,6 @@ struct GestureTrail: Equatable {
     mutating func clear() {
         samples.removeAll()
         releaseTime = nil
-        origin = nil
-        maxDisplacement = 0
     }
 
     /// Points still inside the visible age window at `now`, oldest first.
@@ -98,6 +81,13 @@ struct GestureTrail: Equatable {
     /// After release the window is anchored to the release time instead of
     /// `now`, so the lifted trail fades out as a whole rather than also
     /// shrinking away from its tail.
+    ///
+    /// Never empties a non-empty buffer: a finger that holds still stops
+    /// producing samples, so the whole path can age out while the touch is
+    /// still down. Keeping the newest sample leaves the head of the trail
+    /// where the finger is, which is what a press renders as a dot — without
+    /// it a held key would blink out mid-touch and a paused swipe would
+    /// vanish instead of shrinking back to the finger.
     func visiblePoints(
         at now: TimeInterval,
         visibleDuration: TimeInterval = KeyboardConstants.GestureTrail.visibleDuration
@@ -106,7 +96,9 @@ struct GestureTrail: Equatable {
         let cutoff = reference - visibleDuration
         // Samples are appended in time order, so the expired ones are always a
         // prefix — dropping it beats filtering the whole buffer every frame.
-        return samples.drop { $0.time < cutoff }.map(\.point)
+        let visible = samples.drop { $0.time < cutoff }
+        guard visible.isEmpty else { return visible.map(\.point) }
+        return samples.last.map { [$0.point] } ?? []
     }
 
     /// Overall opacity multiplier: 1 while the finger is down, ramping to 0

@@ -2,8 +2,9 @@
 //  GestureTrailGeometry.swift
 //  Wurstfinger
 //
-//  Turns recorded touch positions into the tapered ribbon the swipe trail
-//  is drawn as. Pure functions, no view state.
+//  Turns recorded touch positions into the shapes the gesture trail is drawn
+//  as: a dot for a press, a tapered ribbon for a swipe. Pure functions, no
+//  view state.
 //
 
 import CoreGraphics
@@ -18,6 +19,36 @@ import SwiftUI
 /// itself, which shows up as dark blotches exactly where the finger changed
 /// direction. One filled contour has uniform alpha everywhere.
 enum GestureTrailGeometry {
+    /// The shape for one visible trail: a dot while the touch has not moved,
+    /// the tapered ribbon once it has.
+    ///
+    /// A press produces a single sample, and the ribbon needs two points to
+    /// have a direction at all, so the two cases are genuinely different
+    /// shapes rather than one degenerate case of the other.
+    static func shape(
+        through points: [CGPoint],
+        headWidth: CGFloat,
+        dotWidthFactor: CGFloat = KeyboardConstants.GestureTrail.pressDotWidthFactor
+    ) -> Path {
+        if points.count == 1 {
+            return dot(at: points[0], diameter: headWidth * dotWidthFactor)
+        }
+        return ribbon(through: smoothed(points), headWidth: headWidth)
+    }
+
+    /// Filled circle marking a stationary touch.
+    static func dot(at point: CGPoint, diameter: CGFloat) -> Path {
+        guard diameter > 0 else { return Path() }
+        return Path(
+            ellipseIn: CGRect(
+                x: point.x - diameter / 2,
+                y: point.y - diameter / 2,
+                width: diameter,
+                height: diameter
+            )
+        )
+    }
+
     /// Resamples `points` through a uniform Catmull-Rom spline.
     ///
     /// A fast flick only produces a handful of drag samples, and drawing those
