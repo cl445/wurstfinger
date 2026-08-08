@@ -239,7 +239,7 @@ struct SlideGestureHandler: ViewModifier {
     @State private var state = SlideGestureState()
     @State private var longPress = LongPressScheduler()
     /// Identifies this key's touch sequence to the shared trail recorder.
-    @State private var trailToken = GestureTrailToken()
+    @StateObject private var trailToken = GestureTrailToken()
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
     /// guarantees `@GestureState` is reset when the system cancels the
@@ -272,14 +272,20 @@ struct SlideGestureHandler: ViewModifier {
                             translation: value.translation,
                             configuration: configuration
                         )
-                        trail?.record(value.location, isTouchDown: update.isTouchDown, from: trailToken)
                         if update.isTouchDown {
+                            trail?.begin(
+                                at: value.location, from: trailToken,
+                                activationDistance: configuration.activationThreshold
+                            )
                             onTouchDown()
                             scheduleLongPress()
-                        } else if longPress.isScheduled,
-                                  state.isSliding
-                                  || state.maxDisplacement > KeyboardConstants.LongPress.movementTolerance {
-                            longPress.cancel()
+                        } else {
+                            trail?.extend(to: value.location, from: trailToken)
+                            if longPress.isScheduled,
+                               state.isSliding
+                               || state.maxDisplacement > KeyboardConstants.LongPress.movementTolerance {
+                                longPress.cancel()
+                            }
                         }
                         for phase in update.phases {
                             onSlide(phase)
@@ -355,5 +361,13 @@ struct SlideGestureHandler: ViewModifier {
 
     private var configuration: SlideGestureConfiguration {
         .for(slideType)
+    }
+
+    // MARK: - Activation Threshold
+
+    /// Travel below which this key's touch is dispatched as a tap. `internal`
+    /// and static so the trail-threshold guard test can pin it.
+    static func activationThreshold(for slideType: SlideType) -> CGFloat {
+        SlideGestureConfiguration.for(slideType).activationThreshold
     }
 }

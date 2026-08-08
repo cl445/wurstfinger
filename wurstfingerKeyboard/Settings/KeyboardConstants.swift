@@ -74,6 +74,20 @@ enum KeyboardConstants {
         /// Reference font size for hint padding calculations.
         static let hintReferenceFontSize: CGFloat = 10
 
+        /// Largest share of the rendered cell width a main label may occupy.
+        /// The readability floors above are a wish, not a guarantee: at the
+        /// smallest keyboard width a cell is ~14 pt wide, where the 20 pt floor
+        /// draws a glyph across its neighbours. Because the aspect-ratio
+        /// setting never goes below 1.0, this cap sits above the proportional
+        /// size for every cell wide enough to honour the floor — so it only
+        /// ever cuts the floor, never the normal scaling.
+        static let mainLabelMaxCellFraction: CGFloat = 0.5
+
+        /// Same cap for the directional hints, which sit three across a row
+        /// (top-leading / top / top-trailing) and so may claim under a third
+        /// of the cell each.
+        static let hintMaxCellFraction: CGFloat = 0.3
+
         // Hint padding
         /// Horizontal padding around hint labels.
         static let hintBaseHorizontalPadding: CGFloat = 2
@@ -129,14 +143,6 @@ enum KeyboardConstants {
     /// tail, kept short so it reads as a comet tail rather than a drawing of
     /// the whole path.
     enum GestureTrail {
-        /// How far the finger must travel before any trail is drawn. Every
-        /// keystroke on this keyboard starts as a touch-down, so without a
-        /// threshold plain taps would flash a dot on every letter. Aliases
-        /// `SpaceGestures.dragActivationThreshold`, the smallest travel the
-        /// keyboard already treats as "not a tap", so retuning that threshold
-        /// cannot desynchronize the two.
-        static let activationDistance: CGFloat = SpaceGestures.dragActivationThreshold
-
         /// Minimum spacing between two recorded samples. Filters the duplicate
         /// positions a resting finger produces, which would otherwise fill the
         /// buffer and push the moving part of the path out of it. Kept coarse:

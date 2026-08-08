@@ -124,6 +124,7 @@ struct KeyView: View {
         .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier(key.id)
         .accessibilityAddTraits(.isButton)
+        .modifier(KeyAccessibilityActions(key: key, onGesture: onGesture))
         // The whole cell is the touch target. Adjacent cells tile the surface
         // with no gaps, so a plain rectangle covers it fully.
         .contentShape(Rectangle())
@@ -198,19 +199,42 @@ struct KeyView: View {
         }
     }
 
+    /// Font size for a label whose reference size is `base`, scaled to the
+    /// rendered cell and clamped both for readability and against the cell.
+    /// Pure and `internal` so the "never wider than its key" relationship can
+    /// be locked by a test.
+    static func clampedFontSize(
+        base: CGFloat,
+        metrics: KeyboardLayoutMetrics,
+        minimum: CGFloat,
+        maximum: CGFloat,
+        cellFraction: CGFloat
+    ) -> CGFloat {
+        let scaled = min(max(base * metrics.fontScale, minimum), maximum)
+        return min(scaled, metrics.cellWidth * cellFraction)
+    }
+
     /// Scaled font size proportional to the rendered cell height
     /// (`metrics.fontScale` is cell height over the reference key height).
     private var scaledFontSize: CGFloat {
-        let base = Self.baseFontSize(for: key.style)
-        let scaled = base * metrics.fontScale
-        return min(max(scaled, KeyboardConstants.FontSizes.mainLabelMinSize), KeyboardConstants.FontSizes.mainLabelMaxSize)
+        Self.clampedFontSize(
+            base: Self.baseFontSize(for: key.style),
+            metrics: metrics,
+            minimum: KeyboardConstants.FontSizes.mainLabelMinSize,
+            maximum: KeyboardConstants.FontSizes.mainLabelMaxSize,
+            cellFraction: KeyboardConstants.FontSizes.mainLabelMaxCellFraction
+        )
     }
 
     /// Scaled hint font size proportional to the rendered cell height.
     private var scaledHintFontSize: CGFloat {
-        let base = KeyboardConstants.FontSizes.hintBaseSize
-        let scaled = base * metrics.fontScale
-        return min(max(scaled, KeyboardConstants.FontSizes.hintMinSize), KeyboardConstants.FontSizes.hintMaxSize)
+        Self.clampedFontSize(
+            base: KeyboardConstants.FontSizes.hintBaseSize,
+            metrics: metrics,
+            minimum: KeyboardConstants.FontSizes.hintMinSize,
+            maximum: KeyboardConstants.FontSizes.hintMaxSize,
+            cellFraction: KeyboardConstants.FontSizes.hintMaxCellFraction
+        )
     }
 
     /// Whether the key should be rendered as an icon-only key (no text label).
@@ -275,6 +299,10 @@ struct KeyView: View {
                 Text(primaryLabel)
                     .font(font)
                     .foregroundColor(.primary)
+                    // Multi-character labels ("123") outgrow the cell before
+                    // the size cap does; shrink instead of wrapping.
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
             }
         }
     }

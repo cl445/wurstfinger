@@ -73,6 +73,11 @@ struct KeyboardLayoutMetrics: Equatable {
     /// landscapes the 0.70 floor governs (see `resolve`).
     static let minReservedScreenHeight: CGFloat = 120
 
+    /// Smallest cell either fit-clamp may produce. `cellAspectRatio`,
+    /// `fontScale` and the gesture geometry all divide by the cell, so a
+    /// degenerate render context must still yield a strictly positive one.
+    static let minCellSize: CGFloat = 1
+
     /// Reference metrics at the iPhone default wish (270 pt, square cells)
     /// with no fit-clamp engaged. For tests and previews that need a valid
     /// geometry without a render context.
@@ -117,7 +122,7 @@ struct KeyboardLayoutMetrics: Equatable {
         var width = availableWidth > 0 ? min(wish, availableWidth) : wish
 
         let horizontalChrome = Self.horizontalChrome(columns: columns)
-        var cellWidth = max((width - horizontalChrome) / CGFloat(columns), 1)
+        var cellWidth = max((width - horizontalChrome) / CGFloat(columns), Self.minCellSize)
         var cellHeight = cellWidth / aspect
 
         // Height guard (Option C — clamp only on genuine overflow): the cap is
@@ -142,7 +147,15 @@ struct KeyboardLayoutMetrics: Equatable {
             )
             let contentHeight = cellHeight * CGFloat(rows) + verticalChrome
             if contentHeight > maxHeight {
-                let scale = max(maxHeight - verticalChrome, 0) / (cellHeight * CGFloat(rows))
+                // Both axes take the same factor, so the aspect ratio survives
+                // exactly. Floored at the scale that still leaves a cell of
+                // `minCellSize`: for a small-positive screen height the cap
+                // falls below the constant chrome, and an unfloored scale of
+                // zero would hand the render tree zero-size cells.
+                let scale = max(
+                    (maxHeight - verticalChrome) / (cellHeight * CGFloat(rows)),
+                    Self.minCellSize / cellHeight
+                )
                 cellWidth *= scale
                 cellHeight *= scale
                 width = cellWidth * CGFloat(columns) + horizontalChrome

@@ -450,6 +450,26 @@ struct SlideGestureStateTests {
         _ = state.handleCancelled()
         #expect(state.maxDisplacement == 0)
     }
+
+    // MARK: - Trail activation distance
+
+    /// The trail's activation distance on a slide key is the same value that
+    /// decides tap vs. slide, so a tap can never draw one.
+    @Test(arguments: [SlideType.moveCursor, .delete])
+    func theActivationThresholdIsTheTapBoundary(slideType: SlideType) {
+        let configuration = SlideGestureConfiguration.for(slideType)
+        let boundary = SlideGestureHandler.activationThreshold(for: slideType)
+
+        var short = SlideGestureState()
+        let below = CGSize(width: boundary - 1, height: 0)
+        _ = short.handleChanged(translation: below, configuration: configuration)
+        #expect(short.handleEnded(translation: below, configuration: configuration) == .tap)
+
+        var long = SlideGestureState()
+        let above = CGSize(width: boundary + 1, height: 0)
+        _ = long.handleChanged(translation: above, configuration: configuration)
+        #expect(long.handleEnded(translation: above, configuration: configuration) == .ended)
+    }
 }
 
 // MARK: - ViewModel handling of .cancelled
