@@ -36,7 +36,7 @@ struct KeyboardViewModelContextTests {
 
     @Test func currentArrangementIsNilWithoutMode() {
         let viewModel = makeViewModel(utilityLeft: false)
-        #expect(viewModel.currentMode == nil)
+        #expect(viewModel.activeModeFromDefinition == nil)
         #expect(viewModel.currentArrangement == nil)
     }
 
@@ -76,7 +76,12 @@ struct KeyboardViewModelContextTests {
         )
 
         let viewModel = makeViewModel(utilityLeft: false)
-        viewModel.currentMode = mode
+        viewModel.currentDefinition = KeyboardDefinition(
+            title: "Fixture", id: "fixture", localeIdentifier: "de_DE",
+            modes: ["test": mode], defaultMode: "test",
+            settings: KeyboardDefinitionSettings(autoCapitalize: false, composeRuleOverrides: nil)
+        )
+        viewModel.activeModeName = "test"
         #expect(viewModel.currentArrangement?.columns == 1)
 
         viewModel.utilityColumnLeading = true

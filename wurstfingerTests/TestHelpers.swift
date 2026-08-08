@@ -81,7 +81,7 @@ final class MockTextTarget: TextInputTarget {
 /// `KeyboardSettings` reads/writes the injected store only via
 /// `object(forKey:)` / `set(_:forKey:)` / `removeObject(forKey:)`; the typed
 /// accessors are overridden too as a safety net.
-final class InMemoryUserDefaults: UserDefaults {
+class InMemoryUserDefaults: UserDefaults {
     private var storage: [String: Any] = [:]
     private let lock = NSLock()
 

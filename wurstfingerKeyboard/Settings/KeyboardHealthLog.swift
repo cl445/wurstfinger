@@ -175,8 +175,11 @@ struct KeyboardHealthLog {
             if end > 0 { payload.append(0x0A) }
             payload.append(encoded)
             try? handle.write(contentsOf: payload)
-        } else {
-            // First write / file absent.
+        } else if !FileManager.default.fileExists(atPath: fileURL.path) {
+            // First write only. A handle can also fail on an *existing* file
+            // (an unwritable container while the device is locked), and
+            // overwriting then would discard exactly the history a
+            // resume-jetsam investigation needs — drop the entry instead.
             try? encoded.write(to: fileURL, options: .atomic)
         }
         compactIfNeeded(fileURL)
@@ -188,16 +191,22 @@ struct KeyboardHealthLog {
     /// appends — O(1) amortized per event. Must only run on `ioQueue`.
     private func compactIfNeeded(_ fileURL: URL) {
         let size = (try? FileManager.default.attributesOfItem(atPath: fileURL.path))?[.size] as? Int ?? 0
-        guard size > trimThresholdBytes else { return }
-        let kept = Array(readEntries(fileURL).suffix(maxEntries))
-        write(kept, to: fileURL)
+        // A file the process cannot read is history, not garbage: rewriting it
+        // from an empty decode would replace the log with nothing.
+        guard size > trimThresholdBytes, let data = try? Data(contentsOf: fileURL) else { return }
+        write(Array(decodeEntries(from: data).suffix(maxEntries)), to: fileURL)
     }
 
-    /// Raw JSONL read; must only run on `ioQueue`. `split(separator:)` omits
-    /// empty subsequences, so leading/double newlines and undecodable legacy
-    /// segments are tolerated (corruption-discard contract preserved).
+    /// Raw JSONL read; must only run on `ioQueue`.
     private func readEntries(_ fileURL: URL) -> [Entry] {
         guard let data = try? Data(contentsOf: fileURL) else { return [] }
+        return decodeEntries(from: data)
+    }
+
+    /// `split(separator:)` omits empty subsequences, so leading/double newlines
+    /// and undecodable legacy segments are tolerated (corruption-discard
+    /// contract preserved).
+    private func decodeEntries(from data: Data) -> [Entry] {
         let decoder = JSONDecoder()
         return data.split(separator: 0x0A).compactMap { try? decoder.decode(Entry.self, from: Data($0)) }
     }

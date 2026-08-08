@@ -25,10 +25,4 @@ struct GestureResolverChain {
         }
         return nil
     }
-
-    /// Convenience that returns the resolved `KeyAction` directly, or
-    /// `.none` if nothing matched.
-    func resolveAction(keyId: String, gesture: GestureType, in mode: KeyboardMode) -> KeyAction {
-        resolve(keyId: keyId, gesture: gesture, in: mode)?.action ?? .none
-    }
 }

@@ -171,6 +171,24 @@ struct ComposeEngineTests {
         #expect(ComposeEngine.cycleAccent(for: "xyz") == nil)
     }
 
+    /// Triggers with no `.compose` binding still reach the user through the
+    /// 🅒 accent cycle, which is built from every table in the rule set.
+    @Test(arguments: [
+        (base: "g", variant: "ğ"), // ˘
+        (base: "l", variant: "ł"), // !
+        (base: "か", variant: "が"), // ゛
+    ])
+    func unboundTriggerTablesFeedTheAccentCycle(cycle: (base: String, variant: String)) {
+        var current = cycle.base
+        var visited: [String] = []
+        for _ in 0 ..< 60 {
+            guard let next = ComposeEngine.cycleAccent(for: current), next != cycle.base else { break }
+            visited.append(next)
+            current = next
+        }
+        #expect(visited.contains(cycle.variant))
+    }
+
     // MARK: - Number Cycles
 
     @Test func numberCycleDigitToSuperscript() {

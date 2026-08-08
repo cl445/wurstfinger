@@ -124,21 +124,21 @@ struct wurstfingerTests {
         viewModel.hapticIntensityTap = 0.8
         viewModel.hapticIntensityDrag = 1.1
 
-        #expect(defaults.double(forKey: KeyboardViewModel.hapticTapIntensityKey) == 0.8)
-        let dragDefault = defaults.double(forKey: KeyboardViewModel.hapticDragIntensityKey)
+        #expect(defaults.double(forKey: SettingsKey.hapticIntensityTap.rawValue) == 0.8)
+        let dragDefault = defaults.double(forKey: SettingsKey.hapticIntensityDrag.rawValue)
         #expect(abs(dragDefault - 1.0) < 0.0001)
     }
 
     @Test @MainActor func previewViewModelDoesNotPersist() {
         let defaults = InMemoryUserDefaults()
 
-        defaults.set(0.3, forKey: KeyboardViewModel.hapticTapIntensityKey)
+        defaults.set(0.3, forKey: SettingsKey.hapticIntensityTap.rawValue)
 
         let viewModel = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
         #expect(abs(viewModel.hapticIntensityTap - 0.3) < 0.0001)
 
         viewModel.hapticIntensityTap = 0.9
-        let persistedTap = defaults.double(forKey: KeyboardViewModel.hapticTapIntensityKey)
+        let persistedTap = defaults.double(forKey: SettingsKey.hapticIntensityTap.rawValue)
         #expect(abs(persistedTap - 0.3) < 0.0001)
     }
 
@@ -152,7 +152,7 @@ struct wurstfingerTests {
 
         #expect(abs(viewModel.hapticIntensityTap - 0.0) < 0.0001)
         #expect(abs(viewModel.hapticIntensityDrag - 1.0) < 0.0001)
-        let storedDrag = defaults.double(forKey: KeyboardViewModel.hapticDragIntensityKey)
+        let storedDrag = defaults.double(forKey: SettingsKey.hapticIntensityDrag.rawValue)
         #expect(abs(storedDrag - 1.0) < 0.0001)
     }
 

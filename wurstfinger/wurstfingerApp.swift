@@ -25,6 +25,11 @@ struct wurstfingerApp: App {
         // present and mask a pending migration.
         LayoutSettings.migrateLegacyScaleIfNeeded(in: SharedDefaults.store)
 
+        // The onboarding checklist is app-only state; installs from earlier
+        // versions still hold it in the shared app-group suite, so move it
+        // before the views read it.
+        OnboardingProgress.migrateFromSharedStoreIfNeeded()
+
         let defaults: [String: Any] = [
             SettingsKey.keyAspectRatio.rawValue: DeviceLayoutUtils.defaultKeyAspectRatio,
             SettingsKey.keyboardWidthPoints.rawValue: DeviceLayoutUtils.defaultKeyboardWidth,

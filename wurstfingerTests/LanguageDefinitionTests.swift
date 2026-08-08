@@ -50,6 +50,19 @@ struct LanguageDefinitionValidationTests {
             )
         }
     }
+
+    @Test("Display order is the locale's alphabetical order, not codepoint order")
+    func sortedByNameUsesLocalizedOrdering() {
+        let unsorted = ["Zulu", "apfel", "Bravo"].map {
+            LanguageConfig(id: $0, name: $0, locale: Locale(identifier: "en_US"))
+        }
+        #expect(LanguageConfig.sortedByName(unsorted).map(\.name) == ["apfel", "Bravo", "Zulu"])
+    }
+
+    @Test func allLanguagesAppliesTheDisplayOrder() {
+        let listed = LanguageConfig.allLanguages
+        #expect(listed.map(\.id) == LanguageConfig.sortedByName(listed).map(\.id))
+    }
 }
 
 // MARK: - German Layout Tests

@@ -158,7 +158,7 @@ struct AccessibilityLabelTests {
     @Test func globeActivationReachesTheInputModeSwitch() throws {
         var advanced = 0
         let (viewModel, _) = makeViewModel(advanceToNextInputMode: { advanced += 1 })
-        let globe = try #require(viewModel.currentMode?.keys[UtilitySlot.globe])
+        let globe = try #require(viewModel.activeModeFromDefinition?.key(for: UtilitySlot.globe))
         let gesture = try #require(globe.accessibilityActivationOverride)
         viewModel.handleGesture(gesture, keyId: UtilitySlot.globe, isReturn: false)
         #expect(advanced == 1)

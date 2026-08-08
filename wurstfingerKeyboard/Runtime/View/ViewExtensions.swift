@@ -2,22 +2,10 @@
 //  ViewExtensions.swift
 //  Wurstfinger
 //
-//  Helper extensions for SwiftUI Views
+//  Helper extensions for the settings views.
 //
 
-import SwiftUI
-
-extension View {
-    /// Conditionally applies a modifier only when the optional value is non-nil.
-    @ViewBuilder
-    func ifLet<T>(_ value: T?, transform: (Self, T) -> some View) -> some View {
-        if let value {
-            transform(self, value)
-        } else {
-            self
-        }
-    }
-}
+import Foundation
 
 extension NumberFormatter {
     /// Decimal formatter bounded to `[minimum, maximum]`. Out-of-range text is

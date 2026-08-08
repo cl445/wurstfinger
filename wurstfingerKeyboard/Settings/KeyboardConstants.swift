@@ -16,10 +16,6 @@ enum KeyboardConstants {
         /// Derived from iOS standard keyboard key height (~54pt) for comfortable touch targets.
         static let height: CGFloat = 54
 
-        /// Minimum key width for accessibility compliance.
-        /// Based on Apple's Human Interface Guidelines (44pt minimum touch target).
-        static let minWidth: CGFloat = 44
-
         /// Corner radius for modern iOS appearance.
         /// Matches iOS 15+ system keyboard style.
         static let cornerRadius: CGFloat = 8
@@ -37,20 +33,11 @@ enum KeyboardConstants {
     // MARK: - Font Sizes
 
     enum FontSizes {
-        /// Main key label size (center character).
-        static let keyLabel: CGFloat = 22
-
         /// Default label size for utility buttons.
         static let defaultLabel: CGFloat = 18
 
         /// Utility column label size (globe, delete, return).
         static let utilityLabel: CGFloat = 22
-
-        /// Emphasized hint label size (for frequently used characters).
-        static let hintEmphasis: CGFloat = 11
-
-        /// Normal hint label size (for less common characters).
-        static let hintNormal: CGFloat = 10
 
         // Main label dynamic scaling. Font sizes scale with the rendered
         // cell height relative to `KeyDimensions.height` (see
@@ -69,8 +56,6 @@ enum KeyboardConstants {
         static let hintMinSize: CGFloat = 10
         /// Maximum hint size to prevent visual clutter.
         static let hintMaxSize: CGFloat = 22
-        /// Multiplier for emphasized hints (1.1 = 10% larger).
-        static let hintEmphasisMultiplier: CGFloat = 1.1
         /// Reference font size for hint padding calculations.
         static let hintReferenceFontSize: CGFloat = 10
 
@@ -108,23 +93,11 @@ enum KeyboardConstants {
         static let verticalPaddingTop: CGFloat = 4
         /// Bottom padding - accounts for home indicator safe area on notched devices.
         static let verticalPaddingBottom: CGFloat = 10
-        /// Margin for hint labels from key edges.
-        static let hintMargin: CGFloat = 10
-        /// Larger margin for "returning" hint labels (swipe-and-return gestures).
-        static let hintMarginReturning: CGFloat = 22
     }
 
     // MARK: - Gesture Recognition
 
     enum Gesture {
-        /// Tolerance for circular gesture end-point matching.
-        /// How close the finger must return to the start point to complete a circle.
-        static let circleCompletionTolerance: CGFloat = 16
-
-        /// Multiplier for final swipe offset calculation.
-        /// 0.71 ≈ 1/√2, accounts for diagonal swipes being longer than cardinal directions.
-        static let finalOffsetMultiplier: CGFloat = 0.71
-
         /// Number of touch points to buffer for gesture analysis.
         /// SwiftUI's DragGesture delivers samples at display refresh rate, so
         /// the buffer is sized for the fastest shipping display: 120 points
@@ -220,9 +193,6 @@ enum KeyboardConstants {
         /// Minimum drag distance to activate cursor movement mode.
         static let dragActivationThreshold: CGFloat = 8
 
-        /// Minimum drag distance to activate text selection mode.
-        static let selectionActivationThreshold: CGFloat = 24
-
         /// Distance per cursor movement step (one character).
         /// Provides smooth, controlled cursor navigation.
         static let dragStep: CGFloat = 14
@@ -253,19 +223,6 @@ enum KeyboardConstants {
         /// Decoupled from `SpaceGestures.dragStep` so delete and cursor
         /// sensitivity can be tuned independently.
         static let dragStep: CGFloat = 14
-
-        /// Distance for word-at-a-time deletion gesture.
-        static let wordSwipeThreshold: CGFloat = 40
-
-        /// Vertical movement tolerance during horizontal delete swipe.
-        static let verticalTolerance: CGFloat = 28
-
-        /// Interval between repeated deletions during hold (in seconds).
-        /// 0.08s = ~12.5 characters per second.
-        static let repeatInterval: TimeInterval = 0.08
-
-        /// Initial delay before repeat-delete starts (in seconds).
-        static let repeatDelay: TimeInterval = 0.35
     }
 
     // MARK: - Text Input

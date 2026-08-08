@@ -118,7 +118,6 @@ struct CircularGesturePipelineTests {
             )
         )
         vm.activeModeName = ModeNames.main
-        vm.currentMode = mainMode
         vm.pipelineLocale = Locale(identifier: "de_DE")
         vm.rebuildResolverChain()
         vm.rebuildPipeline()

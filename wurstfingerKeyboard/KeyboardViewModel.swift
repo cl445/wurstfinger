@@ -59,14 +59,6 @@ struct DeviceLayoutUtils {
 }
 
 final class KeyboardViewModel: ObservableObject {
-    // MARK: - Settings Keys (kept for backward compatibility)
-
-    static let hapticTapIntensityKey = SettingsKey.hapticIntensityTap.rawValue
-    static let hapticDragIntensityKey = SettingsKey.hapticIntensityDrag.rawValue
-    static let numpadStyleKey = SettingsKey.numpadStyle.rawValue
-    static let defaultTapIntensity: CGFloat = HapticSettings.defaultTapIntensity
-    static let defaultDragIntensity: CGFloat = HapticSettings.defaultDragIntensity
-
     // MARK: - State
 
     /// Current width of the keyboard's containing view.
@@ -83,8 +75,6 @@ final class KeyboardViewModel: ObservableObject {
     @Published private(set) var keyboardWidthCap: CGFloat = min(
         DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height
     )
-    /// The currently active keyboard mode.
-    @Published var currentMode: KeyboardMode?
     /// Name of the currently active mode in the data-driven definition.
     @Published var activeModeName: String = ModeNames.main
 
@@ -259,13 +249,16 @@ final class KeyboardViewModel: ObservableObject {
         layoutSettings.utilityColumnLeading ? .portraitUtilityLeft : .portrait
     }
 
-    /// The grid arrangement for `currentMode` and `currentContext`.
+    /// The grid arrangement for the active mode and `currentContext`.
     /// Returns `nil` if no definition is loaded.
     var currentArrangement: GridArrangement? {
-        currentMode?.arrangement(for: currentContext)
+        activeModeFromDefinition?.arrangement(for: currentContext)
     }
 
     /// The active mode resolved from the current definition and mode name.
+    /// The one place the mode is resolved: the grid renders from it and
+    /// `currentArrangement` sizes the keyboard from it, so a height computed
+    /// for a different layer than the one on screen cannot happen.
     var activeModeFromDefinition: KeyboardMode? {
         currentDefinition?.mode(activeModeName)
     }

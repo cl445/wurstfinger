@@ -81,6 +81,54 @@ struct KeyboardHealthLogTests {
         #expect(log.entries().map(\.label) == ["after-corruption"])
     }
 
+    /// A handle failure on an *existing* file must not replace the history:
+    /// the entries already on disk are the resume-jetsam forensics the log
+    /// exists for, and the container can be unwritable exactly when the
+    /// keyboard is being suspended.
+    @Test func unwritableExistingFileKeepsPriorEntries() throws {
+        let url = makeTestFileURL()
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: url.path)
+            try? FileManager.default.removeItem(at: url)
+        }
+        let log = KeyboardHealthLog(fileURL: url)
+        log.recordAndFlush("before-lock")
+
+        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: url.path)
+        log.recordAndFlush("while-locked")
+
+        #expect(log.entries().map(\.label) == ["before-lock"])
+    }
+
+    /// Compaction must not rewrite a file it could not read either: an
+    /// oversized log whose read fails decodes to nothing, and writing that
+    /// back would empty the very file the append guard just protected.
+    @Test func compactionKeepsAnUnreadableFileIntact() throws {
+        let url = makeTestFileURL()
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: url.path)
+            try? FileManager.default.removeItem(at: url)
+        }
+        let encoder = JSONEncoder()
+        var seeded = Data()
+        for index in 0 ..< 40 {
+            try seeded.append(encoder.encode(KeyboardHealthLog.Entry(
+                id: UUID(), date: Date(), label: "seed-\(index)", usedMB: 1, availableMB: 1
+            )))
+            seeded.append(0x0A)
+        }
+        try seeded.write(to: url)
+        // Writable but unreadable, so the append itself still succeeds and
+        // only compaction's read-then-rewrite can destroy the seeded history.
+        try FileManager.default.setAttributes([.posixPermissions: 0o222], ofItemAtPath: url.path)
+
+        KeyboardHealthLog(fileURL: url, maxEntries: 2).recordAndFlush("while-unreadable")
+
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: url.path)
+        let persisted = try Data(contentsOf: url)
+        #expect(persisted.prefix(seeded.count) == seeded)
+    }
+
     @Test func nilFileURLIsANoOp() {
         let log = KeyboardHealthLog(fileURL: nil)
 

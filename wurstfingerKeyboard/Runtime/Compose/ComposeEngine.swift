@@ -45,16 +45,6 @@ struct ComposeEngine {
         return cycle[nextIndex]
     }
 
-    // MARK: - Static API (backward compatibility)
-
-    static func compose(previous: String, trigger: String) -> String? {
-        shared.compose(previous: previous, trigger: trigger)
-    }
-
-    static func cycleAccent(for character: String) -> String? {
-        shared.cycleAccent(for: character)
-    }
-
     // MARK: - Accent Cycle Builder
 
     /// Number cycles (not language-specific).

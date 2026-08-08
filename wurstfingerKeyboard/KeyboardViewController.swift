@@ -201,17 +201,21 @@ final class KeyboardViewController: UIInputViewController {
     /// The definition caches account for only a few MB of a suspended
     /// keyboard's footprint — the bulk of it is the *SwiftUI hosting graph*,
     /// not any app data structure — so the hosting controller is torn down
-    /// here too and rebuilt in `viewWillAppear`. The health-log entry records
-    /// the footprint *after* shedding, so it measures what actually survives
-    /// to suspension.
+    /// here too and rebuilt in `viewWillAppear`. The shedding runs inside an
+    /// autorelease pool so UIKit's teardown temporaries are gone before the
+    /// health-log entry samples `phys_footprint`; the sample is still an upper
+    /// bound on what survives to suspension, since the allocator need not have
+    /// returned every freed page to the kernel by then.
     private func shedMemoryBeforeSuspension(_ event: String) {
-        KeyboardRegistry.evictAll(except: selectedLanguageId)
-        // The memoized grid layouts hold arrangement storage shared with the
-        // definitions just evicted, so dropping them is part of the same
-        // shedding step. The next appearance re-solves in microseconds.
-        GridLayoutSolver.evictAll()
-        installSuspensionPlaceholder()
-        teardownHosting()
+        autoreleasepool {
+            KeyboardRegistry.evictAll(except: selectedLanguageId)
+            // The memoized grid layouts hold arrangement storage shared with the
+            // definitions just evicted, so dropping them is part of the same
+            // shedding step. The next appearance re-solves in microseconds.
+            GridLayoutSolver.evictAll()
+            installSuspensionPlaceholder()
+            teardownHosting()
+        }
         // Flushed, not queued: the suspended process may never run again — a
         // resume-jetsam kills it on wake before an async write would get CPU
         // time — and this entry, the footprint that actually survives to
@@ -350,10 +354,6 @@ final class KeyboardViewController: UIInputViewController {
         // rotation with the keyboard open never calls viewWillAppear.
         // No-op when the height is unchanged.
         updateKeyboardHeight()
-    }
-
-    override var needsInputModeSwitchKey: Bool {
-        true
     }
 
     /// Builds the SwiftUI hosting controller and installs it as a child.
