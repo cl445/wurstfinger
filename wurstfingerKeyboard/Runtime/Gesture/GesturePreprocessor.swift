@@ -11,7 +11,7 @@
 //  ## Data Flow
 //
 //  ```
-//  Touch Events (KeyboardButton)
+//  Touch Events (KeyView)
 //       │
 //       ▼
 //  Raw CGPoint[] ──► GesturePreprocessor.preprocess()
@@ -67,12 +67,15 @@
 //
 //  ## Classification Logic
 //
-//  - **Tap**: maxDisplacement < minSwipeLength (~55% key height)
+//  - **Tap**: maxDisplacement < minSwipeLength (20pt by default)
 //  - **Return-swipe**: returnRatio < 0.5 AND maxDisplacement in middle of path
-//  - **Circular**: angularSpan > 270° AND pathSeparation > 0.5 (spiral, not return)
+//  - **Circular**: angularSpan > 270° AND consistent turn direction AND enough
+//    oriented compactness (a circle, not a narrow arc)
 //  - **Swipe**: Everything else, direction from maxDisplacementAngle
 //
-//  Note: Default key height is 54pt, so minSwipeLength (30pt) ≈ 55% of key height.
+//  Note: minSwipeLength is an absolute distance, so its share of the key
+//  depends on the user's size setting — 20pt is about a third of the ~58pt
+//  key height the layout metrics resolve at the default width.
 //
 //  ## Key Insight: Spiral vs Return-Swipe
 //
@@ -104,6 +107,16 @@ struct GesturePreprocessorConfig {
     static let defaultMaxJumpDistance: CGFloat = 50.0
     static let defaultSmoothingWindow: Int = 5
 
+    // MARK: - Value Ranges
+
+    /// The ranges the Expert UI offers, shared with the loaders below so a
+    /// stale or foreign store value (an older build's range, a hand-written
+    /// default) is clamped instead of reaching the pipeline.
+    static let jitterThresholdRange: ClosedRange<Double> = 1 ... 10
+    static let maxJumpDistanceRange: ClosedRange<Double> = 20 ... 100
+    /// Upper bound is odd on purpose: the loader rounds even windows up.
+    static let smoothingWindowRange: ClosedRange<Int> = 3 ... 11
+
     // MARK: - UserDefaults Keys
 
     static let jitterThresholdKey = "gesture.jitterThreshold"
@@ -119,14 +132,21 @@ struct GesturePreprocessorConfig {
     )
 
     /// Loads config from SharedDefaults with fallback to defaults.
-    /// Non-finite values (NaN, Inf) are replaced with defaults.
+    /// Non-finite values (NaN, Inf) are replaced with defaults, out-of-range
+    /// ones clamped to the Expert range.
     /// Custom values only apply while expert mode is enabled; when it is off,
     /// the defaults are returned. The stored values are kept so they survive
     /// toggling expert mode off and on again.
     static func fromUserDefaults(store: UserDefaults = SharedDefaults.store) -> GesturePreprocessorConfig {
         guard store.bool(forKey: SettingsKey.expertModeEnabled.rawValue) else { return .default }
-        let jitter = finiteCGFloat(from: store, key: jitterThresholdKey, default: defaultJitterThreshold)
-        let maxJump = finiteCGFloat(from: store, key: maxJumpDistanceKey, default: defaultMaxJumpDistance)
+        let jitter = clampedCGFloat(
+            from: store, key: jitterThresholdKey,
+            default: defaultJitterThreshold, range: jitterThresholdRange
+        )
+        let maxJump = clampedCGFloat(
+            from: store, key: maxJumpDistanceKey,
+            default: defaultMaxJumpDistance, range: maxJumpDistanceRange
+        )
         return GesturePreprocessorConfig(
             jitterThreshold: jitter,
             maxJumpDistance: maxJump,
@@ -136,17 +156,26 @@ struct GesturePreprocessorConfig {
         )
     }
 
-    /// Reads smoothingWindow from defaults, ensuring it's a positive odd integer.
+    /// Reads smoothingWindow from defaults, clamped to the Expert range and
+    /// forced to an odd width (the Savitzky-Golay window must be centred).
     private static func validSmoothingWindow(from store: UserDefaults) -> Int {
         let raw = store.object(forKey: smoothingWindowKey) as? Int ?? defaultSmoothingWindow
-        let clamped = max(3, raw)
+        let clamped = min(max(raw, smoothingWindowRange.lowerBound), smoothingWindowRange.upperBound)
         return clamped.isMultiple(of: 2) ? clamped + 1 : clamped
     }
 
-    private static func finiteCGFloat(from store: UserDefaults, key: String, default defaultValue: CGFloat) -> CGFloat {
+    /// Loads a CGFloat from the store, clamped to `range`. A missing key or a
+    /// NaN/Inf value falls back to `defaultValue`.
+    private static func clampedCGFloat(
+        from store: UserDefaults,
+        key: String,
+        default defaultValue: CGFloat,
+        range: ClosedRange<Double>
+    ) -> CGFloat {
         guard store.object(forKey: key) != nil else { return defaultValue }
-        let value = CGFloat(store.double(forKey: key))
-        return value.isFinite ? value : defaultValue
+        let value = store.double(forKey: key)
+        guard value.isFinite else { return defaultValue }
+        return CGFloat(min(max(value, range.lowerBound), range.upperBound))
     }
 
     /// Creates a config with custom aspect ratio.
@@ -390,6 +419,23 @@ struct GestureClassificationThresholds {
     static let defaultMinTurnConsistency: CGFloat = 0.8 // 80% turns in same direction
     static let defaultMinOrientedCompactness: CGFloat = 0.4 // width must be at least 40% of length
 
+    // MARK: - Value Ranges
+
+    /// The ranges the Expert UI offers, shared with the loader below so a
+    /// stale or foreign store value (an older build's range, a hand-written
+    /// default) is clamped instead of reaching classification.
+    static let minSwipeLengthRange: ClosedRange<Double> = 10 ... 60
+    static let maxReturnRatioRange: ClosedRange<Double> = 0.2 ... 0.8
+    static let returnDisplacementStartRange: ClosedRange<Double> = 0.1 ... 0.4
+    static let returnDisplacementEndRange: ClosedRange<Double> = 0.6 ... 0.9
+    static let minCircularityRange: ClosedRange<Double> = 0.1 ... 0.7
+    static let minAngularSpanRange: ClosedRange<Double> = .pi ... (2 * .pi)
+    static let minTurnConsistencyRange: ClosedRange<Double> = 0.5 ... 1.0
+    static let minOrientedCompactnessRange: ClosedRange<Double> = 0.2 ... 0.8
+    /// No Expert control (the circular branch does not read it); clamped to
+    /// the ratio's meaningful band so a stored value cannot be nonsense.
+    static let minPathSeparationRange: ClosedRange<Double> = 0 ... 1
+
     // MARK: - UserDefaults Keys
 
     static let minSwipeLengthKey = "gesture.minSwipeLength"
@@ -413,12 +459,18 @@ struct GestureClassificationThresholds {
         minOrientedCompactness: defaultMinOrientedCompactness
     )
 
-    /// Loads a finite CGFloat from UserDefaults, falling back to the default
-    /// if the key is missing or the stored value is NaN/Inf.
-    private static func loadCGFloat(from store: UserDefaults, key: String, default defaultValue: CGFloat) -> CGFloat {
+    /// Loads a CGFloat from UserDefaults, clamped to `range`. A missing key or
+    /// a NaN/Inf value falls back to `defaultValue`.
+    private static func clampedCGFloat(
+        from store: UserDefaults,
+        key: String,
+        default defaultValue: CGFloat,
+        range: ClosedRange<Double>
+    ) -> CGFloat {
         guard store.object(forKey: key) != nil else { return defaultValue }
-        let value = CGFloat(store.double(forKey: key))
-        return value.isFinite ? value : defaultValue
+        let value = store.double(forKey: key)
+        guard value.isFinite else { return defaultValue }
+        return CGFloat(min(max(value, range.lowerBound), range.upperBound))
     }
 
     /// Loads thresholds from SharedDefaults with fallback to defaults.
@@ -427,17 +479,44 @@ struct GestureClassificationThresholds {
     /// toggling expert mode off and on again.
     static func fromUserDefaults(store: UserDefaults = SharedDefaults.store) -> GestureClassificationThresholds {
         guard store.bool(forKey: SettingsKey.expertModeEnabled.rawValue) else { return .default }
-        let start = loadCGFloat(from: store, key: returnDisplacementStartKey, default: defaultReturnDisplacementStart)
-        let end = loadCGFloat(from: store, key: returnDisplacementEndKey, default: defaultReturnDisplacementEnd)
+        let start = clampedCGFloat(
+            from: store, key: returnDisplacementStartKey,
+            default: defaultReturnDisplacementStart, range: returnDisplacementStartRange
+        )
+        let end = clampedCGFloat(
+            from: store, key: returnDisplacementEndKey,
+            default: defaultReturnDisplacementEnd, range: returnDisplacementEndRange
+        )
         return GestureClassificationThresholds(
-            minSwipeLength: loadCGFloat(from: store, key: minSwipeLengthKey, default: defaultMinSwipeLength),
-            maxReturnRatio: loadCGFloat(from: store, key: maxReturnRatioKey, default: defaultMaxReturnRatio),
+            minSwipeLength: clampedCGFloat(
+                from: store, key: minSwipeLengthKey,
+                default: defaultMinSwipeLength, range: minSwipeLengthRange
+            ),
+            maxReturnRatio: clampedCGFloat(
+                from: store, key: maxReturnRatioKey,
+                default: defaultMaxReturnRatio, range: maxReturnRatioRange
+            ),
             returnDisplacementRange: min(start, end) ... max(start, end),
-            minCircularity: loadCGFloat(from: store, key: minCircularityKey, default: defaultMinCircularity),
-            minAngularSpan: loadCGFloat(from: store, key: minAngularSpanKey, default: defaultMinAngularSpan),
-            minPathSeparation: loadCGFloat(from: store, key: minPathSeparationKey, default: defaultMinPathSeparation),
-            minTurnConsistency: loadCGFloat(from: store, key: minTurnConsistencyKey, default: defaultMinTurnConsistency),
-            minOrientedCompactness: loadCGFloat(from: store, key: minOrientedCompactnessKey, default: defaultMinOrientedCompactness)
+            minCircularity: clampedCGFloat(
+                from: store, key: minCircularityKey,
+                default: defaultMinCircularity, range: minCircularityRange
+            ),
+            minAngularSpan: clampedCGFloat(
+                from: store, key: minAngularSpanKey,
+                default: defaultMinAngularSpan, range: minAngularSpanRange
+            ),
+            minPathSeparation: clampedCGFloat(
+                from: store, key: minPathSeparationKey,
+                default: defaultMinPathSeparation, range: minPathSeparationRange
+            ),
+            minTurnConsistency: clampedCGFloat(
+                from: store, key: minTurnConsistencyKey,
+                default: defaultMinTurnConsistency, range: minTurnConsistencyRange
+            ),
+            minOrientedCompactness: clampedCGFloat(
+                from: store, key: minOrientedCompactnessKey,
+                default: defaultMinOrientedCompactness, range: minOrientedCompactnessRange
+            )
         )
     }
 }

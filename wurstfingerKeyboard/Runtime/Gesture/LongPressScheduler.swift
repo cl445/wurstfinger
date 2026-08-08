@@ -14,11 +14,8 @@ import Foundation
 /// flag for a gesture recognizer.
 ///
 /// A reference type so it can live in `@State` and mutate in place across
-/// SwiftUI body re-evaluations (the same reason the recognizers previously
-/// held two `@State` values directly). The recognizer supplies its fire guard
-/// as the `fire` closure, evaluated at fire time exactly as the old
-/// `fireLongPress()` read live `@State` — so extracting this changes no
-/// timing or staleness behavior.
+/// SwiftUI body re-evaluations. The recognizer supplies its fire guard as the
+/// `fire` closure, evaluated at fire time so that it reads live `@State`.
 final class LongPressScheduler {
     private var pending: DispatchWorkItem?
 
@@ -60,5 +57,13 @@ final class LongPressScheduler {
     /// Clears the consumed-touch flag before the next touch sequence.
     func clearConsumed() {
         consumedTouch = false
+    }
+
+    /// Drops both halves of a touch that ends without a release: the armed
+    /// timer and the consumed-touch flag. Cancelling only the timer would
+    /// leave the next touch on this key starting out already consumed.
+    func abandon() {
+        cancel()
+        clearConsumed()
     }
 }

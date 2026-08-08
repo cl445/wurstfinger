@@ -89,6 +89,34 @@ struct AngleToGestureTypeTests {
         // Slightly negative (≈ -5.7°) normalizes to ≈ 354° → right sector.
         #expect(KeyGestureRecognizer.angleToGestureType(-0.1) == .swipeRight)
     }
+
+    /// Every sector owns its lower boundary; one ulp below belongs to the
+    /// previous sector. Flipping any `..<` to `...` moves a boundary and fails
+    /// here.
+    @Test(arguments: [
+        (degrees: CGFloat(22.5), sector: GestureType.swipeDownRight, previous: GestureType.swipeRight),
+        (degrees: 67.5, sector: .swipeDown, previous: .swipeDownRight),
+        (degrees: 112.5, sector: .swipeDownLeft, previous: .swipeDown),
+        (degrees: 157.5, sector: .swipeLeft, previous: .swipeDownLeft),
+        (degrees: 202.5, sector: .swipeUpLeft, previous: .swipeLeft),
+        (degrees: 247.5, sector: .swipeUp, previous: .swipeUpLeft),
+        (degrees: 292.5, sector: .swipeUpRight, previous: .swipeUp),
+        (degrees: 337.5, sector: .swipeRight, previous: .swipeUpRight),
+    ])
+    func sectorsOwnTheirLowerBoundary(
+        boundary: (degrees: CGFloat, sector: GestureType, previous: GestureType)
+    ) {
+        #expect(KeyGestureRecognizer.gestureType(forDegrees: boundary.degrees) == boundary.sector)
+        #expect(KeyGestureRecognizer.gestureType(forDegrees: boundary.degrees.nextDown) == boundary.previous)
+    }
+
+    @Test func wrapAroundSectorCoversBothEndsOfTheRange() {
+        #expect(KeyGestureRecognizer.gestureType(forDegrees: 0) == .swipeRight)
+        #expect(KeyGestureRecognizer.gestureType(forDegrees: 360) == .swipeRight)
+        #expect(KeyGestureRecognizer.gestureType(forDegrees: CGFloat(360).nextDown) == .swipeRight)
+        // Nothing outside the normalized range reaches a sector.
+        #expect(KeyGestureRecognizer.gestureType(forDegrees: .nan) == .swipeRight)
+    }
 }
 
 // MARK: - classify(features:)

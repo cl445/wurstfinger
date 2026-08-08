@@ -127,15 +127,17 @@ struct KeyGestureRecognizer: ViewModifier {
                         inFlight = true
                     }
                     .onChanged { value in
-                        let isTouchDown = sequence.handleChanged(translation: value.translation)
+                        // A fired long press owns the rest of this touch: the
+                        // digit is typed, the release is discarded in `onEnded`,
+                        // so neither the ring buffer nor the trail should keep
+                        // following the finger at the display rate.
                         if longPress.consumedTouch {
-                            // The long press already typed its digit. A trail
-                            // that kept following the finger would advertise a
-                            // gesture that will never be dispatched.
                             trail?.cancel(from: trailToken)
-                        } else {
-                            trail?.record(value.location, isTouchDown: isTouchDown, from: trailToken)
+                            isActive = true
+                            return
                         }
+                        let isTouchDown = sequence.handleChanged(translation: value.translation)
+                        trail?.record(value.location, isTouchDown: isTouchDown, from: trailToken)
                         if isTouchDown {
                             onTouchDown()
                             scheduleLongPress()
@@ -174,23 +176,29 @@ struct KeyGestureRecognizer: ViewModifier {
                 // cancelled the touches. Discard the partial gesture without
                 // classifying it.
                 guard !inFlight, sequence.isTracking else { return }
-                longPress.cancel()
-                longPress.clearConsumed()
-                sequence.handleCancelled()
-                trail?.cancel(from: trailToken)
+                abandonSequence()
                 isActive = false
             }
             .onDisappear {
-                // A key torn down mid-gesture (mode switch, rotation,
-                // definition reload) reaches neither `onEnded` nor the
-                // `sequenceInFlight` reset — both live on the view that went
-                // away — so it hands the trail back here. Otherwise the
-                // recorder keeps it marked visible with no fade scheduled and
-                // the overlay redraws at the display rate until the next
-                // touch. Ownership makes this a no-op for any key that is not
-                // the one drawing, including while a trail is fading.
-                trail?.cancel(from: trailToken)
+                // A key torn down mid-gesture hands its touch back here: the
+                // recorder would otherwise keep the trail marked visible with
+                // no fade scheduled, and the armed long press would still fire.
+                // Ownership makes the trail hand-back a no-op for any key that
+                // is not the one drawing, including while a trail is fading.
+                abandonSequence()
             }
+    }
+
+    /// Drops everything the in-flight touch owns: the armed long press, the
+    /// partial path, and the trail. Shared by the system-cancel path and by
+    /// teardown — a key removed mid-gesture (mode switch, rotation, definition
+    /// reload) reaches neither `onEnded` nor the `sequenceInFlight` reset,
+    /// because both live on the view that went away, so an armed work item
+    /// would fire 0.7 s later and type the old key's digit into the new mode.
+    private func abandonSequence() {
+        longPress.abandon()
+        sequence.handleCancelled()
+        trail?.cancel(from: trailToken)
     }
 
     // MARK: - Long Press
@@ -279,30 +287,40 @@ struct KeyGestureRecognizer: ViewModifier {
     }
 
     /// Maps an angle (radians, from `atan2`) to the corresponding swipe
-    /// `GestureType`. Sector boundaries match `KeyboardButton.angleToDirection`.
+    /// `GestureType`.
     static func angleToGestureType(_ angle: CGFloat) -> GestureType {
         let normalized = angle < 0 ? angle + 2 * .pi : angle
-        let degrees = normalized * 180 / .pi
+        return gestureType(forDegrees: normalized * 180 / .pi)
+    }
 
+    /// Maps a normalized angle in degrees (`atan2` convention: 0 = right,
+    /// 90 = down) to its 45° swipe sector. Every sector owns its lower
+    /// boundary and stops short of the next one, so exactly 22.5° is a
+    /// down-right swipe; the sector around 0° wraps across both ends of the
+    /// range, and anything outside it (including NaN) falls back to right.
+    /// Separate from `angleToGestureType` so the boundaries can be tested at
+    /// their exact values — the degree/radian round trip is one ulp off for
+    /// several of them, which is exactly where the convention lives.
+    static func gestureType(forDegrees degrees: CGFloat) -> GestureType {
         switch degrees {
         case 337.5 ... 360, 0 ..< 22.5:
-            return .swipeRight
+            .swipeRight
         case 22.5 ..< 67.5:
-            return .swipeDownRight
+            .swipeDownRight
         case 67.5 ..< 112.5:
-            return .swipeDown
+            .swipeDown
         case 112.5 ..< 157.5:
-            return .swipeDownLeft
+            .swipeDownLeft
         case 157.5 ..< 202.5:
-            return .swipeLeft
+            .swipeLeft
         case 202.5 ..< 247.5:
-            return .swipeUpLeft
+            .swipeUpLeft
         case 247.5 ..< 292.5:
-            return .swipeUp
+            .swipeUp
         case 292.5 ..< 337.5:
-            return .swipeUpRight
+            .swipeUpRight
         default:
-            return .swipeRight
+            .swipeRight
         }
     }
 }

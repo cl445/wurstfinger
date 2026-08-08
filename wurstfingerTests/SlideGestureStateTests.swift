@@ -21,11 +21,11 @@ struct SlideGestureStateTests {
     @Test func firstChangeReportsTouchDown() {
         var state = SlideGestureState()
         let update = state.handleChanged(
-            translation: CGSize(width: 1, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 1, height: 0), configuration: .moveCursor
         )
         #expect(update.isTouchDown)
         let second = state.handleChanged(
-            translation: CGSize(width: 2, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 2, height: 0), configuration: .moveCursor
         )
         #expect(!second.isTouchDown)
     }
@@ -33,10 +33,10 @@ struct SlideGestureStateTests {
     @Test func smallMovementEndsAsTap() {
         var state = SlideGestureState()
         _ = state.handleChanged(
-            translation: CGSize(width: 2, height: 2), activationThreshold: threshold
+            translation: CGSize(width: 2, height: 2), configuration: .moveCursor
         )
         let phase = state.handleEnded(
-            translation: CGSize(width: 2, height: 2), activationThreshold: threshold
+            translation: CGSize(width: 2, height: 2), configuration: .moveCursor
         )
         #expect(phase == .tap)
     }
@@ -45,14 +45,14 @@ struct SlideGestureStateTests {
         var state = SlideGestureState()
         let update = state.handleChanged(
             translation: CGSize(width: threshold + 4, height: 0),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         // Anchored at the threshold crossing: the overshoot is reported
         // immediately instead of being dropped.
         #expect(update.phases == [.began, .changed(deltaX: 4)])
         let phase = state.handleEnded(
             translation: CGSize(width: threshold + 4, height: 0),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         #expect(phase == .ended)
     }
@@ -64,13 +64,13 @@ struct SlideGestureStateTests {
         // 80 pt vertical flick with almost no horizontal travel: previously
         // classified as a tap (space inserted / character deleted).
         _ = state.handleChanged(
-            translation: CGSize(width: 2, height: 40), activationThreshold: threshold
+            translation: CGSize(width: 2, height: 40), configuration: .moveCursor
         )
         _ = state.handleChanged(
-            translation: CGSize(width: 2, height: 80), activationThreshold: threshold
+            translation: CGSize(width: 2, height: 80), configuration: .moveCursor
         )
         let phase = state.handleEnded(
-            translation: CGSize(width: 2, height: 80), activationThreshold: threshold
+            translation: CGSize(width: 2, height: 80), configuration: .moveCursor
         )
         #expect(phase == nil)
     }
@@ -80,8 +80,8 @@ struct SlideGestureStateTests {
         // Horizontal travel alone is under the threshold, but the total
         // displacement is not — this is a drag, not a tap.
         let translation = CGSize(width: threshold * 0.75, height: threshold * 0.75)
-        _ = state.handleChanged(translation: translation, activationThreshold: threshold)
-        let phase = state.handleEnded(translation: translation, activationThreshold: threshold)
+        _ = state.handleChanged(translation: translation, configuration: .moveCursor)
+        let phase = state.handleEnded(translation: translation, configuration: .moveCursor)
         #expect(phase == nil)
     }
 
@@ -93,13 +93,13 @@ struct SlideGestureStateTests {
     @Test func upSwipeBeyondThresholdClassifiesAsSwipeUp() {
         var state = SlideGestureState()
         _ = state.handleChanged(
-            translation: CGSize(width: 2, height: -upThreshold), activationThreshold: threshold
+            translation: CGSize(width: 2, height: -upThreshold), configuration: .moveCursor
         )
         _ = state.handleChanged(
-            translation: CGSize(width: 2, height: -upThreshold - 30), activationThreshold: threshold
+            translation: CGSize(width: 2, height: -upThreshold - 30), configuration: .moveCursor
         )
         let phase = state.handleEnded(
-            translation: CGSize(width: 2, height: -upThreshold - 30), activationThreshold: threshold
+            translation: CGSize(width: 2, height: -upThreshold - 30), configuration: .moveCursor
         )
         #expect(phase == .swipeUp(isReturn: false))
     }
@@ -107,13 +107,13 @@ struct SlideGestureStateTests {
     @Test func upSwipeReturningToOriginClassifiesAsReturn() {
         var state = SlideGestureState()
         _ = state.handleChanged(
-            translation: CGSize(width: 0, height: -upThreshold - 30), activationThreshold: threshold
+            translation: CGSize(width: 0, height: -upThreshold - 30), configuration: .moveCursor
         )
         _ = state.handleChanged(
-            translation: CGSize(width: 0, height: -4), activationThreshold: threshold
+            translation: CGSize(width: 0, height: -4), configuration: .moveCursor
         )
         let phase = state.handleEnded(
-            translation: CGSize(width: 0, height: -4), activationThreshold: threshold
+            translation: CGSize(width: 0, height: -4), configuration: .moveCursor
         )
         // Ends near the origin (below the tap threshold!) but the peak makes
         // it a return-up swipe, not a tap.
@@ -128,17 +128,17 @@ struct SlideGestureStateTests {
         // never fired.
         let drift = threshold + 4
         let first = state.handleChanged(
-            translation: CGSize(width: drift, height: -drift - 6), activationThreshold: threshold
+            translation: CGSize(width: drift, height: -drift - 6), configuration: .moveCursor
         )
         #expect(first.phases.isEmpty)
         let second = state.handleChanged(
             translation: CGSize(width: drift, height: -upThreshold - 20),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         #expect(second.phases.isEmpty)
         let phase = state.handleEnded(
             translation: CGSize(width: drift, height: -upThreshold - 20),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         #expect(phase == .swipeUp(isReturn: false))
     }
@@ -149,17 +149,17 @@ struct SlideGestureStateTests {
         // block a genuine cursor slide once the horizontal axis takes over.
         let wobble = state.handleChanged(
             translation: CGSize(width: threshold, height: -threshold - 2),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         #expect(wobble.phases.isEmpty)
         let sliding = state.handleChanged(
             translation: CGSize(width: threshold * 3, height: -threshold - 2),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         #expect(sliding.phases.first == .began)
         let phase = state.handleEnded(
             translation: CGSize(width: threshold * 3, height: -threshold - 2),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         #expect(phase == .ended)
     }
@@ -170,13 +170,13 @@ struct SlideGestureStateTests {
         // Measured as absolute distance from the origin this looked like a
         // plain up-swipe and toggled the wrong label group.
         _ = state.handleChanged(
-            translation: CGSize(width: 0, height: -upThreshold - 10), activationThreshold: threshold
+            translation: CGSize(width: 0, height: -upThreshold - 10), configuration: .moveCursor
         )
         _ = state.handleChanged(
-            translation: CGSize(width: 0, height: 20), activationThreshold: threshold
+            translation: CGSize(width: 0, height: 20), configuration: .moveCursor
         )
         let phase = state.handleEnded(
-            translation: CGSize(width: 0, height: 20), activationThreshold: threshold
+            translation: CGSize(width: 0, height: 20), configuration: .moveCursor
         )
         #expect(phase == .swipeUp(isReturn: true))
     }
@@ -184,16 +184,16 @@ struct SlideGestureStateTests {
     @Test func upSwipeBelowThresholdIsIgnored() {
         var state = SlideGestureState()
         let translation = CGSize(width: 0, height: -upThreshold + 4)
-        _ = state.handleChanged(translation: translation, activationThreshold: threshold)
-        let phase = state.handleEnded(translation: translation, activationThreshold: threshold)
+        _ = state.handleChanged(translation: translation, configuration: .moveCursor)
+        let phase = state.handleEnded(translation: translation, configuration: .moveCursor)
         #expect(phase == nil)
     }
 
     @Test func downwardSwipeIsIgnored() {
         var state = SlideGestureState()
         let translation = CGSize(width: 0, height: upThreshold + 30)
-        _ = state.handleChanged(translation: translation, activationThreshold: threshold)
-        let phase = state.handleEnded(translation: translation, activationThreshold: threshold)
+        _ = state.handleChanged(translation: translation, configuration: .moveCursor)
+        let phase = state.handleEnded(translation: translation, configuration: .moveCursor)
         #expect(phase == nil)
     }
 
@@ -211,11 +211,11 @@ struct SlideGestureStateTests {
             CGSize(width: 10, height: -6),
         ]
         for sample in samples {
-            let update = state.handleChanged(translation: sample, activationThreshold: threshold)
+            let update = state.handleChanged(translation: sample, configuration: .moveCursor)
             #expect(update.phases.isEmpty)
         }
         let phase = state.handleEnded(
-            translation: CGSize(width: 10, height: -6), activationThreshold: threshold
+            translation: CGSize(width: 10, height: -6), configuration: .moveCursor
         )
         #expect(phase == .swipeUp(isReturn: true))
     }
@@ -225,15 +225,15 @@ struct SlideGestureStateTests {
         // Horizontal slide activates first, then the finger drifts far up:
         // the gesture stays a cursor slide, never a label toggle.
         _ = state.handleChanged(
-            translation: CGSize(width: threshold + 4, height: 0), activationThreshold: threshold
+            translation: CGSize(width: threshold + 4, height: 0), configuration: .moveCursor
         )
         _ = state.handleChanged(
             translation: CGSize(width: threshold + 4, height: -upThreshold - 30),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         let phase = state.handleEnded(
             translation: CGSize(width: threshold + 4, height: -upThreshold - 30),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         #expect(phase == .ended)
     }
@@ -241,10 +241,10 @@ struct SlideGestureStateTests {
     @Test func tapWithSmallVerticalJitterIsStillATap() {
         var state = SlideGestureState()
         _ = state.handleChanged(
-            translation: CGSize(width: 1, height: -3), activationThreshold: threshold
+            translation: CGSize(width: 1, height: -3), configuration: .moveCursor
         )
         let phase = state.handleEnded(
-            translation: CGSize(width: 1, height: -3), activationThreshold: threshold
+            translation: CGSize(width: 1, height: -3), configuration: .moveCursor
         )
         #expect(phase == .tap)
     }
@@ -252,17 +252,17 @@ struct SlideGestureStateTests {
     @Test func cancellationResetsVerticalTracking() {
         var state = SlideGestureState()
         _ = state.handleChanged(
-            translation: CGSize(width: 0, height: -upThreshold - 70), activationThreshold: threshold
+            translation: CGSize(width: 0, height: -upThreshold - 70), configuration: .moveCursor
         )
         _ = state.handleCancelled()
 
         // Next touch: a small movement must be a tap — a stale upward peak
         // would classify it as a return-up swipe and toggle labels.
         _ = state.handleChanged(
-            translation: CGSize(width: 1, height: -2), activationThreshold: threshold
+            translation: CGSize(width: 1, height: -2), configuration: .moveCursor
         )
         let phase = state.handleEnded(
-            translation: CGSize(width: 1, height: -2), activationThreshold: threshold
+            translation: CGSize(width: 1, height: -2), configuration: .moveCursor
         )
         #expect(phase == .tap)
     }
@@ -277,15 +277,15 @@ struct SlideGestureStateTests {
         // as an up-swipe and the cursor never moved. The dominant-horizontal
         // re-arm now latches the slide.
         let flick = state.handleChanged(
-            translation: CGSize(width: 2, height: -35), activationThreshold: threshold
+            translation: CGSize(width: 2, height: -35), configuration: .moveCursor
         )
         #expect(flick.phases.isEmpty)
         let latch = state.handleChanged(
-            translation: CGSize(width: 100, height: -20), activationThreshold: threshold
+            translation: CGSize(width: 100, height: -20), configuration: .moveCursor
         )
         #expect(latch.phases.first == .began)
         let phase = state.handleEnded(
-            translation: CGSize(width: 100, height: -20), activationThreshold: threshold
+            translation: CGSize(width: 100, height: -20), configuration: .moveCursor
         )
         #expect(phase == .ended)
     }
@@ -302,13 +302,52 @@ struct SlideGestureStateTests {
             CGSize(width: 10, height: -6),
         ]
         for sample in samples {
-            let update = state.handleChanged(translation: sample, activationThreshold: threshold)
+            let update = state.handleChanged(translation: sample, configuration: .moveCursor)
             #expect(update.phases.isEmpty)
         }
         let phase = state.handleEnded(
-            translation: CGSize(width: 10, height: -6), activationThreshold: threshold
+            translation: CGSize(width: 10, height: -6), configuration: .moveCursor
         )
         #expect(phase == .swipeUp(isReturn: true))
+    }
+
+    // MARK: - Delete configuration (no up-swipe binding)
+
+    @Test func diagonalDeleteDragLatchesInsteadOfReportingAnUpSwipe() {
+        var state = SlideGestureState()
+        // Up-left drag with the horizontal axis dominating. An up-swipe
+        // threshold would block the latch here and end the drag as a
+        // `.swipeUp` the delete handler discards: no deletion, no tap, no
+        // feedback at all.
+        let translation = CGSize(width: -40, height: -35)
+        let update = state.handleChanged(translation: translation, configuration: .delete)
+        #expect(update.phases == [.began, .changed(deltaX: -12)])
+        #expect(state.handleEnded(translation: translation, configuration: .delete) == .ended)
+    }
+
+    @Test func verticalDeleteDragNeverReportsAnUpSwipe() {
+        var state = SlideGestureState()
+        let translation = CGSize(width: 0, height: -80)
+        _ = state.handleChanged(translation: translation, configuration: .delete)
+        #expect(state.handleEnded(translation: translation, configuration: .delete) == nil)
+    }
+
+    @Test func deleteTapUsesTheDeleteActivationDistance() {
+        var state = SlideGestureState()
+        // 20 pt is a slide on the space bar (8 pt) and still a tap on delete (28 pt).
+        let translation = CGSize(width: 20, height: 0)
+        let update = state.handleChanged(translation: translation, configuration: .delete)
+        #expect(update.phases.isEmpty)
+        #expect(state.handleEnded(translation: translation, configuration: .delete) == .tap)
+    }
+
+    @Test func slideTypesResolveToTheirConfiguration() {
+        #expect(SlideGestureConfiguration.for(.moveCursor) == .moveCursor)
+        #expect(SlideGestureConfiguration.for(.delete) == .delete)
+        #expect(SlideGestureConfiguration.for(.none) == .inactive)
+        // The delete key has no up-swipe binding: the vertical axis must not be
+        // able to swallow a delete drag.
+        #expect(SlideGestureConfiguration.delete.swipeUpThreshold == nil)
     }
 
     // MARK: - Touch cancellation (Bug 1)
@@ -317,7 +356,7 @@ struct SlideGestureStateTests {
         var state = SlideGestureState()
         _ = state.handleChanged(
             translation: CGSize(width: threshold + 50, height: 0),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         #expect(state.handleCancelled() == .cancelled)
     }
@@ -325,7 +364,7 @@ struct SlideGestureStateTests {
     @Test func cancellationBeforeSlideReportsCancelled() {
         var state = SlideGestureState()
         _ = state.handleChanged(
-            translation: CGSize(width: 2, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 2, height: 0), configuration: .moveCursor
         )
         #expect(state.handleCancelled() == .cancelled)
     }
@@ -339,7 +378,7 @@ struct SlideGestureStateTests {
         var state = SlideGestureState()
         // Drag far to the right, then get cancelled by the system.
         _ = state.handleChanged(
-            translation: CGSize(width: 100, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 100, height: 0), configuration: .moveCursor
         )
         _ = state.handleCancelled()
 
@@ -347,7 +386,7 @@ struct SlideGestureStateTests {
         // phases — a stale anchor would replay a large negative delta here
         // (burst of deletions on the delete key, cursor jump on space).
         let update = state.handleChanged(
-            translation: CGSize(width: 2, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 2, height: 0), configuration: .moveCursor
         )
         #expect(update.isTouchDown)
         #expect(update.phases.isEmpty)
@@ -356,7 +395,7 @@ struct SlideGestureStateTests {
         // previous gesture's translation.
         let sliding = state.handleChanged(
             translation: CGSize(width: threshold + 2, height: 0),
-            activationThreshold: threshold
+            configuration: .moveCursor
         )
         #expect(sliding.phases == [.began, .changed(deltaX: 2)])
     }
@@ -364,14 +403,14 @@ struct SlideGestureStateTests {
     @Test func sequenceAfterNormalEndStartsFresh() {
         var state = SlideGestureState()
         _ = state.handleChanged(
-            translation: CGSize(width: 100, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 100, height: 0), configuration: .moveCursor
         )
         _ = state.handleEnded(
-            translation: CGSize(width: 100, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 100, height: 0), configuration: .moveCursor
         )
 
         let update = state.handleChanged(
-            translation: CGSize(width: 2, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 2, height: 0), configuration: .moveCursor
         )
         #expect(update.isTouchDown)
         #expect(update.phases.isEmpty)
@@ -382,10 +421,10 @@ struct SlideGestureStateTests {
     @Test func maxDisplacementTracksPeakDistanceFromOrigin() {
         var state = SlideGestureState()
         _ = state.handleChanged(
-            translation: CGSize(width: 30, height: 40), activationThreshold: threshold
+            translation: CGSize(width: 30, height: 40), configuration: .moveCursor
         ) // 50pt out ...
         _ = state.handleChanged(
-            translation: CGSize(width: 3, height: 4), activationThreshold: threshold
+            translation: CGSize(width: 3, height: 4), configuration: .moveCursor
         ) // ... then back
         // The running maximum must survive the return leg - a pending long
         // press stays cancelled after an out-and-back movement.
@@ -395,10 +434,10 @@ struct SlideGestureStateTests {
     @Test func maxDisplacementResetsAfterEnd() {
         var state = SlideGestureState()
         _ = state.handleChanged(
-            translation: CGSize(width: 100, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 100, height: 0), configuration: .moveCursor
         )
         _ = state.handleEnded(
-            translation: CGSize(width: 100, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 100, height: 0), configuration: .moveCursor
         )
         #expect(state.maxDisplacement == 0)
     }
@@ -406,7 +445,7 @@ struct SlideGestureStateTests {
     @Test func maxDisplacementResetsAfterCancellation() {
         var state = SlideGestureState()
         _ = state.handleChanged(
-            translation: CGSize(width: 100, height: 0), activationThreshold: threshold
+            translation: CGSize(width: 100, height: 0), configuration: .moveCursor
         )
         _ = state.handleCancelled()
         #expect(state.maxDisplacement == 0)

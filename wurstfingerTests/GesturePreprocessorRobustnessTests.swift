@@ -103,3 +103,75 @@ struct GesturePreprocessorRobustnessTests {
         #expect(!features.isCircular)
     }
 }
+
+// MARK: - Expert-mode store values
+
+/// A stale or foreign value in the shared store must not reach classification:
+/// every expert value is clamped to the range the Expert UI offers.
+struct ExpertValueClampingTests {
+    private func expertStore() -> InMemoryUserDefaults {
+        let store = InMemoryUserDefaults()
+        store.set(true, forKey: SettingsKey.expertModeEnabled.rawValue)
+        return store
+    }
+
+    @Test func nonPositiveMinSwipeLengthCannotTurnEveryTouchIntoASwipe() {
+        let store = expertStore()
+        store.set(0.0, forKey: GestureClassificationThresholds.minSwipeLengthKey)
+        let thresholds = GestureClassificationThresholds.fromUserDefaults(store: store)
+        #expect(thresholds.minSwipeLength
+            == CGFloat(GestureClassificationThresholds.minSwipeLengthRange.lowerBound))
+        let result = KeyGestureRecognizer.classify(
+            positions: [.zero, CGPoint(x: 2, y: 1)], config: .default, thresholds: thresholds
+        )
+        #expect(result.gesture == .tap)
+    }
+
+    @Test func storeValuesAboveTheExpertRangeClampToItsUpperBound() {
+        let store = expertStore()
+        store.set(9999.0, forKey: GesturePreprocessorConfig.jitterThresholdKey)
+        store.set(9999.0, forKey: GesturePreprocessorConfig.maxJumpDistanceKey)
+        store.set(99, forKey: GesturePreprocessorConfig.smoothingWindowKey)
+        store.set(9999.0, forKey: GestureClassificationThresholds.minSwipeLengthKey)
+        store.set(9999.0, forKey: GestureClassificationThresholds.maxReturnRatioKey)
+        store.set(9999.0, forKey: GestureClassificationThresholds.minCircularityKey)
+        let config = GesturePreprocessorConfig.fromUserDefaults(store: store)
+        let thresholds = GestureClassificationThresholds.fromUserDefaults(store: store)
+        #expect(config.jitterThreshold == CGFloat(GesturePreprocessorConfig.jitterThresholdRange.upperBound))
+        #expect(config.maxJumpDistance == CGFloat(GesturePreprocessorConfig.maxJumpDistanceRange.upperBound))
+        #expect(config.smoothingWindow == GesturePreprocessorConfig.smoothingWindowRange.upperBound)
+        #expect(thresholds.minSwipeLength
+            == CGFloat(GestureClassificationThresholds.minSwipeLengthRange.upperBound))
+        #expect(thresholds.maxReturnRatio
+            == CGFloat(GestureClassificationThresholds.maxReturnRatioRange.upperBound))
+        #expect(thresholds.minCircularity
+            == CGFloat(GestureClassificationThresholds.minCircularityRange.upperBound))
+    }
+
+    @Test func negativeStoreValuesClampToTheExpertLowerBound() {
+        let store = expertStore()
+        store.set(-5.0, forKey: GesturePreprocessorConfig.jitterThresholdKey)
+        store.set(-5.0, forKey: GesturePreprocessorConfig.maxJumpDistanceKey)
+        store.set(-5, forKey: GesturePreprocessorConfig.smoothingWindowKey)
+        let config = GesturePreprocessorConfig.fromUserDefaults(store: store)
+        #expect(config.jitterThreshold == CGFloat(GesturePreprocessorConfig.jitterThresholdRange.lowerBound))
+        #expect(config.maxJumpDistance == CGFloat(GesturePreprocessorConfig.maxJumpDistanceRange.lowerBound))
+        #expect(config.smoothingWindow == GesturePreprocessorConfig.smoothingWindowRange.lowerBound)
+    }
+
+    @Test func evenSmoothingWindowStillRoundsUpInsideTheRange() {
+        let store = expertStore()
+        store.set(10, forKey: GesturePreprocessorConfig.smoothingWindowKey)
+        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).smoothingWindow == 11)
+    }
+
+    @Test func nonFiniteStoreValueStillFallsBackToTheDefault() {
+        let store = expertStore()
+        store.set(Double.nan, forKey: GestureClassificationThresholds.minSwipeLengthKey)
+        store.set(Double.infinity, forKey: GesturePreprocessorConfig.jitterThresholdKey)
+        #expect(GestureClassificationThresholds.fromUserDefaults(store: store).minSwipeLength
+            == GestureClassificationThresholds.defaultMinSwipeLength)
+        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).jitterThreshold
+            == GesturePreprocessorConfig.defaultJitterThreshold)
+    }
+}
