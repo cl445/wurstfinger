@@ -7,9 +7,21 @@ container, the specular highlights, the shadow and all four appearances
 artwork layers plus a background fill described in icon.json.
 
 This script slices the single-path line drawing in Design/AppIcon.svg into
-those layers, normalises them onto the 1024x1024 icon canvas and writes the
-bundle. Xcode's actool compiles it and additionally emits the legacy raster
-icons for pre-iOS-26 devices, so no .appiconset is needed.
+those layers and normalises them onto the 1024x1024 icon canvas. Xcode's
+actool compiles the bundle and additionally emits the legacy raster icons for
+pre-iOS-26 devices, so no .appiconset is needed.
+
+Division of labour:
+
+- The layer SVGs under AppIcon.icon/Assets are generated, and are overwritten
+  on every run. Edit Design/AppIcon.svg, not them.
+- AppIcon.icon/icon.json is written once and then hand-maintained in Icon
+  Composer (Xcode > Open Developer Tool > Icon Composer). Per-appearance
+  settings — most usefully a lighter glyph fill for the dark appearance —
+  can only be authored there; hand-writing them into the JSON is silently
+  dropped or crashes actool. Re-running this script keeps the file and only
+  checks that it still references the generated layers. Pass
+  --reset-icon-json to deliberately throw those edits away.
 
 Requires Inkscape: the source artwork is stroke-only, and Icon Composer's
 renderer fills open paths instead of stroking them, so strokes must be
@@ -17,6 +29,7 @@ flattened into filled outlines first.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import shutil
@@ -213,8 +226,47 @@ def build_icon_json() -> dict[str, object]:
     }
 
 
-def generate_icon(svg_path: Path, icon_dir: Path) -> None:
-    """Write the complete AppIcon.icon bundle."""
+def check_icon_json(icon_dir: Path) -> None:
+    """
+    Verify a hand-maintained icon.json still matches the generated layers.
+
+    icon.json is not rewritten once it exists, so it can drift away from the
+    artwork — a renamed layer would leave the icon silently missing a piece.
+    """
+    try:
+        document = json.loads((icon_dir / "icon.json").read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise ConversionError(f"{icon_dir.name}/icon.json is not valid JSON: {error}") from error
+
+    referenced = {
+        layer.get("image-name")
+        for group in document.get("groups", [])
+        for layer in group.get("layers", [])
+    }
+    expected = {f"{name}.svg" for name in LAYERS}
+
+    if missing := expected - referenced:
+        raise ConversionError(
+            f"icon.json does not reference generated layer(s): {', '.join(sorted(missing))}. "
+            "Add them in Icon Composer, or delete icon.json to regenerate a default one."
+        )
+    if stale := referenced - expected:
+        raise ConversionError(
+            f"icon.json references layer(s) this script no longer generates: "
+            f"{', '.join(sorted(str(s) for s in stale))}. "
+            "Update LAYERS here or fix the layer in Icon Composer."
+        )
+
+
+def generate_icon(svg_path: Path, icon_dir: Path, reset: bool = False) -> str:
+    """
+    Regenerate the layer artwork, and describe what happened to icon.json.
+
+    Only the layer SVGs are derived from Design/AppIcon.svg. icon.json is
+    written once and then left alone, because per-appearance settings — the
+    dark fill above all — can only be authored in Icon Composer, and
+    rewriting the file would throw that work away on every run.
+    """
     inkscape = require_inkscape()
     paths = extract_paths(svg_path.read_text(encoding="utf-8"))
 
@@ -237,18 +289,41 @@ def generate_icon(svg_path: Path, icon_dir: Path) -> None:
         )
         flatten_strokes(inkscape, layer_path)
 
+    icon_json = icon_dir / "icon.json"
+    if icon_json.exists() and not reset:
+        check_icon_json(icon_dir)
+        return "kept existing icon.json (edit it in Icon Composer)"
+
+    write_icon_json(icon_dir)
+    return "wrote a fresh icon.json" if reset else "created icon.json"
+
+
+def write_icon_json(icon_dir: Path) -> None:
+    """Write the default icon.json. Overwrites any Icon Composer edits."""
     (icon_dir / "icon.json").write_text(
         json.dumps(build_icon_json(), indent=2) + "\n", encoding="utf-8"
     )
 
 
 def main() -> None:
-    project_root = Path(__file__).resolve().parent.parent
-    generate_icon(
-        svg_path=project_root / "Design" / "AppIcon.svg",
-        icon_dir=project_root / "wurstfinger" / "AppIcon.icon",
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--reset-icon-json",
+        action="store_true",
+        help="discard icon.json and write a fresh default, losing Icon Composer edits",
     )
-    print("✓ Generated wurstfinger/AppIcon.icon (Liquid Glass, all appearances)")
+    args = parser.parse_args()
+
+    project_root = Path(__file__).resolve().parent.parent
+    try:
+        outcome = generate_icon(
+            svg_path=project_root / "Design" / "AppIcon.svg",
+            icon_dir=project_root / "wurstfinger" / "AppIcon.icon",
+            reset=args.reset_icon_json,
+        )
+    except ConversionError as error:
+        raise SystemExit(f"✗ {error}") from None
+    print(f"✓ Regenerated layer artwork; {outcome}")
 
 
 if __name__ == "__main__":
