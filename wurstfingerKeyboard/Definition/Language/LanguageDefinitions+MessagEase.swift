@@ -145,7 +145,7 @@ extension LanguageDefinitions {
                 ["ي", "ا", "ر"],
                 ["و", "ن", "د"],
             ],
-            directionalOverrides: [
+            directionalOverrides: ScriptPunctuation.arabicScript(adding: [
                 GridSlot.topLeft: [.swipeRight: "ـ", .swipeDown: "ة", .swipeDownRight: "ق"],
                 GridSlot.topCenter: [
                     .swipeUp: "ُ", .swipeUpLeft: "ِ", .swipeUpRight: "َ",
@@ -171,13 +171,13 @@ extension LanguageDefinitions {
                     .swipeUp: "ً", .swipeUpLeft: "ۋ", .swipeUpRight: "ْ",
                     .swipeLeft: "ذ",
                 ],
-            ],
-            returnOverrides: [
+            ]),
+            returnOverrides: ScriptPunctuation.arabicScriptReturns(adding: [
                 GridSlot.topCenter: [.swipeUp: "ٌ", .swipeUpLeft: "ٍ", .swipeUpRight: "ً"],
                 GridSlot.midLeft: [.swipeDown: "ئ"],
                 GridSlot.bottomCenter: [.swipeRight: "إ"],
                 GridSlot.bottomRight: [.swipeUpLeft: "گ"],
-            ],
+            ]),
             supportsCapitalization: false,
             numericBackToAlphaLabel: "ابت",
             numericDigits: NumericLayouts.arabicIndicDigits
@@ -198,7 +198,7 @@ extension LanguageDefinitions {
                 ["ی", "ا", "ر"],
                 ["و", "ن", "د"],
             ],
-            directionalOverrides: [
+            directionalOverrides: ScriptPunctuation.arabicScript(adding: [
                 GridSlot.topLeft: [.swipeRight: "ـ", .swipeDown: "ۀ", .swipeDownRight: "ق"],
                 GridSlot.topCenter: [
                     .swipeUp: "ُ", .swipeUpLeft: "ِ", .swipeUpRight: "َ",
@@ -221,9 +221,13 @@ extension LanguageDefinitions {
                     .swipeUp: "ً", .swipeUpLeft: "گ", .swipeUpRight: "ْ",
                     .swipeLeft: "ذ",
                 ],
-            ],
-            returnOverrides: [
-                GridSlot.topLeft: [.swipeDown: "ة", .swipeDownRight: "ف"],
+            ]),
+            returnOverrides: ScriptPunctuation.arabicScriptReturns(adding: [
+                // The tatweel key's return swipe types ZWNJ (U+200C) — the
+                // half-space standard Persian orthography puts inside a word to
+                // keep a prefix or suffix from joining the stem. Written as an
+                // escape so the source carries no invisible character.
+                GridSlot.topLeft: [.swipeRight: "\u{200C}", .swipeDown: "ة", .swipeDownRight: "ف"],
                 GridSlot.topCenter: [
                     .swipeUp: "ٌ", .swipeUpLeft: "ٍ", .swipeUpRight: "ً",
                     .swipeDown: "ح", .swipeDownLeft: "ص", .swipeDownRight: "ب",
@@ -241,7 +245,7 @@ extension LanguageDefinitions {
                     .swipeRight: "إ",
                 ],
                 GridSlot.bottomRight: [.swipeUpLeft: "ک", .swipeLeft: "د"],
-            ],
+            ]),
             supportsCapitalization: false,
             numericBackToAlphaLabel: "ابپ",
             numericDigits: NumericLayouts.persianDigits
@@ -262,7 +266,7 @@ extension LanguageDefinitions {
                 ["ی", "ا", "ر"],
                 ["و", "ن", "د"],
             ],
-            directionalOverrides: [
+            directionalOverrides: ScriptPunctuation.arabicScript(adding: [
                 GridSlot.topLeft: [
                     .swipeUp: "ٹ", .swipeRight: "ـ", .swipeDown: "ۀ",
                     .swipeDownRight: "ق",
@@ -294,11 +298,12 @@ extension LanguageDefinitions {
                     .swipeUp: "ً", .swipeUpLeft: "گ", .swipeUpRight: "ْ",
                     .swipeLeft: "ذ",
                 ],
-            ],
-            returnOverrides: [
-                GridSlot.topLeft: [.swipeDown: "ة"],
+            ]),
+            returnOverrides: ScriptPunctuation.arabicScriptReturns(adding: [
+                // See the Persian layout: the tatweel return types ZWNJ (U+200C).
+                GridSlot.topLeft: [.swipeRight: "\u{200C}", .swipeDown: "ة"],
                 GridSlot.topCenter: [.swipeUp: "ٌ", .swipeUpLeft: "ٍ", .swipeUpRight: "ً"],
-            ],
+            ]),
             supportsCapitalization: false,
             numericBackToAlphaLabel: "ابپ",
             numericDigits: NumericLayouts.persianDigits
@@ -381,9 +386,10 @@ extension LanguageDefinitions {
                     .swipeLeft: "ฉ", .swipeRight: "ษ", .swipeDown: "ฎ",
                     .swipeDownLeft: "ฮ", .swipeDownRight: "ช",
                 ],
+                // ฿ rides the ท key's return swipe, matching the reference.
                 GridSlot.midRight: [
-                    .swipeUpLeft: "ฝ", .swipeUpRight: "ภ", .swipeDownLeft: "ฟ",
-                    .swipeDownRight: "ณ",
+                    .swipeUpLeft: "ฝ", .swipeUpRight: "ภ", .swipeLeft: "฿",
+                    .swipeDownLeft: "ฟ", .swipeDownRight: "ณ",
                 ],
                 GridSlot.bottomLeft: [
                     .swipeUp: "์", .swipeUpLeft: "แ", .swipeUpRight: "๎",
@@ -391,6 +397,14 @@ extension LanguageDefinitions {
                 ],
                 GridSlot.bottomCenter: [.swipeUp: "ๆ", .swipeRight: "ํ"],
                 GridSlot.bottomRight: [.swipeUp: "ฌ", .swipeRight: "ซ", .swipeDownLeft: "ำ"],
+            ],
+            // The reference's center returns: circling a key types a second
+            // consonant. Four of them (ฬ ฒ ฑ ฏ) have no other position in the
+            // layout, so without this they cannot be typed at all.
+            circularOverrides: [
+                GridSlot.topLeft: "ฬ", GridSlot.topCenter: "ณ", GridSlot.topRight: "ฎ",
+                GridSlot.midLeft: "ธ", GridSlot.center: "ฮ", GridSlot.midRight: "ฐ",
+                GridSlot.bottomLeft: "ฒ", GridSlot.bottomCenter: "ฑ", GridSlot.bottomRight: "ฏ",
             ],
             supportsCapitalization: false,
             numericBackToAlphaLabel: "กขค",
@@ -445,8 +459,8 @@ extension LanguageDefinitions {
                     .swipeLeft: "ण",
                 ],
                 GridSlot.bottomCenter: [
-                    .swipeUp: "ए", .swipeUpRight: "औ", .swipeRight: "ग",
-                    .swipeDownRight: "ष",
+                    .swipeUp: "ए", .swipeUpRight: "औ", .swipeLeft: "₹",
+                    .swipeRight: "ग", .swipeDownRight: "ष",
                 ],
                 GridSlot.bottomRight: [
                     .swipeUp: "च", .swipeUpLeft: "य", .swipeUpRight: "भ",
@@ -483,6 +497,8 @@ extension LanguageDefinitions {
             localeIdentifier: meta.localeIdentifier,
             centerCharacters: hiraganaCenterCharacters,
             directionalOverrides: hiraganaDirectionalOverrides,
+            returnOverrides: hiraganaReturnOverrides,
+            circularOverrides: hiraganaCircularOverrides,
             supportsCapitalization: false,
             numericBackToAlphaLabel: "かな",
             combineRuleSet: hiraganaCombineRules
@@ -519,14 +535,41 @@ extension LanguageDefinitions {
             .swipeUp: "の", .swipeUpLeft: "ゝ", .swipeUpRight: "む",
             .swipeLeft: "を", .swipeRight: "う", .swipeDown: "な",
         ],
+        // 、 and 。 replace the shared Latin comma and full stop, which stay one
+        // return swipe away (see `hiraganaReturnOverrides`) and keep their
+        // positions on the numeric layer. `AutoCapitalization` counts 。 as a
+        // sentence ender.
         GridSlot.bottomCenter: [
             .swipeUp: "て", .swipeUpLeft: "゛", .swipeLeft: "ね",
-            .swipeRight: "け",
+            .swipeRight: "け", .swipeDown: "。", .swipeDownLeft: "、",
         ],
         GridSlot.bottomRight: [
             .swipeUp: "え", .swipeUpLeft: "こ", .swipeLeft: "よ",
             .swipeRight: "ぬ", .swipeDownLeft: "お",
         ],
+    ]
+
+    /// Small kana are the reference's *return* outputs on their full-size
+    /// counterparts (や → ゃ, あ → ぁ). A caseless script gets no auto-generated
+    /// return, so without these a return swipe just repeats the plain kana and
+    /// ゃゅょ / ぁぅぇぉ are reachable only through the accent-cycle key. Voicing
+    /// stays on the ゛ key (`hiraganaCombineRules`), as in the reference.
+    /// `bottomCenter` keeps the Latin comma and full stop that 、 and 。 displace.
+    private static let hiraganaReturnOverrides: [String: [GestureType: String]] = [
+        GridSlot.topLeft: [.swipeDown: "ゃ"],
+        GridSlot.center: [.swipeUp: "ぁ"],
+        GridSlot.midRight: [.swipeUpLeft: "ゅ"],
+        GridSlot.bottomLeft: [.swipeRight: "ぅ"],
+        GridSlot.bottomCenter: [.swipeDown: ".", .swipeDownLeft: ","],
+        GridSlot.bottomRight: [.swipeUp: "ぇ", .swipeLeft: "ょ", .swipeDownLeft: "ぉ"],
+    ]
+
+    /// Circle gesture, the reference's center return: the voiced form of the
+    /// key's own kana, or the small form for い and つ. ぃ has no other position
+    /// in the layout.
+    private static let hiraganaCircularOverrides: [String: String] = [
+        GridSlot.topLeft: "ぐ", GridSlot.topCenter: "っ", GridSlot.topRight: "ぃ",
+        GridSlot.midLeft: "ぶ", GridSlot.bottomLeft: "ど", GridSlot.bottomRight: "ず",
     ]
 
     /// Dakuten voicing (kana + ゛ → voiced kana), from MessagEase hiraganaCombine.
@@ -556,6 +599,8 @@ extension LanguageDefinitions {
             localeIdentifier: meta.localeIdentifier,
             centerCharacters: katakanaCenterCharacters,
             directionalOverrides: katakanaDirectionalOverrides,
+            returnOverrides: katakanaReturnOverrides,
+            circularOverrides: katakanaCircularOverrides,
             supportsCapitalization: false,
             numericBackToAlphaLabel: "カナ",
             combineRuleSet: katakanaCombineRules
@@ -569,9 +614,11 @@ extension LanguageDefinitions {
     /// (`KatakanaDerivationTests`) pins the derived tables to the previously
     /// hand-authored values, proving zero behavior change.
     ///
-    /// Two genuine katakana-only deltas are layered on top: the ・ separator on
-    /// `bottomCenter.swipeDownRight` (below) and the wa-row voiced combine
-    /// entries in `katakanaCombineRules` (which the transform cannot supply).
+    /// Four genuine katakana-only deltas are layered on top: the ・ separator on
+    /// `bottomCenter.swipeDownRight` (below), the ":" it displaces on that
+    /// gesture's return swipe, the small ヮ on `midLeft.swipeDown`, and the
+    /// wa-row voiced combine entries in `katakanaCombineRules` (which the
+    /// transform cannot supply).
     static let katakanaCenterCharacters: [[String]] =
         hiraganaCenterCharacters.map { $0.map(katakanize) }
 
@@ -584,6 +631,20 @@ extension LanguageDefinitions {
         derived[GridSlot.bottomCenter, default: [:]][.swipeDownRight] = "・"
         return derived
     }()
+
+    static let katakanaReturnOverrides: [String: [GestureType: String]] = {
+        var derived = hiraganaReturnOverrides.mapValues { returns in
+            returns.mapValues(katakanize)
+        }
+        // Katakana-only deltas, both from the reference: ヮ has no hiragana
+        // counterpart on this key, and the ・ separator keeps the ":" it displaces.
+        derived[GridSlot.midLeft, default: [:]][.swipeDown] = "ヮ"
+        derived[GridSlot.bottomCenter, default: [:]][.swipeDownRight] = ":"
+        return derived
+    }()
+
+    static let katakanaCircularOverrides: [String: String] =
+        hiraganaCircularOverrides.mapValues(katakanize)
 
     /// Maps a single hiragana glyph to its katakana counterpart. The shared
     /// sound/iteration marks (゛ ゜ → unchanged, ゝ → ヽ) and the prolonged-sound

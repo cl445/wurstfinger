@@ -245,7 +245,11 @@ enum LanguageDefinitions {
                     .swipeDownLeft: "כ", .swipeLeft: "ע",
                 ],
                 GridSlot.bottomLeft: [.swipeUpRight: "ז"],
-                GridSlot.bottomCenter: [.swipeUp: "ס"],
+                // Geresh and gershayim carry Hebrew abbreviations, acronyms and
+                // numerals (ד״ר, צה״ל); the reference puts them where the Latin
+                // quotes sit. Those stay one return swipe away, and on the
+                // numeric layer.
+                GridSlot.bottomCenter: [.swipeUp: "ס", .swipeUpLeft: "״", .swipeUpRight: "׳"],
                 GridSlot.bottomRight: [.swipeUpLeft: "ט"],
             ],
             // MessagEase convention: a return swipe on a base letter produces
@@ -255,6 +259,7 @@ enum LanguageDefinitions {
                 GridSlot.center: [
                     .swipeUpRight: "ף", .swipeDown: "ן", .swipeDownLeft: "ך",
                 ],
+                GridSlot.bottomCenter: [.swipeUpLeft: "\"", .swipeUpRight: "'"],
             ],
             // Hebrew is caseless: no shift key, no shifted/capsLock modes,
             // no auto-capitalization.

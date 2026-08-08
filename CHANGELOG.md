@@ -6,6 +6,10 @@
 
 - Optional gesture trail — a soft, tapered stroke follows the finger while it swipes and fades out when it lifts, in the style of the iOS keyboard's swipe trail. Off by default, enabled under Settings › Gestures (#279)
 
+### Fixed
+
+- Characters that could not be typed at all on the non-Latin layouts: Thai ฬ ฒ ฑ ฏ (circle gesture, matching the reference's center return) and the baht sign ฿, the Japanese 、 and 。 plus the small kana on return swipes, the Persian/Urdu half-space (ZWNJ), Arabic-script punctuation ؟ ، ؛ ٭ in place of the Latin marks, the Hindi rupee sign ₹, and the Hebrew geresh and gershayim ׳ ״
+
 ## v1.4.0 — 2026-07-23
 
 ### Added

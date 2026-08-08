@@ -23,6 +23,11 @@ enum GridKeyboardFactory {
     ///     auto-generated uppercase return action (e.g. Hebrew final forms:
     ///     a return swipe on כ produces ך). Each entry must target a gesture
     ///     that already has a binding on that slot.
+    ///   - circularOverrides: Per-slot output of the circle gesture. This is
+    ///     the reference layout's "center return": uppercasing the center
+    ///     character (the runtime's generic fallback) covers it on cased
+    ///     scripts, but a caseless script needs its own glyph — Thai ม → ฒ,
+    ///     kana つ → っ.
     ///   - composeRuleOverrides: Language-specific compose rules merged over the
     ///     global base rules at runtime (override wins for the same trigger +
     ///     base character). Defaults to nil (global rules only).
@@ -48,6 +53,7 @@ enum GridKeyboardFactory {
         centerCharacters: [[String]],
         directionalOverrides: [String: [GestureType: String]] = [:],
         returnOverrides: [String: [GestureType: String]] = [:],
+        circularOverrides: [String: String] = [:],
         composeRuleOverrides: ComposeRuleSet? = nil,
         supportsCapitalization: Bool = true,
         numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel,
@@ -73,12 +79,18 @@ enum GridKeyboardFactory {
                 var bindings = CommonKeys.defaultSlotBindings[slotId] ?? [:]
 
                 // Apply language-specific overrides (replace default binding for that gesture).
-                // Letters get an auto-generated uppercase return action.
+                // Letters get an auto-generated uppercase return action — but only where
+                // uppercasing actually changes the letter. On a caseless script it is the
+                // identity, and a return action that repeats its own swipe is a silent
+                // no-op hiding a missing `returnOverrides` entry: without a return action
+                // the resolver falls through to the primary binding and commits the same
+                // glyph anyway.
                 if let overrides = directionalOverrides[slotId] {
                     for (gesture, text) in overrides {
                         let isLetter = text.unicodeScalars.contains { CharacterSet.letters.contains($0) }
-                        let returnAction: KeyAction? = isLetter
-                            ? .commitText(text.keyboardUppercased(with: locale))
+                        let uppercased = text.keyboardUppercased(with: locale)
+                        let returnAction: KeyAction? = isLetter && uppercased != text
+                            ? .commitText(uppercased)
                             : nil
                         bindings[gesture] = KeyBinding(
                             label: text, action: .commitText(text),
@@ -114,6 +126,20 @@ enum GridKeyboardFactory {
                             accessibilityLabel: base.accessibilityLabel
                         )
                     }
+                }
+
+                // Circle gesture. `handleCircular` falls back to the uppercased
+                // center character, which is the identity on a caseless script,
+                // so a distinct circle output has to be declared here. Both
+                // directions get the same binding — a thumb circle rarely comes
+                // out the way it was intended (same reasoning as `CommonKeys.cutAll`).
+                if let text = circularOverrides[slotId] {
+                    let circle = KeyBinding(
+                        label: text, action: .commitText(text),
+                        category: nil, returnAction: nil, accessibilityLabel: nil
+                    )
+                    bindings[.circularClockwise] = circle
+                    bindings[.circularCounterclockwise] = circle
                 }
 
                 letterKeys[slotId] = KeyConfig(
