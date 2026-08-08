@@ -4,7 +4,7 @@
 
 ### Added
 
-- Optional gesture trail — a soft, tapered stroke follows the finger while it swipes and fades out when it lifts, in the style of the iOS keyboard's swipe trail. Off by default, enabled under Settings › Gestures
+- Optional gesture trail — a soft, tapered stroke follows the finger while it swipes and fades out when it lifts, in the style of the iOS keyboard's swipe trail. Off by default, enabled under Settings › Gestures (#279)
 
 ## v1.4.0 — 2026-07-23
 
