@@ -184,10 +184,18 @@ struct SlideGestureHandler: ViewModifier {
     /// handled. A handled long press consumes the touch (no tap, no slide
     /// on release). `nil` disables detection.
     var onLongPress: (() -> Bool)?
+
+    /// Collects the touch path for the swipe trail overlay. Nil disables the
+    /// feed entirely (previews and tests); when set, the recorder itself
+    /// decides whether the user has the trail turned on.
+    var trail: GestureTrailRecorder?
+
     @Binding var isActive: Bool
 
     @State private var state = SlideGestureState()
     @State private var longPress = LongPressScheduler()
+    /// Identifies this key's touch sequence to the shared trail recorder.
+    @State private var trailToken = GestureTrailToken()
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
     /// guarantees `@GestureState` is reset when the system cancels the
@@ -198,7 +206,10 @@ struct SlideGestureHandler: ViewModifier {
     func body(content: Content) -> some View {
         content
             .gesture(
-                DragGesture(minimumDistance: 0)
+                // The coordinate space affects only `value.location`, which the
+                // trail records. `value.translation` is a delta, so the slide
+                // state machine reads the same values in any space.
+                DragGesture(minimumDistance: 0, coordinateSpace: GestureTrailRecorder.coordinateSpace)
                     .updating($sequenceInFlight) { _, inFlight, _ in
                         inFlight = true
                     }
@@ -207,6 +218,9 @@ struct SlideGestureHandler: ViewModifier {
                         // don't feed the state machine, or the movement would
                         // start a cursor slide after the digit was typed.
                         if longPress.consumedTouch {
+                            // The digit is already typed, so stop drawing a
+                            // gesture that will never be dispatched.
+                            trail?.cancel(from: trailToken)
                             isActive = true
                             return
                         }
@@ -214,6 +228,7 @@ struct SlideGestureHandler: ViewModifier {
                             translation: value.translation,
                             activationThreshold: activationThreshold
                         )
+                        trail?.record(value.location, isTouchDown: update.isTouchDown, from: trailToken)
                         if update.isTouchDown {
                             onTouchDown()
                             scheduleLongPress()
@@ -234,6 +249,7 @@ struct SlideGestureHandler: ViewModifier {
                             // release produces neither a tap nor a slide end.
                             longPress.clearConsumed()
                             _ = state.handleCancelled()
+                            trail?.cancel(from: trailToken)
                             isActive = false
                             return
                         }
@@ -243,6 +259,7 @@ struct SlideGestureHandler: ViewModifier {
                         ) {
                             onSlide(phase)
                         }
+                        trail?.finish(from: trailToken)
                         isActive = false
                     }
             )
@@ -256,7 +273,14 @@ struct SlideGestureHandler: ViewModifier {
                 if let phase = state.handleCancelled() {
                     onSlide(phase)
                 }
+                trail?.cancel(from: trailToken)
                 isActive = false
+            }
+            // A key removed mid-gesture reaches neither `onEnded` nor the
+            // cancel path, so it hands the trail back here instead of leaving
+            // the overlay redrawing at the display rate.
+            .onDisappear {
+                trail?.cancel(from: trailToken)
             }
     }
 

@@ -99,8 +99,15 @@ struct KeyGestureRecognizer: ViewModifier {
     /// disables long-press detection entirely.
     var onLongPress: (() -> Bool)?
 
+    /// Collects the touch path for the swipe trail overlay. Nil disables the
+    /// feed entirely (previews and tests); when set, the recorder itself
+    /// decides whether the user has the trail turned on.
+    var trail: GestureTrailRecorder?
+
     @State private var sequence = KeyGestureSequence()
     @State private var longPress = LongPressScheduler()
+    /// Identifies this key's touch sequence to the shared trail recorder.
+    @State private var trailToken = GestureTrailToken()
     @Binding var isActive: Bool
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
@@ -112,12 +119,24 @@ struct KeyGestureRecognizer: ViewModifier {
     func body(content: Content) -> some View {
         content
             .gesture(
-                DragGesture(minimumDistance: 0)
+                // The coordinate space affects only `value.location`, which the
+                // trail records. `value.translation` is a delta, so the
+                // classification below reads the same values in any space.
+                DragGesture(minimumDistance: 0, coordinateSpace: GestureTrailRecorder.coordinateSpace)
                     .updating($sequenceInFlight) { _, inFlight, _ in
                         inFlight = true
                     }
                     .onChanged { value in
-                        if sequence.handleChanged(translation: value.translation) {
+                        let isTouchDown = sequence.handleChanged(translation: value.translation)
+                        if longPress.consumedTouch {
+                            // The long press already typed its digit. A trail
+                            // that kept following the finger would advertise a
+                            // gesture that will never be dispatched.
+                            trail?.cancel(from: trailToken)
+                        } else {
+                            trail?.record(value.location, isTouchDown: isTouchDown, from: trailToken)
+                        }
+                        if isTouchDown {
                             onTouchDown()
                             scheduleLongPress()
                         } else if longPress.isScheduled,
@@ -134,6 +153,9 @@ struct KeyGestureRecognizer: ViewModifier {
                             // releasing doesn't produce a second key event.
                             longPress.clearConsumed()
                             sequence.handleCancelled()
+                            // No gesture was produced, so nothing should be
+                            // left drawn: drop the trail instead of fading it.
+                            trail?.cancel(from: trailToken)
                             isActive = false
                             return
                         }
@@ -141,6 +163,7 @@ struct KeyGestureRecognizer: ViewModifier {
                             translation: value.translation,
                             aspectRatio: aspectRatio
                         )
+                        trail?.finish(from: trailToken)
                         isActive = false
                         onGestureRecognized(classification)
                     }
@@ -154,7 +177,19 @@ struct KeyGestureRecognizer: ViewModifier {
                 longPress.cancel()
                 longPress.clearConsumed()
                 sequence.handleCancelled()
+                trail?.cancel(from: trailToken)
                 isActive = false
+            }
+            .onDisappear {
+                // A key torn down mid-gesture (mode switch, rotation,
+                // definition reload) reaches neither `onEnded` nor the
+                // `sequenceInFlight` reset — both live on the view that went
+                // away — so it hands the trail back here. Otherwise the
+                // recorder keeps it marked visible with no fade scheduled and
+                // the overlay redraws at the display rate until the next
+                // touch. Ownership makes this a no-op for any key that is not
+                // the one drawing, including while a trail is fading.
+                trail?.cancel(from: trailToken)
             }
     }
 

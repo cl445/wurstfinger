@@ -52,6 +52,11 @@ enum SettingsKey: String {
     /// Opt-in: the action is destructive and unaided by undo, so it stays off
     /// until asked for rather than surprising anyone who circles the key.
     case cutAllEnabled
+    /// Draws a fading trail under the finger while it swipes.
+    /// Opt-in: it is a learning and demonstration aid, and continuous
+    /// redrawing costs battery, so experienced users are not made to pay for
+    /// it. Off also keeps the keyboard visually identical to before.
+    case gestureTrailEnabled
 }
 
 // MARK: - Haptic Settings

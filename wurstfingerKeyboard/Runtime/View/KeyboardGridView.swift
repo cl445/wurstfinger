@@ -35,6 +35,13 @@ struct KeyboardGridView: View {
     /// showcase modes with `shouldPersistSettings: false`).
     let metrics: KeyboardLayoutMetrics
 
+    /// Collects the touch path for the swipe trail. `@State` rather than
+    /// `@StateObject`: it owns the object without subscribing to it, so the
+    /// samples arriving at up to 120 Hz cannot re-render the grid and all of
+    /// its keys. Only `GestureTrailOverlay` observes it, and only for the one
+    /// flag that says whether to draw.
+    @State private var gestureTrail = GestureTrailRecorder()
+
     var body: some View {
         let cells = GridLayoutSolver.solve(arrangement)
         let totalRows = cells.map { $0.row + $0.rowSpan }.max() ?? 0
@@ -49,6 +56,17 @@ struct KeyboardGridView: View {
                 cellContent(for: cell, totalRows: totalRows)
             }
         }
+        // Registered here rather than on the root view so it exists wherever a
+        // key is rendered — showcase, screenshot and preview hosts included —
+        // and so the recorded points land in exactly the bounds the overlay
+        // below draws in, with no padding or offset math to keep in sync.
+        .coordinateSpace(GestureTrailRecorder.coordinateSpace)
+        .overlay {
+            GestureTrailOverlay(
+                recorder: gestureTrail,
+                headWidth: GestureTrailOverlay.headWidth(for: metrics)
+            )
+        }
     }
 
     @ViewBuilder
@@ -60,6 +78,7 @@ struct KeyboardGridView: View {
                 onTouchDown: onTouchDown,
                 onSlide: onSlide,
                 onLongPress: onLongPress,
+                gestureTrail: gestureTrail,
                 spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan),
                 visualInset: visualInset(for: cell, totalRows: totalRows),
                 metrics: metrics,

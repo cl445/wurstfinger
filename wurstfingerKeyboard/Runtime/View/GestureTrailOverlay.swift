@@ -1,0 +1,69 @@
+//
+//  GestureTrailOverlay.swift
+//  Wurstfinger
+//
+//  Draws the optional swipe trail on top of the key grid.
+//
+
+import SwiftUI
+
+/// Renders the swipe trail recorded by `GestureTrailRecorder`.
+///
+/// Sits in an `.overlay` on the grid layout, which is also where the recorder's
+/// coordinate space is registered — so the recorded points map onto this view's
+/// bounds one to one, with no padding or offset correction.
+struct GestureTrailOverlay: View {
+    @ObservedObject var recorder: GestureTrailRecorder
+
+    /// Width of the ribbon at the finger, scaled from the rendered key size by
+    /// `headWidth(for:)`.
+    let headWidth: CGFloat
+
+    var body: some View {
+        // Nothing is rendered — and no display-linked timer runs — unless a
+        // trail is in flight.
+        if recorder.isVisible {
+            TimelineView(.animation) { timeline in
+                Canvas { context, _ in
+                    draw(in: &context, at: timeline.date.timeIntervalSinceReferenceDate)
+                }
+            }
+            .allowsHitTesting(false)
+            // Purely decorative: it echoes a gesture the user is making right
+            // now, so it has nothing to announce and must not sit between
+            // VoiceOver and the keys underneath.
+            .accessibilityHidden(true)
+        }
+    }
+
+    /// Head width for a rendered key size, clamped so the trail stays
+    /// proportionate on both a compact one-handed keyboard and a full-width
+    /// iPad layout.
+    static func headWidth(for metrics: KeyboardLayoutMetrics) -> CGFloat {
+        let scaled = metrics.rowHeight * KeyboardConstants.GestureTrail.widthFraction
+        return min(
+            max(scaled, KeyboardConstants.GestureTrail.minWidth),
+            KeyboardConstants.GestureTrail.maxWidth
+        )
+    }
+
+    private func draw(in context: inout GraphicsContext, at now: TimeInterval) {
+        let trail = recorder.trail
+        // The recorder drops a faded-out trail from a main-queue work item, so
+        // a busy main thread can hand this a trail whose fade already expired.
+        // Those frames would build the full ribbon only to fill it at zero
+        // opacity; bail before the geometry instead.
+        guard !trail.isFinished(at: now) else { return }
+        let points = trail.visiblePoints(at: now)
+        guard points.count >= 2 else { return }
+
+        let path = GestureTrailGeometry.ribbon(
+            through: GestureTrailGeometry.smoothed(points),
+            headWidth: headWidth
+        )
+        // One fill of one closed contour, so the alpha is uniform even where
+        // the path crosses itself.
+        context.opacity = KeyboardConstants.GestureTrail.opacity * trail.fadeOpacity(at: now)
+        context.fill(path, with: .color(.primary))
+    }
+}
