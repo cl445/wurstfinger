@@ -160,8 +160,11 @@ struct KeyboardHealthLogTests {
 
         log.recordAndFlush("viewDidDisappear")
 
-        let data = try Data(contentsOf: url)
-        let entry = try JSONDecoder().decode(KeyboardHealthLog.Entry.self, from: data)
+        let decoder = JSONDecoder()
+        let persisted = try Data(contentsOf: url).split(separator: 0x0A)
+            .compactMap { try? decoder.decode(KeyboardHealthLog.Entry.self, from: Data($0)) }
+        let entry = try #require(persisted.first)
+        #expect(persisted.count == 1)
         #expect(entry.label == "viewDidDisappear")
         #expect(entry.usedMB > 0)
     }

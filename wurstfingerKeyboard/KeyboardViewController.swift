@@ -88,16 +88,9 @@ final class KeyboardViewController: UIInputViewController {
         // of a "system keyboard showed instead" incident proves iOS never
         // launched the extension (as opposed to the extension failing).
         KeyboardHealthLog.shared.record("viewWillAppear")
-        refreshFromSharedState()
         // Reopen on the default (letters) layer: a keyboard dismissed on the
         // numeric or shifted layer must not resurface there.
-        viewModel.resetToDefaultMode()
-        updateKeyboardHeight()
-        // Engage/release shift for the field's current context (e.g. start
-        // uppercase in an empty compose field). `textDidChange` usually also
-        // fires on appearance, but that is not guaranteed in every host app;
-        // the refresh is idempotent, so evaluating in both paths is safe.
-        viewModel.refreshAutoCapitalization()
+        refreshForAppearance(resettingLayer: true)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -110,14 +103,41 @@ final class KeyboardViewController: UIInputViewController {
         KeyboardHealthLog.shared.record("viewDidAppear")
     }
 
+    /// The complete refresh an appearance owes the keyboard, in the order the
+    /// steps depend on each other: shared state first (it can swap the whole
+    /// definition), then the layer, then the height — `layoutMetrics` reads
+    /// the *active* mode's arrangement — then the shift state.
+    ///
+    /// Both paths that resurface a keyboard — `viewWillAppear` and the
+    /// host-foreground return — go through here, so neither can drift out of
+    /// sync with the other and resurface on stale state. `resettingLayer` is
+    /// the single deliberate difference: an appearance reopens on letters, a
+    /// foreground return keeps the layer because the user comes back to the
+    /// same field mid-typing.
+    private func refreshForAppearance(resettingLayer: Bool) {
+        refreshFromSharedState()
+        // Rebuild the SwiftUI host if it was torn down before suspension (see
+        // `shedMemoryBeforeSuspension`). Idempotent, so the first appearance —
+        // where `viewDidLoad` already built it — is a no-op. Rebuild before the
+        // height constraint update below so the content exists first.
+        configureHosting()
+        if resettingLayer {
+            viewModel.resetToDefaultMode()
+        }
+        updateKeyboardHeight()
+        // Engage/release shift for the field's current context (e.g. start
+        // uppercase in an empty compose field). `textDidChange` usually also
+        // fires on appearance, but that is not guaranteed in every host app;
+        // the refresh is idempotent, so evaluating in both paths is safe.
+        viewModel.refreshAutoCapitalization()
+    }
+
     /// Picks up state that may have changed outside this process while the
-    /// keyboard was off screen — settings edited in the host app, a language
-    /// or numpad-style switch, granted/revoked Full Access — and makes sure
-    /// the SwiftUI host exists. Cross-process defaults writes fire no
-    /// in-process `didChangeNotification` (see the observer note in
-    /// `KeyboardViewModel.init`), so this explicit reload is the only way
-    /// they reach the view model. Shared by `viewWillAppear` and the
-    /// host-foreground path, which the view lifecycle does not cover.
+    /// keyboard was off screen: settings edited in the host app, a language
+    /// or numpad-style switch, granted/revoked Full Access. Cross-process
+    /// defaults writes fire no in-process `didChangeNotification` (see the
+    /// observer note in `KeyboardViewModel.init`), so this explicit reload is
+    /// the only way they reach the view model.
     private func refreshFromSharedState() {
         // Persist Full Access status so the host app can show/hide haptic
         // settings. Write only on change: every shared-defaults write fires the
@@ -131,11 +151,6 @@ final class KeyboardViewController: UIInputViewController {
         // Reload definition only if language (or numpad style) changed while the
         // keyboard was backgrounded — avoids rebuilding the pipeline every time.
         loadDefinitionIfNeeded()
-        // Rebuild the SwiftUI host if it was torn down before suspension (see
-        // `shedMemoryBeforeSuspension`). Idempotent, so first appearance —
-        // where `viewDidLoad` already built it — is a no-op. Rebuild before any
-        // height constraint update so the content exists first.
-        configureHosting()
     }
 
     override func textDidChange(_ textInput: UITextInput?) {
@@ -217,6 +232,13 @@ final class KeyboardViewController: UIInputViewController {
         else { return }
         snapshot.frame = view.bounds
         snapshot.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        // The stand-in covers the whole keyboard with nothing live behind it,
+        // and it stays up until the rebuild — which the foreground handler
+        // skips for an off-screen keyboard, so possibly until the next
+        // appearance. A frozen image must never swallow a touch or reach
+        // VoiceOver, whatever it happens to outlive.
+        snapshot.isUserInteractionEnabled = false
+        snapshot.accessibilityElementsHidden = true
         view.addSubview(snapshot)
         suspensionPlaceholder = snapshot
     }
@@ -266,12 +288,11 @@ final class KeyboardViewController: UIInputViewController {
             // hosting rebuild — the biggest allocation — in the resume
             // moment, where the jetsam limit is enforced; `viewWillAppear`
             // covers that case when the keyboard is next shown. The active
-            // layer is deliberately kept (no `resetToDefaultMode`): the user
-            // returns to the same field mid-typing.
+            // layer is deliberately kept: the user returns to the same field
+            // mid-typing. (A definition reload inside the refresh still
+            // resets it — a new language's layout cannot keep the old mode.)
             if viewIfLoaded?.window != nil {
-                refreshFromSharedState()
-                updateKeyboardHeight()
-                viewModel.refreshAutoCapitalization()
+                refreshForAppearance(resettingLayer: false)
             }
             KeyboardHealthLog.shared.record("hostWillEnterForeground")
         })
@@ -289,8 +310,8 @@ final class KeyboardViewController: UIInputViewController {
     private func updateKeyboardHeight() {
         // Constraint height ≡ content height by construction: the metrics
         // are the same source the SwiftUI grid renders from, so the fixed
-        // paddings/spacing are no longer scaled by the constraint while the
-        // content keeps them constant (review finding M7).
+        // paddings/spacing are never scaled by the constraint while the
+        // content keeps them constant.
         let finalHeight = viewModel.layoutMetrics.totalHeight
 
         if let constraint = heightConstraint {

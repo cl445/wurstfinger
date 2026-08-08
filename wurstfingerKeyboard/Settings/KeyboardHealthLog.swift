@@ -47,8 +47,10 @@ struct KeyboardHealthLog {
         let availableMB: Double
     }
 
-    /// Bounds the log file (~50 KB): a cold start records four entries, a
-    /// warm re-appearance two, so this covers days of typical usage.
+    /// Bounds the log file (~50 KB). A cold start records four entries, and
+    /// every open→close cycle three — `viewWillAppear`, `viewDidAppear`, and
+    /// the suspension entry that closes it — so this holds roughly a hundred
+    /// cycles: still days of typical usage.
     static let defaultMaxEntries = 300
 
     static let fileName = "keyboard-health-log.json"
