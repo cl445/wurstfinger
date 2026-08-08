@@ -8,7 +8,10 @@
 
 ### Fixed
 
-- Characters that could not be typed at all on the non-Latin layouts: Thai ฬ ฒ ฑ ฏ (circle gesture, matching the reference's center return) and the baht sign ฿, the Japanese 、 and 。 plus the small kana on return swipes, the Persian/Urdu half-space (ZWNJ), Arabic-script punctuation ؟ ، ؛ ٭ in place of the Latin marks, the Hindi rupee sign ₹, and the Hebrew geresh and gershayim ׳ ״
+- Characters that could not be typed at all on the non-Latin layouts: Thai ฬ ฒ ฑ ฏ (circle gesture, matching the reference's center return) and the baht sign ฿, the Japanese 、 and 。 plus the small kana on return swipes, the Persian/Urdu half-space (ZWNJ), Arabic-script punctuation ؟ ، ؛ ٭ in place of the Latin marks, the Hindi rupee sign ₹, and the Hebrew geresh and gershayim ׳ ״ (#284)
+- Forward-delete and capitalize-word with an active selection: forward-delete now removes the selection, and capitalize-word changes the case of the selection instead of eating the word in front of it (#281)
+- The double-space shortcut now requires two consecutive space presses within a short window, so a space typed into an already-finished sentence is no longer rewritten and a deliberate double space stays typable; it also inserts the script's own sentence mark (Devanagari danda, Japanese full-width stop, Urdu full stop) (#281)
+- Cut-all is bounded by the same size ceiling as a paste instead of issuing an unbounded number of delete round-trips to the host app (#281)
 
 ## v1.4.0 — 2026-07-23
 

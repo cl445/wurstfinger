@@ -149,6 +149,38 @@ struct AdvancedTextMiddlewareDeleteForwardTests {
         #expect(target.documentContextBeforeInput == "")
         #expect(target.documentContextAfterInput == "!")
     }
+
+    @Test func deletesActiveSelectionAsOneUnit() {
+        let target = MockTextTarget()
+        target.documentContextBeforeInput = "abc"
+        target.selectedText = "def"
+        target.documentContextAfterInput = "!"
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.deleteForward)) { _ in }
+
+        // The proxy removes a selected range with a single deleteBackward;
+        // stepping over "!" first would delete that instead of the selection.
+        #expect(target.events == [.deleteBackward])
+        #expect(target.selectedText == nil)
+        #expect(target.documentContextBeforeInput == "abc")
+        #expect(target.documentContextAfterInput == "!")
+    }
+
+    @Test func deletesActiveSelectionAtEndOfDocument() {
+        let target = MockTextTarget()
+        target.documentContextBeforeInput = "abc"
+        target.selectedText = "def"
+        target.documentContextAfterInput = ""
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.deleteForward)) { _ in }
+
+        // Nothing follows the selection, so the "nothing to delete forward"
+        // guard must not swallow it.
+        #expect(target.events == [.deleteBackward])
+        #expect(target.selectedText == nil)
+    }
 }
 
 // MARK: - Capitalize word
@@ -230,6 +262,33 @@ struct AdvancedTextCapitalizeWordTests {
         // Trailing space means no word characters collected → no-op.
         #expect(target.events.isEmpty)
         #expect(target.documentContextBeforeInput == "hallo ")
+    }
+
+    @Test func uppercasesActiveSelectionInsteadOfPrecedingWord() {
+        let target = MockTextTarget()
+        target.documentContextBeforeInput = "abc"
+        target.selectedText = "def"
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.capitalizeWord(uppercased: true))) { _ in }
+
+        // The selection is replaced in a single insert, so the word in front
+        // of it stays untouched.
+        #expect(target.events == [.insertText("DEF")])
+        #expect(target.selectedText == nil)
+        #expect(target.documentContextBeforeInput == "abcDEF")
+    }
+
+    @Test func lowercasesActiveSelection() {
+        let target = MockTextTarget()
+        target.documentContextBeforeInput = "abc"
+        target.selectedText = "DEF"
+        let middleware = AdvancedTextFixtures.middleware(target: target)
+
+        middleware.process(AdvancedTextFixtures.context(.capitalizeWord(uppercased: false))) { _ in }
+
+        #expect(target.events == [.insertText("def")])
+        #expect(target.documentContextBeforeInput == "abcdef")
     }
 }
 
@@ -573,6 +632,27 @@ final class AdvancedTextMiddlewareClipboardTests {
         #expect(UIPasteboard.general.string == marker) // pasteboard untouched
         #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
     }
+
+    @Test func cutAllRefusesAnOversizedDocument() {
+        let marker = "untouched-\(UUID().uuidString)"
+        UIPasteboard.general.string = marker
+
+        let target = MockTextTarget()
+        target.hasFullAccess = true
+        // One unit past the shared cap: cutting it would mean 200k+
+        // deleteBackward round-trips to the host app.
+        target.documentContextBeforeInput = String(
+            repeating: "a", count: KeyboardConstants.TextInput.maxPasteUTF16Length + 1
+        )
+        var successTicks = 0
+        let middleware = AdvancedTextFixtures.middleware(target: target) { successTicks += 1 }
+
+        middleware.process(AdvancedTextFixtures.context(.cutAll)) { _ in }
+
+        #expect(target.events.isEmpty)
+        #expect(UIPasteboard.general.string == marker) // pasteboard untouched
+        #expect(successTicks == 0, "A guarded no-op must not fire a success tick")
+    }
 }
 
 // MARK: - Paste size cap
@@ -611,5 +691,33 @@ struct AdvancedTextPasteCapTests {
         let text = "ab" + family
         #expect(AdvancedTextMiddleware.cappedForInsertion(text, maxUTF16Length: 12) == "ab")
         #expect(AdvancedTextMiddleware.cappedForInsertion(text, maxUTF16Length: 13) == text)
+    }
+}
+
+// MARK: - Cut size cap
+
+/// `exceedsCutLimit` is pure, so the boundary is tested directly with small
+/// caps; that it is wired into cut-all is covered by
+/// `cutAllRefusesAnOversizedDocument` above.
+struct AdvancedTextCutLimitTests {
+    @Test func acceptsTextExactlyAtCap() {
+        #expect(!AdvancedTextMiddleware.exceedsCutLimit("abc", maxUTF16Length: 3))
+    }
+
+    @Test func rejectsTextAboveCap() {
+        #expect(AdvancedTextMiddleware.exceedsCutLimit("abcd", maxUTF16Length: 3))
+    }
+
+    @Test func countsUTF16UnitsNotCharacters() {
+        // 👍🏽 = one Character, 4 UTF-16 units.
+        #expect(AdvancedTextMiddleware.exceedsCutLimit("👍🏽", maxUTF16Length: 3))
+        #expect(!AdvancedTextMiddleware.exceedsCutLimit("👍🏽", maxUTF16Length: 4))
+    }
+
+    @Test func cutAndPasteShareTheSameCeiling() {
+        let atCap = String(repeating: "a", count: KeyboardConstants.TextInput.maxPasteUTF16Length)
+        #expect(!AdvancedTextMiddleware.exceedsCutLimit(atCap))
+        #expect(AdvancedTextMiddleware.exceedsCutLimit(atCap + "a"))
+        #expect(AdvancedTextMiddleware.cappedForInsertion(atCap) == atCap)
     }
 }
