@@ -18,8 +18,35 @@ struct DataDrivenKeyboardRootView: View {
     /// When nil, falls back to `viewModel.viewWidth`.
     var overrideWidth: CGFloat?
 
+    // Single read site for the per-key render settings: one observation per
+    // setting for the whole keyboard instead of one per key (`KeyView` used
+    // to carry five `@AppStorage` wrappers each — ~100 defaults observations
+    // per layer, re-registered on every hosting rebuild). The root re-renders
+    // on changes and passes fresh values down.
     @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyle: KeyboardStyle = .classic
+
+    @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
+    private var hideLetters = false
+
+    @AppStorage(SettingsKey.hideStandardSymbols.rawValue, store: SharedDefaults.store)
+    private var hideStandardSymbols = false
+
+    @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
+    private var hideExtraSymbols = false
+
+    @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
+    private var longPressNumbersEnabled = false
+
+    private var renderSettings: KeyRenderSettings {
+        KeyRenderSettings(
+            keyboardStyle: keyboardStyle,
+            hideLetters: hideLetters,
+            hideStandardSymbols: hideStandardSymbols,
+            hideExtraSymbols: hideExtraSymbols,
+            longPressNumbersEnabled: longPressNumbersEnabled
+        )
+    }
 
     var body: some View {
         let currentWidth = overrideWidth ?? viewModel.viewWidth
@@ -54,6 +81,7 @@ struct DataDrivenKeyboardRootView: View {
                     },
                     languageLabel: viewModel.currentLanguageLabel,
                     showLanguageLabel: viewModel.hasMultipleLanguages,
+                    renderSettings: renderSettings,
                     metrics: metrics
                 )
                 .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)

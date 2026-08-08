@@ -27,6 +27,12 @@ struct KeyboardGridView: View {
     var languageLabel: String = ""
     var showLanguageLabel: Bool = false
 
+    /// Render settings snapshot forwarded to every `KeyView` — read once in
+    /// `DataDrivenKeyboardRootView` instead of per-key `@AppStorage` (see
+    /// `KeyRenderSettings`). Defaulted so previews and tests that build the
+    /// grid directly keep the stock appearance.
+    var renderSettings: KeyRenderSettings = .init()
+
     /// Resolved layout metrics injected by `DataDrivenKeyboardRootView` from
     /// the view model rather than read via `@AppStorage`: the root view
     /// derives the keyboard *width* from the same metrics, and reading the
@@ -81,6 +87,7 @@ struct KeyboardGridView: View {
                 gestureTrail: gestureTrail,
                 spanRatio: CGFloat(cell.columnSpan) / CGFloat(cell.rowSpan),
                 visualInset: visualInset(for: cell, totalRows: totalRows),
+                settings: renderSettings,
                 metrics: metrics,
                 languageLabel: languageLabel,
                 showLanguageLabel: showLanguageLabel

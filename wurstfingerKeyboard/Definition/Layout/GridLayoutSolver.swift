@@ -26,10 +26,30 @@ struct SolvedCell: Equatable {
 /// consumes the result to place each key, including across multiple rows — the
 /// case the old `Grid`-based renderer could not draw and trapped on.
 enum GridLayoutSolver {
+    /// Memoized results per arrangement. `solve` runs in `KeyboardGridView.body`
+    /// on every grid render, but its result depends only on the arrangement —
+    /// a stored value inside the (registry-cached) definition — so re-solving
+    /// per render is pure allocation churn. Bounded by the distinct
+    /// arrangements ever rendered (languages × modes × contexts, each a few
+    /// hundred bytes), so the cache is not worth evicting under memory
+    /// pressure. Locked for the same reason as `KeyboardRegistry.cache`:
+    /// production access is main-thread only, but tests run in parallel.
+    private static var cache: [GridArrangement: [SolvedCell]] = [:]
+    private static let cacheLock = NSLock()
+
     /// Resolves an arrangement using first-fit, row-major placement: each
     /// placement takes the next free column in its row, skipping cells already
-    /// occupied by a span descending from an earlier row.
+    /// occupied by a span descending from an earlier row. Memoized.
     static func solve(_ arrangement: GridArrangement) -> [SolvedCell] {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        if let cached = cache[arrangement] { return cached }
+        let cells = resolve(arrangement)
+        cache[arrangement] = cells
+        return cells
+    }
+
+    private static func resolve(_ arrangement: GridArrangement) -> [SolvedCell] {
         let columns = max(arrangement.columns, 1)
         var occupied: [[Bool]] = []
 

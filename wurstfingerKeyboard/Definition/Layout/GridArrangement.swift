@@ -9,7 +9,8 @@ import Foundation
 
 /// A concrete spatial arrangement of keys.
 /// Multiple arrangements can lay out the same key pool differently.
-struct GridArrangement: Codable, Equatable {
+/// Hashable so `GridLayoutSolver` can memoize solved cells per arrangement.
+struct GridArrangement: Codable, Hashable {
     /// Number of logical columns.
     /// The sum of widthMultipliers in each row (plus columns spanned by keys from
     /// previous rows via heightMultiplier) must equal this value.

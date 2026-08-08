@@ -8,6 +8,24 @@
 
 import SwiftUI
 
+/// Snapshot of the user settings a key needs to render, read once at the
+/// root view and passed down by value.
+///
+/// Previously every `KeyView` carried five `@AppStorage` wrappers, so each
+/// keyboard build registered ~5 defaults observations per key (~100 per
+/// layer) — all rebuilt on every hosting rebuild and all notified on every
+/// defaults write. One read site at the root keeps the semantics (the root
+/// re-renders on changes and passes fresh values) at a fraction of the
+/// graph size. Defaults match the `@AppStorage` defaults they replace, so
+/// previews and tests that construct keys directly render unchanged.
+struct KeyRenderSettings: Equatable {
+    var keyboardStyle: KeyboardStyle = .classic
+    var hideLetters = false
+    var hideStandardSymbols = false
+    var hideExtraSymbols = false
+    var longPressNumbersEnabled = false
+}
+
 /// Generic key view that renders any `KeyConfig`.
 ///
 /// Visual appearance is driven by `key.style`. Hints derive directly from
@@ -38,8 +56,10 @@ struct KeyView: View {
 
     @State private var isActive = false
 
-    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
-    private var keyboardStyle: KeyboardStyle = .classic
+    /// User settings affecting key rendering, injected by `KeyboardGridView`
+    /// (ultimately read once in `DataDrivenKeyboardRootView`) instead of five
+    /// per-key `@AppStorage` observations — see `KeyRenderSettings`.
+    var settings: KeyRenderSettings = .init()
 
     /// Resolved layout metrics injected by `KeyboardGridView` (same reasoning
     /// as there: an `@AppStorage` read desynchronizes from the width path
@@ -57,25 +77,13 @@ struct KeyView: View {
     var languageLabel: String = ""
     var showLanguageLabel: Bool = false
 
-    @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
-    private var hideLetters = false
-
-    @AppStorage(SettingsKey.hideStandardSymbols.rawValue, store: SharedDefaults.store)
-    private var hideStandardSymbols = false
-
-    @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
-    private var hideExtraSymbols = false
-
-    @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
-    private var longPressNumbersEnabled = false
-
     /// Whether the label of `binding` should be drawn, honouring the user's
     /// label-visibility toggles (numbers and functional keys always show).
     private func isLabelVisible(_ binding: KeyBinding) -> Bool {
         LabelCategory.of(binding).isVisible(
-            hideLetters: hideLetters,
-            hideStandardSymbols: hideStandardSymbols,
-            hideExtraSymbols: hideExtraSymbols
+            hideLetters: settings.hideLetters,
+            hideStandardSymbols: settings.hideStandardSymbols,
+            hideExtraSymbols: settings.hideExtraSymbols
         )
     }
 
@@ -223,7 +231,7 @@ struct KeyView: View {
     /// Long-press handler for the gesture recognizer, or nil when the
     /// opt-in setting is off or no handler is wired up (preview contexts).
     private var longPressHandler: (() -> Bool)? {
-        guard longPressNumbersEnabled, let onLongPress else { return nil }
+        guard settings.longPressNumbersEnabled, let onLongPress else { return nil }
         return { onLongPress(key) }
     }
 
@@ -232,7 +240,7 @@ struct KeyView: View {
     @ViewBuilder
     private var background: some View {
         let shape = RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
-        switch keyboardStyle {
+        switch settings.keyboardStyle {
         case .classic:
             shape.fill(Self.backgroundColor(for: key.style, active: isActive))
         case .liquidGlass:
@@ -336,13 +344,16 @@ struct KeyView: View {
     }
 
     private var hintOverlay: some View {
-        GeometryReader { proxy in
-            let size = proxy.size
-            // Scale padding proportionally with font size
-            let fontRatio = scaledHintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize
-            let hPad = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * fontRatio
-            let vPad = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
+        // Scale padding proportionally with font size
+        let fontRatio = scaledHintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize
+        let hPad = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * fontRatio
+        let vPad = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
 
+        // No GeometryReader: each hint fills the cell via an infinity frame
+        // and pins to its directional alignment — the same geometry the
+        // previous proxy-sized frames produced, minus one layout container
+        // (and its extra layout pass) per key.
+        return ZStack {
             ForEach(Array(key.bindings.keys), id: \.self) { gesture in
                 // Render a hint when it has a text label, or when the action
                 // maps to an icon (globe, dismiss, copy/cut/paste). Utility
@@ -358,22 +369,14 @@ struct KeyView: View {
                                 .foregroundStyle(Color.primary.opacity(0.5))
                                 .fixedSize()
                                 .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
-                                .frame(
-                                    width: size.width,
-                                    height: size.height,
-                                    alignment: alignment
-                                )
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
                         }
                     } else if !binding.label.isEmpty || Self.hintIcon(for: binding.action) != nil,
                               isLabelVisible(binding) {
                         hintContent(for: binding)
                             .fixedSize()
                             .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
-                            .frame(
-                                width: size.width,
-                                height: size.height,
-                                alignment: alignment
-                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
                     }
                 }
             }
