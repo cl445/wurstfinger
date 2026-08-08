@@ -16,7 +16,9 @@ enum CommonKeys {
         var bindings: [GestureType: KeyBinding] = [:]
         // Tap is intentionally inert: switching the input method lives on the
         // swipe-left gesture below. The empty `.none` slot keeps the key's
-        // accessibility label without re-triggering the globe on a plain tap.
+        // accessibility label without re-triggering the globe on a plain tap;
+        // `accessibilityActivationGesture` routes a VoiceOver activation to
+        // that swipe so the label stays true for gesture-free input.
         bindings[.tap] = KeyBinding(
             label: "", action: .none,
             category: .utility, returnAction: nil,
@@ -24,7 +26,8 @@ enum CommonKeys {
         )
         bindings[.swipeLeft] = KeyBinding(
             label: "", action: .advanceToNextInputMode,
-            category: .utility, returnAction: nil, accessibilityLabel: nil
+            category: .utility, returnAction: nil,
+            accessibilityLabel: String(localized: "Switch keyboard")
         )
         bindings[.swipeDown] = KeyBinding(
             label: "", action: .dismissKeyboard,
@@ -33,12 +36,14 @@ enum CommonKeys {
         )
         bindings[.swipeRight] = KeyBinding(
             label: "", action: .switchToNextLanguage,
-            category: .utility, returnAction: nil, accessibilityLabel: nil
+            category: .utility, returnAction: nil,
+            accessibilityLabel: String(localized: "Next language")
         )
         return KeyConfig(
             id: UtilitySlot.globe, bindings: bindings,
             swipeMode: .fourWayCross, slideType: .none,
-            style: .utility, tapCycleActions: nil
+            style: .utility, tapCycleActions: nil,
+            accessibilityActivationGesture: .swipeLeft
         )
     }()
 

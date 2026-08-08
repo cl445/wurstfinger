@@ -263,19 +263,25 @@ struct GestureTrailGeometryTests {
 
 // MARK: - Recorder
 
+/// Travel below which a letter key dispatches its touch as a tap — what
+/// `KeyGestureRecognizer` hands the recorder at touch down.
+private let letterKeyTapBoundary = GestureClassificationThresholds.defaultMinSwipeLength
+
 struct GestureTrailRecorderTests {
-    /// Feeds a straight drag of `distance` points into the recorder.
+    /// Feeds a straight drag of `distance` points into the recorder, as a
+    /// letter key would.
     private func drag(
         _ recorder: GestureTrailRecorder,
         distance: CGFloat,
         steps: Int = 8,
         from token: GestureTrailToken = GestureTrailToken(),
-        origin: CGPoint = .zero
+        origin: CGPoint = .zero,
+        activationDistance: CGFloat = letterKeyTapBoundary
     ) {
-        recorder.record(origin, isTouchDown: true, from: token)
+        recorder.begin(at: origin, from: token, activationDistance: activationDistance)
         for step in 1 ... steps {
             let x = origin.x + distance * CGFloat(step) / CGFloat(steps)
-            recorder.record(CGPoint(x: x, y: origin.y), isTouchDown: false, from: token)
+            recorder.extend(to: CGPoint(x: x, y: origin.y), from: token)
         }
     }
 
@@ -303,10 +309,10 @@ struct GestureTrailRecorderTests {
         var clock: TimeInterval = 0
         let recorder = makeRecorder(enabled: true, clock: { clock })
         let token = GestureTrailToken()
-        recorder.record(.zero, isTouchDown: true, from: token)
+        recorder.begin(at: .zero, from: token, activationDistance: letterKeyTapBoundary)
         for step in 1 ... 8 {
             clock += 0.01
-            recorder.record(CGPoint(x: CGFloat(step) * 15, y: 0), isTouchDown: false, from: token)
+            recorder.extend(to: CGPoint(x: CGFloat(step) * 15, y: 0), from: token)
         }
         #expect(recorder.isVisible)
         #expect(recorder.trail.samples.count > 1)
@@ -317,16 +323,16 @@ struct GestureTrailRecorderTests {
         // the first sample would flash under every letter typed.
         let recorder = makeRecorder(enabled: true)
         let token = GestureTrailToken()
-        recorder.record(.zero, isTouchDown: true, from: token)
-        recorder.record(CGPoint(x: 2, y: 1), isTouchDown: false, from: token)
+        recorder.begin(at: .zero, from: token, activationDistance: letterKeyTapBoundary)
+        recorder.extend(to: CGPoint(x: 2, y: 1), from: token)
         #expect(!recorder.isVisible)
     }
 
     @Test func finishingATapDropsTheTrailWithoutAFade() {
         let recorder = makeRecorder(enabled: true)
         let token = GestureTrailToken()
-        recorder.record(.zero, isTouchDown: true, from: token)
-        recorder.record(CGPoint(x: 2, y: 0), isTouchDown: false, from: token)
+        recorder.begin(at: .zero, from: token, activationDistance: letterKeyTapBoundary)
+        recorder.extend(to: CGPoint(x: 2, y: 0), from: token)
         recorder.finish(from: token)
         #expect(!recorder.isVisible)
         #expect(recorder.trail.isEmpty)
@@ -360,7 +366,7 @@ struct GestureTrailRecorderTests {
         let first = GestureTrailToken()
         drag(recorder, distance: 120, from: first)
         recorder.finish(from: first)
-        recorder.record(CGPoint(x: 300, y: 300), isTouchDown: true, from: GestureTrailToken())
+        recorder.begin(at: CGPoint(x: 300, y: 300), from: GestureTrailToken(), activationDistance: letterKeyTapBoundary)
         #expect(!recorder.isVisible)
         #expect(recorder.trail.samples.map(\.point) == [CGPoint(x: 300, y: 300)])
     }
@@ -380,6 +386,81 @@ struct GestureTrailRecorderTests {
         #expect(recorder.isVisible)
     }
 
+    // MARK: - Activation Distance
+
+    @Test func nothingIsDrawnBelowTheActivationDistance() {
+        let recorder = makeRecorder(enabled: true)
+        let token = GestureTrailToken()
+        recorder.begin(at: .zero, from: token, activationDistance: 20)
+        for x in stride(from: 4.0, through: 16.0, by: 4.0) {
+            recorder.extend(to: CGPoint(x: x, y: 0), from: token)
+        }
+        #expect(!recorder.isVisible)
+        recorder.extend(to: CGPoint(x: 24, y: 0), from: token)
+        #expect(recorder.isVisible)
+    }
+
+    @Test func theActivationDistanceIsPerKeyNotGlobal() {
+        // The same 12 pt drag is still a tap on a letter key (20 pt boundary)
+        // and already a cursor slide on the space bar (8 pt), so the trail has
+        // to follow the key that recorded it — a sloppy tap must not flash a
+        // streak.
+        let letterKey = makeRecorder(enabled: true)
+        let spaceBar = makeRecorder(enabled: true)
+        let left = GestureTrailToken()
+        let right = GestureTrailToken()
+        letterKey.begin(at: .zero, from: left, activationDistance: letterKeyTapBoundary)
+        spaceBar.begin(
+            at: .zero, from: right,
+            activationDistance: KeyboardConstants.SpaceGestures.dragActivationThreshold
+        )
+        for x in stride(from: 4.0, through: 12.0, by: 4.0) {
+            letterKey.extend(to: CGPoint(x: x, y: 0), from: left)
+            spaceBar.extend(to: CGPoint(x: x, y: 0), from: right)
+        }
+        #expect(!letterKey.isVisible)
+        #expect(spaceBar.isVisible)
+    }
+
+    @Test func theTapBoundaryIsMeasuredInTheClassifiersSpace() {
+        // `classify` divides the horizontal component by the key's aspect
+        // ratio, so on a wide key a sideways slip stays a tap for longer than
+        // the same travel downwards. The trail has to use the same ellipse or
+        // it draws under a touch that is about to be dispatched as a tap.
+        let aspect: CGFloat = 1.62
+        let sideways = makeRecorder(enabled: true)
+        let downwards = makeRecorder(enabled: true)
+        let left = GestureTrailToken()
+        let right = GestureTrailToken()
+        sideways.begin(at: .zero, from: left, activationDistance: 20, aspectRatio: aspect)
+        downwards.begin(at: .zero, from: right, activationDistance: 20, aspectRatio: aspect)
+        sideways.extend(to: CGPoint(x: 25, y: 0), from: left)
+        downwards.extend(to: CGPoint(x: 0, y: 25), from: right)
+        #expect(!sideways.isVisible)
+        #expect(downwards.isVisible)
+        // 20 pt normalized is 32.4 raw points across.
+        sideways.extend(to: CGPoint(x: 33, y: 0), from: left)
+        #expect(sideways.isVisible)
+    }
+
+    @Test func aDegenerateAspectRatioFallsBackToRawTravel() {
+        let recorder = makeRecorder(enabled: true)
+        let token = GestureTrailToken()
+        recorder.begin(at: .zero, from: token, activationDistance: 20, aspectRatio: 0)
+        recorder.extend(to: CGPoint(x: 24, y: 0), from: token)
+        #expect(recorder.isVisible)
+    }
+
+    @Test func theLetterKeyTrailStartsAtTheClassifiersTapBoundary() {
+        let store = InMemoryUserDefaults()
+        #expect(KeyGestureRecognizer.tapBoundary(store: store) == letterKeyTapBoundary)
+        // Expert mode retunes the classification boundary; the trail follows
+        // it instead of keeping a threshold of its own.
+        store.set(true, forKey: SettingsKey.expertModeEnabled.rawValue)
+        store.set(42.0, forKey: GestureClassificationThresholds.minSwipeLengthKey)
+        #expect(KeyGestureRecognizer.tapBoundary(store: store) == 42)
+    }
+
     // MARK: - Touch-Sequence Ownership
 
     @Test func aSecondFingerDoesNotHijackTheTrail() {
@@ -391,8 +472,8 @@ struct GestureTrailRecorderTests {
         let right = GestureTrailToken()
         drag(recorder, distance: 120, from: left)
 
-        recorder.record(CGPoint(x: 300, y: 300), isTouchDown: true, from: right)
-        recorder.record(CGPoint(x: 340, y: 300), isTouchDown: false, from: right)
+        recorder.begin(at: CGPoint(x: 300, y: 300), from: right, activationDistance: letterKeyTapBoundary)
+        recorder.extend(to: CGPoint(x: 340, y: 300), from: right)
 
         #expect(recorder.isVisible)
         let points = recorder.trail.samples.map(\.point)
@@ -406,7 +487,7 @@ struct GestureTrailRecorderTests {
         let right = GestureTrailToken()
         drag(recorder, distance: 120, from: left)
 
-        recorder.record(CGPoint(x: 300, y: 300), isTouchDown: true, from: right)
+        recorder.begin(at: CGPoint(x: 300, y: 300), from: right, activationDistance: letterKeyTapBoundary)
         recorder.finish(from: right)
         #expect(recorder.trail.releaseTime == nil)
 
@@ -439,7 +520,7 @@ struct GestureTrailRecorderTests {
         // Only the recorder's weak `owner` refers to the token now.
         doomed = nil
 
-        recorder.record(CGPoint(x: 300, y: 300), isTouchDown: true, from: GestureTrailToken())
+        recorder.begin(at: CGPoint(x: 300, y: 300), from: GestureTrailToken(), activationDistance: letterKeyTapBoundary)
         #expect(recorder.trail.samples.map(\.point) == [CGPoint(x: 300, y: 300)])
     }
 

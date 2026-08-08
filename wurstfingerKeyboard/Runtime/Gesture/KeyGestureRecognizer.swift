@@ -8,6 +8,7 @@
 //
 
 import CoreGraphics
+import Foundation
 import SwiftUI
 
 /// Result of classifying a completed gesture.
@@ -107,7 +108,7 @@ struct KeyGestureRecognizer: ViewModifier {
     @State private var sequence = KeyGestureSequence()
     @State private var longPress = LongPressScheduler()
     /// Identifies this key's touch sequence to the shared trail recorder.
-    @State private var trailToken = GestureTrailToken()
+    @StateObject private var trailToken = GestureTrailToken()
     @Binding var isActive: Bool
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
@@ -137,7 +138,15 @@ struct KeyGestureRecognizer: ViewModifier {
                             return
                         }
                         let isTouchDown = sequence.handleChanged(translation: value.translation)
-                        trail?.record(value.location, isTouchDown: isTouchDown, from: trailToken)
+                        if isTouchDown {
+                            trail?.begin(
+                                at: value.location, from: trailToken,
+                                activationDistance: Self.tapBoundary(),
+                                aspectRatio: aspectRatio
+                            )
+                        } else {
+                            trail?.extend(to: value.location, from: trailToken)
+                        }
                         if isTouchDown {
                             onTouchDown()
                             scheduleLongPress()
@@ -231,6 +240,15 @@ struct KeyGestureRecognizer: ViewModifier {
     }
 
     // MARK: - Classification (Pure Function)
+
+    /// Travel at which `classify` stops calling a gesture a tap, measured in
+    /// the aspect-normalized space `classify` works in. The swipe trail starts
+    /// here, so a sloppy tap never flashes a streak and retuning
+    /// `minSwipeLength` in expert mode moves both together. Reads the store,
+    /// so callers evaluate it once per touch, never per drag sample.
+    static func tapBoundary(store: UserDefaults = SharedDefaults.store) -> CGFloat {
+        GestureClassificationThresholds.fromUserDefaults(store: store).minSwipeLength
+    }
 
     /// Classifies a sequence of touch positions into a `GestureType`, reading
     /// preprocessor config and thresholds from `SharedDefaults`.

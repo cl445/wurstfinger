@@ -233,4 +233,61 @@ struct KeyViewStyleTests {
         #expect(store.string(forKey: SettingsKey.keyboardStyle.rawValue) == nil)
         #expect(stock.keyboardStyle == .classic)
     }
+
+    // MARK: - Label sizing
+
+    /// The readability floors are a wish: at the smallest keyboard width a
+    /// cell is ~14 pt wide, where a 20 pt glyph is drawn across its
+    /// neighbours. The cell-relative cap has to win over the floor at every
+    /// size the settings allow (width 90-600 pt, aspect 1.0-1.62).
+    @Test func labelsNeverOutgrowTheirCell() {
+        for wish in stride(from: 90.0, through: 600.0, by: 10.0) {
+            for aspect in [1.0, 1.3, 1.62] {
+                for columns in [4, 5] {
+                    let metrics = KeyboardLayoutMetrics.resolve(
+                        wishWidth: wish, aspectRatio: aspect, columns: columns,
+                        availableWidth: 600, screenHeight: 900
+                    )
+                    let label = KeyView.clampedFontSize(
+                        base: KeyboardConstants.FontSizes.mainLabelBaseSize,
+                        metrics: metrics,
+                        minimum: KeyboardConstants.FontSizes.mainLabelMinSize,
+                        maximum: KeyboardConstants.FontSizes.mainLabelMaxSize,
+                        cellFraction: KeyboardConstants.FontSizes.mainLabelMaxCellFraction
+                    )
+                    let hint = KeyView.clampedFontSize(
+                        base: KeyboardConstants.FontSizes.hintBaseSize,
+                        metrics: metrics,
+                        minimum: KeyboardConstants.FontSizes.hintMinSize,
+                        maximum: KeyboardConstants.FontSizes.hintMaxSize,
+                        cellFraction: KeyboardConstants.FontSizes.hintMaxCellFraction
+                    )
+                    #expect(label > 0)
+                    #expect(label <= metrics.cellWidth / 2 + 0.0001)
+                    #expect(hint > 0)
+                    // Three hints share one row across the cell.
+                    #expect(hint * 3 <= metrics.cellWidth + 0.0001)
+                }
+            }
+        }
+    }
+
+    /// The cap must not move what a default keyboard renders — it only ever
+    /// cuts the readability floor on very small keyboards.
+    @Test func theCellCapLeavesTheReferenceKeyboardUntouched() {
+        let metrics = KeyboardLayoutMetrics.reference
+        let base = KeyboardConstants.FontSizes.mainLabelBaseSize
+        let uncapped = min(
+            max(base * metrics.fontScale, KeyboardConstants.FontSizes.mainLabelMinSize),
+            KeyboardConstants.FontSizes.mainLabelMaxSize
+        )
+        #expect(
+            KeyView.clampedFontSize(
+                base: base, metrics: metrics,
+                minimum: KeyboardConstants.FontSizes.mainLabelMinSize,
+                maximum: KeyboardConstants.FontSizes.mainLabelMaxSize,
+                cellFraction: KeyboardConstants.FontSizes.mainLabelMaxCellFraction
+            ) == uncapped
+        )
+    }
 }

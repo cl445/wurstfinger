@@ -12,9 +12,11 @@ import Foundation
 import SwiftUI
 
 /// Identity of one gesture modifier, used to decide which touch sequence owns
-/// the shared trail. Each recognizer holds its own in `@State`, so it is stable
-/// for as long as that key exists.
-final class GestureTrailToken {}
+/// the shared trail. Each recognizer holds its own in `@StateObject`, so it is
+/// created once per key rather than on every body evaluation and is stable for
+/// as long as that key exists. It publishes nothing; the conformance exists
+/// only for `@StateObject`'s deferred construction.
+final class GestureTrailToken: ObservableObject {}
 
 /// Per-keyboard collector for the swipe trail.
 ///
@@ -50,6 +52,24 @@ final class GestureTrailRecorder: ObservableObject {
     /// half-recorded trail behind.
     private var isRecording = false
 
+    /// Travel at which the recognizer that owns the current touch stops
+    /// classifying it as a tap. Supplied per touch by that recognizer rather
+    /// than kept as a constant: it is the classifier's `minSwipeLength` on a
+    /// letter key, the slide activation threshold on space and delete.
+    /// `.infinity` until a touch begins, so nothing can draw unclaimed.
+    private var activationDistance: CGFloat = .infinity
+
+    /// Aspect ratio the owning recognizer classifies in. `classify` divides the
+    /// horizontal component by it before measuring travel, so its tap boundary
+    /// is an ellipse in screen space; measuring the trail the same way keeps
+    /// the two boundaries identical on non-square keys. 1 for recognizers that
+    /// classify in raw points.
+    private var aspectRatio: CGFloat = 1
+
+    /// Running maximum travel from the touch-down point, measured the way the
+    /// owning recognizer measures it.
+    private var maxNormalizedDisplacement: CGFloat = 0
+
     /// The gesture modifier whose touch sequence currently owns the trail.
     ///
     /// One recorder is shared by every key, and on a thumb keyboard two touch
@@ -70,26 +90,45 @@ final class GestureTrailRecorder: ObservableObject {
         self.now = now
     }
 
-    /// Records one drag sample. `isTouchDown` marks the first sample of a new
-    /// touch sequence, as reported by the gesture state machines; `token`
-    /// identifies the recognizer it came from.
-    func record(_ location: CGPoint, isTouchDown: Bool, from token: GestureTrailToken) {
-        if isTouchDown {
-            // First finger down wins the trail and keeps it until its sequence
-            // ends. A concurrent second touch is ignored rather than drawn as
-            // a second trail: one stroke matches the system keyboard, and the
-            // overlay renders a single path.
-            guard owner == nil else { return }
-            owner = token
-            beginTouch(at: location)
-            return
-        }
+    /// Starts recording a new touch sequence.
+    ///
+    /// `activationDistance` is the travel below which the calling recognizer
+    /// will dispatch this touch as a tap; drawing before it would advertise a
+    /// swipe that never happens. `aspectRatio` is the space that travel is
+    /// measured in. `token` identifies the recognizer.
+    func begin(
+        at location: CGPoint,
+        from token: GestureTrailToken,
+        activationDistance: CGFloat,
+        aspectRatio: CGFloat = 1
+    ) {
+        // First finger down wins the trail and keeps it until its sequence
+        // ends. A concurrent second touch is ignored rather than drawn as
+        // a second trail: one stroke matches the system keyboard, and the
+        // overlay renders a single path.
+        guard owner == nil else { return }
+        owner = token
+        self.activationDistance = activationDistance
+        // A zero, negative or non-finite ratio would divide the horizontal
+        // component into nothing and draw under every tap.
+        self.aspectRatio = aspectRatio.isFinite && aspectRatio > 0 ? aspectRatio : 1
+        maxNormalizedDisplacement = 0
+        beginTouch(at: location)
+    }
+
+    /// Records one drag sample of the sequence started by `begin`.
+    func extend(to location: CGPoint, from token: GestureTrailToken) {
         guard owner === token, isRecording else { return }
         trail.extend(to: location, time: now())
         // Suppress taps: every keystroke on this keyboard begins as a touch
         // down, so drawing from the first sample would flash a dot under every
         // letter typed.
-        if !isVisible, trail.maxDisplacement >= KeyboardConstants.GestureTrail.activationDistance {
+        guard !isVisible else { return }
+        if let origin = trail.origin {
+            let travel = hypot((location.x - origin.x) / aspectRatio, location.y - origin.y)
+            maxNormalizedDisplacement = max(maxNormalizedDisplacement, travel)
+        }
+        if maxNormalizedDisplacement >= activationDistance {
             setVisible(true)
         }
     }
@@ -165,4 +204,15 @@ final class GestureTrailRecorder: ObservableObject {
         guard isVisible != value else { return }
         isVisible = value
     }
+}
+
+/// Owns one `GestureTrailRecorder` for the lifetime of a view.
+///
+/// `@State` rebuilds its initial value on every `body` evaluation and throws
+/// it away again; `@StateObject` takes it as an autoclosure and evaluates it
+/// once. Going through a holder that publishes nothing keeps that without
+/// subscribing the grid to the recorder — an `isVisible` flip would otherwise
+/// re-render all ~40 keys twice per gesture.
+final class GestureTrailStore: ObservableObject {
+    let recorder = GestureTrailRecorder()
 }

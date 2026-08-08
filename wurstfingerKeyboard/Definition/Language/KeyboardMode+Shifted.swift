@@ -46,7 +46,8 @@ extension KeyConfig {
     /// Creates an uppercase variant of this key.
     /// Only bindings with resolvedCategory == .letter are uppercased.
     func autoShifted(locale: Locale) -> KeyConfig {
-        let shiftedBindings = bindings.mapValues { binding -> KeyBinding in
+        var shifted = self
+        shifted.bindings = bindings.mapValues { binding -> KeyBinding in
             guard binding.resolvedCategory == .letter else { return binding }
             guard case let .commitText(text) = binding.action else { return binding }
             let upperLabel = binding.label.keyboardUppercased(with: locale)
@@ -59,9 +60,6 @@ extension KeyConfig {
                 accessibilityLabel: binding.accessibilityLabel
             )
         }
-        return KeyConfig(
-            id: id, bindings: shiftedBindings, swipeMode: swipeMode,
-            slideType: slideType, style: style, tapCycleActions: tapCycleActions
-        )
+        return shifted
     }
 }

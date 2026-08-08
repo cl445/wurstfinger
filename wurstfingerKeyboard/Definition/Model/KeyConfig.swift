@@ -13,7 +13,10 @@ struct KeyConfig: Codable, Equatable, Identifiable {
     let id: String
 
     /// Binding for each gesture. Only set entries are active.
-    let bindings: [GestureType: KeyBinding]
+    /// `var` so a derived key (shifted layer, removed binding) can be made by
+    /// copying this one and swapping the bindings — rebuilding it field by
+    /// field silently drops everything added to the type later.
+    var bindings: [GestureType: KeyBinding]
 
     /// Allowed swipe directions (default: .eightWay)
     let swipeMode: SwipeMode
@@ -27,4 +30,10 @@ struct KeyConfig: Codable, Equatable, Identifiable {
     /// Optional multi-tap actions (e.g. space → comma → period → ?)
     /// Inspired by Thumb-Key's nextTapActions
     let tapCycleActions: [KeyAction]?
+
+    /// Gesture an assistive technology performs instead of the tap it would
+    /// otherwise synthesize. Only needed where the tap is deliberately inert
+    /// (the globe, whose input-method switch lives on swipe-left): without it
+    /// a VoiceOver double tap resolves to `.none` and the key is unreachable.
+    var accessibilityActivationGesture: GestureType? = nil
 }

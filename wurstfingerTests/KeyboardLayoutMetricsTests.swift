@@ -268,4 +268,25 @@ struct KeyboardLayoutMetricsTests {
         #expect(metrics.cellHeight > 0)
         #expect(metrics.totalHeight.isFinite)
     }
+
+    /// The height cap can fall below the constant chrome for a tiny screen
+    /// height. No shipping device does that, but the value arrives from the
+    /// host, and an unfloored scale would collapse every cell to zero — which
+    /// `cellAspectRatio`, `fontScale` and the gesture geometry divide by.
+    @Test(arguments: [CGFloat(1), 10, 50, 100, 149])
+    func tinyScreenHeightsStillProducePositiveCells(screenHeight: CGFloat) {
+        let metrics = KeyboardLayoutMetrics.resolve(
+            wishWidth: 270,
+            aspectRatio: 1.3,
+            columns: 4,
+            availableWidth: 393,
+            screenHeight: screenHeight
+        )
+        #expect(metrics.cellWidth > 0)
+        #expect(metrics.cellHeight > 0)
+        #expect(metrics.keyboardWidth > 0)
+        #expect(metrics.fontScale > 0)
+        // Scaling both axes by one factor keeps the aspect exact even at the floor.
+        #expect(abs(metrics.cellAspectRatio - 1.3) < 0.0001)
+    }
 }
