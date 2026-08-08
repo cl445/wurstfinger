@@ -40,26 +40,21 @@ import subprocess
 from pathlib import Path
 from typing import Final
 
-
 # Palette, carried over from the pre-Liquid-Glass icon: dark line art on a
 # light background.
 #
 # The glass treatment washes the glyph colour out heavily — a fill of 0.0
-# still renders as roughly 31% grey rather than black — so the glyph is pushed
-# to black to buy back the contrast lost when the artwork was scaled down onto
-# the icon grid: 57 points in the default appearance against 40 at the
-# original #3D3D3D.
+# still renders as roughly 31% grey rather than black — so the glyph fill is
+# plain black to keep the line art legible at icon size.
 #
 # The dark appearance needs its own fill or the dark glyph sinks into the dark
-# background. Measured on device, pinning it lifts contrast from 26 to 65.
+# background.
 #
 # Writing that per-appearance fill by hand only works in one exact shape:
 # "fill-specializations" REPLACES "fill" — leaving both in place makes the
 # parser take "fill" and drop the specializations without a word. The base
 # value is the entry with no "appearance" key. Valid appearance names are
-# base, light, dark and tinted. This shape was recovered by letting Icon
-# Composer write the file and diffing it, after a dozen plausible-looking
-# hand-written spellings were all silently ignored.
+# base, light, dark and tinted.
 BACKGROUND_COLOR: Final[str] = "0.90980,0.90980,0.90980"  # #E8E8E8
 GLYPH_FILL: Final[str] = "0.00000,0.00000,0.00000"
 GLYPH_FILL_DARK: Final[str] = "0.90980,0.90980,0.90980"  # #E8E8E8
@@ -69,11 +64,6 @@ GLYPH_FILL_DARK: Final[str] = "0.90980,0.90980,0.90980"  # #E8E8E8
 # background fill — including 0.0 — changes nothing on device. Letting the
 # wallpaper through is the "Clear" appearance, which the user picks on the
 # Home Screen and the system renders from this same artwork.
-
-# Thin strokes are the other half of perceived contrast. Scaling the artwork
-# down to the icon grid thinned them, so this scales them back up
-# independently of the drawing size. 1.0 keeps the source weight.
-STROKE_WIDTH_SCALE: Final[float] = 1.0
 
 # Baked into the layer SVGs as a fallback; the per-layer "fill" in icon.json
 # is what actually drives the rendered colour.
@@ -98,8 +88,7 @@ BBOX_H: Final[float] = 128.4718
 INNER_GROUP_TRANSFORM: Final[str] = "translate(-48.671656,-24.610504)"
 
 # Path ids from Design/AppIcon.svg grouped into icon layers, back to front.
-# Splitting hand and fingers gives the icon real parallax depth on the
-# Home Screen instead of one flat plate of glass.
+# Splitting hand and fingers gives the icon parallax depth on the Home Screen.
 LAYERS: Final[dict[str, list[str]]] = {
     "Hand": ["path1", "path6", "path5"],
     "Fingers": ["path2", "path3", "path4"],
@@ -122,9 +111,9 @@ def require_inkscape() -> str:
 
 
 def extract_paths(svg_content: str) -> dict[str, str]:
-    """Return {id: <path .../> element} for every path in the source drawing."""
+    """Return {id: <path> element} for every path in the source drawing."""
     paths: dict[str, str] = {}
-    for match in re.finditer(r"<path\b.*?/>", svg_content, re.DOTALL):
+    for match in re.finditer(r"<path\b.*?(?:/>|</path>)", svg_content, re.DOTALL):
         element = match.group(0)
         id_match = re.search(r'\bid="([^"]+)"', element)
         if id_match is not None:
@@ -142,15 +131,14 @@ def build_layer_svg(elements: list[str]) -> str:
     scale = CONTENT_HEIGHT / BBOX_H
     offset_x = (CANVAS - BBOX_W * scale) / 2 - BBOX_X * scale
     offset_y = (CANVAS - CONTENT_HEIGHT) / 2 - BBOX_Y * scale
-    def restyle(element: str) -> str:
-        element = re.sub(r"stroke:#[0-9a-fA-F]{3,6}", f"stroke:{GLYPH_COLOR}", element)
-        return re.sub(
-            r"stroke-width:([0-9.]+)",
-            lambda m: f"stroke-width:{float(m.group(1)) * STROKE_WIDTH_SCALE:.5f}",
+    body = "\n      ".join(
+        re.sub(
+            r"stroke:#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b",
+            f"stroke:{GLYPH_COLOR}",
             element,
         )
-
-    body = "\n      ".join(restyle(element) for element in elements)
+        for element in elements
+    )
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"'
         ' viewBox="0 0 1024 1024">\n'
@@ -204,8 +192,7 @@ def build_icon_json() -> dict[str, object]:
         "groups": [
             {
                 # Front-most layer first. "glass" is a layer property, not a
-                # group one — setting it on the group silently does nothing,
-                # which is what made the first attempt look flat.
+                # group one — setting it on the group silently does nothing.
                 "layers": [
                     {
                         "image-name": f"{name}.svg",
@@ -312,7 +299,9 @@ def write_icon_json(icon_dir: Path) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument(
         "--reset-icon-json",
         action="store_true",
