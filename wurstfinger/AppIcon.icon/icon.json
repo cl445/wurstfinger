@@ -1,0 +1,66 @@
+{
+  "fill": {
+    "automatic-gradient": "extended-srgb:0.90980,0.90980,0.90980,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "Fingers.svg",
+          "name": "Fingers",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:0.90980,0.90980,0.90980,1.00000"
+              }
+            }
+          ]
+        },
+        {
+          "image-name": "Hand.svg",
+          "name": "Hand",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:0.90980,0.90980,0.90980,1.00000"
+              }
+            }
+          ]
+        }
+      ],
+      "lighting": "individual",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "specular": true,
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "circles": [
+      "watchOS"
+    ],
+    "squares": [
+      "iOS",
+      "macOS"
+    ]
+  }
+}
