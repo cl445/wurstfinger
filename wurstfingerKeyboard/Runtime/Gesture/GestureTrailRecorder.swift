@@ -9,6 +9,12 @@
 import Combine
 import CoreGraphics
 import Foundation
+import SwiftUI
+
+/// Identity of one gesture modifier, used to decide which touch sequence owns
+/// the shared trail. Each recognizer holds its own in `@State`, so it is stable
+/// for as long as that key exists.
+final class GestureTrailToken {}
 
 /// Per-keyboard collector for the swipe trail.
 ///
@@ -21,11 +27,11 @@ import Foundation
 /// invalidate every observer at the drag sample rate — up to 120 Hz — and the
 /// grid owns this object, so that would re-render all ~40 keys per sample.
 final class GestureTrailRecorder: ObservableObject {
-    /// Name of the coordinate space every recorded point is expressed in.
-    /// Registered by `KeyboardGridView` on the grid layout, which is both an
-    /// ancestor of every `KeyView` and the exact bounds the overlay draws in,
-    /// so recorded points need no offset correction to be drawn.
-    static let coordinateSpace = "wurstfinger.gestureTrail"
+    /// The coordinate space every recorded point is expressed in. Registered
+    /// by `KeyboardGridView` on the grid layout, which is both an ancestor of
+    /// every `KeyView` and the exact bounds the overlay draws in, so recorded
+    /// points need no offset correction to be drawn.
+    static let coordinateSpace = NamedCoordinateSpace.named("wurstfinger.gestureTrail")
 
     /// Whether the overlay should be rendering. False for taps (below the
     /// activation distance), while the setting is off, and once the fade-out
@@ -43,6 +49,16 @@ final class GestureTrailRecorder: ObservableObject {
     /// half-recorded trail behind.
     private var isRecording = false
 
+    /// The gesture modifier whose touch sequence currently owns the trail.
+    ///
+    /// One recorder is shared by every key, and on a thumb keyboard two touch
+    /// sequences overlap routinely. Without an owner the second thumb's touch
+    /// down would restart the stroke and its release would freeze it, so the
+    /// trail would jump between the fingers and vanish under the one still
+    /// moving. Weak, so a key torn down mid-gesture releases the trail rather
+    /// than blocking it forever.
+    private weak var owner: GestureTrailToken?
+
     private var fadeOut: DispatchWorkItem?
 
     init(
@@ -54,13 +70,20 @@ final class GestureTrailRecorder: ObservableObject {
     }
 
     /// Records one drag sample. `isTouchDown` marks the first sample of a new
-    /// touch sequence, as reported by the gesture state machines.
-    func record(_ location: CGPoint, isTouchDown: Bool) {
+    /// touch sequence, as reported by the gesture state machines; `token`
+    /// identifies the recognizer it came from.
+    func record(_ location: CGPoint, isTouchDown: Bool, from token: GestureTrailToken) {
         if isTouchDown {
+            // First finger down wins the trail and keeps it until its sequence
+            // ends. A concurrent second touch is ignored rather than drawn as
+            // a second trail: one stroke matches the system keyboard, and the
+            // overlay renders a single path.
+            guard owner == nil else { return }
+            owner = token
             beginTouch(at: location)
             return
         }
-        guard isRecording else { return }
+        guard owner === token, isRecording else { return }
         trail.extend(to: location, time: now())
         // Suppress taps: every keystroke on this keyboard begins as a touch
         // down, so drawing from the first sample would flash a dot under every
@@ -72,7 +95,11 @@ final class GestureTrailRecorder: ObservableObject {
 
     /// Ends the current touch. A trail that became visible freezes and fades
     /// out; one that stayed below the activation distance is dropped silently.
-    func finish() {
+    func finish(from token: GestureTrailToken) {
+        guard owner === token else { return }
+        // Released before the `isRecording` check so a touch taken while the
+        // setting was off still hands the trail back to the next gesture.
+        owner = nil
         guard isRecording else { return }
         isRecording = false
         guard isVisible else {
@@ -86,7 +113,12 @@ final class GestureTrailRecorder: ObservableObject {
     /// Discards the trail immediately, without a fade. Used for the paths that
     /// end a touch without a gesture: a system cancellation, and a long press
     /// that consumed the touch.
-    func cancel() {
+    func cancel(from token: GestureTrailToken) {
+        // Also gates the recognizers' unconditional cancel paths: a key whose
+        // gesture never started is not the owner and must not clear a trail
+        // another key is drawing.
+        guard owner === token else { return }
+        owner = nil
         isRecording = false
         fadeOut?.cancel()
         fadeOut = nil

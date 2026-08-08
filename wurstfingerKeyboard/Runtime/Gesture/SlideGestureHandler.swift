@@ -193,6 +193,8 @@ struct SlideGestureHandler: ViewModifier {
 
     @State private var state = SlideGestureState()
     @State private var longPress = LongPressScheduler()
+    /// Identifies this key's touch sequence to the shared trail recorder.
+    @State private var trailToken = GestureTrailToken()
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
     /// guarantees `@GestureState` is reset when the system cancels the
@@ -206,7 +208,7 @@ struct SlideGestureHandler: ViewModifier {
                 // The coordinate space only affects `value.location`, which
                 // the trail records; `value.translation` is a delta and stays
                 // identical, so the slide state machine is untouched.
-                DragGesture(minimumDistance: 0, coordinateSpace: .named(GestureTrailRecorder.coordinateSpace))
+                DragGesture(minimumDistance: 0, coordinateSpace: GestureTrailRecorder.coordinateSpace)
                     .updating($sequenceInFlight) { _, inFlight, _ in
                         inFlight = true
                     }
@@ -218,7 +220,7 @@ struct SlideGestureHandler: ViewModifier {
                             // Same as in `KeyGestureRecognizer`: the digit is
                             // already typed, so stop drawing a gesture that
                             // will never be dispatched.
-                            trail?.cancel()
+                            trail?.cancel(from: trailToken)
                             isActive = true
                             return
                         }
@@ -226,7 +228,7 @@ struct SlideGestureHandler: ViewModifier {
                             translation: value.translation,
                             activationThreshold: activationThreshold
                         )
-                        trail?.record(value.location, isTouchDown: update.isTouchDown)
+                        trail?.record(value.location, isTouchDown: update.isTouchDown, from: trailToken)
                         if update.isTouchDown {
                             onTouchDown()
                             scheduleLongPress()
@@ -247,7 +249,7 @@ struct SlideGestureHandler: ViewModifier {
                             // release produces neither a tap nor a slide end.
                             longPress.clearConsumed()
                             _ = state.handleCancelled()
-                            trail?.cancel()
+                            trail?.cancel(from: trailToken)
                             isActive = false
                             return
                         }
@@ -257,7 +259,7 @@ struct SlideGestureHandler: ViewModifier {
                         ) {
                             onSlide(phase)
                         }
-                        trail?.finish()
+                        trail?.finish(from: trailToken)
                         isActive = false
                     }
             )
@@ -271,7 +273,7 @@ struct SlideGestureHandler: ViewModifier {
                 if let phase = state.handleCancelled() {
                     onSlide(phase)
                 }
-                trail?.cancel()
+                trail?.cancel(from: trailToken)
                 isActive = false
             }
     }

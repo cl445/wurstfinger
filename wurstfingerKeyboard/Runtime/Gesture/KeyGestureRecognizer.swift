@@ -106,6 +106,8 @@ struct KeyGestureRecognizer: ViewModifier {
 
     @State private var sequence = KeyGestureSequence()
     @State private var longPress = LongPressScheduler()
+    /// Identifies this key's touch sequence to the shared trail recorder.
+    @State private var trailToken = GestureTrailToken()
     @Binding var isActive: Bool
 
     /// True while a touch sequence is in flight. Unlike `@State`, SwiftUI
@@ -120,7 +122,7 @@ struct KeyGestureRecognizer: ViewModifier {
                 // The coordinate space only affects `value.location`, which
                 // the trail records; `value.translation` is a delta and stays
                 // identical, so gesture classification is untouched.
-                DragGesture(minimumDistance: 0, coordinateSpace: .named(GestureTrailRecorder.coordinateSpace))
+                DragGesture(minimumDistance: 0, coordinateSpace: GestureTrailRecorder.coordinateSpace)
                     .updating($sequenceInFlight) { _, inFlight, _ in
                         inFlight = true
                     }
@@ -130,9 +132,9 @@ struct KeyGestureRecognizer: ViewModifier {
                             // The long press already typed its digit. A trail
                             // that kept following the finger would advertise a
                             // gesture that will never be dispatched.
-                            trail?.cancel()
+                            trail?.cancel(from: trailToken)
                         } else {
-                            trail?.record(value.location, isTouchDown: isTouchDown)
+                            trail?.record(value.location, isTouchDown: isTouchDown, from: trailToken)
                         }
                         if isTouchDown {
                             onTouchDown()
@@ -153,7 +155,7 @@ struct KeyGestureRecognizer: ViewModifier {
                             sequence.handleCancelled()
                             // No gesture was produced, so nothing should be
                             // left drawn: drop the trail instead of fading it.
-                            trail?.cancel()
+                            trail?.cancel(from: trailToken)
                             isActive = false
                             return
                         }
@@ -161,7 +163,7 @@ struct KeyGestureRecognizer: ViewModifier {
                             translation: value.translation,
                             aspectRatio: aspectRatio
                         )
-                        trail?.finish()
+                        trail?.finish(from: trailToken)
                         isActive = false
                         onGestureRecognized(classification)
                     }
@@ -175,7 +177,7 @@ struct KeyGestureRecognizer: ViewModifier {
                 longPress.cancel()
                 longPress.clearConsumed()
                 sequence.handleCancelled()
-                trail?.cancel()
+                trail?.cancel(from: trailToken)
                 isActive = false
             }
     }

@@ -265,11 +265,17 @@ struct GestureTrailGeometryTests {
 
 struct GestureTrailRecorderTests {
     /// Feeds a straight drag of `distance` points into the recorder.
-    private func drag(_ recorder: GestureTrailRecorder, distance: CGFloat, steps: Int = 8) {
-        recorder.record(.zero, isTouchDown: true)
+    private func drag(
+        _ recorder: GestureTrailRecorder,
+        distance: CGFloat,
+        steps: Int = 8,
+        from token: GestureTrailToken = GestureTrailToken(),
+        origin: CGPoint = .zero
+    ) {
+        recorder.record(origin, isTouchDown: true, from: token)
         for step in 1 ... steps {
-            let x = distance * CGFloat(step) / CGFloat(steps)
-            recorder.record(CGPoint(x: x, y: 0), isTouchDown: false)
+            let x = origin.x + distance * CGFloat(step) / CGFloat(steps)
+            recorder.record(CGPoint(x: x, y: origin.y), isTouchDown: false, from: token)
         }
     }
 
@@ -296,10 +302,11 @@ struct GestureTrailRecorderTests {
     @Test func enabledSwipeBecomesVisible() {
         var clock: TimeInterval = 0
         let recorder = makeRecorder(enabled: true, clock: { clock })
-        recorder.record(.zero, isTouchDown: true)
+        let token = GestureTrailToken()
+        recorder.record(.zero, isTouchDown: true, from: token)
         for step in 1 ... 8 {
             clock += 0.01
-            recorder.record(CGPoint(x: CGFloat(step) * 15, y: 0), isTouchDown: false)
+            recorder.record(CGPoint(x: CGFloat(step) * 15, y: 0), isTouchDown: false, from: token)
         }
         #expect(recorder.isVisible)
         #expect(recorder.trail.samples.count > 1)
@@ -309,16 +316,18 @@ struct GestureTrailRecorderTests {
         // Every keystroke starts as a touch down, so a trail that drew from
         // the first sample would flash under every letter typed.
         let recorder = makeRecorder(enabled: true)
-        recorder.record(.zero, isTouchDown: true)
-        recorder.record(CGPoint(x: 2, y: 1), isTouchDown: false)
+        let token = GestureTrailToken()
+        recorder.record(.zero, isTouchDown: true, from: token)
+        recorder.record(CGPoint(x: 2, y: 1), isTouchDown: false, from: token)
         #expect(!recorder.isVisible)
     }
 
     @Test func finishingATapDropsTheTrailWithoutAFade() {
         let recorder = makeRecorder(enabled: true)
-        recorder.record(.zero, isTouchDown: true)
-        recorder.record(CGPoint(x: 2, y: 0), isTouchDown: false)
-        recorder.finish()
+        let token = GestureTrailToken()
+        recorder.record(.zero, isTouchDown: true, from: token)
+        recorder.record(CGPoint(x: 2, y: 0), isTouchDown: false, from: token)
+        recorder.finish(from: token)
         #expect(!recorder.isVisible)
         #expect(recorder.trail.isEmpty)
     }
@@ -326,9 +335,10 @@ struct GestureTrailRecorderTests {
     @Test func finishingASwipeFreezesTheTrailForItsFade() {
         var clock: TimeInterval = 500
         let recorder = makeRecorder(enabled: true, clock: { clock })
-        drag(recorder, distance: 120)
+        let token = GestureTrailToken()
+        drag(recorder, distance: 120, from: token)
         clock = 501
-        recorder.finish()
+        recorder.finish(from: token)
         // Still drawn — the fade-out runs on a timer, not on this call.
         #expect(recorder.isVisible)
         #expect(recorder.trail.releaseTime == 501)
@@ -336,8 +346,9 @@ struct GestureTrailRecorderTests {
 
     @Test func cancelDropsEverythingImmediately() {
         let recorder = makeRecorder(enabled: true)
-        drag(recorder, distance: 120)
-        recorder.cancel()
+        let token = GestureTrailToken()
+        drag(recorder, distance: 120, from: token)
+        recorder.cancel(from: token)
         #expect(!recorder.isVisible)
         #expect(recorder.trail.isEmpty)
     }
@@ -346,9 +357,10 @@ struct GestureTrailRecorderTests {
         // Typing fast starts the next gesture while the last one is still
         // fading; the old path must not be extended by the new touch.
         let recorder = makeRecorder(enabled: true)
-        drag(recorder, distance: 120)
-        recorder.finish()
-        recorder.record(CGPoint(x: 300, y: 300), isTouchDown: true)
+        let first = GestureTrailToken()
+        drag(recorder, distance: 120, from: first)
+        recorder.finish(from: first)
+        recorder.record(CGPoint(x: 300, y: 300), isTouchDown: true, from: GestureTrailToken())
         #expect(!recorder.isVisible)
         #expect(recorder.trail.samples.map(\.point) == [CGPoint(x: 300, y: 300)])
     }
@@ -358,12 +370,74 @@ struct GestureTrailRecorderTests {
         // gesture, without the extension observing the store on every key.
         let defaults = InMemoryUserDefaults()
         let recorder = GestureTrailRecorder(defaults: defaults, now: { 0 })
-        drag(recorder, distance: 120)
+        let first = GestureTrailToken()
+        drag(recorder, distance: 120, from: first)
         #expect(!recorder.isVisible)
 
-        recorder.finish()
+        recorder.finish(from: first)
         defaults.set(true, forKey: SettingsKey.gestureTrailEnabled.rawValue)
         drag(recorder, distance: 120)
+        #expect(recorder.isVisible)
+    }
+
+    // MARK: - Touch-Sequence Ownership
+
+    @Test func aSecondFingerDoesNotHijackTheTrail() {
+        // Two-thumb typing overlaps touch sequences. Without ownership the
+        // second thumb's touch down restarts the stroke, so the trail jumps
+        // across the keyboard between the two fingers.
+        let recorder = makeRecorder(enabled: true)
+        let left = GestureTrailToken()
+        let right = GestureTrailToken()
+        drag(recorder, distance: 120, from: left)
+
+        recorder.record(CGPoint(x: 300, y: 300), isTouchDown: true, from: right)
+        recorder.record(CGPoint(x: 340, y: 300), isTouchDown: false, from: right)
+
+        #expect(recorder.isVisible)
+        let points = recorder.trail.samples.map(\.point)
+        #expect(points.allSatisfy { $0.y == 0 })
+        #expect(recorder.trail.origin == .zero)
+    }
+
+    @Test func aSecondFingerLiftingDoesNotEndTheOwnersTrail() {
+        let recorder = makeRecorder(enabled: true)
+        let left = GestureTrailToken()
+        let right = GestureTrailToken()
+        drag(recorder, distance: 120, from: left)
+
+        recorder.record(CGPoint(x: 300, y: 300), isTouchDown: true, from: right)
+        recorder.finish(from: right)
+        #expect(recorder.trail.releaseTime == nil)
+
+        recorder.cancel(from: right)
+        #expect(recorder.isVisible)
+        #expect(!recorder.trail.isEmpty)
+    }
+
+    @Test func ownershipIsReleasedForTheNextGesture() {
+        let recorder = makeRecorder(enabled: true)
+        let first = GestureTrailToken()
+        drag(recorder, distance: 120, from: first)
+        recorder.cancel(from: first)
+
+        let second = GestureTrailToken()
+        drag(recorder, distance: 120, from: second)
+        #expect(recorder.isVisible)
+    }
+
+    @Test func ownershipIsReleasedEvenWhenTheSettingWasOff() {
+        // A touch taken while the trail was disabled still claims the trail,
+        // so it has to hand it back — otherwise enabling the setting would
+        // leave the feature dead until the view is rebuilt.
+        let defaults = InMemoryUserDefaults()
+        let recorder = GestureTrailRecorder(defaults: defaults, now: { 0 })
+        let first = GestureTrailToken()
+        drag(recorder, distance: 120, from: first)
+        recorder.finish(from: first)
+
+        defaults.set(true, forKey: SettingsKey.gestureTrailEnabled.rawValue)
+        drag(recorder, distance: 120, from: GestureTrailToken())
         #expect(recorder.isVisible)
     }
 }

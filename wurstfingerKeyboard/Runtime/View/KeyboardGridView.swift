@@ -60,7 +60,7 @@ struct KeyboardGridView: View {
         // key is rendered — showcase, screenshot and preview hosts included —
         // and so the recorded points land in exactly the bounds the overlay
         // below draws in, with no padding or offset math to keep in sync.
-        .coordinateSpace(name: GestureTrailRecorder.coordinateSpace)
+        .coordinateSpace(GestureTrailRecorder.coordinateSpace)
         .overlay {
             GestureTrailOverlay(
                 recorder: gestureTrail,
