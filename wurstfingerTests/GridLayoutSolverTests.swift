@@ -98,3 +98,71 @@ struct GridLayoutSolverInvariantTests {
         return result
     }()
 }
+
+/// Locks the memoization contract: `solve` is called from `KeyboardGridView.body`
+/// on every render, so a cached result must be indistinguishable from a fresh
+/// one — including after the memory-pressure paths drop the cache.
+///
+/// Every test works on its own probe arrangement (unique key ids), so the
+/// cache assertions never observe entries other suites solve in parallel.
+/// `.serialized` because `evictAll` is global: it must not land between
+/// another test in this suite solving and asserting.
+@Suite(.serialized)
+struct GridLayoutSolverMemoizationTests {
+    /// A 2×2 arrangement whose key ids are unique per test.
+    private static func probe(_ name: String) -> GridArrangement {
+        GridArrangement(
+            columns: 2,
+            rows: [
+                [KeyPlacement(keyId: "\(name)-a"), KeyPlacement(keyId: "\(name)-b")],
+                [KeyPlacement(keyId: "\(name)-c", widthMultiplier: 2)],
+            ]
+        )
+    }
+
+    @Test func solvingMemoizesTheArrangement() {
+        let arrangement = Self.probe("memoizes")
+        #expect(!GridLayoutSolver.isCached(arrangement))
+        _ = GridLayoutSolver.solve(arrangement)
+        #expect(GridLayoutSolver.isCached(arrangement))
+    }
+
+    @Test func repeatedSolvesReturnEqualCells() {
+        let arrangement = Self.probe("repeated")
+        let first = GridLayoutSolver.solve(arrangement)
+        let second = GridLayoutSolver.solve(arrangement)
+        #expect(first == second)
+        #expect(!first.isEmpty)
+    }
+
+    /// The cache is keyed by value, so a structurally identical arrangement
+    /// built somewhere else hits the same entry — and must get the same cells.
+    @Test func equalArrangementValuesShareTheResult() {
+        let original = Self.probe("shared")
+        let copy = Self.probe("shared")
+        let cells = GridLayoutSolver.solve(original)
+        #expect(GridLayoutSolver.isCached(copy))
+        #expect(GridLayoutSolver.solve(copy) == cells)
+    }
+
+    /// `KeyboardViewController` drops the cache on memory warnings and before
+    /// suspension; the next solve must rebuild the identical result.
+    @Test func evictAllDropsEntriesAndKeepsSolverCorrect() {
+        let arrangement = Self.probe("evicted")
+        let before = GridLayoutSolver.solve(arrangement)
+        GridLayoutSolver.evictAll()
+        #expect(!GridLayoutSolver.isCached(arrangement))
+        #expect(GridLayoutSolver.solve(arrangement) == before)
+    }
+
+    /// `rowCount` shares the memoized cells, so it must agree with the solver
+    /// whether the arrangement was solved before or not.
+    @Test func rowCountMatchesSolvedSpansRegardlessOfCacheState() {
+        let arrangement = Self.probe("rowCount")
+        let cold = GridLayoutSolver.rowCount(arrangement)
+        let warm = GridLayoutSolver.rowCount(arrangement)
+        let expected = GridLayoutSolver.solve(arrangement).map { $0.row + $0.rowSpan }.max()
+        #expect(cold == warm)
+        #expect(cold == expected)
+    }
+}

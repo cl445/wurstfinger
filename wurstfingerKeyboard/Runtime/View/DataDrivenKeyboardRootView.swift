@@ -18,15 +18,42 @@ struct DataDrivenKeyboardRootView: View {
     /// When nil, falls back to `viewModel.viewWidth`.
     var overrideWidth: CGFloat?
 
+    // Single read site for the per-key render settings: one observation per
+    // setting for the whole keyboard rather than one per key view. The root
+    // re-renders on changes and passes fresh values down. The unstored-value
+    // defaults come from `KeyRenderSettings.stock`, so this site and the
+    // snapshot type agree on what an untouched installation renders.
     @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
-    private var keyboardStyle: KeyboardStyle = .classic
+    private var keyboardStyle: KeyboardStyle = KeyRenderSettings.stock.keyboardStyle
+
+    @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
+    private var hideLetters = KeyRenderSettings.stock.hideLetters
+
+    @AppStorage(SettingsKey.hideStandardSymbols.rawValue, store: SharedDefaults.store)
+    private var hideStandardSymbols = KeyRenderSettings.stock.hideStandardSymbols
+
+    @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
+    private var hideExtraSymbols = KeyRenderSettings.stock.hideExtraSymbols
+
+    @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
+    private var longPressNumbersEnabled = KeyRenderSettings.stock.longPressNumbersEnabled
+
+    private var renderSettings: KeyRenderSettings {
+        KeyRenderSettings(
+            keyboardStyle: keyboardStyle,
+            hideLetters: hideLetters,
+            hideStandardSymbols: hideStandardSymbols,
+            hideExtraSymbols: hideExtraSymbols,
+            longPressNumbersEnabled: longPressNumbersEnabled
+        )
+    }
 
     var body: some View {
         let currentWidth = overrideWidth ?? viewModel.viewWidth
         // Single geometry source: the resolved metrics drive the keyboard
         // width here and the row/cell sizes in the grid, so they can never
-        // desynchronize (the old split between the view-model width path and
-        // @AppStorage-read row heights was review finding M8/H3).
+        // desynchronize — which a second, `@AppStorage`-read source of row
+        // heights would allow.
         let metrics = viewModel.layoutMetrics(forContainerWidth: currentWidth)
         let availableSpace = currentWidth - metrics.keyboardWidth
         let horizontalOffset = availableSpace * (viewModel.keyboardHorizontalPosition - 0.5)
@@ -54,6 +81,7 @@ struct DataDrivenKeyboardRootView: View {
                     },
                     languageLabel: viewModel.currentLanguageLabel,
                     showLanguageLabel: viewModel.hasMultipleLanguages,
+                    renderSettings: renderSettings,
                     metrics: metrics
                 )
                 .padding(.horizontal, KeyboardConstants.Layout.horizontalPadding)

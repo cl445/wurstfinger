@@ -155,7 +155,13 @@ struct KeyViewStyleTests {
             style: .primary,
             tapCycleActions: nil
         )
-        let view = KeyView(key: key, onGesture: { _, _, _ in }, onTouchDown: {}, metrics: .reference)
+        let view = KeyView(
+            key: key,
+            onGesture: { _, _, _ in },
+            onTouchDown: {},
+            settings: KeyRenderSettings(),
+            metrics: .reference
+        )
         #expect(view.primaryLabel == "midLeft")
     }
 
@@ -174,7 +180,13 @@ struct KeyViewStyleTests {
             style: .primary,
             tapCycleActions: nil
         )
-        let view = KeyView(key: key, onGesture: { _, _, _ in }, onTouchDown: {}, metrics: .reference)
+        let view = KeyView(
+            key: key,
+            onGesture: { _, _, _ in },
+            onTouchDown: {},
+            settings: KeyRenderSettings(),
+            metrics: .reference
+        )
         #expect(view.primaryLabel == "d")
     }
 
@@ -193,7 +205,32 @@ struct KeyViewStyleTests {
             style: .utility,
             tapCycleActions: nil
         )
-        let view = KeyView(key: key, onGesture: { _, _, _ in }, onTouchDown: {}, metrics: .reference)
+        let view = KeyView(
+            key: key,
+            onGesture: { _, _, _ in },
+            onTouchDown: {},
+            settings: KeyRenderSettings(),
+            metrics: .reference
+        )
         #expect(view.accessibilityLabel == "Löschen")
+    }
+
+    /// The stock snapshot describes what an untouched installation renders:
+    /// nothing hidden, classic style, long-press numbers off. It is what keys
+    /// built without a store render with (tests, previews) *and* what
+    /// `DataDrivenKeyboardRootView` seeds its `@AppStorage` wrappers with, so a
+    /// silent change here would move both at once.
+    @Test func stockRenderSettingsMatchAnUntouchedStore() {
+        let store = InMemoryUserDefaults()
+        let stock = KeyRenderSettings.stock
+
+        #expect(stock == KeyRenderSettings())
+        #expect(stock.hideLetters == store.bool(forKey: SettingsKey.hideLetters.rawValue))
+        #expect(stock.hideStandardSymbols == store.bool(forKey: SettingsKey.hideStandardSymbols.rawValue))
+        #expect(stock.hideExtraSymbols == store.bool(forKey: SettingsKey.hideExtraSymbols.rawValue))
+        #expect(stock.longPressNumbersEnabled == store.bool(forKey: SettingsKey.longPressNumbersEnabled.rawValue))
+        // No stored style either, so the enum default is what renders.
+        #expect(store.string(forKey: SettingsKey.keyboardStyle.rawValue) == nil)
+        #expect(stock.keyboardStyle == .classic)
     }
 }

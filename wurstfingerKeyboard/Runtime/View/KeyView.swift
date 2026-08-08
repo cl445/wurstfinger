@@ -8,6 +8,27 @@
 
 import SwiftUI
 
+/// Snapshot of the user settings a key needs to render, read once in
+/// `DataDrivenKeyboardRootView` and passed down by value.
+///
+/// The whole keyboard holds one defaults observation per setting, and the
+/// ~100 key views a layer builds hold none: the root re-renders when a
+/// setting changes and hands every key the fresh values.
+struct KeyRenderSettings: Equatable {
+    var keyboardStyle: KeyboardStyle = .classic
+    var hideLetters = false
+    var hideStandardSymbols = false
+    var hideExtraSymbols = false
+    var longPressNumbersEnabled = false
+
+    /// The values a key renders with when nothing is stored yet. Single source
+    /// for those defaults: `DataDrivenKeyboardRootView` initializes its
+    /// `@AppStorage` wrappers from it, so the snapshot a test or preview builds
+    /// with `KeyRenderSettings()` cannot drift from what an untouched
+    /// installation actually renders.
+    static let stock = KeyRenderSettings()
+}
+
 /// Generic key view that renders any `KeyConfig`.
 ///
 /// Visual appearance is driven by `key.style`. Hints derive directly from
@@ -38,8 +59,13 @@ struct KeyView: View {
 
     @State private var isActive = false
 
-    @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
-    private var keyboardStyle: KeyboardStyle = .classic
+    /// User settings affecting key rendering, injected by `KeyboardGridView`
+    /// (ultimately read once in `DataDrivenKeyboardRootView`) — see
+    /// `KeyRenderSettings`. No default, for the same reason as `metrics`: a
+    /// defaulted snapshot would let a missing injection compile and silently
+    /// render stock settings (labels shown, long-press numbers off) instead of
+    /// failing the build.
+    let settings: KeyRenderSettings
 
     /// Resolved layout metrics injected by `KeyboardGridView` (same reasoning
     /// as there: an `@AppStorage` read desynchronizes from the width path
@@ -57,25 +83,13 @@ struct KeyView: View {
     var languageLabel: String = ""
     var showLanguageLabel: Bool = false
 
-    @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
-    private var hideLetters = false
-
-    @AppStorage(SettingsKey.hideStandardSymbols.rawValue, store: SharedDefaults.store)
-    private var hideStandardSymbols = false
-
-    @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
-    private var hideExtraSymbols = false
-
-    @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
-    private var longPressNumbersEnabled = false
-
     /// Whether the label of `binding` should be drawn, honouring the user's
     /// label-visibility toggles (numbers and functional keys always show).
     private func isLabelVisible(_ binding: KeyBinding) -> Bool {
         LabelCategory.of(binding).isVisible(
-            hideLetters: hideLetters,
-            hideStandardSymbols: hideStandardSymbols,
-            hideExtraSymbols: hideExtraSymbols
+            hideLetters: settings.hideLetters,
+            hideStandardSymbols: settings.hideStandardSymbols,
+            hideExtraSymbols: settings.hideExtraSymbols
         )
     }
 
@@ -223,7 +237,7 @@ struct KeyView: View {
     /// Long-press handler for the gesture recognizer, or nil when the
     /// opt-in setting is off or no handler is wired up (preview contexts).
     private var longPressHandler: (() -> Bool)? {
-        guard longPressNumbersEnabled, let onLongPress else { return nil }
+        guard settings.longPressNumbersEnabled, let onLongPress else { return nil }
         return { onLongPress(key) }
     }
 
@@ -232,7 +246,7 @@ struct KeyView: View {
     @ViewBuilder
     private var background: some View {
         let shape = RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
-        switch keyboardStyle {
+        switch settings.keyboardStyle {
         case .classic:
             shape.fill(Self.backgroundColor(for: key.style, active: isActive))
         case .liquidGlass:
@@ -286,6 +300,14 @@ struct KeyView: View {
         .swipeDownRight: .bottomTrailing,
     ]
 
+    /// The gestures `hintOverlay` draws, in a fixed order. A static list keeps
+    /// the hint layer order stable across launches (dictionary iteration order
+    /// is seeded per process) and allocates nothing per render; gestures a key
+    /// does not bind drop out via the `key.bindings[gesture]` lookup. Must
+    /// cover exactly `hintAlignments` — a missing entry silently hides that
+    /// hint. `internal` (not `private`) so the guard test can lock it.
+    static let hintGestureOrder: [GestureType] = GestureType.allCases.filter(\.isSwipe)
+
     /// Maps certain key actions to SF Symbol names for hint rendering.
     private static func hintIcon(for action: KeyAction) -> String? {
         switch action {
@@ -336,14 +358,16 @@ struct KeyView: View {
     }
 
     private var hintOverlay: some View {
-        GeometryReader { proxy in
-            let size = proxy.size
-            // Scale padding proportionally with font size
-            let fontRatio = scaledHintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize
-            let hPad = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * fontRatio
-            let vPad = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
+        // Scale padding proportionally with font size
+        let fontRatio = scaledHintFontSize / KeyboardConstants.FontSizes.hintReferenceFontSize
+        let hPad = KeyboardConstants.FontSizes.hintBaseHorizontalPadding * fontRatio
+        let vPad = KeyboardConstants.FontSizes.hintBaseVerticalPadding * fontRatio
 
-            ForEach(Array(key.bindings.keys), id: \.self) { gesture in
+        // Each hint fills the cell via an infinity frame and pins to its
+        // directional alignment, so the overlay needs no size measurement —
+        // and the key no extra layout container.
+        return ZStack {
+            ForEach(Self.hintGestureOrder, id: \.self) { gesture in
                 // Render a hint when it has a text label, or when the action
                 // maps to an icon (globe, dismiss, copy/cut/paste). Utility
                 // icon hints carry an empty label on purpose — their glyph is
@@ -358,22 +382,14 @@ struct KeyView: View {
                                 .foregroundStyle(Color.primary.opacity(0.5))
                                 .fixedSize()
                                 .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
-                                .frame(
-                                    width: size.width,
-                                    height: size.height,
-                                    alignment: alignment
-                                )
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
                         }
                     } else if !binding.label.isEmpty || Self.hintIcon(for: binding.action) != nil,
                               isLabelVisible(binding) {
                         hintContent(for: binding)
                             .fixedSize()
                             .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
-                            .frame(
-                                width: size.width,
-                                height: size.height,
-                                alignment: alignment
-                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
                     }
                 }
             }
