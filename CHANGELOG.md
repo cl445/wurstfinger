@@ -13,6 +13,10 @@
 - The double-space shortcut now requires two consecutive space presses within a short window, so a space typed into an already-finished sentence is no longer rewritten and a deliberate double space stays typable; it also inserts the script's own sentence mark (Devanagari danda, Japanese full-width stop, Urdu full stop) (#281)
 - Cut-all is bounded by the same size ceiling as a paste instead of issuing an unbounded number of delete round-trips to the host app (#281)
 
+### Changed
+
+- The `^` compose key's return swipe now types the caron dead key, so č ď ě ň ř š ť ž are reachable directly instead of only through the accent cycle (#285)
+
 ## v1.4.0 — 2026-07-23
 
 ### Added

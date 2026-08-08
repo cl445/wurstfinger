@@ -11,6 +11,11 @@ extension ComposeRuleSet {
     /// Global compose rules extracted from Thumb-Key compose tables.
     /// These rules are shared across all languages and can be extended
     /// with language-specific overrides via `merging(overrides:)`.
+    ///
+    /// Not every trigger is bound to a key: `˘`, `!` and `゛` are reached only
+    /// through the 🅒 accent cycle, which `ComposeEngine.buildAccentCycles`
+    /// folds out of *all* tables — dropping them as "dead" would take ğ, ł, ż
+    /// and the small kana with them.
     static let global = ComposeRuleSet(rules: [
         "¨": [
             "a": "ä", "A": "Ä", "e": "ë", "E": "Ë", "h": "ḧ", "H": "Ḧ",

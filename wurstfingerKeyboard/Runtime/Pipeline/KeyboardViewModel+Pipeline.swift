@@ -32,7 +32,6 @@ extension KeyboardViewModel {
         )
         activeModeName = definition.defaultMode
         pipelineLocale = definition.locale
-        currentMode = definition.mode(activeModeName)
         rebuildResolverChain()
         rebuildPipeline()
     }
@@ -409,7 +408,6 @@ extension KeyboardViewModel {
               definition.mode(modeName) != nil
         else { return }
         activeModeName = modeName
-        currentMode = definition.mode(modeName)
         // Any mode change invalidates a pending auto-shift; the auto-cap
         // engage path re-sets the flag right after switching.
         shiftEngagedByAutoCapitalization = false
@@ -496,16 +494,27 @@ extension KeyboardViewModel {
         if grouped {
             let hidden = sharedDefaults.bool(forKey: SettingsKey.hideLetters.rawValue)
                 && sharedDefaults.bool(forKey: SettingsKey.hideStandardSymbols.rawValue)
-            sharedDefaults.set(!hidden, forKey: SettingsKey.hideLetters.rawValue)
-            sharedDefaults.set(!hidden, forKey: SettingsKey.hideStandardSymbols.rawValue)
+            setLabelFlag(!hidden, forKey: .hideLetters)
+            setLabelFlag(!hidden, forKey: .hideStandardSymbols)
         } else {
             let hidden = sharedDefaults.bool(forKey: SettingsKey.hideExtraSymbols.rawValue)
-            sharedDefaults.set(!hidden, forKey: SettingsKey.hideExtraSymbols.rawValue)
+            setLabelFlag(!hidden, forKey: .hideExtraSymbols)
         }
         // Confirmation tick, not a second tap impact: the touch-down already
         // fired the tap haptic, and the toggle is a state change like a
         // mode switch.
         feedbackStateChange()
+    }
+
+    /// Writes only a value the store does not already hold. Every write fires
+    /// `UserDefaults.didChangeNotification` (a full settings reload) and
+    /// invalidates the `@AppStorage` bindings the grid renders from, so
+    /// re-asserting a flag that already has the wanted value costs a keyboard
+    /// round-trip for nothing — which the grouped toggle would otherwise do
+    /// whenever the two flags start out of sync.
+    private func setLabelFlag(_ hidden: Bool, forKey key: SettingsKey) {
+        guard sharedDefaults.bool(forKey: key.rawValue) != hidden else { return }
+        sharedDefaults.set(hidden, forKey: key.rawValue)
     }
 
     /// Continuous (joystick) mode: emit one character move per `dragStep` of

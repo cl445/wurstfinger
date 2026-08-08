@@ -31,7 +31,6 @@ private func makeOverrideViewModel(
     )
     vm.currentDefinition = definition
     vm.activeModeName = definition.defaultMode
-    vm.currentMode = definition.mode(definition.defaultMode)
     vm.rebuildResolverChain()
     vm.rebuildPipeline()
     return (vm, target)

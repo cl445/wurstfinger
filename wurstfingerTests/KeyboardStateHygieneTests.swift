@@ -117,7 +117,7 @@ struct ModeResetTests {
         vm.resetToDefaultMode()
 
         #expect(vm.activeModeName == ModeNames.main)
-        #expect(vm.currentMode?.name == ModeNames.main)
+        #expect(vm.activeModeFromDefinition?.name == ModeNames.main)
     }
 
     @Test func resetToDefaultModeIsPublishFreeWhenAlreadyDefault() {
@@ -140,6 +140,24 @@ struct ModeResetTests {
         )
         vm.resetToDefaultMode() // must not crash
         #expect(vm.currentDefinition == nil)
+    }
+}
+
+// MARK: - Single-sourced mode state
+
+@Suite(.serialized)
+struct ModeDerivationTests {
+    /// The layout arrangement — and with it the controller's height
+    /// constraint — must follow `activeModeName` alone.
+    @Test("The arrangement follows the active mode name")
+    func arrangementFollowsActiveModeName() {
+        let (vm, _) = makeViewModel()
+        #expect(vm.currentArrangement?.rows.last?.first?.keyId == UtilitySlot.space)
+
+        vm.activeModeName = ModeNames.numeric
+
+        #expect(vm.currentArrangement?.rows.last?.first?.keyId == GridSlot.zero)
+        #expect(vm.activeModeFromDefinition?.name == ModeNames.numeric)
     }
 }
 

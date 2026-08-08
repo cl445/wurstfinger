@@ -22,13 +22,13 @@ import SwiftUI
     struct OnboardingContentView: View {
         @Environment(\.openURL) private var openURL
 
-        @AppStorage("onboarding.keyboardInstalled", store: SharedDefaults.store)
+        @AppStorage(AppSettingsKey.onboardingKeyboardInstalled.rawValue, store: OnboardingProgress.store)
         private var keyboardInstalled = false
 
-        @AppStorage("onboarding.fullAccessEnabled", store: SharedDefaults.store)
+        @AppStorage(AppSettingsKey.onboardingFullAccessEnabled.rawValue, store: OnboardingProgress.store)
         private var fullAccessEnabled = false
 
-        @AppStorage("onboarding.practiced", store: SharedDefaults.store)
+        @AppStorage(AppSettingsKey.onboardingPracticed.rawValue, store: OnboardingProgress.store)
         private var practiced = false
 
         private let settingsURL = URL(string: "app-settings:")!

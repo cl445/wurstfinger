@@ -30,29 +30,28 @@ extension LanguageConfig {
         id: "en_US", name: "English", locale: Locale(identifier: "en_US")
     )
 
-    static let german = LanguageConfig(
-        id: "de_DE", name: "Deutsch", locale: Locale(identifier: "de_DE")
-    )
-
-    static let russian = LanguageConfig(
-        id: "ru_RU", name: "Русский", locale: Locale(identifier: "ru_RU")
-    )
-
     /// All supported languages, derived from `KeyboardRegistry.available` and
-    /// sorted alphabetically by name. This is the single source of truth --
+    /// sorted by display name. This is the single source of truth --
     /// adding a new `KeyboardDefinition` to `LanguageDefinitions.all`
     /// automatically surfaces it here.
     ///
     /// Computed on every access so callers always see the current registry
     /// state (important for tests that mutate `KeyboardRegistry`).
     static var allLanguages: [LanguageConfig] {
-        KeyboardRegistry.available.map { info in
+        sortedByName(KeyboardRegistry.available.map { info in
             LanguageConfig(
                 id: info.id,
                 name: info.title,
                 locale: Locale(identifier: info.localeIdentifier)
             )
-        }.sorted { $0.name < $1.name }
+        })
+    }
+
+    /// Display order for the language list: `localizedStandardCompare` puts the
+    /// names where the user's locale expects them (case- and diacritic-aware,
+    /// Finder-style), which a bare `<` — a UTF-16 code-unit comparison — does not.
+    static func sortedByName(_ languages: [LanguageConfig]) -> [LanguageConfig] {
+        languages.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
     /// Get language config by ID.

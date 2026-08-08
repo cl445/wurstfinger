@@ -500,10 +500,44 @@ struct SlideCancellationPipelineTests {
 
 // MARK: - Space-bar label visibility toggles (.swipeUp)
 
+/// Counts writes so the label toggles can assert they never re-assert a value
+/// the store already holds.
+private final class WriteCountingDefaults: InMemoryUserDefaults {
+    private(set) var writtenKeys: [String] = []
+
+    func resetWrites() {
+        writtenKeys = []
+    }
+
+    override func set(_ value: Any?, forKey defaultName: String) {
+        writtenKeys.append(defaultName)
+        super.set(value, forKey: defaultName)
+    }
+}
+
 @Suite(.serialized)
 struct SpaceLabelTogglePipelineTests {
     private func hides(_ vm: KeyboardViewModel, _ key: SettingsKey) -> Bool {
         vm.sharedDefaults.bool(forKey: key.rawValue)
+    }
+
+    /// A grouped toggle re-asserts both flags. When one already holds the
+    /// wanted value, writing it again would fire a second change notification
+    /// — a full settings reload and grid invalidation — for a value that did
+    /// not change.
+    @Test func groupedToggleWritesOnlyTheFlagThatChanges() throws {
+        let defaults = WriteCountingDefaults()
+        let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
+        vm.loadDefinition(for: "de_DE")
+        let spaceKey = try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))
+        defaults.set(true, forKey: SettingsKey.hideLetters.rawValue)
+        defaults.resetWrites()
+
+        vm.handleSlide(spaceKey, phase: .swipeUp(isReturn: true))
+
+        #expect(defaults.writtenKeys == [SettingsKey.hideStandardSymbols.rawValue])
+        #expect(defaults.bool(forKey: SettingsKey.hideLetters.rawValue))
+        #expect(defaults.bool(forKey: SettingsKey.hideStandardSymbols.rawValue))
     }
 
     @Test(arguments: [CursorMovementStyle.continuous, .discrete])

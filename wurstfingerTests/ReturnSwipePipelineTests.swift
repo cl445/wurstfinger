@@ -77,6 +77,30 @@ struct ReturnSwipePipelineTests {
         #expect(inserts(target).last == expected)
     }
 
+    // MARK: - Caron
+
+    /// The `^` key's return swipe is the caron dead key, matching the
+    /// MessagEase original — and the only direct entry point into the
+    /// č ď ě ľ ň ř š ť ž table.
+    @Test func returnSwipeUpOnTopCenterComposesCaron() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        target.documentContextBeforeInput = "c"
+
+        vm.handleGesture(.swipeUp, keyId: GridSlot.topCenter, isReturn: true)
+
+        #expect(target.events == [.deleteBackward, .insertText("č")])
+    }
+
+    /// With nothing to compose it commits the modifier itself, like every
+    /// other dead key on the layout.
+    @Test func returnSwipeUpOnTopCenterCommitsBareCaron() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+
+        vm.handleGesture(.swipeUp, keyId: GridSlot.topCenter, isReturn: true)
+
+        #expect(inserts(target).last == "ˇ")
+    }
+
     // MARK: - Newline
 
     /// The newline swipe (topRight ↗) inserts a line break.

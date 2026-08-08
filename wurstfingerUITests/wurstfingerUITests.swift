@@ -83,7 +83,7 @@ final class wurstfingerUITests: XCTestCase {
         let newValue = firstToggle.value as? String
         XCTAssertNotEqual(initialValue, newValue, "Toggle value should change after tap")
 
-        // The setup steps persist to the shared app-group store — restore the
+        // The setup steps persist to the app's own defaults — restore the
         // original state so the test leaves no trace on the device/simulator.
         firstToggle.tap()
         let restoredValue = firstToggle.value as? String

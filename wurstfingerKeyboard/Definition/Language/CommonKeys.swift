@@ -163,7 +163,7 @@ enum CommonKeys {
             ),
             .swipeUp: KeyBinding(
                 label: "^", action: .compose(trigger: "^"), category: .compose,
-                returnAction: .commitText("ˆ"), accessibilityLabel: nil
+                returnAction: .compose(trigger: "ˇ"), accessibilityLabel: nil
             ),
             .swipeUpRight: KeyBinding(
                 label: "´", action: .compose(trigger: "´"), category: .compose,
