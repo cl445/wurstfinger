@@ -1,0 +1,37 @@
+{
+  "fill": {
+    "automatic-gradient": "extended-srgb:0.96078,0.62353,0.16078,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "Fingers.svg",
+          "name": "Fingers"
+        },
+        {
+          "image-name": "Hand.svg",
+          "name": "Hand"
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "specular": true,
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "circles": [
+      "watchOS"
+    ],
+    "squares": [
+      "iOS",
+      "macOS"
+    ]
+  }
+}

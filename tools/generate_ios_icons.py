@@ -1,211 +1,202 @@
+"""
+Generate the Icon Composer app icon bundle (AppIcon.icon) from Design/AppIcon.svg.
+
+iOS 26 renders app icons as Liquid Glass: the system supplies the rounded
+container, the specular highlights, the shadow and all four appearances
+(default, dark, clear, tinted). The app only supplies flat, transparent
+artwork layers plus a background fill described in icon.json.
+
+This script slices the single-path line drawing in Design/AppIcon.svg into
+those layers, normalises them onto the 1024x1024 icon canvas and writes the
+bundle. Xcode's actool compiles it and additionally emits the legacy raster
+icons for pre-iOS-26 devices, so no .appiconset is needed.
+
+Requires Inkscape: the source artwork is stroke-only, and Icon Composer's
+renderer fills open paths instead of stroking them, so strokes must be
+flattened into filled outlines first.
+"""
 from __future__ import annotations
 
 import json
 import re
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
-from typing import Final, Literal
+from typing import Final
 
 
-# Color definitions for light and dark modes
-# Softer, lower contrast colors for a refined, gentle look
-COLORS = {
-    "light": {
-        "stroke": "#3D3D3D",      # Soft dark gray for strokes
-        "background": "#E8E8E8",  # Warm light gray background
-    },
-    "dark": {
-        "stroke": "#E8E8E8",      # Bright chalky off-white for strokes
-        "background": "#252525",  # Slightly darker warm gray background
-    },
+# Background gradient behind the glass. Icon Composer derives the full
+# gradient from this single colour ("automatic-gradient").
+BACKGROUND_COLOR: Final[tuple[float, float, float]] = (0.96078, 0.62353, 0.16078)  # amber
+
+# Colour of the line art itself.
+GLYPH_COLOR: Final[str] = "#FFFFFF"
+
+# Icon Composer canvas. Always 1024x1024 regardless of rendered size.
+CANVAS: Final[float] = 1024.0
+
+# Height of the artwork on the canvas. Apple's icon grid wants the glyph
+# comfortably inside the container rather than bleeding to the edges.
+CONTENT_HEIGHT: Final[float] = 700.0
+
+# Bounding box of the drawing in Design/AppIcon.svg, in SVG user units.
+# Obtained via `inkscape --query-all Design/AppIcon.svg` (px / 3.779528).
+BBOX_X: Final[float] = 22.2245
+BBOX_Y: Final[float] = 12.6862
+BBOX_W: Final[float] = 101.6642
+BBOX_H: Final[float] = 128.4718
+
+# Transform on the source drawing's <g> wrapper, preserved verbatim so the
+# path data below it keeps its original coordinates.
+INNER_GROUP_TRANSFORM: Final[str] = "translate(-48.671656,-24.610504)"
+
+# Path ids from Design/AppIcon.svg grouped into icon layers, back to front.
+# Splitting hand and fingers gives the icon real parallax depth on the
+# Home Screen instead of one flat plate of glass.
+LAYERS: Final[dict[str, list[str]]] = {
+    "Hand": ["path1", "path6", "path5"],
+    "Fingers": ["path2", "path3", "path4"],
 }
-
-# iOS 18+ uses single 1024x1024 icons that Xcode auto-scales
-ICON_SIZE: Final[int] = 1024
 
 
 class ConversionError(RuntimeError):
-    """Raised when SVG->PNG conversion fails."""
+    """Raised when SVG processing fails."""
 
 
-def find_renderer() -> Literal["rsvg-convert", "inkscape"]:
+def require_inkscape() -> str:
+    """Return the Inkscape executable path, or explain how to get it."""
+    inkscape = shutil.which("inkscape")
+    if inkscape is None:
+        raise ConversionError(
+            "Inkscape is required to flatten strokes into filled outlines. "
+            "Install it with `brew install --cask inkscape`."
+        )
+    return inkscape
+
+
+def extract_paths(svg_content: str) -> dict[str, str]:
+    """Return {id: <path .../> element} for every path in the source drawing."""
+    paths: dict[str, str] = {}
+    for match in re.finditer(r"<path\b.*?/>", svg_content, re.DOTALL):
+        element = match.group(0)
+        id_match = re.search(r'\bid="([^"]+)"', element)
+        if id_match is not None:
+            paths[id_match.group(1)] = element
+    return paths
+
+
+def build_layer_svg(elements: list[str]) -> str:
     """
-    Return the first available SVG renderer.
-    Preference order: rsvg-convert, then inkscape.
+    Place the given path elements on the 1024x1024 icon canvas.
+
+    The drawing is scaled to CONTENT_HEIGHT and centred; the background stays
+    transparent because the container comes from icon.json, not the artwork.
     """
-    if shutil.which("rsvg-convert"):
-        return "rsvg-convert"
-    if shutil.which("inkscape"):
-        return "inkscape"
-    raise ConversionError(
-        "No renderer found. Install either 'librsvg' (rsvg-convert) or 'inkscape'."
+    scale = CONTENT_HEIGHT / BBOX_H
+    offset_x = (CANVAS - BBOX_W * scale) / 2 - BBOX_X * scale
+    offset_y = (CANVAS - CONTENT_HEIGHT) / 2 - BBOX_Y * scale
+    body = "\n      ".join(
+        re.sub(r"stroke:#[0-9a-fA-F]{3,6}", f"stroke:{GLYPH_COLOR}", element)
+        for element in elements
+    )
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"'
+        ' viewBox="0 0 1024 1024">\n'
+        f'  <g transform="translate({offset_x:.4f},{offset_y:.4f}) scale({scale:.6f})">\n'
+        f'    <g transform="{INNER_GROUP_TRANSFORM}">\n'
+        f"      {body}\n"
+        "    </g>\n"
+        "  </g>\n"
+        "</svg>\n"
     )
 
 
-def modify_svg_colors(svg_content: str, stroke_color: str) -> str:
-    """
-    Replace stroke colors in SVG content with the specified color.
-    """
-    # Replace stroke:#000000 or stroke:#000 with new color
-    modified = re.sub(
-        r'stroke:#0{3,6}',
-        f'stroke:{stroke_color}',
-        svg_content
-    )
-    return modified
+def flatten_strokes(inkscape: str, svg_path: Path) -> None:
+    """Convert strokes to filled outlines in place, then drop editor metadata."""
+    try:
+        subprocess.run(
+            [
+                inkscape,
+                str(svg_path),
+                "--actions=select-all;object-stroke-to-path;export-plain-svg",
+                f"--export-filename={svg_path}",
+            ],
+            check=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as error:
+        raise ConversionError(
+            f"Inkscape failed to flatten {svg_path.name}: {error.stderr.decode(errors='replace')}"
+        ) from error
+
+    # Inkscape keeps sodipodi/inkscape attributes even in plain-SVG mode;
+    # Icon Composer's parser warns about them.
+    cleaned = re.sub(r"\s+(?:sodipodi|inkscape):[\w-]+=\"[^\"]*\"", "", svg_path.read_text("utf-8"))
+    svg_path.write_text(cleaned, encoding="utf-8")
 
 
-def render_svg_to_png(
-    renderer: Literal["rsvg-convert", "inkscape"],
-    svg_path: Path,
-    size_px: int,
-    out_path: Path,
-    background_color: str,
-) -> None:
-    """
-    Render the given SVG to a square PNG of size_px×size_px.
-    """
-    if renderer == "rsvg-convert":
-        cmd = [
-            "rsvg-convert",
-            "-w",
-            str(size_px),
-            "-h",
-            str(size_px),
-            f"--background-color={background_color}",
-            "-o",
-            str(out_path),
-            str(svg_path),
-        ]
-    elif renderer == "inkscape":
-        cmd = [
-            "inkscape",
-            str(svg_path),
-            f"--export-filename={out_path}",
-            f"--export-width={size_px}",
-            f"--export-height={size_px}",
-            f"--export-background={background_color}",
-            "--export-background-opacity=1.0",
-        ]
-    else:
-        from typing import Never
-
-        def assert_never(x: Never) -> None:
-            raise AssertionError(f"Unhandled renderer: {x}")
-
-        assert_never(renderer)
-
-    subprocess.run(cmd, check=True)
-
-
-def build_contents_json() -> dict[str, object]:
-    """
-    Build the Contents.json structure for iOS 18+ app icons.
-    Uses simplified universal format with automatic scaling.
-    """
+def build_icon_json() -> dict[str, object]:
+    """Describe the layer stack, background fill and glass treatment."""
+    red, green, blue = BACKGROUND_COLOR
     return {
-        "images": [
+        "fill": {
+            "automatic-gradient": f"extended-srgb:{red:.5f},{green:.5f},{blue:.5f},1.00000"
+        },
+        "groups": [
             {
-                "filename": "AppIcon.png",
-                "idiom": "universal",
-                "platform": "ios",
-                "size": "1024x1024"
-            },
-            {
-                "appearances": [
-                    {"appearance": "luminosity", "value": "dark"}
+                # Front-most layer first.
+                "layers": [
+                    {"image-name": f"{name}.svg", "name": name}
+                    for name in reversed(list(LAYERS))
                 ],
-                "filename": "AppIcon-Dark.png",
-                "idiom": "universal",
-                "platform": "ios",
-                "size": "1024x1024"
-            },
-            {
-                "appearances": [
-                    {"appearance": "luminosity", "value": "tinted"}
-                ],
-                "filename": "AppIcon-Tinted.png",
-                "idiom": "universal",
-                "platform": "ios",
-                "size": "1024x1024"
+                "shadow": {"kind": "neutral", "opacity": 0.5},
+                "specular": True,
+                "translucency": {"enabled": True, "value": 0.5},
             }
         ],
-        "info": {"version": 1, "author": "xcode"},
+        "supported-platforms": {
+            "circles": ["watchOS"],
+            "squares": ["iOS", "macOS"],
+        },
     }
 
 
-def generate_icons(svg_path: Path, appiconset_dir: Path) -> None:
-    """
-    Generate iOS 18+ app icon PNGs (light, dark, tinted) and Contents.json.
-    """
-    renderer = find_renderer()
-    appiconset_dir.mkdir(parents=True, exist_ok=True)
+def generate_icon(svg_path: Path, icon_dir: Path) -> None:
+    """Write the complete AppIcon.icon bundle."""
+    inkscape = require_inkscape()
+    paths = extract_paths(svg_path.read_text(encoding="utf-8"))
 
-    # Read original SVG
-    svg_content = svg_path.read_text(encoding="utf-8")
-
-    # Generate light icon (default/any appearance)
-    light_svg = modify_svg_colors(svg_content, COLORS["light"]["stroke"])
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".svg", delete=False, encoding="utf-8") as tmp:
-        tmp.write(light_svg)
-        tmp_path = Path(tmp.name)
-    try:
-        render_svg_to_png(
-            renderer=renderer,
-            svg_path=tmp_path,
-            size_px=ICON_SIZE,
-            out_path=appiconset_dir / "AppIcon.png",
-            background_color=COLORS["light"]["background"],
+    missing = [i for ids in LAYERS.values() for i in ids if i not in paths]
+    if missing:
+        raise ConversionError(
+            f"Design/AppIcon.svg is missing expected path ids: {', '.join(missing)}. "
+            "Update LAYERS in this script to match the artwork."
         )
-    finally:
-        tmp_path.unlink()
 
-    # Generate dark icon
-    dark_svg = modify_svg_colors(svg_content, COLORS["dark"]["stroke"])
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".svg", delete=False, encoding="utf-8") as tmp:
-        tmp.write(dark_svg)
-        tmp_path = Path(tmp.name)
-    try:
-        render_svg_to_png(
-            renderer=renderer,
-            svg_path=tmp_path,
-            size_px=ICON_SIZE,
-            out_path=appiconset_dir / "AppIcon-Dark.png",
-            background_color=COLORS["dark"]["background"],
+    assets_dir = icon_dir / "Assets"
+    if assets_dir.exists():
+        shutil.rmtree(assets_dir)
+    assets_dir.mkdir(parents=True)
+
+    for name, path_ids in LAYERS.items():
+        layer_path = assets_dir / f"{name}.svg"
+        layer_path.write_text(
+            build_layer_svg([paths[i] for i in path_ids]), encoding="utf-8"
         )
-    finally:
-        tmp_path.unlink()
+        flatten_strokes(inkscape, layer_path)
 
-    # Generate tinted icon (same as dark for now - monochrome works best)
-    render_svg_to_png(
-        renderer=renderer,
-        svg_path=appiconset_dir.parent.parent.parent / "Design" / "AppIcon.svg",
-        size_px=ICON_SIZE,
-        out_path=appiconset_dir / "AppIcon-Tinted.png",
-        background_color="#FFFFFF",
-    )
-
-    # Write Contents.json
-    contents = build_contents_json()
-    (appiconset_dir / "Contents.json").write_text(
-        json.dumps(contents, indent=2),
-        encoding="utf-8",
+    (icon_dir / "icon.json").write_text(
+        json.dumps(build_icon_json(), indent=2) + "\n", encoding="utf-8"
     )
 
 
 def main() -> None:
     project_root = Path(__file__).resolve().parent.parent
-    svg_path = project_root / "Design" / "AppIcon.svg"
-    appiconset_dir = project_root / "wurstfinger" / "Assets.xcassets" / "AppIcon.appiconset"
-
-    # Clean old icons
-    for f in appiconset_dir.glob("icon_*.png"):
-        f.unlink()
-
-    generate_icons(svg_path=svg_path, appiconset_dir=appiconset_dir)
-    print(f"✓ Generated iOS 18+ icons (light, dark, tinted) in {appiconset_dir}")
+    generate_icon(
+        svg_path=project_root / "Design" / "AppIcon.svg",
+        icon_dir=project_root / "wurstfinger" / "AppIcon.icon",
+    )
+    print("✓ Generated wurstfinger/AppIcon.icon (Liquid Glass, all appearances)")
 
 
 if __name__ == "__main__":
