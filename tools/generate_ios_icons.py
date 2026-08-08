@@ -28,19 +28,24 @@ from typing import Final
 # Palette, carried over from the pre-Liquid-Glass icon: dark line art on a
 # light background.
 #
-# The dark and tinted appearances are derived from these two colours by the
-# system; they cannot be pinned per appearance. Hand-written
-# "fill-specializations" entries are accepted by actool without complaint but
-# have no effect either in ictool's preview or on device, so they are left out
-# rather than shipped as dead configuration.
+# As long as a single fill drives every appearance, dark-appearance contrast
+# measures ~7 points whatever the glyph colour, so the glyph reads there
+# through its glass edges rather than through colour. In the default
+# appearance the colour matters a lot, and the glass treatment washes it out
+# heavily — a fill of 0.0 still renders as roughly 31% grey rather than black.
+# So the glyph is pushed to black to buy back the contrast lost when the
+# artwork was scaled down onto the icon grid: measured 57 points in the default
+# appearance, against 40 at the original #3D3D3D.
 #
-# Contrast in the dark appearance measures ~7 points whatever the glyph
-# colour, so it cannot be tuned; the glyph reads there through its glass edges
-# instead. In the default appearance the colour matters a lot, and the glass
-# treatment washes it out heavily — a fill of 0.0 still renders as roughly 31%
-# grey rather than black. So the glyph is pushed to black to buy back the
-# contrast lost when the artwork was scaled down onto the icon grid: measured
-# 57 points in the default appearance, against 40 at the original #3D3D3D.
+# Per-appearance fills are a real Icon Composer feature (WWDC25 session 361:
+# fill, opacity and blend mode apply per appearance; appearance names are
+# base, light, dark and tinted). They are the proper fix for the dark
+# appearance. They are not used here because hand-writing them into icon.json
+# does not work: every spelling and placement tried was dropped without even
+# an "Unknown appearance name" complaint from the parser. Authoring them means
+# opening AppIcon.icon in Icon Composer and setting the dark fill there — at
+# which point this script must stop rewriting icon.json and generate only the
+# layer SVGs, or it will overwrite that work.
 BACKGROUND_COLOR: Final[str] = "0.90980,0.90980,0.90980"  # #E8E8E8
 GLYPH_FILL: Final[str] = "0.00000,0.00000,0.00000"
 
