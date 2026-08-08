@@ -25,12 +25,25 @@ from pathlib import Path
 from typing import Final
 
 
-# Background gradient behind the glass. Icon Composer derives the full
-# gradient from this single colour ("automatic-gradient").
-BACKGROUND_COLOR: Final[tuple[float, float, float]] = (0.96078, 0.62353, 0.16078)  # amber
+# Palette, carried over from the pre-Liquid-Glass icon: dark line art on a
+# light background.
+#
+# The dark and tinted appearances are derived from these two colours by the
+# system; they cannot be pinned per appearance. Hand-written
+# "fill-specializations" entries are accepted by actool without complaint but
+# have no effect either in ictool's preview or on device, so they are left out
+# rather than shipped as dead configuration.
+#
+# The derivation lightens the glyph while darkening the background, so this
+# pair happens to survive both: measured contrast is 29 points in the default
+# appearance and 25 in dark. Lightening the glyph to rescue dark mode collapses
+# the default appearance instead (5.8 points at 0.55), so keep it dark.
+BACKGROUND_COLOR: Final[str] = "0.90980,0.90980,0.90980"  # #E8E8E8
+GLYPH_FILL: Final[str] = "0.23922,0.23922,0.23922"  # #3D3D3D
 
-# Colour of the line art itself.
-GLYPH_COLOR: Final[str] = "#FFFFFF"
+# Baked into the layer SVGs as a fallback; the per-layer "fill" in icon.json
+# is what actually drives the rendered colour.
+GLYPH_COLOR: Final[str] = "#3D3D3D"
 
 # Icon Composer canvas. Always 1024x1024 regardless of rendered size.
 CANVAS: Final[float] = 1024.0
@@ -135,20 +148,35 @@ def flatten_strokes(inkscape: str, svg_path: Path) -> None:
     svg_path.write_text(cleaned, encoding="utf-8")
 
 
+def solid(color: str) -> dict[str, str]:
+    """Wrap an "r,g,b" triple as an Icon Composer solid fill."""
+    return {"solid": f"extended-srgb:{color},1.00000"}
+
+
+def gradient(color: str) -> dict[str, str]:
+    """Wrap an "r,g,b" triple as an Icon Composer automatic gradient."""
+    return {"automatic-gradient": f"extended-srgb:{color},1.00000"}
+
+
 def build_icon_json() -> dict[str, object]:
     """Describe the layer stack, background fill and glass treatment."""
-    red, green, blue = BACKGROUND_COLOR
     return {
-        "fill": {
-            "automatic-gradient": f"extended-srgb:{red:.5f},{green:.5f},{blue:.5f},1.00000"
-        },
+        "fill": gradient(BACKGROUND_COLOR),
         "groups": [
             {
-                # Front-most layer first.
+                # Front-most layer first. "glass" is a layer property, not a
+                # group one — setting it on the group silently does nothing,
+                # which is what made the first attempt look flat.
                 "layers": [
-                    {"image-name": f"{name}.svg", "name": name}
+                    {
+                        "image-name": f"{name}.svg",
+                        "name": name,
+                        "glass": True,
+                        "fill": solid(GLYPH_FILL),
+                    }
                     for name in reversed(list(LAYERS))
                 ],
+                "lighting": "individual",
                 "shadow": {"kind": "neutral", "opacity": 0.5},
                 "specular": True,
                 "translucency": {"enabled": True, "value": 0.5},

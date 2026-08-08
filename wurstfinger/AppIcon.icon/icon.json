@@ -1,19 +1,28 @@
 {
   "fill": {
-    "automatic-gradient": "extended-srgb:0.96078,0.62353,0.16078,1.00000"
+    "automatic-gradient": "extended-srgb:0.90980,0.90980,0.90980,1.00000"
   },
   "groups": [
     {
       "layers": [
         {
           "image-name": "Fingers.svg",
-          "name": "Fingers"
+          "name": "Fingers",
+          "glass": true,
+          "fill": {
+            "solid": "extended-srgb:0.23922,0.23922,0.23922,1.00000"
+          }
         },
         {
           "image-name": "Hand.svg",
-          "name": "Hand"
+          "name": "Hand",
+          "glass": true,
+          "fill": {
+            "solid": "extended-srgb:0.23922,0.23922,0.23922,1.00000"
+          }
         }
       ],
+      "lighting": "individual",
       "shadow": {
         "kind": "neutral",
         "opacity": 0.5
