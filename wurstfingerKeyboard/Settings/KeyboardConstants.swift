@@ -129,23 +129,23 @@ enum KeyboardConstants {
 
     /// Tuning for the optional swipe trail drawn under the finger.
     ///
-    /// The look follows the iOS system keyboard's swipe trail rather than
-    /// MessagEase's hard polyline: a soft ribbon that is widest at the finger
-    /// and tapers to a point at its tail, kept short so it reads as a comet
-    /// tail instead of a drawing of the whole path.
+    /// A soft ribbon, widest at the finger and tapering to a point at its
+    /// tail, kept short so it reads as a comet tail rather than a drawing of
+    /// the whole path.
     enum GestureTrail {
         /// How far the finger must travel before any trail is drawn. Every
         /// keystroke on this keyboard starts as a touch-down, so without a
-        /// threshold plain taps would flash a dot on every letter. Matches
+        /// threshold plain taps would flash a dot on every letter. Aliases
         /// `SpaceGestures.dragActivationThreshold`, the smallest travel the
-        /// keyboard already treats as "not a tap".
-        static let activationDistance: CGFloat = 8
+        /// keyboard already treats as "not a tap", so retuning that threshold
+        /// cannot desynchronize the two.
+        static let activationDistance: CGFloat = SpaceGestures.dragActivationThreshold
 
         /// Minimum spacing between two recorded samples. Filters the duplicate
         /// positions a resting finger produces, which would otherwise fill the
-        /// buffer and push the moving part of the path out of it. Kept coarse
-        /// on purpose: the curve smoothing below rounds the path back out, so
-        /// storing sub-pixel steps only costs memory.
+        /// buffer and push the moving part of the path out of it. Kept coarse:
+        /// the curve smoothing below rounds the path back out, so storing
+        /// sub-pixel steps only costs memory.
         static let minimumSampleSpacing: CGFloat = 4
 
         /// Maximum number of retained samples. At `minimumSampleSpacing` this
@@ -170,11 +170,12 @@ enum KeyboardConstants {
         static let minWidth: CGFloat = 5
         static let maxWidth: CGFloat = 14
 
-        /// Exponent of the tail taper: `width = maxWidth * progress^exponent`
-        /// with `progress` running 0 (tail) → 1 (finger). Below 1 the ribbon
-        /// reaches nearly full width early and thins only near its very end,
-        /// which is what makes the system trail read as a stroke rather than
-        /// a wedge.
+        /// Exponent of the tail taper: `width = headWidth * progress^exponent`
+        /// with `progress` running 0 (tail) → 1 (finger). `headWidth` is the
+        /// per-render width from `GestureTrailOverlay.headWidth(for:)`, not
+        /// the `maxWidth` clamp above. Below 1 the ribbon reaches nearly full
+        /// width early and thins only near its very end, which is what makes
+        /// the system trail read as a stroke rather than a wedge.
         static let taperExponent: CGFloat = 0.55
 
         /// Length of the tapered tail, as a multiple of the head width.

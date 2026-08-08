@@ -25,7 +25,7 @@ struct KeyView: View {
     /// only runs when this is set and the user setting is enabled.
     var onLongPress: ((KeyConfig) -> Bool)?
     /// Shared swipe-trail collector, supplied by `KeyboardGridView`. Forwarded
-    /// to whichever gesture modifier this key uses; nil simply means no trail
+    /// to whichever gesture modifier this key uses; nil means no trail
     /// (previews, tests).
     var gestureTrail: GestureTrailRecorder?
     var spanRatio: CGFloat = 1.0

@@ -21,8 +21,7 @@ struct GestureTrailOverlay: View {
 
     var body: some View {
         // Nothing is rendered — and no display-linked timer runs — unless a
-        // trail is actually in flight. `isVisible` is the recorder's only
-        // published property for exactly this reason.
+        // trail is in flight.
         if recorder.isVisible {
             TimelineView(.animation) { timeline in
                 Canvas { context, _ in
@@ -30,6 +29,10 @@ struct GestureTrailOverlay: View {
                 }
             }
             .allowsHitTesting(false)
+            // Purely decorative: it echoes a gesture the user is making right
+            // now, so it has nothing to announce and must not sit between
+            // VoiceOver and the keys underneath.
+            .accessibilityHidden(true)
         }
     }
 
@@ -46,6 +49,11 @@ struct GestureTrailOverlay: View {
 
     private func draw(in context: inout GraphicsContext, at now: TimeInterval) {
         let trail = recorder.trail
+        // The recorder drops a faded-out trail from a main-queue work item, so
+        // a busy main thread can hand this a trail whose fade already expired.
+        // Those frames would build the full ribbon only to fill it at zero
+        // opacity; bail before the geometry instead.
+        guard !trail.isFinished(at: now) else { return }
         let points = trail.visiblePoints(at: now)
         guard points.count >= 2 else { return }
 
@@ -54,7 +62,7 @@ struct GestureTrailOverlay: View {
             headWidth: headWidth
         )
         // One fill of one closed contour, so the alpha is uniform even where
-        // the path crosses itself — see GestureTrailGeometry.
+        // the path crosses itself.
         context.opacity = KeyboardConstants.GestureTrail.opacity * trail.fadeOpacity(at: now)
         context.fill(path, with: .color(.primary))
     }

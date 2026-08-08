@@ -35,11 +35,11 @@ struct KeyboardGridView: View {
     /// showcase modes with `shouldPersistSettings: false`).
     let metrics: KeyboardLayoutMetrics
 
-    /// Collects the touch path for the swipe trail. Held in `@State` rather
-    /// than `@StateObject` on purpose: `@State` owns the object without
-    /// subscribing to it, so the samples arriving at up to 120 Hz cannot
-    /// re-render the grid and all of its keys. Only `GestureTrailOverlay`
-    /// observes it, and only for the one flag that says whether to draw.
+    /// Collects the touch path for the swipe trail. `@State` rather than
+    /// `@StateObject`: it owns the object without subscribing to it, so the
+    /// samples arriving at up to 120 Hz cannot re-render the grid and all of
+    /// its keys. Only `GestureTrailOverlay` observes it, and only for the one
+    /// flag that says whether to draw.
     @State private var gestureTrail = GestureTrailRecorder()
 
     var body: some View {

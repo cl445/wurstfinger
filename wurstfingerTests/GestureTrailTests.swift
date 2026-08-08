@@ -426,6 +426,41 @@ struct GestureTrailRecorderTests {
         #expect(recorder.isVisible)
     }
 
+    @Test func aDeallocatedOwnerDoesNotLockTheTrail() {
+        // A key torn down mid-gesture (mode switch, rotation, definition
+        // reload) never reaches `finish`. The owner reference is weak, so the
+        // token dies with the view and the next touch has to be able to claim
+        // the trail instead of finding it owned forever.
+        let recorder = makeRecorder(enabled: true)
+        var doomed: GestureTrailToken? = GestureTrailToken()
+        if let doomed {
+            drag(recorder, distance: 120, from: doomed)
+        }
+        // Only the recorder's weak `owner` refers to the token now.
+        doomed = nil
+
+        recorder.record(CGPoint(x: 300, y: 300), isTouchDown: true, from: GestureTrailToken())
+        #expect(recorder.trail.samples.map(\.point) == [CGPoint(x: 300, y: 300)])
+    }
+
+    @Test func teardownAfterAFinishedSwipeLeavesTheFadeRunning() {
+        // Every key runs the same teardown hook, so a mode switch after a
+        // completed swipe fires it ~40 times while the trail is fading —
+        // including on the key that drew it. None of those may cut the fade
+        // short: the owner already handed the trail back in `finish`.
+        var clock: TimeInterval = 500
+        let recorder = makeRecorder(enabled: true, clock: { clock })
+        let owner = GestureTrailToken()
+        drag(recorder, distance: 120, from: owner)
+        clock = 501
+        recorder.finish(from: owner)
+
+        recorder.cancel(from: owner)
+        recorder.cancel(from: GestureTrailToken())
+        #expect(recorder.isVisible)
+        #expect(recorder.trail.releaseTime == 501)
+    }
+
     @Test func ownershipIsReleasedEvenWhenTheSettingWasOff() {
         // A touch taken while the trail was disabled still claims the trail,
         // so it has to hand it back — otherwise enabling the setting would

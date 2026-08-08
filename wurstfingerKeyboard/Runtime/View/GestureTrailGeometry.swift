@@ -67,7 +67,7 @@ enum GestureTrailGeometry {
     /// tail and rounded at the finger. Returns an empty path for anything too
     /// short or too thin to draw.
     ///
-    /// The taper is measured **along the path**, over at most
+    /// The taper is measured along the path, over at most
     /// `headWidth * taperLengthFactor`. Tapering by index fraction instead
     /// would stretch the wedge across the whole trail, so a long cursor slide
     /// would render as one thin spike rather than as a stroke with a short
@@ -124,8 +124,10 @@ enum GestureTrailGeometry {
 
     /// Arc length from the tail to each point, in the same order.
     static func cumulativeDistances(along points: [CGPoint]) -> [CGFloat] {
-        var distances: [CGFloat] = [0]
-        distances.reserveCapacity(points.count)
+        var distances: [CGFloat] = []
+        // Reserved before the tail seed, so the growth below never reallocates.
+        distances.reserveCapacity(max(points.count, 1))
+        distances.append(0)
         for index in 1 ..< max(points.count, 1) {
             let previous = points[index - 1]
             let point = points[index]

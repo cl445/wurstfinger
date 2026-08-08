@@ -119,9 +119,9 @@ struct KeyGestureRecognizer: ViewModifier {
     func body(content: Content) -> some View {
         content
             .gesture(
-                // The coordinate space only affects `value.location`, which
-                // the trail records; `value.translation` is a delta and stays
-                // identical, so gesture classification is untouched.
+                // The coordinate space affects only `value.location`, which the
+                // trail records. `value.translation` is a delta, so the
+                // classification below reads the same values in any space.
                 DragGesture(minimumDistance: 0, coordinateSpace: GestureTrailRecorder.coordinateSpace)
                     .updating($sequenceInFlight) { _, inFlight, _ in
                         inFlight = true
@@ -179,6 +179,17 @@ struct KeyGestureRecognizer: ViewModifier {
                 sequence.handleCancelled()
                 trail?.cancel(from: trailToken)
                 isActive = false
+            }
+            .onDisappear {
+                // A key torn down mid-gesture (mode switch, rotation,
+                // definition reload) reaches neither `onEnded` nor the
+                // `sequenceInFlight` reset — both live on the view that went
+                // away — so it hands the trail back here. Otherwise the
+                // recorder keeps it marked visible with no fade scheduled and
+                // the overlay redraws at the display rate until the next
+                // touch. Ownership makes this a no-op for any key that is not
+                // the one drawing, including while a trail is fading.
+                trail?.cancel(from: trailToken)
             }
     }
 

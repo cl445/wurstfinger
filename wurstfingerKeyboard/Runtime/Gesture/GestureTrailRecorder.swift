@@ -21,11 +21,11 @@ final class GestureTrailToken {}
 /// Owned by `KeyboardGridView`, fed by the gesture modifiers with positions in
 /// the shared `coordinateSpace`, and read by `GestureTrailOverlay`.
 ///
-/// It deliberately publishes **only** `isVisible`, which flips at most twice
-/// per gesture. The sample buffer itself is a plain property that the overlay
-/// re-reads every frame from its `TimelineView`. Publishing per sample would
-/// invalidate every observer at the drag sample rate — up to 120 Hz — and the
-/// grid owns this object, so that would re-render all ~40 keys per sample.
+/// It publishes only `isVisible`, which flips at most twice per gesture. The
+/// sample buffer itself is a plain property that the overlay re-reads every
+/// frame from its `TimelineView`. Publishing per sample would invalidate every
+/// observer at the drag sample rate — up to 120 Hz — and the grid owns this
+/// object, so that would re-render all ~40 keys per sample.
 final class GestureTrailRecorder: ObservableObject {
     /// The coordinate space every recorded point is expressed in. Registered
     /// by `KeyboardGridView` on the grid layout, which is both an ancestor of
@@ -38,7 +38,8 @@ final class GestureTrailRecorder: ObservableObject {
     /// has finished.
     @Published private(set) var isVisible = false
 
-    /// The trail to draw. Not published on purpose — see the type comment.
+    /// The trail to draw. Unpublished, so drag samples cannot invalidate the
+    /// grid; the overlay re-reads it each frame.
     private(set) var trail = GestureTrail()
 
     private let defaults: UserDefaults
@@ -111,8 +112,9 @@ final class GestureTrailRecorder: ObservableObject {
     }
 
     /// Discards the trail immediately, without a fade. Used for the paths that
-    /// end a touch without a gesture: a system cancellation, and a long press
-    /// that consumed the touch.
+    /// end a touch without a gesture: a system cancellation, a long press that
+    /// consumed the touch, and the teardown of a key that was mid-gesture
+    /// (which reaches neither `onEnded` nor the cancel path).
     func cancel(from token: GestureTrailToken) {
         // Also gates the recognizers' unconditional cancel paths: a key whose
         // gesture never started is not the owner and must not clear a trail
@@ -156,9 +158,9 @@ final class GestureTrailRecorder: ObservableObject {
         )
     }
 
-    /// Publishes only on an actual transition. The recorder is observed by the
-    /// overlay, and a redundant publish per drag sample would defeat the whole
-    /// point of keeping the samples unpublished.
+    /// Publishes only on an actual transition: the recorder is observed by the
+    /// overlay, so a redundant publish per drag sample would invalidate it at
+    /// the drag sample rate.
     private func setVisible(_ value: Bool) {
         guard isVisible != value else { return }
         isVisible = value
