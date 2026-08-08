@@ -26,12 +26,16 @@ struct ReturnSwipeLanguageTests {
         )
     }
 
-    /// Regression guard: for every language, the center key's return swipe overrides
-    /// for letter bindings should match the uppercased version of the regular swipe output.
-    /// Caseless letters (uppercasing is the identity) are exempt — there the return
-    /// swipe may carry an explicit `returnOverrides` output instead (e.g. Hebrew
-    /// final forms: return swipe on כ produces ך).
-    @Test func centerKeyReturnSwipeMatchesUppercasedSwipeForAllLanguages() {
+    /// Regression guard: for every language and every letter key, the return
+    /// swipe must produce the uppercased version of the plain swipe. Where
+    /// uppercasing is the identity (caseless scripts) the factory must not
+    /// synthesize a return action at all — only an explicit `returnOverrides`
+    /// entry may set one there, and it must differ from the plain swipe (Hebrew
+    /// final forms כ → ך, Thai ท → ฿, kana や → ゃ). A return action that repeats
+    /// its own swipe is a silent no-op and hides a missing override.
+    @Test func letterKeyReturnSwipesMatchUppercasedSwipeForAllLanguages() {
+        let swipeGestures = GestureType.allCases.filter(\.isSwipe)
+
         for info in KeyboardRegistry.available {
             guard let definition = KeyboardRegistry.load(id: info.id) else {
                 Issue.record("Failed to load definition for \(info.id)")
@@ -41,41 +45,36 @@ struct ReturnSwipeLanguageTests {
                 Issue.record("No main mode for \(info.id)")
                 continue
             }
-            guard let centerKey = mainMode.key(for: GridSlot.center) else {
-                Issue.record("No center key for \(info.id)")
-                continue
-            }
-
             let locale = definition.locale
 
-            // Check all swipe directions on the center key
-            let swipeGestures: [GestureType] = [
-                .swipeUp, .swipeDown, .swipeLeft, .swipeRight,
-                .swipeUpLeft, .swipeUpRight, .swipeDownLeft, .swipeDownRight,
-            ]
+            for slotId in GridSlot.allSlots.flatMap(\.self) {
+                guard let key = mainMode.key(for: slotId) else {
+                    Issue.record("[\(info.id)] no key for slot \(slotId)")
+                    continue
+                }
+                for gesture in swipeGestures {
+                    // Only letter outputs that carry a return action.
+                    guard let binding = key.bindings[gesture],
+                          case let .commitText(swipeText) = binding.action,
+                          swipeText.first?.isLetter == true,
+                          case let .commitText(returnText)? = binding.returnAction
+                    else { continue }
 
-            for gesture in swipeGestures {
-                guard let binding = centerKey.bindings[gesture] else { continue }
-
-                // Only check letter outputs (commitText with a letter)
-                guard case let .commitText(swipeText) = binding.action,
-                      swipeText.first?.isLetter == true
-                else { continue }
-
-                // Check if there's a return action
-                guard let returnAction = binding.returnAction,
-                      case let .commitText(returnText) = returnAction
-                else { continue }
-
-                let expected = swipeText.uppercased(with: locale)
-
-                // Caseless letters have no meaningful uppercase — explicit
-                // return overrides (final forms) are legitimate there.
-                guard expected != swipeText else { continue }
-                #expect(
-                    returnText == expected,
-                    "[\(info.id)] center key return swipe \(gesture): expected '\(expected)', got '\(returnText)'"
-                )
+                    // keyboardUppercased, not uppercased: ß maps to ẞ, matching
+                    // the factory that generated the return action.
+                    let expected = swipeText.keyboardUppercased(with: locale)
+                    if expected == swipeText {
+                        #expect(
+                            returnText != swipeText,
+                            "[\(info.id)] \(slotId) \(gesture): return swipe silently repeats '\(swipeText)'"
+                        )
+                    } else {
+                        #expect(
+                            returnText == expected,
+                            "[\(info.id)] \(slotId) \(gesture): expected '\(expected)', got '\(returnText)'"
+                        )
+                    }
+                }
             }
         }
     }

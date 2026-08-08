@@ -4,10 +4,10 @@
 //
 //  Characterization tests for the katakana layout, which is now derived from
 //  the hiragana tables via ICU `.hiraganaToKatakana` instead of a hand-authored
-//  glyph-for-glyph mirror. The expected values below are the exact values that
-//  were hand-authored before the refactor, so equality proves zero behavior
-//  change. Also pins the two genuine katakana-only deltas (the ・ separator and
-//  the wa-row voiced combine entries) and the #268 ゛-cascade / ja_JP locale.
+//  glyph-for-glyph mirror. The expected values below spell the tables out in
+//  katakana, so equality proves the derivation maps every kana glyph-for-glyph.
+//  Also pins the genuine katakana-only deltas (the ・ separator, the small ヮ,
+//  and the wa-row voiced combine entries) and the #268 ゛-cascade / ja_JP locale.
 //
 
 import Foundation
@@ -53,7 +53,8 @@ struct KatakanaDerivationTests {
             ],
             GridSlot.bottomCenter: [
                 .swipeUp: "テ", .swipeUpLeft: "゛", .swipeLeft: "ネ",
-                .swipeRight: "ケ", .swipeDownRight: "・",
+                .swipeRight: "ケ", .swipeDown: "。", .swipeDownLeft: "、",
+                .swipeDownRight: "・",
             ],
             GridSlot.bottomRight: [
                 .swipeUp: "エ", .swipeUpLeft: "コ", .swipeLeft: "ヨ",
@@ -61,6 +62,27 @@ struct KatakanaDerivationTests {
             ],
         ]
         #expect(LanguageDefinitions.katakanaDirectionalOverrides == expected)
+    }
+
+    @Test func derivedReturnOverridesMatchHiraganaSmallKana() {
+        let expected: [String: [GestureType: String]] = [
+            GridSlot.topLeft: [.swipeDown: "ャ"],
+            GridSlot.center: [.swipeUp: "ァ"],
+            GridSlot.midLeft: [.swipeDown: "ヮ"],
+            GridSlot.midRight: [.swipeUpLeft: "ュ"],
+            GridSlot.bottomLeft: [.swipeRight: "ゥ"],
+            GridSlot.bottomCenter: [.swipeDown: ".", .swipeDownLeft: ",", .swipeDownRight: ":"],
+            GridSlot.bottomRight: [.swipeUp: "ェ", .swipeLeft: "ョ", .swipeDownLeft: "ォ"],
+        ]
+        #expect(LanguageDefinitions.katakanaReturnOverrides == expected)
+    }
+
+    @Test func derivedCircularOverridesMatchHiraganaVoicing() {
+        let expected: [String: String] = [
+            GridSlot.topLeft: "グ", GridSlot.topCenter: "ッ", GridSlot.topRight: "ィ",
+            GridSlot.midLeft: "ブ", GridSlot.bottomLeft: "ド", GridSlot.bottomRight: "ズ",
+        ]
+        #expect(LanguageDefinitions.katakanaCircularOverrides == expected)
     }
 
     // MARK: - Genuine katakana-only deltas survive
