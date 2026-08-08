@@ -9,17 +9,37 @@
           "image-name": "Fingers.svg",
           "name": "Fingers",
           "glass": true,
-          "fill": {
-            "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
-          }
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:0.90980,0.90980,0.90980,1.00000"
+              }
+            }
+          ]
         },
         {
           "image-name": "Hand.svg",
           "name": "Hand",
           "glass": true,
-          "fill": {
-            "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
-          }
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:0.90980,0.90980,0.90980,1.00000"
+              }
+            }
+          ]
         }
       ],
       "lighting": "individual",

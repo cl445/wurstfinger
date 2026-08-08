@@ -15,13 +15,16 @@ Division of labour:
 
 - The layer SVGs under AppIcon.icon/Assets are generated, and are overwritten
   on every run. Edit Design/AppIcon.svg, not them.
-- AppIcon.icon/icon.json is written once and then hand-maintained in Icon
-  Composer (Xcode > Open Developer Tool > Icon Composer). Per-appearance
-  settings — most usefully a lighter glyph fill for the dark appearance —
-  can only be authored there; hand-writing them into the JSON is silently
-  dropped or crashes actool. Re-running this script keeps the file and only
-  checks that it still references the generated layers. Pass
-  --reset-icon-json to deliberately throw those edits away.
+- AppIcon.icon/icon.json is written once and then left alone, so that edits
+  made in Icon Composer (Xcode > Open Developer Tool > Icon Composer) survive.
+  Re-running this script keeps the file and only checks that it still
+  references the generated layers. Pass --reset-icon-json to rewrite it from
+  the constants below, which reproduces what Icon Composer saves byte for
+  byte — including the per-appearance dark fill.
+
+Beware when editing icon.json by hand: most plausible spellings of the
+per-appearance keys are dropped without any diagnostic, and some crash actool
+outright. The shape recorded below is the one Icon Composer itself writes.
 
 Requires Inkscape: the source artwork is stroke-only, and Icon Composer's
 renderer fills open paths instead of stroking them, so strokes must be
@@ -41,26 +44,25 @@ from typing import Final
 # Palette, carried over from the pre-Liquid-Glass icon: dark line art on a
 # light background.
 #
-# As long as a single fill drives every appearance, dark-appearance contrast
-# measures ~7 points whatever the glyph colour, so the glyph reads there
-# through its glass edges rather than through colour. In the default
-# appearance the colour matters a lot, and the glass treatment washes it out
-# heavily — a fill of 0.0 still renders as roughly 31% grey rather than black.
-# So the glyph is pushed to black to buy back the contrast lost when the
-# artwork was scaled down onto the icon grid: measured 57 points in the default
-# appearance, against 40 at the original #3D3D3D.
+# The glass treatment washes the glyph colour out heavily — a fill of 0.0
+# still renders as roughly 31% grey rather than black — so the glyph is pushed
+# to black to buy back the contrast lost when the artwork was scaled down onto
+# the icon grid: 57 points in the default appearance against 40 at the
+# original #3D3D3D.
 #
-# Per-appearance fills are a real Icon Composer feature (WWDC25 session 361:
-# fill, opacity and blend mode apply per appearance; appearance names are
-# base, light, dark and tinted). They are the proper fix for the dark
-# appearance. They are not used here because hand-writing them into icon.json
-# does not work: every spelling and placement tried was dropped without even
-# an "Unknown appearance name" complaint from the parser. Authoring them means
-# opening AppIcon.icon in Icon Composer and setting the dark fill there — at
-# which point this script must stop rewriting icon.json and generate only the
-# layer SVGs, or it will overwrite that work.
+# The dark appearance needs its own fill or the dark glyph sinks into the dark
+# background. Measured on device, pinning it lifts contrast from 26 to 65.
+#
+# Writing that per-appearance fill by hand only works in one exact shape:
+# "fill-specializations" REPLACES "fill" — leaving both in place makes the
+# parser take "fill" and drop the specializations without a word. The base
+# value is the entry with no "appearance" key. Valid appearance names are
+# base, light, dark and tinted. This shape was recovered by letting Icon
+# Composer write the file and diffing it, after a dozen plausible-looking
+# hand-written spellings were all silently ignored.
 BACKGROUND_COLOR: Final[str] = "0.90980,0.90980,0.90980"  # #E8E8E8
 GLYPH_FILL: Final[str] = "0.00000,0.00000,0.00000"
+GLYPH_FILL_DARK: Final[str] = "0.90980,0.90980,0.90980"  # #E8E8E8
 
 # Background transparency is not something the icon can ask for: the default
 # appearance always renders an opaque container. An alpha below 1.0 on the
@@ -185,9 +187,9 @@ def flatten_strokes(inkscape: str, svg_path: Path) -> None:
     svg_path.write_text(cleaned, encoding="utf-8")
 
 
-def solid(color: str) -> dict[str, str]:
+def solid(color: str, space: str = "extended-srgb") -> dict[str, str]:
     """Wrap an "r,g,b" triple as an Icon Composer solid fill."""
-    return {"solid": f"extended-srgb:{color},1.00000"}
+    return {"solid": f"{space}:{color},1.00000"}
 
 
 def gradient(color: str) -> dict[str, str]:
@@ -209,7 +211,11 @@ def build_icon_json() -> dict[str, object]:
                         "image-name": f"{name}.svg",
                         "name": name,
                         "glass": True,
-                        "fill": solid(GLYPH_FILL),
+                        # No sibling "fill" key — see the note on the palette.
+                        "fill-specializations": [
+                            {"value": solid(GLYPH_FILL)},
+                            {"appearance": "dark", "value": solid(GLYPH_FILL_DARK, "srgb")},
+                        ],
                     }
                     for name in reversed(list(LAYERS))
                 ],
