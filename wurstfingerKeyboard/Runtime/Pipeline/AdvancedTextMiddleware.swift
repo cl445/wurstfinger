@@ -62,6 +62,14 @@ struct AdvancedTextMiddleware: ActionMiddleware {
     // MARK: - Delete Forward
 
     private func deleteForward(target: TextInputTarget) {
+        // The proxy deletes a selected range as one unit, so forward-delete
+        // over a selection *is* a plain deleteBackward. Stepping over the
+        // trailing context first would move past the selection and delete an
+        // unrelated character — or, with nothing behind it, do nothing at all.
+        if let selected = target.selectedText, !selected.isEmpty {
+            target.deleteBackward()
+            return
+        }
         guard let next = target.documentContextAfterInput?.first else { return }
         // `adjustTextPosition` moves by UTF-16 code units, so cross the whole
         // grapheme cluster (emoji can span 2+ units); a fixed +1 would land
@@ -73,6 +81,14 @@ struct AdvancedTextMiddleware: ActionMiddleware {
     // MARK: - Capitalize Word
 
     private func capitalizeWord(target: TextInputTarget, uppercased: Bool) {
+        // With a selection the case change applies to the selection itself:
+        // inserting over it replaces it in one step. The word lookback below
+        // would instead consume the whole selection with its first
+        // deleteBackward and then eat the word in front of it.
+        if let selected = target.selectedText, !selected.isEmpty {
+            target.insertText(cased(selected, uppercased: uppercased))
+            return
+        }
         guard let context = target.documentContextBeforeInput, !context.isEmpty else { return }
 
         var characters: [Character] = []
@@ -86,13 +102,19 @@ struct AdvancedTextMiddleware: ActionMiddleware {
         guard !characters.isEmpty else { return }
 
         let word = String(characters.reversed())
-        let locale = localeProvider()
-        let transformed = uppercased ? word.uppercased(with: locale) : word.lowercased(with: locale)
+        let transformed = cased(word, uppercased: uppercased)
 
         for _ in 0 ..< word.count {
             target.deleteBackward()
         }
         target.insertText(transformed)
+    }
+
+    /// Case change in the active layout's locale (German `ß → SS`, Turkish
+    /// dotless `i`, …).
+    private func cased(_ text: String, uppercased: Bool) -> String {
+        let locale = localeProvider()
+        return uppercased ? text.uppercased(with: locale) : text.lowercased(with: locale)
     }
 
     // MARK: - Clipboard
@@ -155,6 +177,11 @@ struct AdvancedTextMiddleware: ActionMiddleware {
         let after = target.documentContextAfterInput ?? ""
         let all = before + selected + after
         guard !all.isEmpty else { return }
+        // Bounded like a paste: every character below costs one deleteBackward
+        // round-trip to the host app, and the proxy imposes no size limit of
+        // its own. Past the cap the cut is refused rather than half-applied —
+        // a silent no-op like the guards above.
+        guard !Self.exceedsCutLimit(all) else { return }
 
         UIPasteboard.general.string = all
 
@@ -195,5 +222,18 @@ struct AdvancedTextMiddleware: ActionMiddleware {
             end = next
         }
         return String(text[..<end])
+    }
+
+    /// Whether `text` is too large to cut in one gesture. Shares
+    /// `KeyboardConstants.TextInput.maxPasteUTF16Length` with
+    /// `cappedForInsertion`, so a single action moves at most that much text in
+    /// either direction: an oversized insertion truncates, an oversized
+    /// deletion is refused — truncating it would mangle the document while
+    /// putting only part of it on the pasteboard.
+    static func exceedsCutLimit(
+        _ text: String,
+        maxUTF16Length: Int = KeyboardConstants.TextInput.maxPasteUTF16Length
+    ) -> Bool {
+        text.utf16.count > maxUTF16Length
     }
 }

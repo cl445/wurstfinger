@@ -120,13 +120,40 @@ struct AutoCapitalizationTests {
     // MARK: - sentenceEnders and sentenceOpeners (pure constants)
 
     @Test func sentenceEndersContainsExpectedCharacters() {
-        let expected: Set<Character> = [".", "!", "?", "…", "。", "！", "？"]
+        let expected: Set<Character> = [".", "!", "?", "…", "。", "！", "？", "।", "۔"]
         #expect(AutoCapitalization.sentenceEnders == expected)
     }
 
     @Test func sentenceOpenersContainsExpectedCharacters() {
         let expected: Set<Character> = ["¿", "¡"]
         #expect(AutoCapitalization.sentenceOpeners == expected)
+    }
+
+    // MARK: - sentenceTerminator
+
+    @Test("Sentence terminator per language", arguments: [
+        ("de_DE", ". "), ("en_US", ". "), ("ar", ". "), ("fa_IR", ". "),
+        ("hi_IN", "। "), ("ja_JP", "。"), ("ur", "۔ "),
+    ])
+    func sentenceTerminatorForLocale(_ identifier: String, _ expected: String) {
+        #expect(AutoCapitalization.sentenceTerminator(for: Locale(identifier: identifier)) == expected)
+    }
+
+    @Test func everySentenceTerminatorEndsASentence() throws {
+        // The double-space shortcut commits these, and auto-capitalization
+        // after the commit only engages if the mark is a known sentence ender.
+        for (language, terminator) in AutoCapitalization.sentenceTerminators {
+            let mark = try #require(terminator.first)
+            #expect(AutoCapitalization.sentenceEnders.contains(mark), "\(language): \(terminator)")
+        }
+        let defaultMark = try #require(AutoCapitalization.defaultSentenceTerminator.first)
+        #expect(AutoCapitalization.sentenceEnders.contains(defaultMark))
+    }
+
+    @Test func katakanaLayoutResolvesToTheJapaneseTerminator() throws {
+        // The katakana *id* is not a locale; its definition carries "ja_JP".
+        let definition = try #require(KeyboardRegistry.load(id: "ja_JP_katakana"))
+        #expect(AutoCapitalization.sentenceTerminator(for: definition.locale) == "。")
     }
 
     // MARK: - Integration tests (pipeline API)

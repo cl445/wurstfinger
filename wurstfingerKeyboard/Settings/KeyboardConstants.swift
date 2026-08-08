@@ -271,6 +271,15 @@ enum KeyboardConstants {
         /// input in the jetsam-constrained keyboard extension; longer text is
         /// silently truncated at a grapheme boundary before insertion.
         static let maxPasteUTF16Length = 200_000
+
+        /// How long after a space press a second one still reads as a double
+        /// space. Without a window every space typed behind an existing
+        /// "word + space" is rewritten — hours later, or after the caret moved
+        /// back into an old sentence — and a deliberate double space becomes
+        /// untypable while the shortcut is on. Deliberately longer than a UIKit
+        /// double tap: two spaces on a gesture keyboard are a typing rhythm,
+        /// not a double tap.
+        static let doubleSpacePeriodWindow: TimeInterval = 1.1
     }
 
     // MARK: - Preview Settings

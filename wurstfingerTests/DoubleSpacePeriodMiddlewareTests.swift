@@ -2,11 +2,13 @@
 //  DoubleSpacePeriodMiddlewareTests.swift
 //  WurstfingerTests
 //
-//  Verifies the double-space → period substitution (the iOS "." Shortcut):
-//  the rule, the isolated middleware behavior, and end-to-end wiring through
-//  the action pipeline including the free auto-capitalization follow-up.
+//  Verifies the double-space → sentence terminator substitution (the iOS "."
+//  Shortcut): the rule, the timing window, the per-script terminator, and
+//  end-to-end wiring through the action pipeline including the free
+//  auto-capitalization follow-up.
 //
 
+import Foundation
 import Testing
 @testable import WurstfingerApp
 
@@ -30,35 +32,44 @@ struct DoubleSpacePeriodMiddlewareTests {
 
     // MARK: - Isolated middleware
 
-    /// Runs one action through the middleware, returning the forwarded action,
-    /// the target's recorded events, and the resulting pre-cursor context.
+    /// Drives one middleware instance through a timeline of `(time, action)`
+    /// pairs on an injected clock, returning every forwarded action, the
+    /// target's recorded events, and the resulting pre-cursor context.
+    /// The default timeline is two space presses well inside the window.
     private func run(
         before: String?,
+        timeline: [(TimeInterval, KeyAction)] = [(0, .space), (0.2, .space)],
         enabled: Bool = true,
-        action: KeyAction = .space,
-        selection: String? = nil
+        selection: String? = nil,
+        terminator: String = ". "
     )
-        -> (forwarded: KeyAction, events: [MockTextTarget.Event], contextAfter: String?) {
+        -> (forwarded: [KeyAction], events: [MockTextTarget.Event], contextAfter: String?) {
         let target = MockTextTarget()
         target.documentContextBeforeInput = before
         target.selectedText = selection
+        var clock: TimeInterval = 0
         let middleware = DoubleSpacePeriodMiddleware(
             isEnabled: { enabled },
             documentContextBefore: { target.documentContextBeforeInput },
             selectedText: { target.selectedText },
-            deleteBackward: { target.deleteBackward() }
+            deleteBackward: { target.deleteBackward() },
+            sentenceTerminator: terminator,
+            now: { clock }
         )
-        var forwarded: KeyAction = .none
-        middleware.process(ActionContext(action: action, binding: nil, mode: ModeNames.main)) { context in
-            forwarded = context.action
+        var forwarded: [KeyAction] = []
+        for (time, action) in timeline {
+            clock = time
+            middleware.process(ActionContext(action: action, binding: nil, mode: ModeNames.main)) { context in
+                forwarded.append(context.action)
+            }
         }
         return (forwarded, target.events, target.documentContextBeforeInput)
     }
 
-    @Test("Deletes the pending space and rewrites to a period commit")
+    @Test("Deletes the pending space and rewrites to a terminator commit")
     func rewritesAfterLetter() {
         let result = run(before: "hello ")
-        #expect(result.forwarded == .commitText(". "))
+        #expect(result.forwarded == [.space, .commitText(". ")])
         #expect(result.events == [.deleteBackward])
         // The middleware only removes the pending space; the commit itself is
         // applied later by TextInputMiddleware.
@@ -68,7 +79,7 @@ struct DoubleSpacePeriodMiddlewareTests {
     @Test("Passes a space through untouched after punctuation")
     func passesThroughAfterPunctuation() {
         let result = run(before: "hello. ")
-        #expect(result.forwarded == .space)
+        #expect(result.forwarded == [.space, .space])
         #expect(result.events.isEmpty)
         #expect(result.contextAfter == "hello. ")
     }
@@ -80,7 +91,7 @@ struct DoubleSpacePeriodMiddlewareTests {
         // replace-selection semantics even when the pre-selection context
         // matches the substitution rule.
         let result = run(before: "hello ", selection: "world")
-        #expect(result.forwarded == .space)
+        #expect(result.forwarded == [.space, .space])
         #expect(result.events.isEmpty)
         #expect(result.contextAfter == "hello ")
     }
@@ -88,23 +99,96 @@ struct DoubleSpacePeriodMiddlewareTests {
     @Test("Passes a third space through untouched")
     func passesThroughOnDoubleSpace() {
         let result = run(before: "hello  ")
-        #expect(result.forwarded == .space)
+        #expect(result.forwarded == [.space, .space])
         #expect(result.events.isEmpty)
     }
 
     @Test("Does nothing when disabled")
     func inertWhenDisabled() {
         let result = run(before: "hello ", enabled: false)
-        #expect(result.forwarded == .space)
+        #expect(result.forwarded == [.space, .space])
         #expect(result.events.isEmpty)
         #expect(result.contextAfter == "hello ")
     }
 
     @Test("Ignores non-space actions")
     func ignoresNonSpaceActions() {
-        let result = run(before: "hello ", action: .commitText("x"))
-        #expect(result.forwarded == .commitText("x"))
+        let result = run(before: "hello ", timeline: [(0, .commitText("x"))])
+        #expect(result.forwarded == [.commitText("x")])
         #expect(result.events.isEmpty)
+    }
+
+    // MARK: - Timing window
+
+    @Test("A lone space is never a double space")
+    func loneSpaceDoesNotSubstitute() {
+        // The rule alone matches "hello " — only the missing first press keeps
+        // a space typed into an already-finished word from being rewritten.
+        let result = run(before: "hello ", timeline: [(0, .space)])
+        #expect(result.forwarded == [.space])
+        #expect(result.events.isEmpty)
+        #expect(result.contextAfter == "hello ")
+    }
+
+    @Test("A space after the window has closed inserts a plain space")
+    func windowExpires() {
+        let window = KeyboardConstants.TextInput.doubleSpacePeriodWindow
+        let result = run(before: "hello ", timeline: [(0, .space), (window + 0.01, .space)])
+        #expect(result.forwarded == [.space, .space])
+        #expect(result.events.isEmpty)
+    }
+
+    @Test("A space at the edge of the window still substitutes")
+    func windowBoundarySubstitutes() {
+        let window = KeyboardConstants.TextInput.doubleSpacePeriodWindow
+        let result = run(before: "hello ", timeline: [(0, .space), (window, .space)])
+        #expect(result.forwarded.last == .commitText(". "))
+    }
+
+    @Test("A keystroke between the two spaces disarms the window")
+    func interveningActionDisarms() {
+        let result = run(
+            before: "hello ",
+            timeline: [(0, .space), (0.1, .commitText("x")), (0.2, .space)]
+        )
+        #expect(result.forwarded == [.space, .commitText("x"), .space])
+        #expect(result.events.isEmpty)
+    }
+
+    @Test("A cursor move between the two spaces disarms the window")
+    func cursorMoveDisarms() {
+        let result = run(
+            before: "hello ",
+            timeline: [(0, .space), (0.1, .moveCursor(offset: -1)), (0.2, .space)]
+        )
+        #expect(result.forwarded.last == .space)
+        #expect(result.events.isEmpty)
+    }
+
+    @Test("A consumed pair does not arm the next space")
+    func thirdSpaceStartsAFreshPair() {
+        // "hello" + space + space substitutes; the third space must insert a
+        // plain space rather than substituting again on its own.
+        let result = run(
+            before: "hello ",
+            timeline: [(0, .space), (0.2, .space), (0.4, .space)]
+        )
+        #expect(result.forwarded == [.space, .commitText(". "), .space])
+        #expect(result.events == [.deleteBackward])
+    }
+
+    // MARK: - Per-script terminator
+
+    @Test("Commits the sentence terminator the definition supplies", arguments: [
+        ("hello ", ". "),
+        ("क ", "। "),
+        ("س ", "۔ "),
+        ("あ ", "。"),
+    ])
+    func commitsScriptTerminator(_ before: String, _ terminator: String) {
+        let result = run(before: before, terminator: terminator)
+        #expect(result.forwarded.last == .commitText(terminator))
+        #expect(result.events == [.deleteBackward])
     }
 
     // MARK: - Pipeline integration
@@ -113,18 +197,20 @@ struct DoubleSpacePeriodMiddlewareTests {
     func integrationSubstitutes() {
         let (viewModel, target) = makeViewModel(languageId: "de_DE")
         viewModel.sharedDefaults.set(true, forKey: SettingsKey.doubleSpacePeriodEnabled.rawValue)
-        target.documentContextBeforeInput = "hi "
+        target.documentContextBeforeInput = "hi"
         viewModel.dispatchAction(.space)
-        #expect(target.events == [.deleteBackward, .insertText(". ")])
+        viewModel.dispatchAction(.space)
+        #expect(target.events == [.insertText(" "), .deleteBackward, .insertText(". ")])
         #expect(target.documentContextBeforeInput == "hi. ")
     }
 
-    @Test("Disabled by default: a second space just inserts another space")
+    @Test("Disabled by default: two spaces just insert two spaces")
     func integrationDisabledByDefault() {
         let (viewModel, target) = makeViewModel(languageId: "de_DE")
-        target.documentContextBeforeInput = "hi "
+        target.documentContextBeforeInput = "hi"
         viewModel.dispatchAction(.space)
-        #expect(target.events == [.insertText(" ")])
+        viewModel.dispatchAction(.space)
+        #expect(target.events == [.insertText(" "), .insertText(" ")])
         #expect(target.documentContextBeforeInput == "hi  ")
     }
 
@@ -134,11 +220,22 @@ struct DoubleSpacePeriodMiddlewareTests {
         try #require(viewModel.currentDefinition?.settings.autoCapitalize == true)
         viewModel.sharedDefaults.set(true, forKey: SettingsKey.doubleSpacePeriodEnabled.rawValue)
         viewModel.sharedDefaults.set(true, forKey: SettingsKey.autoCapitalizeEnabled.rawValue)
-        target.documentContextBeforeInput = "hi "
+        target.documentContextBeforeInput = "hi"
+        viewModel.dispatchAction(.space)
         viewModel.dispatchAction(.space)
         #expect(target.documentContextBeforeInput == "hi. ")
         // ". " is a sentence boundary, so the shifted layer engages for the
         // next letter without any extra wiring in this middleware.
         #expect(viewModel.activeModeName == ModeNames.shifted)
+    }
+
+    @Test("Hindi commits a danda instead of a period")
+    func integrationHindiDanda() {
+        let (viewModel, target) = makeViewModel(languageId: "hi_IN")
+        viewModel.sharedDefaults.set(true, forKey: SettingsKey.doubleSpacePeriodEnabled.rawValue)
+        target.documentContextBeforeInput = "क"
+        viewModel.dispatchAction(.space)
+        viewModel.dispatchAction(.space)
+        #expect(target.documentContextBeforeInput == "क। ")
     }
 }

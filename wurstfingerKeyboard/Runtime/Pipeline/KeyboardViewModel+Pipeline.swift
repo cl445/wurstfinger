@@ -190,9 +190,10 @@ extension KeyboardViewModel {
             }
         ))
 
-        // 4c. Double-space → period (the iOS "." Shortcut). Runs right before
-        //     the text-input middleware so it can rewrite the pending `.space`
-        //     into `. `. Inert unless enabled in settings.
+        // 4c. Double-space → sentence terminator (the iOS "." Shortcut). Runs
+        //     right before the text-input middleware so it can rewrite the
+        //     pending `.space`. The terminator comes from the definition, so
+        //     Hindi and Japanese get their own marks. Inert unless enabled.
         middlewares.append(DoubleSpacePeriodMiddleware(
             isEnabled: { [weak self] in
                 self?.sharedDefaults.bool(forKey: SettingsKey.doubleSpacePeriodEnabled.rawValue) ?? false
@@ -205,7 +206,8 @@ extension KeyboardViewModel {
             },
             deleteBackward: { [weak self] in
                 self?.textInputTarget?.deleteBackward()
-            }
+            },
+            sentenceTerminator: AutoCapitalization.sentenceTerminator(for: definition.locale)
         ))
 
         // 5. Basic text input (commitText, deleteBackward, space, newline, moveCursor)
