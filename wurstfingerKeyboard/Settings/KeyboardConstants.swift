@@ -125,6 +125,76 @@ enum KeyboardConstants {
         static let positionBufferSize: Int = 120
     }
 
+    // MARK: - Gesture Trail
+
+    /// Tuning for the optional swipe trail drawn under the finger.
+    ///
+    /// The look follows the iOS system keyboard's swipe trail rather than
+    /// MessagEase's hard polyline: a soft ribbon that is widest at the finger
+    /// and tapers to a point at its tail, kept short so it reads as a comet
+    /// tail instead of a drawing of the whole path.
+    enum GestureTrail {
+        /// How far the finger must travel before any trail is drawn. Every
+        /// keystroke on this keyboard starts as a touch-down, so without a
+        /// threshold plain taps would flash a dot on every letter. Matches
+        /// `SpaceGestures.dragActivationThreshold`, the smallest travel the
+        /// keyboard already treats as "not a tap".
+        static let activationDistance: CGFloat = 8
+
+        /// Minimum spacing between two recorded samples. Filters the duplicate
+        /// positions a resting finger produces, which would otherwise fill the
+        /// buffer and push the moving part of the path out of it. Kept coarse
+        /// on purpose: the curve smoothing below rounds the path back out, so
+        /// storing sub-pixel steps only costs memory.
+        static let minimumSampleSpacing: CGFloat = 4
+
+        /// Maximum number of retained samples. At `minimumSampleSpacing` this
+        /// covers ~250pt of path — more than the visible window ever shows,
+        /// while bounding memory in an extension with a tight jetsam limit.
+        static let sampleCapacity: Int = 64
+
+        /// Age after which a sample stops being drawn while the finger is
+        /// still down. Long enough to show a whole flick swipe at once, short
+        /// enough that a slow cursor slide trails the finger instead of
+        /// painting its entire route.
+        static let visibleDuration: TimeInterval = 0.55
+
+        /// How long the frozen trail takes to fade out after the finger lifts.
+        static let fadeOutDuration: TimeInterval = 0.22
+
+        /// Head width as a fraction of the row height, so the trail scales
+        /// with the user's key size instead of overwhelming small keyboards.
+        static let widthFraction: CGFloat = 0.16
+
+        /// Clamps for the scaled head width.
+        static let minWidth: CGFloat = 5
+        static let maxWidth: CGFloat = 14
+
+        /// Exponent of the tail taper: `width = maxWidth * progress^exponent`
+        /// with `progress` running 0 (tail) → 1 (finger). Below 1 the ribbon
+        /// reaches nearly full width early and thins only near its very end,
+        /// which is what makes the system trail read as a stroke rather than
+        /// a wedge.
+        static let taperExponent: CGFloat = 0.55
+
+        /// Length of the tapered tail, as a multiple of the head width.
+        ///
+        /// The taper is measured along the path rather than as a fraction of
+        /// it, so a long cursor slide keeps a constant-width stroke with a
+        /// short tapered tail instead of stretching into one long wedge. A
+        /// path shorter than this simply tapers across its whole length.
+        static let taperLengthFactor: CGFloat = 3.5
+
+        /// Catmull-Rom segments inserted between two recorded samples. A fast
+        /// flick only produces a handful of samples before it ends — without
+        /// interpolation those would draw as a visible polyline.
+        static let smoothingSubdivisions: Int = 6
+
+        /// Opacity of the ribbon. Translucent enough to keep the key labels
+        /// underneath readable while the finger passes over them.
+        static let opacity: Double = 0.38
+    }
+
     // MARK: - Long Press
 
     enum LongPress {

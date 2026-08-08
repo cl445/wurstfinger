@@ -49,6 +49,9 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.cutAllEnabled.rawValue, store: SharedDefaults.store)
     private var cutAllEnabled = false
 
+    @AppStorage(SettingsKey.gestureTrailEnabled.rawValue, store: SharedDefaults.store)
+    private var gestureTrailEnabled = false
+
     @AppStorage(SettingsKey.keyboardFullAccess.rawValue, store: SharedDefaults.store)
     private var hasFullAccess = false
 
@@ -143,6 +146,14 @@ struct SettingsView: View {
 
     private var gesturesSection: some View {
         Section {
+            Toggle(isOn: $gestureTrailEnabled) {
+                SettingsRow(
+                    icon: "scribble.variable", color: .purple,
+                    title: "Gesture Trail",
+                    subtitle: String(localized: "Draw the path your finger takes")
+                )
+            }
+
             Toggle(isOn: $cutAllEnabled) {
                 SettingsRow(icon: "scissors", color: .red, title: "Cut All by Circling")
             }

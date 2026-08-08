@@ -24,6 +24,10 @@ struct KeyView: View {
     /// action (a handled long press consumes the touch). Long-press detection
     /// only runs when this is set and the user setting is enabled.
     var onLongPress: ((KeyConfig) -> Bool)?
+    /// Shared swipe-trail collector, supplied by `KeyboardGridView`. Forwarded
+    /// to whichever gesture modifier this key uses; nil simply means no trail
+    /// (previews, tests).
+    var gestureTrail: GestureTrailRecorder?
     var spanRatio: CGFloat = 1.0
 
     /// Inset between the full touch cell and the key's visible bounds. The cell
@@ -125,6 +129,7 @@ struct KeyView: View {
                 onSlide: { phase in onSlide?(key, phase) },
                 onTouchDown: { onTouchDown?() },
                 onLongPress: longPressHandler,
+                trail: gestureTrail,
                 isActive: $isActive
             ))
         } else {
@@ -139,6 +144,7 @@ struct KeyView: View {
                 // to classify swipes against the real geometry.
                 aspectRatio: metrics.cellAspectRatio * spanRatio,
                 onLongPress: longPressHandler,
+                trail: gestureTrail,
                 isActive: $isActive
             ))
         }

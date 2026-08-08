@@ -184,6 +184,11 @@ struct SlideGestureHandler: ViewModifier {
     /// handled. A handled long press consumes the touch (no tap, no slide
     /// on release). `nil` disables detection.
     var onLongPress: (() -> Bool)?
+
+    /// Collects the touch path for the swipe trail overlay. Same contract as
+    /// `KeyGestureRecognizer.trail`.
+    var trail: GestureTrailRecorder?
+
     @Binding var isActive: Bool
 
     @State private var state = SlideGestureState()
@@ -198,7 +203,10 @@ struct SlideGestureHandler: ViewModifier {
     func body(content: Content) -> some View {
         content
             .gesture(
-                DragGesture(minimumDistance: 0)
+                // The coordinate space only affects `value.location`, which
+                // the trail records; `value.translation` is a delta and stays
+                // identical, so the slide state machine is untouched.
+                DragGesture(minimumDistance: 0, coordinateSpace: .named(GestureTrailRecorder.coordinateSpace))
                     .updating($sequenceInFlight) { _, inFlight, _ in
                         inFlight = true
                     }
@@ -207,6 +215,10 @@ struct SlideGestureHandler: ViewModifier {
                         // don't feed the state machine, or the movement would
                         // start a cursor slide after the digit was typed.
                         if longPress.consumedTouch {
+                            // Same as in `KeyGestureRecognizer`: the digit is
+                            // already typed, so stop drawing a gesture that
+                            // will never be dispatched.
+                            trail?.cancel()
                             isActive = true
                             return
                         }
@@ -214,6 +226,7 @@ struct SlideGestureHandler: ViewModifier {
                             translation: value.translation,
                             activationThreshold: activationThreshold
                         )
+                        trail?.record(value.location, isTouchDown: update.isTouchDown)
                         if update.isTouchDown {
                             onTouchDown()
                             scheduleLongPress()
@@ -234,6 +247,7 @@ struct SlideGestureHandler: ViewModifier {
                             // release produces neither a tap nor a slide end.
                             longPress.clearConsumed()
                             _ = state.handleCancelled()
+                            trail?.cancel()
                             isActive = false
                             return
                         }
@@ -243,6 +257,7 @@ struct SlideGestureHandler: ViewModifier {
                         ) {
                             onSlide(phase)
                         }
+                        trail?.finish()
                         isActive = false
                     }
             )
@@ -256,6 +271,7 @@ struct SlideGestureHandler: ViewModifier {
                 if let phase = state.handleCancelled() {
                     onSlide(phase)
                 }
+                trail?.cancel()
                 isActive = false
             }
     }

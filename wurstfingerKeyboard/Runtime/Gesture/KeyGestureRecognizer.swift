@@ -99,6 +99,11 @@ struct KeyGestureRecognizer: ViewModifier {
     /// disables long-press detection entirely.
     var onLongPress: (() -> Bool)?
 
+    /// Collects the touch path for the swipe trail overlay. Nil disables the
+    /// feed entirely (previews and tests); when set, the recorder itself
+    /// decides whether the user has the trail turned on.
+    var trail: GestureTrailRecorder?
+
     @State private var sequence = KeyGestureSequence()
     @State private var longPress = LongPressScheduler()
     @Binding var isActive: Bool
@@ -112,12 +117,24 @@ struct KeyGestureRecognizer: ViewModifier {
     func body(content: Content) -> some View {
         content
             .gesture(
-                DragGesture(minimumDistance: 0)
+                // The coordinate space only affects `value.location`, which
+                // the trail records; `value.translation` is a delta and stays
+                // identical, so gesture classification is untouched.
+                DragGesture(minimumDistance: 0, coordinateSpace: .named(GestureTrailRecorder.coordinateSpace))
                     .updating($sequenceInFlight) { _, inFlight, _ in
                         inFlight = true
                     }
                     .onChanged { value in
-                        if sequence.handleChanged(translation: value.translation) {
+                        let isTouchDown = sequence.handleChanged(translation: value.translation)
+                        if longPress.consumedTouch {
+                            // The long press already typed its digit. A trail
+                            // that kept following the finger would advertise a
+                            // gesture that will never be dispatched.
+                            trail?.cancel()
+                        } else {
+                            trail?.record(value.location, isTouchDown: isTouchDown)
+                        }
+                        if isTouchDown {
                             onTouchDown()
                             scheduleLongPress()
                         } else if longPress.isScheduled,
@@ -134,6 +151,9 @@ struct KeyGestureRecognizer: ViewModifier {
                             // releasing doesn't produce a second key event.
                             longPress.clearConsumed()
                             sequence.handleCancelled()
+                            // No gesture was produced, so nothing should be
+                            // left drawn: drop the trail instead of fading it.
+                            trail?.cancel()
                             isActive = false
                             return
                         }
@@ -141,6 +161,7 @@ struct KeyGestureRecognizer: ViewModifier {
                             translation: value.translation,
                             aspectRatio: aspectRatio
                         )
+                        trail?.finish()
                         isActive = false
                         onGestureRecognized(classification)
                     }
@@ -154,6 +175,7 @@ struct KeyGestureRecognizer: ViewModifier {
                 longPress.cancel()
                 longPress.clearConsumed()
                 sequence.handleCancelled()
+                trail?.cancel()
                 isActive = false
             }
     }
