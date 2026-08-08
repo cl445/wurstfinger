@@ -147,6 +147,42 @@ struct KeyboardHealthLogTests {
         #expect(perLine.count <= 2 * 3 + 2)
     }
 
+    /// `recordAndFlush` must not return before its entry is on disk: it
+    /// exists for the suspension path, where the process may be frozen (and
+    /// later jetsam-killed on resume) before an async queue hop would run.
+    /// The raw file is read directly — going through `entries()` would drain
+    /// a still-pending async write via its `ioQueue.sync` and mask a
+    /// regression to fire-and-forget behavior.
+    @Test func recordAndFlushPersistsBeforeReturning() throws {
+        let url = makeTestFileURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let log = KeyboardHealthLog(fileURL: url)
+
+        log.recordAndFlush("viewDidDisappear")
+
+        let data = try Data(contentsOf: url)
+        let entry = try JSONDecoder().decode(KeyboardHealthLog.Entry.self, from: data)
+        #expect(entry.label == "viewDidDisappear")
+        #expect(entry.usedMB > 0)
+    }
+
+    /// Flushing also drains earlier fire-and-forget records (the serial queue
+    /// preserves order), so the appearance entries from the same session hit
+    /// the disk before the process is frozen too.
+    @Test func recordAndFlushDrainsPriorAsyncRecords() throws {
+        let url = makeTestFileURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let log = KeyboardHealthLog(fileURL: url)
+
+        log.record("viewWillAppear")
+        log.recordAndFlush("hostDidEnterBackground")
+
+        let decoder = JSONDecoder()
+        let perLine = try Data(contentsOf: url).split(separator: 0x0A)
+            .compactMap { try? decoder.decode(KeyboardHealthLog.Entry.self, from: Data($0)) }
+        #expect(perLine.map(\.label) == ["viewWillAppear", "hostDidEnterBackground"])
+    }
+
     /// The file URL provider must not be invoked at construction — that is
     /// what keeps the shared instance's `containerURL(...)` IPC off the
     /// main/spawn thread. It is resolved lazily on first file access.
