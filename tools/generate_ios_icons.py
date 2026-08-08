@@ -34,12 +34,26 @@ from typing import Final
 # have no effect either in ictool's preview or on device, so they are left out
 # rather than shipped as dead configuration.
 #
-# The derivation lightens the glyph while darkening the background, so this
-# pair happens to survive both: measured contrast is 29 points in the default
-# appearance and 25 in dark. Lightening the glyph to rescue dark mode collapses
-# the default appearance instead (5.8 points at 0.55), so keep it dark.
+# Contrast in the dark appearance measures ~7 points whatever the glyph
+# colour, so it cannot be tuned; the glyph reads there through its glass edges
+# instead. In the default appearance the colour matters a lot, and the glass
+# treatment washes it out heavily — a fill of 0.0 still renders as roughly 31%
+# grey rather than black. So the glyph is pushed to black to buy back the
+# contrast lost when the artwork was scaled down onto the icon grid: measured
+# 57 points in the default appearance, against 40 at the original #3D3D3D.
 BACKGROUND_COLOR: Final[str] = "0.90980,0.90980,0.90980"  # #E8E8E8
-GLYPH_FILL: Final[str] = "0.23922,0.23922,0.23922"  # #3D3D3D
+GLYPH_FILL: Final[str] = "0.00000,0.00000,0.00000"
+
+# Background transparency is not something the icon can ask for: the default
+# appearance always renders an opaque container. An alpha below 1.0 on the
+# background fill — including 0.0 — changes nothing on device. Letting the
+# wallpaper through is the "Clear" appearance, which the user picks on the
+# Home Screen and the system renders from this same artwork.
+
+# Thin strokes are the other half of perceived contrast. Scaling the artwork
+# down to the icon grid thinned them, so this scales them back up
+# independently of the drawing size. 1.0 keeps the source weight.
+STROKE_WIDTH_SCALE: Final[float] = 1.0
 
 # Baked into the layer SVGs as a fallback; the per-layer "fill" in icon.json
 # is what actually drives the rendered colour.
@@ -50,7 +64,7 @@ CANVAS: Final[float] = 1024.0
 
 # Height of the artwork on the canvas. Apple's icon grid wants the glyph
 # comfortably inside the container rather than bleeding to the edges.
-CONTENT_HEIGHT: Final[float] = 700.0
+CONTENT_HEIGHT: Final[float] = 780.0
 
 # Bounding box of the drawing in Design/AppIcon.svg, in SVG user units.
 # Obtained via `inkscape --query-all Design/AppIcon.svg` (px / 3.779528).
@@ -108,10 +122,15 @@ def build_layer_svg(elements: list[str]) -> str:
     scale = CONTENT_HEIGHT / BBOX_H
     offset_x = (CANVAS - BBOX_W * scale) / 2 - BBOX_X * scale
     offset_y = (CANVAS - CONTENT_HEIGHT) / 2 - BBOX_Y * scale
-    body = "\n      ".join(
-        re.sub(r"stroke:#[0-9a-fA-F]{3,6}", f"stroke:{GLYPH_COLOR}", element)
-        for element in elements
-    )
+    def restyle(element: str) -> str:
+        element = re.sub(r"stroke:#[0-9a-fA-F]{3,6}", f"stroke:{GLYPH_COLOR}", element)
+        return re.sub(
+            r"stroke-width:([0-9.]+)",
+            lambda m: f"stroke-width:{float(m.group(1)) * STROKE_WIDTH_SCALE:.5f}",
+            element,
+        )
+
+    body = "\n      ".join(restyle(element) for element in elements)
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"'
         ' viewBox="0 0 1024 1024">\n'
