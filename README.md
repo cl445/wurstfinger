@@ -112,6 +112,11 @@ xcodebuild test -scheme Wurstfinger -destination 'platform=iOS Simulator,name=iP
 > **Note:** Some tests require an available iOS Simulator. Adjust the
 > destination to match your local simulator name if necessary.
 
+> **Note:** The screenshot-generating UI tests (`ScreenshotTests`,
+> `wurstfingerUITestsLaunchTests`) skip themselves unless the test runner sees
+> `GENERATE_SCREENSHOTS=1`. Pass `TEST_RUNNER_GENERATE_SCREENSHOTS=1` to
+> `xcodebuild` — `scripts/generate-screenshots.sh` does this for you.
+
 ### Installing the Keyboard
 
 1. Build and run the `Wurstfinger` scheme on a device or simulator.
@@ -131,7 +136,7 @@ wurstfinger/
 │  ├─ wurstfinger/             # Host app (minimal)
 │  ├─ wurstfingerKeyboard/     # Keyboard extension sources
 │  ├─ wurstfingerTests/        # Swift Testing unit tests
-│  └─ wurstfingerUITests/      # UI test target (currently empty)
+│  └─ wurstfingerUITests/      # UI + screenshot tests
 ```
 
 ## License

@@ -16,7 +16,7 @@
 #
 # Usage: ./scripts/generate-appstore-screenshots.sh
 
-set -e
+set -euo pipefail
 
 # Change to project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -131,6 +131,8 @@ for target in "${TARGETS[@]}"; do
     # randomly. `manifest_names_to_files` emits sorted `name<TAB>file` lines;
     # we take the exported file column. Use a while-read loop rather than
     # `mapfile`, which is a bash 4+ builtin absent from macOS's stock bash 3.2.
+    # The emptiness check must stay ahead of the expansion below: bash 3.2
+    # treats "${arr[@]}" on an empty array as an unbound variable under `set -u`.
     ORDERED_EXPORTS=()
     while IFS= read -r line; do
         ORDERED_EXPORTS+=("$line")

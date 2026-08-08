@@ -13,16 +13,14 @@ final class wurstfingerUITestsLaunchTests: XCTestCase {
     }
 
     override func setUpWithError() throws {
+        try UITestApp.skipUnlessGeneratingScreenshots()
         continueAfterFailure = false
     }
 
     @MainActor
     func testLaunch() {
-        let app = XCUIApplication()
+        let app = UITestApp.make()
         app.launch()
-
-        // Insert steps here to perform after app launch but before taking a screenshot,
-        // such as logging into a test account or navigating somewhere in the app
 
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "Launch Screen"

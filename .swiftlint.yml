@@ -57,3 +57,12 @@ cyclomatic_complexity:
 disabled_rules:
   - trailing_comma  # Trailing commas improve diffs
   - implicit_optional_initialization  # Removing = nil breaks memberwise initializers
+
+custom_rules:
+  ui_test_app_factory:
+    included: ".*wurstfingerUITests/.*"
+    excluded: ".*wurstfingerUITests/UITestApp\\.swift"
+    name: "UI test app factory"
+    regex: "XCUIApplication\\(\\)|\\.launchArguments\\s*="
+    message: "Build the app under test with UITestApp.make() — a bare XCUIApplication() or launchArguments assignment drops the isolated defaults suite and writes into the real app group"
+    severity: error

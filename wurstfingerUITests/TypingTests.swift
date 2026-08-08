@@ -17,8 +17,7 @@ final class TypingTests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
-        app = XCUIApplication()
-        app.launchArguments = ["SCREENSHOT_MODE"]
+        app = UITestApp.make(["SCREENSHOT_MODE"])
         app.launchEnvironment["TYPING_TEST"] = "1"
         app.launchEnvironment["FORCE_LANGUAGE"] = "de_DE"
         app.launchEnvironment["FORCE_LAYER"] = "lower"
