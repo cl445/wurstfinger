@@ -11,7 +11,7 @@ import CoreGraphics
 import Foundation
 import SwiftUI
 
-/// Path construction for the swipe trail.
+/// Path construction for the gesture trail.
 ///
 /// The trail is built as a single closed outline rather than as a stroked
 /// polyline: a translucent stroke made of overlapping round-capped segments
@@ -22,16 +22,12 @@ enum GestureTrailGeometry {
     /// The shape for one visible trail: a dot while the touch has not moved,
     /// the tapered ribbon once it has.
     ///
-    /// A press produces a single sample, and the ribbon needs two points to
-    /// have a direction at all, so the two cases are genuinely different
-    /// shapes rather than one degenerate case of the other.
-    static func shape(
-        through points: [CGPoint],
-        headWidth: CGFloat,
-        dotWidthFactor: CGFloat = KeyboardConstants.GestureTrail.pressDotWidthFactor
-    ) -> Path {
+    /// The ribbon needs two points to have a direction at all, so a lone
+    /// sample — a press — is drawn as a dot instead.
+    static func shape(through points: [CGPoint], headWidth: CGFloat) -> Path {
         if points.count == 1 {
-            return dot(at: points[0], diameter: headWidth * dotWidthFactor)
+            let diameter = headWidth * KeyboardConstants.GestureTrail.pressDotWidthFactor
+            return dot(at: points[0], diameter: diameter)
         }
         return ribbon(through: smoothed(points), headWidth: headWidth)
     }

@@ -2,7 +2,7 @@
 //  GestureTrailRecorder.swift
 //  Wurstfinger
 //
-//  Collects touch positions for the swipe trail and tells the overlay when
+//  Collects touch positions for the gesture trail and tells the overlay when
 //  there is something to draw.
 //
 
@@ -18,7 +18,7 @@ import SwiftUI
 /// only for `@StateObject`'s deferred construction.
 final class GestureTrailToken: ObservableObject {}
 
-/// Per-keyboard collector for the swipe trail.
+/// Per-keyboard collector for the gesture trail.
 ///
 /// Owned by `KeyboardGridView`, fed by the gesture modifiers with positions in
 /// the shared `coordinateSpace`, and read by `GestureTrailOverlay`.
@@ -106,9 +106,9 @@ final class GestureTrailRecorder: ObservableObject {
     }
 
     /// Discards the trail immediately, without a fade. Used for the paths that
-    /// end a touch without a gesture: a system cancellation, a long press that
-    /// consumed the touch, and the teardown of a key that was mid-gesture
-    /// (which reaches neither `onEnded` nor the cancel path).
+    /// end a touch without a gesture: a system cancellation and the teardown
+    /// of a key that was mid-gesture (which reaches neither `onEnded` nor the
+    /// cancel path).
     func cancel(from token: GestureTrailToken) {
         // Also gates the recognizers' unconditional cancel paths: a key whose
         // gesture never started is not the owner and must not clear a trail
@@ -136,11 +136,6 @@ final class GestureTrailRecorder: ObservableObject {
         isRecording = defaults.bool(forKey: SettingsKey.gestureTrailEnabled.rawValue)
         guard isRecording else { return }
         trail.begin(at: location, time: now())
-        // Drawn from the first sample rather than after a movement threshold:
-        // a press is a gesture too, and showing it as a dot is what makes the
-        // trail read as "here is your finger" instead of only "here is your
-        // swipe". Costs one publish per keystroke, which only reaches the
-        // overlay — the grid owns this object without observing it.
         setVisible(true)
     }
 

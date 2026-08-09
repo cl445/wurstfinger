@@ -15,7 +15,7 @@ struct GestureTrailSample: Equatable {
     let time: TimeInterval
 }
 
-/// Rolling buffer of touch positions for the swipe trail.
+/// Rolling buffer of touch positions for the gesture trail.
 ///
 /// Two independent mechanisms shorten what is drawn:
 /// * while the finger is down, samples older than `visibleDuration` drop out

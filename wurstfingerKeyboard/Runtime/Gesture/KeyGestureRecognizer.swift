@@ -100,7 +100,7 @@ struct KeyGestureRecognizer: ViewModifier {
     /// disables long-press detection entirely.
     var onLongPress: (() -> Bool)?
 
-    /// Collects the touch path for the swipe trail overlay. Nil disables the
+    /// Collects the touch path for the gesture trail overlay. Nil disables the
     /// feed entirely (previews and tests); when set, the recorder itself
     /// decides whether the user has the trail turned on.
     var trail: GestureTrailRecorder?
@@ -129,11 +129,10 @@ struct KeyGestureRecognizer: ViewModifier {
                     }
                     .onChanged { value in
                         // A fired long press owns the rest of this touch: the
-                        // digit is typed, the release is discarded in `onEnded`,
-                        // so neither the ring buffer nor the trail should keep
-                        // following the finger at the display rate.
+                        // digit is typed and the release is discarded in
+                        // `onEnded`, so the sequence stops following the
+                        // finger. The trail already froze when the press fired.
                         if longPress.consumedTouch {
-                            trail?.cancel(from: trailToken)
                             isActive = true
                             return
                         }
@@ -160,9 +159,6 @@ struct KeyGestureRecognizer: ViewModifier {
                             // releasing doesn't produce a second key event.
                             longPress.clearConsumed()
                             sequence.handleCancelled()
-                            // No gesture was produced, so nothing should be
-                            // left drawn: drop the trail instead of fading it.
-                            trail?.cancel(from: trailToken)
                             isActive = false
                             return
                         }
@@ -210,13 +206,16 @@ struct KeyGestureRecognizer: ViewModifier {
 
     /// Arms the shared scheduler with this recognizer's fire guard. The guard
     /// reads live `@State` (`sequence`) at fire time through the property
-    /// wrapper — identical to the previous `fireLongPress()` semantics.
+    /// wrapper. A fired press has typed its digit, so its trail freezes and
+    /// fades like any other completed keystroke.
     private func scheduleLongPress() {
         guard onLongPress != nil else { return }
         longPress.schedule {
-            sequence.isTracking
+            let fired = sequence.isTracking
                 && sequence.maxDisplacement <= KeyboardConstants.LongPress.movementTolerance
                 && onLongPress?() == true
+            if fired { trail?.finish(from: trailToken) }
+            return fired
         }
     }
 

@@ -110,7 +110,7 @@ enum KeyboardConstants {
 
     // MARK: - Gesture Trail
 
-    /// Tuning for the optional swipe trail drawn under the finger.
+    /// Tuning for the optional gesture trail drawn under the finger.
     ///
     /// A soft ribbon, widest at the finger and tapering to a point at its
     /// tail, kept short so it reads as a comet tail rather than a drawing of

@@ -89,6 +89,16 @@ struct GestureTrailBufferTests {
         #expect(trail.visiblePoints(at: 103, visibleDuration: 0.55) == [CGPoint(x: 30, y: 0)])
     }
 
+    @Test func theDotSurvivesAReleaseAfterALongHold() {
+        // Lifting after a long hold anchors the window to the release time,
+        // which the lone touch-down sample predates — the fade must still
+        // have a dot to draw.
+        var trail = GestureTrail()
+        trail.begin(at: CGPoint(x: 7, y: 9), time: 100)
+        trail.release(at: 103)
+        #expect(trail.visiblePoints(at: 103.1, visibleDuration: 0.55) == [CGPoint(x: 7, y: 9)])
+    }
+
     @Test func visiblePointsStayEmptyForAnEmptyTrail() {
         #expect(GestureTrail().visiblePoints(at: 100, visibleDuration: 0.55).isEmpty)
     }
@@ -149,13 +159,16 @@ struct GestureTrailBufferTests {
 
 struct GestureTrailGeometryTests {
     @Test func aSinglePointDrawsADotAtTheTouch() {
+        // Exercises the production `pressDotWidthFactor`, so retuning the
+        // constant keeps a test pinning the rendered diameter to it.
+        let diameter = 12 * KeyboardConstants.GestureTrail.pressDotWidthFactor
         let box = GestureTrailGeometry.shape(
-            through: [CGPoint(x: 40, y: 60)], headWidth: 12, dotWidthFactor: 1.4
+            through: [CGPoint(x: 40, y: 60)], headWidth: 12
         ).boundingRect
         #expect(abs(box.midX - 40) < 0.5)
         #expect(abs(box.midY - 60) < 0.5)
-        #expect(abs(box.width - 12 * 1.4) < 0.5)
-        #expect(abs(box.height - 12 * 1.4) < 0.5)
+        #expect(abs(box.width - diameter) < 0.5)
+        #expect(abs(box.height - diameter) < 0.5)
     }
 
     @Test func theDotStaysComparableToTheRibbonHead() {
