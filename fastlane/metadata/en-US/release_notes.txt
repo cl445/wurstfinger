@@ -1,21 +1,19 @@
-Version 1.4.0
+Version 1.4.1
 
 New:
-• 10 new keyboard languages: Arabic, Persian, Urdu, Thai, Hindi, Korean, Japanese (Hiragana & Katakana), Greek, Portuguese, and Ukrainian
-• Korean syllables and Japanese kana combine as you type; Arabic, Persian, and Urdu come with right-to-left layouts
-• Native digits for Arabic, Persian, Urdu, Hindi, and Thai
-• The app itself is now available in 10 more languages
-• Optional: hold a letter key to type its digit
-• Optional: double-space types a period
-• Optional: a circular gesture on the clipboard key cuts the whole text
-• Reworked haptics — exactly one pulse per keystroke and a much wider intensity range
-• Toggle label visibility directly with a gesture on the space bar
-• Hebrew: final letters via return swipes
+• Optional gesture trail — a soft stroke follows your finger while you swipe and fades out when you lift it. Off by default, under Settings › Gestures
+• New app icon: Liquid Glass on iOS 26, with depth on the Home Screen
 
-Reliability:
-• The keyboard frees its memory when backgrounded, fixing cases where reopening it silently fell back to the system keyboard
-• Keyboard size now stays consistent across devices
-• Fixed cursor movement across emoji
-• Fast swipe gestures are recognized more reliably
-• Auto-capitalization now engages at the right moments
-• Disabled languages stay disabled
+Improved:
+• Fast flicks are recognized as swipes again instead of typing the key's center letter
+• Characters that could not be typed at all on the new layouts: Thai ฬ ฒ ฑ ฏ and ฿, the Japanese 、 and 。 with the small kana, the half-space in Persian and Urdu, Arabic-script punctuation, the Hindi ₹, the Hebrew ׳ and ״, and the voiced kana iteration marks ゞ and ヾ
+• č ď ě ň ř š ť ž are directly reachable: the caron now sits on the return swipe of the ^ key, replacing the stand-alone accent mark ˆ that swipe used to type (the ^ itself is unchanged)
+• Diagonal drags on the delete key delete instead of doing nothing
+• A long press held across a mode or language switch no longer types the old key's digit
+• Double-space types a period only on two consecutive spaces, and inserts the sentence mark of the script you are typing
+• Forward-delete and capitalize-word respect an active selection
+• Coming back from another app applies settings changed in the meantime before the first keystroke, and the app switcher no longer shows an empty gap where the keyboard was
+• VoiceOver reaches the shift, punctuation and mode keys, and offers swipe-only actions such as copy, cut, paste and hide keyboard through the rotor
+• Key labels stay inside their key at the smallest keyboard sizes
+• Size & Position was shown in English whatever the app language, and is translated now, along with 70 corrected translations
+• Leaner rendering leaves the keyboard more memory headroom

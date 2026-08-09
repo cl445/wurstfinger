@@ -1,21 +1,19 @@
-Version 1.4.0
+Version 1.4.1
 
 Neu:
-• 10 neue Tastatursprachen: Arabisch, Persisch, Urdu, Thai, Hindi, Koreanisch, Japanisch (Hiragana & Katakana), Griechisch, Portugiesisch und Ukrainisch
-• Koreanische Silben und japanische Kana werden beim Tippen zusammengesetzt; Arabisch, Persisch und Urdu mit Rechts-nach-links-Layouts
-• Native Ziffern für Arabisch, Persisch, Urdu, Hindi und Thai
-• Die App selbst gibt es jetzt in 10 weiteren Sprachen
-• Optional: Buchstabentaste gedrückt halten tippt die Ziffer
-• Optional: Doppel-Leerzeichen tippt einen Punkt
-• Optional: Eine Kreisgeste auf der Zwischenablage-Taste schneidet den ganzen Text aus
-• Überarbeitete Haptik — genau ein Impuls pro Anschlag und ein deutlich breiterer Intensitätsbereich
-• Label-Sichtbarkeit direkt per Geste auf der Leertaste umschalten
-• Hebräisch: Endbuchstaben per Rück-Wisch
+• Optionale Wischspur — eine weiche Linie folgt dem Finger beim Wischen und blendet beim Abheben aus. Standardmäßig aus, unter Einstellungen › Gesten
+• Neues App-Icon: auf iOS 26 als Liquid Glass, mit Tiefenwirkung auf dem Home-Bildschirm
 
-Zuverlässigkeit:
-• Die Tastatur gibt im Hintergrund ihren Speicher frei — behebt Fälle, in denen beim erneuten Öffnen stillschweigend die Systemtastatur erschien
-• Die Tastaturgröße bleibt jetzt über Geräte hinweg konsistent
-• Cursor-Bewegung über Emoji korrigiert
-• Schnelle Wischgesten werden zuverlässiger erkannt
-• Automatische Großschreibung greift jetzt in den richtigen Momenten
-• Deaktivierte Sprachen bleiben deaktiviert
+Verbessert:
+• Schnelle Wischer werden wieder als Wischgeste erkannt, statt den mittleren Buchstaben der Taste zu tippen
+• Zeichen, die auf den neuen Layouts gar nicht tippbar waren: Thai ฬ ฒ ฑ ฏ und ฿, die japanischen 、 und 。 samt kleiner Kana, das Halbleerzeichen in Persisch und Urdu, die arabische Interpunktion, das Hindi-₹, die hebräischen ׳ und ״ sowie die Kana-Wiederholungszeichen ゞ und ヾ
+• č ď ě ň ř š ť ž sind direkt erreichbar: das Hatschek liegt jetzt auf dem Rück-Wisch der ^-Taste und ersetzt dort das alleinstehende Akzentzeichen ˆ (das ^ selbst bleibt unverändert)
+• Diagonales Ziehen auf der Löschtaste löscht, statt gar nichts zu tun
+• Ein gehaltener Tastendruck über einen Modus- oder Sprachwechsel hinweg tippt nicht mehr die Ziffer der alten Taste
+• Doppel-Leerzeichen tippt einen Punkt nur bei zwei aufeinanderfolgenden Leerzeichen; gesetzt wird das Satzzeichen der jeweiligen Schrift
+• Vorwärtslöschen und Wort-Großschreiben berücksichtigen eine bestehende Auswahl
+• Nach dem Zurückwechseln aus einer anderen App gelten zwischenzeitlich geänderte Einstellungen ab dem ersten Anschlag, und der App-Umschalter zeigt keine leere Lücke mehr, wo die Tastatur war
+• VoiceOver erreicht Umschalt-, Satzzeichen- und Modustasten und bietet Wisch-Aktionen wie Kopieren, Ausschneiden, Einfügen und Tastatur ausblenden über den Rotor an
+• Tastenbeschriftungen bleiben auch bei der kleinsten Tastaturgröße innerhalb der Taste
+• Die Einstellung Größe & Position wurde in jeder App-Sprache auf Englisch angezeigt und ist jetzt übersetzt, dazu 70 korrigierte Übersetzungen
+• Schlankeres Rendering lässt der Tastatur mehr Speicherreserve

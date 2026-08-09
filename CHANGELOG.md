@@ -2,13 +2,17 @@
 
 ## Unreleased
 
+## v1.4.1 — 2026-08-09
+
 ### Added
 
-- Optional gesture trail — a soft, tapered stroke follows the finger while it swipes and fades out when it lifts, in the style of the iOS keyboard's swipe trail. Off by default, enabled under Settings › Gestures (#279)
+- Optional gesture trail — a soft, tapered stroke follows the finger while it swipes and fades out when it lifts, in the style of the iOS keyboard's swipe trail. A press that never moves leaves a dot, so a plain keystroke is visible too. Off by default, enabled under Settings › Gestures (#279, #289)
+- A naming glossary (`docs/GLOSSARY.md`) that pins down the codebase's domain vocabulary: modes, keys, gestures, pipeline stages, and the type-suffix and function-verb rules (#291, #294)
 - Markdown linting (markdownlint) as a pre-commit hook and a CI check (#292)
 
 ### Fixed
 
+- Fast flicks are recognized as swipes again instead of committing the key's center letter. The outlier filter judged each sample only by where it landed, so a fling that covered more than the jump budget per sample lost every one of its samples and the classifier saw a tap. It now also weighs the direction the accepted path established, and keeps a jump that continues it within 45° and three times the previous step (#295)
 - Characters that could not be typed at all on the non-Latin layouts: Thai ฬ ฒ ฑ ฏ (circle gesture) and the baht sign ฿, the Japanese 、 and 。 plus the small kana on return swipes, the Persian/Urdu half-space (ZWNJ), Arabic-script punctuation ؟ ، ؛ ٭ in place of the Latin marks, the Hindi rupee sign ₹, and the Hebrew geresh and gershayim ׳ ״ (#284)
 - The voiced kana iteration marks ゞ and ヾ: they ride the return swipe of ゝ/ヽ and the ゛ key voices them too, instead of being reachable only through the accent cycle (#290)
 - Forward-delete and capitalize-word with an active selection: forward-delete now removes the selection, and capitalize-word changes the case of the selection instead of eating the word in front of it (#281)
@@ -18,13 +22,25 @@
 - The app switcher no longer shows an empty gap where the keyboard was — a frozen stand-in keeps the card intact, and it neither swallows taps nor shows up in VoiceOver (#277)
 - Diagonal drags on the delete key are no longer dropped: a delete slide that drifts upwards deletes instead of doing nothing at all (#282)
 - A long press that was still armed when its key disappeared — switching mode or language mid-hold — no longer types the old key's digit into the new mode (#282)
-- Every key is operable with VoiceOver: activating the globe switches the input mode, and swipe-only actions such as copy, cut, paste and hide keyboard are offered as rotor actions (#283)
+- VoiceOver reaches keys it could not before: activating the globe switches the input mode, and swipe-only actions such as copy, cut, paste and hide keyboard are offered as rotor actions (#283). Shift, the sentence punctuation and the mode keys carry semantic names too, where VoiceOver used to announce the mode switches as the number `123` and the letters `abc` and offered no way to reach shift at all (#283, #295). Outside that named set the swipe outputs stay unreachable: a letter key offers only its center character, and no key offers its return swipes. Naming all eight directions would put eight to sixteen rotor entries on every key, so exposing swipe output as spoken-glyph actions is follow-up design work (#295)
 - Key labels can no longer outgrow their key at the smallest keyboard sizes (#283)
+- Size & Position was shown in English whatever the app language, and its explanation was compressed into a single truncated line; the controls now scroll below the pinned preview like on the other preview screens (#286, #295)
+- 70 translations across the 23 app languages that were wrong rather than missing: a Hebrew setting described the opposite of what the toggle does, ten languages still promised a keyboard style that no longer exists, Arabic rendered `(1-2-3)` mirrored, and French and Portuguese translated the golden ratio as the colour gold (#295)
+- The key aspect-ratio subtitle read `1:1.00` and reordered its parts under right-to-left scripts, because only the number was substituted into the sentence (#295)
+- Both privacy manifests declared the UserDefaults reason code that explicitly excludes cross-app access, although the dominant use on both sides is the shared app group (#295)
+- The gesture playground drew an 81 pt key while the keyboard itself resolves 57.75 pt, so thresholds tuned in the playground behaved differently on the keyboard (#286)
+- Health log entries read the memory footprint before the teardown had reclaimed it, overstating what survived by 1.3–3.3 MB (#295)
+- The App Store description claimed 14 keyboard languages including four that do not exist, and promised long-press text selection, which a keyboard extension cannot do; both are corrected, and a test pins the language count to the registry (#286)
+- Screenshot generation, broken since 2026-07-09: the CI image started shipping several Xcode 26.x versions, so the same simulator name now exists once per iOS runtime, and the workflow's warm-boot step and the script targeted different devices (#296)
 
 ### Changed
 
+- The app icon is an Icon Composer bundle, so iOS 26 renders it as Liquid Glass; the thumbs-up is split into two layers for parallax depth on the Home Screen, and the system derives the tinted appearance instead of shipping a pinned variant. The artwork and palette are unchanged, and pre-iOS-26 devices keep a flat icon (#280, generator hardened in #288)
 - The `^` compose key's return swipe now types the caron dead key, so č ď ě ň ř š ť ž are reachable directly instead of only through the accent cycle. The stand-alone modifier circumflex `ˆ` (U+02C6) that this return swipe used to type is deliberately gone with it; the ASCII `^` on the same key is unchanged (#285)
 - Leaner keyboard rendering: fewer allocations per keystroke and cached layouts released under memory pressure, leaving more headroom in the tight memory budget iOS gives keyboard extensions (#278)
+- Legacy type names brought in line with the glossary: `InputMethodKind` → `InputMethodType`, `HapticFeedbackManager` → `HapticFeedbackPlayer`, `NumpadStyle` → `NumpadType`, `CursorMovementStyle` → `CursorMovementType`. Stored settings keys, enum raw values and user-facing labels are unchanged, so existing settings survive (#297)
+- UI tests run against a throwaway defaults suite instead of the shared app group, and the screenshot-generating tests are opt-in behind `GENERATE_SCREENSHOTS` rather than running on every full test invocation (#287)
+- Dead code removed and the keyboard health log hardened (#285)
 
 ## v1.4.0 — 2026-07-23
 
