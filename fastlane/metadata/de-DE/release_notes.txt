@@ -13,7 +13,7 @@ Verbessert:
 • Doppel-Leerzeichen tippt einen Punkt nur bei zwei aufeinanderfolgenden Leerzeichen; gesetzt wird das Satzzeichen der jeweiligen Schrift
 • Vorwärtslöschen und Wort-Großschreiben berücksichtigen eine bestehende Auswahl
 • Nach dem Zurückwechseln aus einer anderen App gelten zwischenzeitlich geänderte Einstellungen ab dem ersten Anschlag, und der App-Umschalter zeigt keine leere Lücke mehr, wo die Tastatur war
-• Alle Tasten sind mit VoiceOver bedienbar, Umschalt- und Modustasten eingeschlossen
+• VoiceOver erreicht Umschalt-, Satzzeichen- und Modustasten und bietet Wisch-Aktionen wie Kopieren, Ausschneiden, Einfügen und Tastatur ausblenden über den Rotor an
 • Tastenbeschriftungen bleiben auch bei der kleinsten Tastaturgröße innerhalb der Taste
-• Die Einstellung Größe & Position war in allen Sprachen außer Englisch englisch und ist jetzt übersetzt, dazu 70 korrigierte Übersetzungen
+• Die Einstellung Größe & Position wurde in jeder App-Sprache auf Englisch angezeigt und ist jetzt übersetzt, dazu 70 korrigierte Übersetzungen
 • Schlankeres Rendering lässt der Tastatur mehr Speicherreserve

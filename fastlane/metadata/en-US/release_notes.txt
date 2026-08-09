@@ -13,7 +13,7 @@ Improved:
 • Double-space types a period only on two consecutive spaces, and inserts the sentence mark of the script you are typing
 • Forward-delete and capitalize-word respect an active selection
 • Coming back from another app applies settings changed in the meantime before the first keystroke, and the app switcher no longer shows an empty gap where the keyboard was
-• Every key is operable with VoiceOver, shift and the mode keys included
+• VoiceOver reaches the shift, punctuation and mode keys, and offers swipe-only actions such as copy, cut, paste and hide keyboard through the rotor
 • Key labels stay inside their key at the smallest keyboard sizes
-• Size & Position was English in every language but English and is translated now, along with 70 corrected translations
+• Size & Position was shown in English whatever the app language, and is translated now, along with 70 corrected translations
 • Leaner rendering leaves the keyboard more memory headroom
