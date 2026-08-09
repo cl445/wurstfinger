@@ -7,13 +7,13 @@ Neu:
 Verbessert:
 • Schnelle Wischer werden wieder als Wischgeste erkannt, statt den mittleren Buchstaben der Taste zu tippen
 • Zeichen, die auf den neuen Layouts gar nicht tippbar waren: Thai ฬ ฒ ฑ ฏ und ฿, die japanischen 、 und 。 samt kleiner Kana, das Halbleerzeichen in Persisch und Urdu, die arabische Interpunktion, das Hindi-₹, die hebräischen ׳ und ״ sowie die Kana-Wiederholungszeichen ゞ und ヾ
-• č ď ě ň ř š ť ž sind direkt erreichbar — das Hatschek liegt jetzt auf dem Rück-Wisch der ^-Taste
+• č ď ě ň ř š ť ž sind direkt erreichbar: das Hatschek liegt jetzt auf dem Rück-Wisch der ^-Taste
 • Diagonales Ziehen auf der Löschtaste löscht, statt gar nichts zu tun
 • Ein gehaltener Tastendruck über einen Modus- oder Sprachwechsel hinweg tippt nicht mehr die Ziffer der alten Taste
-• Doppel-Leerzeichen tippt einen Punkt nur bei zwei aufeinanderfolgenden Leerzeichen — und setzt das Satzzeichen, das die jeweilige Schrift tatsächlich verwendet
+• Doppel-Leerzeichen tippt einen Punkt nur bei zwei aufeinanderfolgenden Leerzeichen; gesetzt wird das Satzzeichen der jeweiligen Schrift
 • Vorwärtslöschen und Wort-Großschreiben berücksichtigen eine bestehende Auswahl
 • Nach dem Zurückwechseln aus einer anderen App gelten zwischenzeitlich geänderte Einstellungen ab dem ersten Anschlag, und der App-Umschalter zeigt keine leere Lücke mehr, wo die Tastatur war
 • Alle Tasten sind mit VoiceOver bedienbar, Umschalt- und Modustasten eingeschlossen
 • Tastenbeschriftungen bleiben auch bei der kleinsten Tastaturgröße innerhalb der Taste
-• „Größe & Position“ ist übersetzt — der Bildschirm war in allen Sprachen außer Englisch englisch — dazu 70 korrigierte Übersetzungen
+• Die Einstellung Größe & Position war in allen Sprachen außer Englisch englisch und ist jetzt übersetzt, dazu 70 korrigierte Übersetzungen
 • Schlankeres Rendering lässt der Tastatur mehr Speicherreserve

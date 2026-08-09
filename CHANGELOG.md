@@ -7,12 +7,12 @@
 ### Added
 
 - Optional gesture trail — a soft, tapered stroke follows the finger while it swipes and fades out when it lifts, in the style of the iOS keyboard's swipe trail. A press that never moves leaves a dot, so a plain keystroke is visible too. Off by default, enabled under Settings › Gestures (#279, #289)
-- A naming glossary (`docs/GLOSSARY.md`) that fixes the codebase's domain vocabulary — modes, keys, gestures, pipeline stages, and the type-suffix and function-verb rules (#291, #294)
+- A naming glossary (`docs/GLOSSARY.md`) that pins down the codebase's domain vocabulary: modes, keys, gestures, pipeline stages, and the type-suffix and function-verb rules (#291, #294)
 - Markdown linting (markdownlint) as a pre-commit hook and a CI check (#292)
 
 ### Fixed
 
-- Fast flicks are recognized as swipes again instead of committing the key's center letter: the outlier filter judged every sample by where it landed, so a gesture covering more than the jump budget per sample had all of its samples discarded and the classifier saw a tap. It now also asks how the finger got there, and admits a jump that continues the movement the accepted path established (#295)
+- Fast flicks are recognized as swipes again instead of committing the key's center letter. The outlier filter judged each sample only by where it landed, so a fling that covered more than the jump budget per sample lost every one of its samples and the classifier saw a tap. It now also weighs the direction the accepted path established, and keeps a jump that continues it within 45° and three times the previous step (#295)
 - Characters that could not be typed at all on the non-Latin layouts: Thai ฬ ฒ ฑ ฏ (circle gesture) and the baht sign ฿, the Japanese 、 and 。 plus the small kana on return swipes, the Persian/Urdu half-space (ZWNJ), Arabic-script punctuation ؟ ، ؛ ٭ in place of the Latin marks, the Hindi rupee sign ₹, and the Hebrew geresh and gershayim ׳ ״ (#284)
 - The voiced kana iteration marks ゞ and ヾ: they ride the return swipe of ゝ/ヽ and the ゛ key voices them too, instead of being reachable only through the accent cycle (#290)
 - Forward-delete and capitalize-word with an active selection: forward-delete now removes the selection, and capitalize-word changes the case of the selection instead of eating the word in front of it (#281)
@@ -22,16 +22,16 @@
 - The app switcher no longer shows an empty gap where the keyboard was — a frozen stand-in keeps the card intact, and it neither swallows taps nor shows up in VoiceOver (#277)
 - Diagonal drags on the delete key are no longer dropped: a delete slide that drifts upwards deletes instead of doing nothing at all (#282)
 - A long press that was still armed when its key disappeared — switching mode or language mid-hold — no longer types the old key's digit into the new mode (#282)
-- Every key is operable with VoiceOver: activating the globe switches the input mode, and swipe-only actions such as copy, cut, paste and hide keyboard are offered as rotor actions (#283). Shift, the sentence punctuation and the mode keys carry semantic names too, instead of being announced as the number *123* and the letters *abc* with no way to reach shift at all (#283, #295)
+- Every key is operable with VoiceOver: activating the globe switches the input mode, and swipe-only actions such as copy, cut, paste and hide keyboard are offered as rotor actions (#283). Shift, the sentence punctuation and the mode keys carry semantic names too: VoiceOver used to announce the mode switches as the number `123` and the letters `abc`, and offered no way to reach shift at all (#283, #295)
 - Key labels can no longer outgrow their key at the smallest keyboard sizes (#283)
 - Size & Position was English in every language but English, and its explanation was compressed into a single truncated line; the controls now scroll below the pinned preview like on the other preview screens (#286, #295)
-- 70 translations across the 23 app languages that were wrong rather than missing — among them a Hebrew setting that described the opposite of what the toggle does, ten languages still promising a keyboard style that no longer exists, a mirrored `(1-2-3)` in Arabic, and the golden ratio translated as the colour gold in French and Portuguese (#295)
+- 70 translations across the 23 app languages that were wrong rather than missing: a Hebrew setting described the opposite of what the toggle does, ten languages still promised a keyboard style that no longer exists, Arabic rendered `(1-2-3)` mirrored, and French and Portuguese translated the golden ratio as the colour gold (#295)
 - The key aspect-ratio subtitle read `1:1.00` and reordered its parts under right-to-left scripts, because only the number was substituted into the sentence (#295)
 - Both privacy manifests declared the UserDefaults reason code that explicitly excludes cross-app access, although the dominant use on both sides is the shared app group (#295)
-- The gesture playground drew an 81 pt key while the real keyboard resolves 57.75 pt, so thresholds tuned in the playground classified differently on the real keyboard (#286)
-- Health log entries read the memory footprint before the teardown had reclaimed it, overstating the surviving footprint by 1.3–3.3 MB (#295)
+- The gesture playground drew an 81 pt key while the keyboard itself resolves 57.75 pt, so thresholds tuned in the playground behaved differently on the keyboard (#286)
+- Health log entries read the memory footprint before the teardown had reclaimed it, overstating what survived by 1.3–3.3 MB (#295)
 - The App Store description claimed 14 keyboard languages including four that do not exist, and promised long-press text selection, which a keyboard extension cannot do; both are corrected, and a test pins the language count to the registry (#286)
-- Screenshot generation, broken since 2026-07-09: the CI image started shipping several Xcode 26.x versions, so the same simulator name exists once per iOS runtime and the workflow's warm-boot step and the script targeted different devices (#296)
+- Screenshot generation, broken since 2026-07-09: the CI image started shipping several Xcode 26.x versions, so the same simulator name now exists once per iOS runtime, and the workflow's warm-boot step and the script targeted different devices (#296)
 
 ### Changed
 
