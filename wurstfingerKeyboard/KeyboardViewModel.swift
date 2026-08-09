@@ -82,7 +82,7 @@ final class KeyboardViewModel: ObservableObject {
 
     var currentDefinition: KeyboardDefinition?
     /// Signature of the inputs that produced `currentDefinition` (see
-    /// `definitionSignature(languageId:numpadStyle:)`). Kept on the view model
+    /// `definitionSignature(languageId:numpadType:)`). Kept on the view model
     /// — not the controller — so in-keyboard language switches, which load a
     /// new definition directly, keep it in sync.
     var loadedDefinitionSignature: String?
@@ -152,7 +152,7 @@ final class KeyboardViewModel: ObservableObject {
     var spaceDragPeak: CGFloat = 0
     /// Cursor-movement style captured at the start of the current space drag, so
     /// a mid-drag settings change cannot switch classification mode mid-gesture.
-    var spaceDragCursorStyle: CursorMovementStyle = .continuous
+    var spaceDragCursorType: CursorMovementType = .continuous
     var isDeleteDragging = false
     var deleteDragResidual: CGFloat = 0
     private var userDefaultsObserver: NSObjectProtocol?

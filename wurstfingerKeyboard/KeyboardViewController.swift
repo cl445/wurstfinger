@@ -169,12 +169,12 @@ final class KeyboardViewController: UIInputViewController {
         // back the same way `primaryLanguage` does (system language, then
         // English) instead of leaving loadDefinition a no-op.
         let languageId = selectedLanguageId
-        let numpadStyle = SharedDefaults.store.string(
+        let numpadType = SharedDefaults.store.string(
             forKey: SettingsKey.numpadStyle.rawValue
         )
         let signature = KeyboardViewModel.definitionSignature(
             languageId: languageId,
-            numpadStyle: numpadStyle
+            numpadType: numpadType
         )
         // Compare against the view model's record of what it actually loaded —
         // a controller-side cache desyncs when the user cycles languages via

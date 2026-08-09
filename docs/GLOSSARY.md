@@ -69,9 +69,8 @@ about the *thing bound to it* ("the `topLeft` key commits `q`").
 ### `…Style` is visual only
 
 `KeyStyle` (`.primary`, `.utility`, `.spacebar`, …) and `KeyboardStyle` (`.classic`,
-`.liquidGlass`) are appearance. `NumpadStyle` (digit order) and `CursorMovementStyle`
-(drag behavior) are **not** visual and are misnamed — see
-[Legacy exceptions](#7-legacy-exceptions).
+`.liquidGlass`) are appearance. `NumpadType` (digit order) and `CursorMovementType`
+(drag behavior) are **not** visual and therefore carry `…Type`.
 
 For new code: `…Style` = how it looks, `…Type` = a closed set of behavioral variants (as in
 `GestureType`, `SlideType`). Never `…Mode` for either — that word belongs to keyboard
@@ -225,7 +224,6 @@ will be brought in line in its own dedicated changes. This list is not exhaustiv
 
 | Name | Problem |
 | --- | --- |
-| `NumpadStyle`, `CursorMovementStyle` | behavioral variants carrying a visual suffix; would be `…Type` |
 | `GesturePreprocessorConfig`, `KeyConfig`, `LanguageConfig` | abbreviated suffix |
 | `KeyConfig`, `LanguageConfig` | declarative data carrying the runtime-parameter suffix on top of that |
 | `KeyboardInfo` | `…Info` says nothing about the contents; would be `…Metadata` |

@@ -96,7 +96,7 @@ struct DiscreteCursorMovementTests {
     private func makeDiscreteViewModel() -> (KeyboardViewModel, MockTextTarget) {
         let defaults = InMemoryUserDefaults()
         defaults.set(
-            CursorMovementStyle.discrete.rawValue,
+            CursorMovementType.discrete.rawValue,
             forKey: SettingsKey.cursorMovementStyle.rawValue
         )
         let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)

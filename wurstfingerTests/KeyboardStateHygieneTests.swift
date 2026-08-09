@@ -33,41 +33,41 @@ private func makeMultiLanguageViewModel(
 
 @Suite(.serialized)
 struct DefinitionSignatureTests {
-    @Test func signatureCombinesLanguageAndNumpadStyle() {
+    @Test func signatureCombinesLanguageAndNumpadType() {
         #expect(
-            KeyboardViewModel.definitionSignature(languageId: "de_DE", numpadStyle: "classic")
+            KeyboardViewModel.definitionSignature(languageId: "de_DE", numpadType: "classic")
                 == "de_DE|classic"
         )
         #expect(
-            KeyboardViewModel.definitionSignature(languageId: "en_US", numpadStyle: nil)
+            KeyboardViewModel.definitionSignature(languageId: "en_US", numpadType: nil)
                 == "en_US|"
         )
     }
 
     @Test func signatureDiffersWhenAnyInputDiffers() {
-        let base = KeyboardViewModel.definitionSignature(languageId: "de_DE", numpadStyle: nil)
-        #expect(base != KeyboardViewModel.definitionSignature(languageId: "en_US", numpadStyle: nil))
-        #expect(base != KeyboardViewModel.definitionSignature(languageId: "de_DE", numpadStyle: "classic"))
+        let base = KeyboardViewModel.definitionSignature(languageId: "de_DE", numpadType: nil)
+        #expect(base != KeyboardViewModel.definitionSignature(languageId: "en_US", numpadType: nil))
+        #expect(base != KeyboardViewModel.definitionSignature(languageId: "de_DE", numpadType: "classic"))
     }
 
     @Test func loadDefinitionRecordsSignature() {
         let (vm, _) = makeViewModel(languageId: "de_DE")
         #expect(
             vm.loadedDefinitionSignature
-                == KeyboardViewModel.definitionSignature(languageId: "de_DE", numpadStyle: nil)
+                == KeyboardViewModel.definitionSignature(languageId: "de_DE", numpadType: nil)
         )
     }
 
-    @Test func loadDefinitionRecordsNumpadStyleInSignature() {
+    @Test func loadDefinitionRecordsNumpadTypeInSignature() {
         let defaults = InMemoryUserDefaults()
-        defaults.set(NumpadStyle.classic.rawValue, forKey: SettingsKey.numpadStyle.rawValue)
+        defaults.set(NumpadType.classic.rawValue, forKey: SettingsKey.numpadStyle.rawValue)
         let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
         vm.loadDefinition(for: "de_DE")
         #expect(
             vm.loadedDefinitionSignature
                 == KeyboardViewModel.definitionSignature(
                     languageId: "de_DE",
-                    numpadStyle: NumpadStyle.classic.rawValue
+                    numpadType: NumpadType.classic.rawValue
                 )
         )
     }
@@ -84,7 +84,7 @@ struct DefinitionSignatureTests {
         // viewWillAppear.
         #expect(
             vm.loadedDefinitionSignature
-                == KeyboardViewModel.definitionSignature(languageId: "en_US", numpadStyle: nil)
+                == KeyboardViewModel.definitionSignature(languageId: "en_US", numpadType: nil)
         )
     }
 
@@ -98,7 +98,7 @@ struct DefinitionSignatureTests {
             vm.loadedDefinitionSignature
                 == KeyboardViewModel.definitionSignature(
                     languageId: LanguageConfig.english.id,
-                    numpadStyle: nil
+                    numpadType: nil
                 )
         )
     }

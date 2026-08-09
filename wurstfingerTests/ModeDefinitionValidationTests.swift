@@ -207,13 +207,13 @@ struct NativeDigitLayerTests {
         #expect(digitTap(def.mode(ModeNames.numeric), GridSlot.zero) == "٠")
     }
 
-    @Test func numericDigitsSurviveNumpadStyleSwap() {
+    @Test func numericDigitsSurviveNumpadTypeSwap() {
         let def = GridKeyboardFactory.layout(
             id: "test_ar", title: "Test", localeIdentifier: "ar",
             centerCharacters: [["ا", "ب", "ت"], ["ث", "ج", "ح"], ["خ", "د", "ذ"]],
             numericDigits: NumericLayouts.arabicIndicDigits
         )
-        // Mirror KeyboardViewModel+Pipeline.applyNumpadStyle's classic rebuild.
+        // Mirror KeyboardViewModel+Pipeline.applyNumpadType's classic rebuild.
         let swapped = def.replacingMode(
             ModeNames.numeric,
             with: NumericLayouts.classic(
