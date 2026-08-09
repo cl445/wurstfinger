@@ -240,7 +240,7 @@ struct SlideGestureHandler: ViewModifier {
     @Binding var isActive: Bool
 
     @State private var state = SlideGestureState()
-    @State private var longPress = LongPressScheduler()
+    @State private var longPress: LongPressScheduler
     /// Identifies this key's touch sequence to the shared trail recorder.
     @StateObject private var trailToken = GestureTrailToken()
 
@@ -249,6 +249,29 @@ struct SlideGestureHandler: ViewModifier {
     /// touches (incoming call, edge swipe, keyboard dismissal), where
     /// `onEnded` is never called — the reset is our cancellation signal.
     @GestureState private var sequenceInFlight = false
+
+    /// - Parameter longPress: The scheduler this handler arms. Same contract
+    ///   and same reason for being injectable as
+    ///   `KeyGestureRecognizer.init(…)`: it is the only handle a unit test has
+    ///   on the `onDisappear` → `abandonSequence()` teardown, which mutation
+    ///   testing found unpinned (review 2026-08-09, finding 15).
+    init(
+        slideType: SlideType,
+        onSlide: @escaping (SlidePhase) -> Void,
+        onTouchDown: @escaping () -> Void,
+        onLongPress: (() -> Bool)? = nil,
+        trail: GestureTrailRecorder? = nil,
+        isActive: Binding<Bool>,
+        longPress: LongPressScheduler = LongPressScheduler()
+    ) {
+        self.slideType = slideType
+        self.onSlide = onSlide
+        self.onTouchDown = onTouchDown
+        self.onLongPress = onLongPress
+        self.trail = trail
+        _isActive = isActive
+        _longPress = State(initialValue: longPress)
+    }
 
     func body(content: Content) -> some View {
         content
@@ -346,6 +369,11 @@ struct SlideGestureHandler: ViewModifier {
     /// does not share, because only slide keys can latch a slide. A fired
     /// press has typed its digit, so its trail freezes and fades like any
     /// other completed keystroke.
+    ///
+    /// What an armed timer may still do across a mode switch that keeps this
+    /// key alive is bounded in `KeyGestureRecognizer.scheduleLongPress()` —
+    /// the space bar's zero binding is one of the two actions that bound
+    /// reaches.
     private func scheduleLongPress() {
         guard onLongPress != nil else { return }
         longPress.schedule {

@@ -9,6 +9,12 @@ import Foundation
 import Testing
 @testable import WurstfingerApp
 
+/// Serialized: every instance shares one static serial io queue, and the
+/// deferred-sample cases below both assert on wall-clock timing and (in
+/// `staleDeferredSampleIsDiscarded`) deliberately park in that queue. Running
+/// them against each other would make one test's blockage the other's missing
+/// entry.
+@Suite(.serialized)
 struct KeyboardHealthLogTests {
     /// Isolated file URL per test so parallel tests cannot interfere.
     private func makeTestFileURL() -> URL {
@@ -234,6 +240,116 @@ struct KeyboardHealthLogTests {
         #expect(perLine.map(\.label) == ["viewWillAppear", "hostDidEnterBackground"])
     }
 
+    /// The deferred sample rides on the suspension path, so it must cost the
+    /// caller nothing and must genuinely read the footprint *late*: sampling
+    /// at the call site like `record`/`recordAndFlush` would defeat its whole
+    /// purpose (the reclaim it waits for is what the entry is about). The
+    /// entry's own `date` is the witness — it is stamped in the same step as
+    /// the footprint, so a call-site sample would carry the call time.
+    @Test func recordDeferredWritesLateWithoutBlockingTheCaller() async throws {
+        let url = makeTestFileURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let log = KeyboardHealthLog(fileURL: url)
+
+        let started = Date()
+        log.recordDeferred("postShedSettled", after: 0.5)
+        let elapsed = Date().timeIntervalSince(started)
+
+        #expect(elapsed < 0.1)
+        // `entries()` syncs through the same serial queue, so an entry written
+        // as part of the call would already be visible here.
+        #expect(log.entries().isEmpty)
+
+        try await Task.sleep(for: .milliseconds(1000))
+        let entries = log.entries()
+        #expect(entries.map(\.label) == ["postShedSettled"])
+        let entry = try #require(entries.first)
+        #expect(entry.usedMB > 0)
+        // Slightly under the delay: the timer never fires early, but wall
+        // clock and dispatch's uptime clock are not the same ruler.
+        #expect(entry.date.timeIntervalSince(started) > 0.4)
+    }
+
+    /// The suspension path writes both entries for the same event — the
+    /// guaranteed flushed one and the settled one 2 s later — and forensics
+    /// reads them as a pair, so the deferred entry must land *after* the
+    /// flushed one even though it was queued while that write was in flight.
+    /// The delay doubles as the discard window (see `recordDeferred`), so it
+    /// is kept well above the scheduling jitter of a loaded test machine.
+    @Test func deferredSampleAppendsAfterTheFlushedSuspensionEntry() async throws {
+        let url = makeTestFileURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let log = KeyboardHealthLog(fileURL: url)
+
+        log.recordAndFlush("viewDidDisappear")
+        log.recordDeferred("postShedSettled", after: 0.2)
+
+        try await Task.sleep(for: .milliseconds(500))
+        #expect(log.entries().map(\.label) == ["viewDidDisappear", "postShedSettled"])
+    }
+
+    /// A frozen process does not lose a pending deferred sample — libdispatch
+    /// runs the overdue block as soon as the process is scheduled again, and
+    /// the extension process is reused across host cycles, so the sample can
+    /// arrive against a keyboard that has nothing to do with its label. It has
+    /// to be discarded instead. Modelled by parking in the shared io queue
+    /// past the discard window: from the block's side that is the same
+    /// situation — enqueued on time, given CPU far too late.
+    @Test func staleDeferredSampleIsDiscarded() async throws {
+        let url = makeTestFileURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let log = KeyboardHealthLog(fileURL: url)
+
+        // A second instance parks in the one io queue every instance shares:
+        // its provider is called on that queue and does not return.
+        let parked = DispatchSemaphore(value: 0)
+        let release = DispatchSemaphore(value: 0)
+        let blocker = KeyboardHealthLog(fileURLProvider: {
+            parked.signal()
+            release.wait()
+            return nil
+        })
+        blocker.record("occupies the io queue")
+        // Also releases when an expectation below fails early: an io queue
+        // left parked would hang every later test in this process.
+        defer { release.signal() }
+        if case .timedOut = parked.wait(timeout: .now() + 5) {
+            Issue.record("the io queue never picked up the blocking record")
+            return
+        }
+
+        log.recordDeferred("postShedSettled", after: 0.1)
+        // Past the deadline plus the delay again — from there on the sample no
+        // longer describes the moment its label names.
+        try await Task.sleep(for: .milliseconds(400))
+        release.signal()
+
+        // `entries()` syncs through the same queue behind the released blocker
+        // and behind the overdue sample, so this reads the outcome, not a race.
+        #expect(log.entries().isEmpty)
+    }
+
+    /// Without a container there is nowhere to write, and the deferred sample
+    /// must neither trap nor find somewhere else to put itself. An empty
+    /// `entries()` cannot witness that alone — a nil provider returns `[]`
+    /// whatever the block did — so the provider counts its calls: the timer
+    /// has to have fired, asked where to write, and then written nothing.
+    @Test func recordDeferredWithoutAFileIsANoOp() async throws {
+        let consulted = CallCounter()
+        let log = KeyboardHealthLog(fileURLProvider: {
+            consulted.increment()
+            return nil
+        })
+
+        log.recordDeferred("postShedSettled", after: 0.2)
+
+        try await Task.sleep(for: .milliseconds(700))
+        // Snapshot before `entries()`, which consults the provider itself.
+        let consultedByTheSample = consulted.count
+        #expect(log.entries().isEmpty)
+        #expect(consultedByTheSample >= 1)
+    }
+
     /// The file URL provider must not be invoked at construction — that is
     /// what keeps the shared instance's `containerURL(...)` IPC off the
     /// main/spawn thread. It is resolved lazily on first file access.
@@ -252,5 +368,24 @@ struct KeyboardHealthLogTests {
         _ = log.entries() // ioQueue.sync — any deferred resolution has completed
 
         #expect(resolveCount >= 1)
+    }
+
+    /// Counts provider calls made on the io queue and read from the test
+    /// thread, so the increment is not the data race a captured `var` would be.
+    private final class CallCounter: @unchecked Sendable {
+        private let lock = NSLock()
+        private var calls = 0
+
+        func increment() {
+            lock.lock()
+            calls += 1
+            lock.unlock()
+        }
+
+        var count: Int {
+            lock.lock()
+            defer { lock.unlock() }
+            return calls
+        }
     }
 }

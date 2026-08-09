@@ -1,6 +1,6 @@
 Wurstfinger - Die Tastatur für dicke Finger
 
-Genug von Tippfehlern? Wurstfinger ist eine datenschutzfreundliche Tastatur mit großen Tasten und Wischgesten. Basierend auf dem bewährten MessagEase-Layout ersetzt sie das enge QWERTY-Raster durch ein 3x3-Layout, das für Daumentypen optimiert ist.
+Genug von Tippfehlern? Wurstfinger ist eine datenschutzfreundliche Tastatur mit großen Tasten und Wischgesten. Basierend auf dem bewährten MessagEase-Layout ersetzt sie das enge QWERTY-Raster durch ein 3x3-Layout, das für das Tippen mit dem Daumen optimiert ist.
 
 Anders als herkömmliche Tastaturen verzichtet Wurstfinger auf invasive Wortvorhersage - stattdessen erreicht sie Genauigkeit durch ergonomisches Design. Große, gut platzierte Tasten bedeuten weniger Vertipper, und das Gestensystem ermöglicht Zugriff auf alle Zeichen ohne Suchen nach winzigen Tasten.
 

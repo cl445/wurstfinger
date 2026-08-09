@@ -667,7 +667,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "คีย์บอร์ดสำหรับนิ้วอวบ"
+            "value": "แป้นพิมพ์สำหรับนิ้วอวบ"
           }
         },
         "hi": {
@@ -961,7 +961,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "문제 해결"
+            "value": "문제 신고"
           }
         }
       },
@@ -1081,7 +1081,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "เปิดใช้คีย์บอร์ด"
+            "value": "เปิดใช้แป้นพิมพ์"
           }
         },
         "hi": {
@@ -1165,7 +1165,7 @@
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "פתח את הגדרות iOS → כללי → מקלדת → מקלדות והוסף את Wurstfinger."
+            "value": "פתח את הגדרות iOS ← כללי ← מקלדת ← מקלדות והוסף את Wurstfinger."
           }
         },
         "vi": {
@@ -1633,7 +1633,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "เปิดใช้ \"อนุญาตการเข้าถึงเต็มรูปแบบ\" เพื่อให้การควบคุมเคอร์เซอร์และเจสเจอร์ลบข้อความทำงานได้"
+            "value": "เปิดใช้ \"อนุญาตการเข้าถึงเต็มรูปแบบ\" เพื่อให้การควบคุมเคอร์เซอร์และท่าทางลบข้อความทำงานได้"
           }
         },
         "hi": {
@@ -1771,7 +1771,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ลองใช้คีย์บอร์ด"
+            "value": "ลองใช้แป้นพิมพ์"
           }
         },
         "hi": {
@@ -1909,7 +1909,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "สลับไปที่แท็บทดสอบและลองใช้เจสเจอร์ต่างๆ"
+            "value": "สลับไปที่แท็บทดสอบและลองใช้ท่าทางต่างๆ"
           }
         },
         "hi": {
@@ -2131,7 +2131,7 @@
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "מקשי שירות מימין"
+            "value": "מקשי שירות משמאל"
           }
         },
         "vi": {
@@ -2191,7 +2191,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "यूटिलिटी कीज़ बाईं ओर"
+            "value": "यूटिलिटी कुंजियाँ बाईं ओर"
           }
         },
         "ja": {
@@ -3091,7 +3091,7 @@
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "החזיקו מקש אות כדי להקליד את הספרה שלו"
+            "value": "החזק מקש אות כדי להקליד את הספרה שלו"
           }
         },
         "hi": {
@@ -3841,7 +3841,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ปรับแต่งหน้าตาและสัมผัสของคีย์บอร์ดของคุณ"
+            "value": "ปรับแต่งหน้าตาและสัมผัสของแป้นพิมพ์ของคุณ"
           }
         },
         "hi": {
@@ -4123,7 +4123,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "की आस्पेक्ट रेशियो"
+            "value": "कुंजी का आस्पेक्ट रेशियो"
           }
         },
         "ja": {
@@ -4513,19 +4513,19 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "كلاسيكي (7-8-9)"
+            "value": "كلاسيكي (⁦7-8-9⁩)"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "کلاسیک (۷-۸-۹)"
+            "value": "کلاسیک (⁦۷-۸-۹⁩)"
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "کلاسک (7-8-9)"
+            "value": "کلاسک (⁦7-8-9⁩)"
           }
         },
         "th": {
@@ -4651,19 +4651,19 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "الهاتف (1-2-3)"
+            "value": "الهاتف (⁦1-2-3⁩)"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "تلفن (۱-۲-۳)"
+            "value": "تلفن (⁦۱-۲-۳⁩)"
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "فون (1-2-3)"
+            "value": "فون (⁦1-2-3⁩)"
           }
         },
         "th": {
@@ -5911,7 +5911,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "สลับคีย์บอร์ด"
+            "value": "สลับแป้นพิมพ์"
           }
         },
         "hi": {
@@ -6049,7 +6049,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "แตะไอคอนลูกโลกบนคีย์บอร์ดเพื่อสลับระหว่างคีย์บอร์ดที่ติดตั้งไว้"
+            "value": "แตะไอคอนลูกโลกบนแป้นพิมพ์เพื่อสลับระหว่างแป้นพิมพ์ที่ติดตั้งไว้"
           }
         },
         "hi": {
@@ -6325,7 +6325,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "แตะที่นี่เพื่อเปิดคีย์บอร์ด..."
+            "value": "แตะที่นี่เพื่อเปิดแป้นพิมพ์..."
           }
         },
         "hi": {
@@ -6979,61 +6979,61 @@
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Το Liquid Glass απαιτεί iOS 26 ή νεότερη έκδοση. Σε αυτή τη συσκευή θα χρησιμοποιηθεί το κλασικό στιλ."
+            "value": "Το Liquid Glass έχει σχεδιαστεί για iOS 26 και νεότερες εκδόσεις. Σε παλαιότερες εκδόσεις χρησιμοποιείται ένα απλοποιημένο ημιδιαφανές στιλ."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "O Liquid Glass requer o iOS 26 ou posterior. Neste dispositivo será usado o estilo clássico."
+            "value": "O Liquid Glass foi concebido para o iOS 26 ou posterior. Em versões anteriores, é usado um estilo translúcido simplificado."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass потребує iOS 26 або новішої версії. На цьому пристрої використовуватиметься класичний стиль."
+            "value": "Liquid Glass розроблено для iOS 26 і новіших версій. У старіших версіях використовується спрощений напівпрозорий стиль."
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "يتطلب Liquid Glass نظام iOS 26 أو أحدث. سيُستخدم النمط الكلاسيكي على هذا الجهاز."
+            "value": "تم تصميم Liquid Glass لنظام iOS 26 والإصدارات الأحدث. في الإصدارات الأقدم، يُستخدم نمط مبسّط شبه شفاف."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass به iOS 26 یا جدیدتر نیاز دارد. در این دستگاه از سبک کلاسیک استفاده می‌شود."
+            "value": "Liquid Glass برای iOS 26 و نسخه‌های جدیدتر طراحی شده است. در نسخه‌های قدیمی‌تر، از یک سبک نیمه‌شفاف ساده‌شده استفاده می‌شود."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass کے لیے iOS 26 یا بعد کا ورژن درکار ہے۔ اس ڈیوائس پر کلاسک انداز استعمال ہوگا۔"
+            "value": "Liquid Glass کو iOS 26 اور بعد کے ورژنز کے لیے ڈیزائن کیا گیا ہے۔ پرانے ورژنز پر ایک سادہ نیم شفاف انداز استعمال ہوتا ہے۔"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass ต้องใช้ iOS 26 ขึ้นไป อุปกรณ์นี้จะใช้สไตล์คลาสสิกแทน"
+            "value": "Liquid Glass ออกแบบมาสำหรับ iOS 26 ขึ้นไป ในเวอร์ชันก่อนหน้าจะใช้สไตล์โปร่งแสงแบบเรียบง่าย"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass के लिए iOS 26 या बाद का वर्शन ज़रूरी है। इस डिवाइस पर क्लासिक स्टाइल इस्तेमाल होगी।"
+            "value": "Liquid Glass को iOS 26 और उसके बाद के वर्शन के लिए डिज़ाइन किया गया है। पुराने वर्शन पर सरलीकृत पारभासी स्टाइल इस्तेमाल होती है।"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid GlassにはiOS 26以降が必要です。このデバイスではクラシックスタイルが使用されます。"
+            "value": "Liquid GlassはiOS 26以降向けに設計されています。それ以前のバージョンでは、簡素化された半透明のスタイルが使用されます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liquid Glass는 iOS 26 이상이 필요합니다. 이 기기에서는 클래식 스타일이 사용됩니다."
+            "value": "Liquid Glass는 iOS 26 이상에 맞게 설계되었습니다. 이전 버전에서는 단순화된 반투명 스타일이 사용됩니다."
           }
         }
       },
@@ -7153,7 +7153,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "เปิดคีย์บอร์ดหนึ่งครั้งเพื่อซิงค์สถานะการเข้าถึงเต็มรูปแบบ"
+            "value": "เปิดแป้นพิมพ์หนึ่งครั้งเพื่อซิงค์สถานะการเข้าถึงเต็มรูปแบบ"
           }
         },
         "hi": {
@@ -7435,7 +7435,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "किसी भी की को छूने पर लागू होता है।"
+            "value": "किसी भी कुंजी को छूने पर लागू होता है।"
           }
         },
         "ja": {
@@ -7483,7 +7483,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Отклик при перетягивании"
+            "value": "Отклик при перетаскивании"
           }
         },
         "pl": {
@@ -7621,7 +7621,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Применяется при перетягивании клавиши пробела или удаления для перемещения курсора или удаления текста."
+            "value": "Применяется при перетаскивании клавиши пробела или удаления для перемещения курсора или удаления текста."
           }
         },
         "pl": {
@@ -7711,7 +7711,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "कर्सर हिलाने या टेक्स्ट डिलीट करने के लिए स्पेस या डिलीट की को ड्रैग करने पर लागू होता है।"
+            "value": "कर्सर हिलाने या टेक्स्ट डिलीट करने के लिए स्पेस या डिलीट कुंजी को ड्रैग करने पर लागू होता है।"
           }
         },
         "ja": {
@@ -9361,7 +9361,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ขนาดคีย์บอร์ด"
+            "value": "ขนาดแป้นพิมพ์"
           }
         },
         "hi": {
@@ -9499,7 +9499,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ขนาดเทียบกับคีย์บอร์ดมาตรฐาน ขนาดจะเท่าเดิมในทุกการวางแนว หากไม่พอดีจะย่อลงให้เท่าความกว้างของหน้าจอ"
+            "value": "ขนาดเทียบกับแป้นพิมพ์มาตรฐาน ขนาดจะเท่าเดิมในทุกการวางแนว หากไม่พอดีจะย่อลงให้เท่าความกว้างของหน้าจอ"
           }
         },
         "hi": {
@@ -10189,7 +10189,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ปรับตำแหน่งแนวนอนของคีย์บอร์ดเมื่อคีย์บอร์ดแคบกว่าหน้าจอ"
+            "value": "ปรับตำแหน่งแนวนอนของแป้นพิมพ์เมื่อแป้นพิมพ์แคบกว่าหน้าจอ"
           }
         },
         "hi": {
@@ -10639,7 +10639,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Doré"
+            "value": "Nombre d'or"
           }
         },
         "es": {
@@ -10711,7 +10711,7 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dourado"
+            "value": "Áureo"
           }
         },
         "uk": {
@@ -10885,7 +10885,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "कीज़ के चौड़ाई-से-ऊँचाई अनुपात को समायोजित करें। 1.0 वर्गाकार कीज़ बनाता है (डिफ़ॉल्ट), और 1.62 गोल्डन रेशियो है (सबसे चौड़ा)।"
+            "value": "कुंजियों के चौड़ाई-से-ऊँचाई अनुपात को समायोजित करें। 1.0 वर्गाकार कुंजियाँ बनाता है (डिफ़ॉल्ट), और 1.62 गोल्डन रेशियो है (सबसे चौड़ा)।"
           }
         },
         "ja": {
@@ -11155,7 +11155,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "พิมพ์บนคีย์บอร์ดด้านล่าง"
+            "value": "พิมพ์บนแป้นพิมพ์ด้านล่าง"
           }
         },
         "hi": {
@@ -11293,7 +11293,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "สลับคีย์บอร์ด"
+            "value": "สลับแป้นพิมพ์"
           }
         },
         "hi": {
@@ -11431,7 +11431,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ซ่อนคีย์บอร์ด"
+            "value": "ซ่อนแป้นพิมพ์"
           }
         },
         "hi": {
@@ -12277,7 +12277,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "모두 잘라내기"
+            "value": "모두 오려두기"
           }
         }
       },
@@ -12937,7 +12937,7 @@
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "فعلی: %@:۱"
+            "value": "فعلی: %@:1"
           }
         },
         "ur": {
@@ -13141,7 +13141,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Нажатие: %@ • Перетягивание: %@"
+            "value": "Нажатие: %@ • Перетаскивание: %@"
           }
         },
         "pl": {
@@ -13363,7 +13363,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "เปิดใช้การปรับแต่งเจสเจอร์"
+            "value": "เปิดใช้การปรับแต่งท่าทาง"
           }
         },
         "hi": {
@@ -13501,7 +13501,7 @@
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "การตั้งค่าเจสเจอร์ขั้นสูง"
+            "value": "การตั้งค่าท่าทางขั้นสูง"
           }
         },
         "hi": {
@@ -13555,7 +13555,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Перетягивание перемещает курсор"
+            "value": "Перетаскивание перемещает курсор"
           }
         },
         "pl": {
@@ -13897,19 +13897,19 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تخطيط الهاتف (1-2-3)"
+            "value": "تخطيط الهاتف (⁦1-2-3⁩)"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "چیدمان تلفن (۱-۲-۳)"
+            "value": "چیدمان تلفن (⁦۱-۲-۳⁩)"
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "فون لے آؤٹ (1-2-3)"
+            "value": "فون لے آؤٹ (⁦1-2-3⁩)"
           }
         },
         "th": {
@@ -14035,19 +14035,19 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "التخطيط الكلاسيكي (7-8-9)"
+            "value": "التخطيط الكلاسيكي (⁦7-8-9⁩)"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "چیدمان کلاسیک (۷-۸-۹)"
+            "value": "چیدمان کلاسیک (⁦۷-۸-۹⁩)"
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "کلاسک لے آؤٹ (7-8-9)"
+            "value": "کلاسک لے آؤٹ (⁦7-8-9⁩)"
           }
         },
         "th": {
@@ -14485,7 +14485,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "문자"
+            "value": "글자"
           }
         }
       },
@@ -14623,7 +14623,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "기본 기호"
+            "value": "표준 기호"
           }
         }
       },
@@ -15025,7 +15025,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "मानक चिह्न दिखाएँ"
+            "value": "मानक सिंबल दिखाएँ"
           }
         },
         "ja": {
@@ -15163,7 +15163,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "अतिरिक्त चिह्न दिखाएँ"
+            "value": "अतिरिक्त सिंबल दिखाएँ"
           }
         },
         "ja": {
@@ -15265,7 +15265,7 @@
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Oculte os rótulos para praticar o layout de memória. Números e teclas de controle estão sempre visíveis."
+            "value": "Oculte as etiquetas para praticar o esquema de memória. Os números e as teclas de controlo estão sempre visíveis."
           }
         },
         "uk": {
@@ -15313,7 +15313,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "레이아웃을 외워서 연습하려면 라벨을 숨기세요. 숫자와 컨트롤 키는 항상 표시됩니다."
+            "value": "레이아웃을 외워서 연습하려면 레이블을 숨기세요. 숫자와 컨트롤 키는 항상 표시됩니다."
           }
         }
       },
@@ -15715,7 +15715,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "पारंपरिक अपारदर्शी कीज़"
+            "value": "पारंपरिक अपारदर्शी कुंजियाँ"
           }
         },
         "ja": {
@@ -15793,7 +15793,7 @@
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "אפקט זכוכית שקופה (iOS 26+)"
+            "value": "אפקט זכוכית שקופה (iOS 26 ואילך)"
           }
         },
         "vi": {
@@ -15835,13 +15835,13 @@
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "افکت شیشه‌ای شفاف (iOS 26+)"
+            "value": "افکت شیشه‌ای شفاف (iOS 26 و جدیدتر)"
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "شفاف گلاس ایفیکٹ (iOS 26+)"
+            "value": "شفاف گلاس ایفیکٹ (iOS 26 اور بعد کے ورژنز)"
           }
         },
         "th": {
@@ -17371,7 +17371,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "भाषाएँ बदलने के लिए ग्लोब की पर दाईं ओर स्वाइप करें। किसी भाषा को डिफ़ॉल्ट स्टार्टअप भाषा बनाने के लिए उस पर टैप करें।"
+            "value": "भाषाएँ बदलने के लिए ग्लोब कुंजी पर दाईं ओर स्वाइप करें। किसी भाषा को डिफ़ॉल्ट स्टार्टअप भाषा बनाने के लिए उस पर टैप करें।"
           }
         },
         "ja": {
@@ -17449,7 +17449,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "इशारे का निशान"
+            "value": "जेस्चर का निशान"
           }
         },
         "hr": {
@@ -17749,7 +17749,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "원을 그려 전체 잘라내기"
+            "value": "원을 그려 모두 오려두기"
           }
         },
         "pl": {
@@ -17886,7 +17886,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "클립보드로 잘라내려면 전체 접근이 필요합니다"
+            "value": "클립보드로 오려두려면 전체 접근이 필요합니다"
           }
         },
         "pl": {
@@ -17993,13 +17993,13 @@
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "שרטטו מעגל על מקש 123 כדי לגזור את הטקסט סביב הסמן. החליקו מטה על אותו מקש כדי להדביק אותו בחזרה. שתי המחוות נשארות על המקש גם אחרי שהוא מחליף את המקלדת למספרים."
+            "value": "שרטט מעגל על מקש 123 כדי לגזור את הטקסט סביב הסמן. החלק מטה על אותו מקש כדי להדביק אותו בחזרה. שתי המחוות נשארות על המקש גם אחרי שהוא מחליף את המקלדת למספרים."
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "कर्सर के आसपास का टेक्स्ट काटने के लिए 123 कुंजी पर गोला बनाएँ। उसे वापस चिपकाने के लिए उसी कुंजी पर नीचे स्वाइप करें। कुंजी द्वारा कीबोर्ड को अंकों पर बदलने के बाद भी दोनों हावभाव उसी कुंजी पर बने रहते हैं।"
+            "value": "कर्सर के आसपास का टेक्स्ट काटने के लिए 123 कुंजी पर गोला बनाएँ। उसे वापस चिपकाने के लिए उसी कुंजी पर नीचे स्वाइप करें। कुंजी द्वारा कीबोर्ड को अंकों पर बदलने के बाद भी दोनों जेस्चर उसी कुंजी पर बने रहते हैं।"
           }
         },
         "hr": {
@@ -18023,7 +18023,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "123 키에서 원을 그리면 커서 주변 텍스트를 잘라냅니다. 같은 키를 아래로 쓸어내리면 다시 붙여넣습니다. 이 키가 키보드를 숫자로 전환한 뒤에도 두 제스처는 그대로 유지됩니다."
+            "value": "123 키에서 원을 그리면 커서 주변 텍스트를 오려둡니다. 같은 키를 아래로 쓸어내리면 다시 붙여넣습니다. 이 키가 키보드를 숫자로 전환한 뒤에도 두 제스처는 그대로 유지됩니다."
           }
         },
         "pl": {
@@ -18212,6 +18212,972 @@
           }
         }
       }
+    },
+    "Numbers": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zahlen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiffres"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Números"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Numeri"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Цифры"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cyfry"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siffror"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Numerot"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brojevi"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מספרים"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Số"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mga numero"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αριθμοί"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Números"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Цифри"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أرقام"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اعداد"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اعداد"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตัวเลข"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अंक"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "数字"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "숫자"
+          }
+        }
+      },
+      "comment": "ACCESSIBILITY label for the 123 key that switches to the numeric mode (VoiceOver)"
+    },
+    "Letters": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buchstaben"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lettres"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letras"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lettere"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Буквы"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Litery"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bokstäver"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kirjaimet"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slova"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אותיות"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chữ cái"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mga letra"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Γράμματα"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letras"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Літери"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أحرف"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حروف"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حروف"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตัวอักษร"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अक्षर"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "글자"
+          }
+        }
+      },
+      "comment": "ACCESSIBILITY label for the abc key that switches back to the alphabetic mode (VoiceOver)"
+    },
+    "Shift": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Großbuchstaben"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Majuscules"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mayúsculas"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maiuscole"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Верхний регистр"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wielkie litery"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versaler"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isot kirjaimet"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Velika slova"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אותיות רישיות"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chữ hoa"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Malaking titik"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κεφαλαία"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maiúsculas"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Верхній регістр"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أحرف كبيرة"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حروف بزرگ"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بڑے حروف"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตัวพิมพ์ใหญ่"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बड़े अक्षर"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大文字"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대문자"
+          }
+        }
+      },
+      "comment": "ACCESSIBILITY action name for the shift swipe that switches to the uppercase mode (VoiceOver)"
+    },
+    "Lowercase": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kleinbuchstaben"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minuscules"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minúsculas"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minuscole"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нижний регистр"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Małe litery"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gemener"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pienet kirjaimet"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mala slova"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אותיות קטנות"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chữ thường"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maliit na titik"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πεζά"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minúsculas"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нижній регістр"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أحرف صغيرة"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حروف کوچک"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "چھوٹے حروف"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตัวพิมพ์เล็ก"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "छोटे अक्षर"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小文字"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "소문자"
+          }
+        }
+      },
+      "comment": "ACCESSIBILITY action name for the swipe that leaves the uppercase/caps-lock mode (VoiceOver)"
+    },
+    "Comma": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komma"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Virgule"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coma"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Virgola"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запятая"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przecinek"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komma"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilkku"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zarez"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פסיק"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dấu phẩy"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kuwit"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κόμμα"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vírgula"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кома"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فاصلة"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ویرگول"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کوما"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จุลภาค"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अल्पविराम"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カンマ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "쉼표"
+          }
+        }
+      },
+      "comment": "ACCESSIBILITY action name for the comma swipe; scripts with their own mark (Arabic ، Japanese 、) inherit it (VoiceOver)"
+    },
+    "Period": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Punkt"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Point"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Punto"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Punto"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Точка"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kropka"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Punkt"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piste"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Točka"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נקודה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dấu chấm"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tuldok"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Τελεία"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ponto"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Крапка"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نقطة"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نقطه"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نقطہ"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "มหัพภาค"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पूर्ण विराम"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ピリオド"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마침표"
+          }
+        }
+      },
+      "comment": "ACCESSIBILITY action name for the full-stop swipe; scripts with their own mark (Japanese 。) inherit it (VoiceOver)"
+    },
+    "Question mark": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fragezeichen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Point d’interrogation"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signo de interrogación"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Punto interrogativo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вопросительный знак"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Znak zapytania"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frågetecken"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kysymysmerkki"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upitnik"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "סימן שאלה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dấu chấm hỏi"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tandang pananong"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ερωτηματικό"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ponto de interrogação"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Знак питання"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "علامة استفهام"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "علامت سؤال"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سوالیہ نشان"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เครื่องหมายคำถาม"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रश्नवाचक चिह्न"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "疑問符"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물음표"
+          }
+        }
+      },
+      "comment": "ACCESSIBILITY action name for the question-mark swipe; the Arabic script substitutes ؟ (VoiceOver)"
     }
   },
   "version": "1.0"

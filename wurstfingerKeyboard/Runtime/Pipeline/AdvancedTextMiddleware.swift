@@ -134,6 +134,24 @@ struct AdvancedTextMiddleware: ActionMiddleware {
 
     private func handlePaste(target: TextInputTarget) {
         guard target.hasFullAccess else { return }
+        // The pasteboard is the gesture path's only external I/O — the writes in
+        // handleCopy/handleCut/handleCutAll cross to pasteboardd on this same
+        // thread — but this read is the one that can end up waiting on something
+        // other than the daemon, and that is an accepted tradeoff: a Universal
+        // Clipboard item makes the getter wait for the transfer from the other
+        // device, and under the "Ask" paste permission it waits for the system
+        // alert — the keyboard's main thread sits inside this line for as long
+        // as that takes. What makes it acceptable rather than a hang: both are
+        // user-initiated (this is a paste swipe), the system narrates them with
+        // its own HUD or alert, the host app stays responsive throughout, and
+        // UIKit's own paste blocks exactly the same way. `hasStrings` is no
+        // escape — the fetch is what blocks, not the emptiness check.
+        //
+        // If it ever has to become non-blocking: read asynchronously through
+        // `itemProviders`/`loadObject`, hop back to the main thread to insert,
+        // and drop the result if the gesture that asked for it is no longer the
+        // current one — by then the cursor may have moved or the keyboard may
+        // have been torn down.
         if let text = UIPasteboard.general.string, !text.isEmpty {
             // Cap pasted text so a multi-MB pasteboard cannot blow the
             // keyboard extension's jetsam memory budget. Truncates silently.

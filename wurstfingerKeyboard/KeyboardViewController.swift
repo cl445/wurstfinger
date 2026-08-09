@@ -205,7 +205,8 @@ final class KeyboardViewController: UIInputViewController {
     /// autorelease pool so UIKit's teardown temporaries are gone before the
     /// health-log entry samples `phys_footprint`; the sample is still an upper
     /// bound on what survives to suspension, since the allocator need not have
-    /// returned every freed page to the kernel by then.
+    /// returned every freed page to the kernel by then — which is why the
+    /// guaranteed entry is paired with a deferred second one below.
     private func shedMemoryBeforeSuspension(_ event: String) {
         autoreleasepool {
             KeyboardRegistry.evictAll(except: selectedLanguageId)
@@ -218,11 +219,56 @@ final class KeyboardViewController: UIInputViewController {
         }
         // Flushed, not queued: the suspended process may never run again — a
         // resume-jetsam kills it on wake before an async write would get CPU
-        // time — and this entry, the footprint that actually survives to
-        // suspension, is the one those incidents need. Unlike launch, this
-        // path is not latency-critical.
+        // time — and this entry is the closest guaranteed record of the
+        // footprint that survives to suspension. Unlike launch, this path is
+        // not latency-critical.
         KeyboardHealthLog.shared.recordAndFlush(event)
+        // The guaranteed entry is measurably too pessimistic, though: reclaim
+        // of the torn-down hosting graph only completes 1–2 s after
+        // `teardownHosting()`, so it read 1.3–3.3 MB (2.8–7.3 %) above the
+        // externally sampled floor in every measured dismissal — exactly the
+        // direction that misleads a resume-jetsam post-mortem into
+        // over-crediting headroom near the per-process limit. Hence a second,
+        // late sample of the same event. It is best effort by construction:
+        // queued and never awaited, so it cannot delay suspension, and
+        // captured on the shared log alone, so the graph just released stays
+        // released.
+        //
+        // Best effort is not the same as harmless, though: a frozen process
+        // does not drop the pending block — libdispatch runs an overdue timer
+        // as soon as the process is scheduled again, which for a reused
+        // extension can be a host cycle later, against a keyboard rebuilt in
+        // the meantime. Two guards keep the label honest: the item is
+        // cancelled once a hosting graph exists again (`configureHosting`),
+        // and `recordDeferred` discards a sample that starts more than its own
+        // delay late. A second shed supersedes a still-pending one here for
+        // the same reason — the token holds one item, and one it no longer
+        // points to is one nothing can cancel. Either way the pessimistic
+        // entry above stands, and the next launch's `viewDidLoad.start`
+        // remains the fallback truth — the one sample a frozen process cannot
+        // miss.
+        Self.pendingSettledSample?.cancel()
+        Self.pendingSettledSample = KeyboardHealthLog.shared.recordDeferred(
+            "postShedSettled",
+            after: Self.postShedSettleDelay
+        )
     }
+
+    /// How long the deferred post-shedding sample waits before reading the
+    /// footprint again: long enough to be past the measured 1–2 s reclaim of
+    /// the hosting graph, short enough to stay inside the window in which a
+    /// just-backgrounded extension still gets CPU (measured: it lands).
+    private static let postShedSettleDelay: TimeInterval = 2
+
+    /// The post-shedding sample still waiting to fire, if any.
+    ///
+    /// Static, not per instance: a host foreground return builds a *new*
+    /// controller in the same extension process (see `observeHostLifecycle`),
+    /// so the instance that queued the sample is usually gone by the time the
+    /// keyboard that invalidates it is rebuilt. The token has to outlive it to
+    /// be reachable from there at all. Only ever touched from the shedding and
+    /// hosting paths, both of which are main-thread-only.
+    private static var pendingSettledSample: DispatchWorkItem?
 
     /// Covers the hole the hosting teardown would leave in the host app's
     /// app-switcher card: iOS takes that snapshot *after* the host
@@ -263,12 +309,39 @@ final class KeyboardViewController: UIInputViewController {
         hostingController = nil
     }
 
-    /// The keyboard can be suspended without `viewDidDisappear` ever firing:
-    /// when the host app itself backgrounds while the keyboard is on screen
-    /// (home gesture, app switch, tapping a Spotlight result), the view stays
-    /// in the hierarchy and only the host lifecycle notifications fire — so
-    /// the pre-suspension shedding must hook them too. The foreground record
-    /// documents survived resumes in the health log.
+    /// Covers the case where the host app itself backgrounds while the
+    /// keyboard is on screen (home gesture, app switch, tapping a Spotlight
+    /// result): the view is expected to stay in the hierarchy, so
+    /// `viewDidDisappear` would never fire and only these notifications would
+    /// announce the coming suspension — the pre-suspension shedding has to
+    /// hook them too. The foreground record documents survived resumes in the
+    /// health log.
+    ///
+    /// Measured on the iOS 26 *simulator*, the opposite happens, and the
+    /// observers are kept anyway. In 3/3 host-background cycles with the
+    /// keyboard up, iOS delivered `viewDidDisappear` and no `NSExtensionHost*`
+    /// notification at all (zero entries in the health log and in the unified
+    /// log, while every view-lifecycle event appeared in both), and every
+    /// foreground return rebuilt the entire controller — `viewDidLoad` →
+    /// `viewWillAppear` → `viewDidAppear`, a new instance in the same
+    /// extension process. Three consequences worth knowing before reading a
+    /// log or changing this code:
+    ///
+    /// - Shedding is covered either way; there the `viewDidDisappear` path
+    ///   does it, so nothing leaks by these blocks not running.
+    /// - The one deliberate difference of the foreground path — keeping the
+    ///   active mode (`resettingLayer: false`) because the user comes back to
+    ///   the same field mid-typing — never takes effect there: the rebuild
+    ///   goes through `viewWillAppear` and reopens on the default mode.
+    /// - No `hostDidEnterBackground`/`hostWillEnterForeground` entry appeared
+    ///   in any measured simulator cycle, so their absence from a simulator
+    ///   log is the expected reading and proves nothing about this code. The
+    ///   same absence on a device would be evidence — see below.
+    ///
+    /// Whether a physical device delivers the notifications, and whether the
+    /// keep-the-mode path therefore engages at all, is unverified (open
+    /// on-device item from #277) — which is precisely why these observers stay
+    /// until someone has measured it on real hardware.
     private func observeHostLifecycle() {
         let center = NotificationCenter.default
         hostLifecycleObservers.append(center.addObserver(
@@ -365,6 +438,14 @@ final class KeyboardViewController: UIInputViewController {
     /// AttributeGraph overhead — every byte matters under the extension's
     /// jetsam budget.
     private func configureHosting() {
+        // A live hosting graph voids a pending post-shedding sample: it would
+        // weigh the rebuilt keyboard under a label forensics reads as the
+        // suspension floor. Cancelling an item that has not started keeps it
+        // from ever running; the residual window — the rebuild landing while
+        // the sample is already executing on the log's queue — is microseconds
+        // wide and costs one over-reported diagnostics entry.
+        Self.pendingSettledSample?.cancel()
+        Self.pendingSettledSample = nil
         guard hostingController == nil else { return }
         let rootView = DataDrivenKeyboardRootView(viewModel: viewModel)
         let controller = UIHostingController(rootView: rootView)

@@ -8,15 +8,28 @@
 import XCTest
 
 enum UITestApp {
-    /// Redirects the app's `SharedDefaults.store` to a throwaway suite. Every
-    /// UI launch must carry it: the settings and onboarding screens write
-    /// straight through to the app group the user's own keyboard reads, and
-    /// `continueAfterFailure = false` means a mid-test failure never reaches
-    /// whatever restore step the test had planned.
+    /// Redirects the defaults the app writes to a throwaway suite that the app
+    /// wipes on every isolated launch. Every UI launch must carry it: the
+    /// settings screens write straight through to the app group the user's own
+    /// keyboard reads, and `continueAfterFailure = false` means a mid-test
+    /// failure never reaches whatever restore step the test had planned.
+    ///
+    /// Two things worth knowing before relying on it:
+    ///
+    /// - It covers `SharedDefaults.store` and, through the same argument, the
+    ///   app-private `OnboardingProgress.store` — the checklist tapped in
+    ///   `testOnboardingCheckboxesAreToggleable`. Anything that reaches
+    ///   `UserDefaults.standard` by a third route is still the tester's own.
+    /// - Wiping is the app's job, not the runner's. The runner is its own
+    ///   sandboxed process, so the suite it would reach under this name is a
+    ///   different file from the app's.
     ///
     /// Mirrors `SharedDefaults.isolatedStoreArgument`. The UI test target cannot
-    /// import the app module, so the literal is duplicated here and pinned by
-    /// `SharedDefaultsIsolationTests`.
+    /// import the app module, so the literal is duplicated here: the app-side
+    /// spelling is pinned by `SharedDefaultsIsolationTests`, and that this copy
+    /// still *reaches* the app is proven at runtime by
+    /// `testLaunchArgumentIsolatesDefaultsFromTheRealStore` — a rename here
+    /// compiles and runs, it just silently stops isolating anything.
     static let isolatedDefaultsArgument = "ISOLATED_DEFAULTS"
 
     /// Pins the app to English regardless of the simulator's locale, for suites

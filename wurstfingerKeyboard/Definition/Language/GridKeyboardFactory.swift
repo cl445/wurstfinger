@@ -94,7 +94,10 @@ enum GridKeyboardFactory {
                             : nil
                         bindings[gesture] = KeyBinding(
                             label: text, action: .commitText(text),
-                            category: nil, returnAction: returnAction, accessibilityLabel: nil
+                            category: nil, returnAction: returnAction,
+                            accessibilityLabel: inheritedAccessibilityName(
+                                replacing: bindings[gesture], isLetter: isLetter
+                            )
                         )
                     }
                 }
@@ -181,14 +184,28 @@ enum GridKeyboardFactory {
             let shiftedBase = baseMode.generateShifted(locale: locale)
 
             // 4. Shifted — shift-up points directly to capsLock (label stays ⇧).
+            // The VoiceOver name stays "Shift" too, although this step enters
+            // caps lock: it is one affordance progressing through its states,
+            // exactly like the visual ⇧ it mirrors, and announcing the middle
+            // step as "Caps Lock" would promise a mode the first activation
+            // does not enter. Deliberate, not an oversight.
             modes[ModeNames.shifted] = shiftedBase
                 .with(autoTransitions: [.letter: ModeNames.main])
-                .replacingShiftUpBinding(label: "⇧", action: .switchMode(ModeNames.capsLock))
+                .replacingShiftUpBinding(
+                    label: "⇧", action: .switchMode(ModeNames.capsLock),
+                    accessibilityLabel: String(localized: "Shift")
+                )
 
             // 5. Caps lock — shift-up is no-op (stays in capsLock), label shows ⇪.
+            // Unnamed on purpose: a named binding becomes a VoiceOver rotor
+            // action, and this one would lead back to the mode it was invoked
+            // from. The ⇩ below is the labelled way out.
             modes[ModeNames.capsLock] = shiftedBase
                 .with(name: ModeNames.capsLock)
-                .replacingShiftUpBinding(label: "⇪", action: .switchMode(ModeNames.capsLock))
+                .replacingShiftUpBinding(
+                    label: "⇪", action: .switchMode(ModeNames.capsLock),
+                    accessibilityLabel: nil
+                )
 
             // 6. Main mode — remove shift-down hint from midRight (only shown in shifted/capsLock).
             modes[ModeNames.main] = baseMode
@@ -226,5 +243,27 @@ enum GridKeyboardFactory {
             numericBackToAlphaLabel: numericBackToAlphaLabel,
             numericDigits: numericDigits
         )
+    }
+
+    /// VoiceOver name a directional override inherits from the shared binding it
+    /// displaces, or nil when it must not inherit one.
+    ///
+    /// `CommonKeys.defaultSlotBindings` names `, . ?` after their *function*, not
+    /// their glyph, so a layout that puts its own script's mark on the same
+    /// gesture is still the comma (Arabic `،`), the full stop (Japanese `。`) or
+    /// the question mark (Arabic `؟`) — and dropping the name there would leave
+    /// exactly the RTL and CJK users the labelling was for with an unnamed key.
+    /// Two guards keep the inheritance honest:
+    ///
+    /// - a letter never inherits: "Comma" would be a lie on Japanese `ね`, and
+    ///   letters are deliberately unnamed (see `CommonKeys.defaultSlotBindings`);
+    /// - only a text-committing default hands its name down, so Hindi's danda on
+    ///   the midRight `⇩` gesture does not inherit the shift affordance's name.
+    private static func inheritedAccessibilityName(
+        replacing displaced: KeyBinding?,
+        isLetter: Bool
+    ) -> String? {
+        guard !isLetter, let displaced, case .commitText = displaced.action else { return nil }
+        return displaced.accessibilityLabel
     }
 }

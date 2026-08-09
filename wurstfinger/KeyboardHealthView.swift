@@ -69,7 +69,15 @@ struct KeyboardHealthView: View {
     }
 
     private var entriesSection: some View {
-        Section("Events (newest first)") {
+        Section {
+            // The legend sits above the rows, not in the section footer: the
+            // log holds up to 300 entries, and guidance printed below all of
+            // them is guidance nobody reaches. Collapsed it costs one line.
+            DisclosureGroup("How to read a cycle") {
+                Text(Self.cycleLegend)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
             ForEach(entries.reversed()) { entry in
                 VStack(alignment: .leading, spacing: 2) {
                     HStack {
@@ -86,10 +94,34 @@ struct KeyboardHealthView: View {
                         .foregroundColor(.secondary)
                 }
             }
+        } header: {
+            Text("Events (newest first)")
         }
     }
 
     // MARK: - Helpers
+
+    /// What a reader needs to know before drawing conclusions from a cycle.
+    /// Every claim here is one the code or a measurement backs; where a
+    /// question is open (host-lifecycle entries on real hardware, see
+    /// `KeyboardViewController.observeHostLifecycle`) it says so rather than
+    /// inviting an inference from silence.
+    private static let cycleLegend = """
+    viewDidDisappear is measured while the freed memory is still being \
+    reclaimed and reads a little high. A postShedSettled entry about two \
+    seconds later is the honest figure for what the keyboard carries into \
+    suspension — but it is deliberately dropped when the keyboard comes back \
+    before it fires, or when the process was frozen and the sample would only \
+    have been taken long after the fact. A cycle without one is normal.
+
+    A viewDidAppear followed straight by a fresh viewDidLoad.start means the \
+    host app was killed while the keyboard was up — iOS reports nothing back \
+    on that path, so no cleanup ran.
+
+    hostDidEnterBackground and hostWillEnterForeground did not appear in any \
+    measured cycle on the iOS 26 Simulator; whether a real device delivers \
+    them at all is unverified. Their absence says nothing either way.
+    """
 
     private func reload() {
         entries = KeyboardHealthLog.shared.entries()

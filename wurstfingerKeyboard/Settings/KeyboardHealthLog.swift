@@ -29,9 +29,13 @@ import os
 /// measurement is attributed to the right lifecycle point) but persists on a
 /// serial utility queue — file I/O must not sit in the keyboard's launch
 /// path. The suspension path uses `recordAndFlush` instead: there the write
-/// must land before the process is frozen, and latency does not matter. A
-/// host-app clear racing an extension write can lose one side — acceptable
-/// for diagnostics, and the file stays bounded by `maxEntries` either way.
+/// must land before the process is frozen, and latency does not matter.
+/// `recordDeferred` covers the one case neither serves — a figure that is
+/// only correct some time *after* the call site — and is allowed to go
+/// missing: the caller can cancel it, and a sample that arrives long after
+/// its deadline is discarded rather than logged (see there). A host-app clear
+/// racing an extension write can lose one side — acceptable for diagnostics,
+/// and the file stays bounded by `maxEntries` either way.
 struct KeyboardHealthLog {
     struct Entry: Codable, Equatable, Identifiable {
         let id: UUID
@@ -47,10 +51,20 @@ struct KeyboardHealthLog {
         let availableMB: Double
     }
 
-    /// Bounds the log file (~50 KB). A cold start records four entries, and
-    /// every open→close cycle three — `viewWillAppear`, `viewDidAppear`, and
-    /// the suspension entry that closes it — so this holds roughly a hundred
-    /// cycles: still days of typical usage.
+    /// Bounds the log file (~50 KB). A cold start records four entries, and a
+    /// cleanly closed open→close cycle up to four — `viewWillAppear`,
+    /// `viewDidAppear`, the suspension entry that closes it, and the deferred
+    /// `postShedSettled` sample that follows it (see
+    /// `KeyboardViewController.shedMemoryBeforeSuspension`) — so this holds
+    /// roughly seventy cycles: still days of typical usage.
+    ///
+    /// "Cleanly closed" is not guaranteed. When the host app is killed
+    /// outright while the keyboard is on screen, iOS calls nothing back: no
+    /// closing entry is written and no shedding runs, so the log jumps from
+    /// `viewDidAppear` straight to the next launch's `viewDidLoad.start`. That
+    /// gap is a legible signature, not a defect of the log — it is the one
+    /// path on which the extension idles at its full pre-shed weight until the
+    /// system reaps it. No callback exists to close the cycle at the source.
     static let defaultMaxEntries = 300
 
     static let fileName = "keyboard-health-log.json"
@@ -116,6 +130,51 @@ struct KeyboardHealthLog {
     func recordAndFlush(_ label: String) {
         let entry = makeEntry(label)
         Self.ioQueue.sync { appendEntry(entry) }
+    }
+
+    /// Records an entry whose footprint is sampled `delay` seconds from now,
+    /// on a strictly best-effort basis, and hands back the pending work item
+    /// so the caller can void it once the premise it was queued under stops
+    /// holding.
+    ///
+    /// The inverse of the other two: they sample at the call site precisely so
+    /// the figure belongs to that lifecycle point, while this one deliberately
+    /// samples *late*, for the case where the interesting number only becomes
+    /// true after something the call site cannot wait for has settled (the
+    /// kernel reclaiming a torn-down view graph takes another 1–2 s). Queued,
+    /// never awaited, so it cannot delay the caller.
+    ///
+    /// Nothing is promised, and the two ways the entry can go missing are both
+    /// deliberate. A process that dies before the timer fires loses it — hence
+    /// callers must treat this as a refinement of an already-recorded
+    /// guaranteed entry, never as the record itself. A process that is merely
+    /// *frozen* does not lose it: libdispatch has no drop-on-overdue policy,
+    /// so the block runs as soon as the process is scheduled again — possibly
+    /// minutes later and inside the next host cycle, since the extension
+    /// process is reused. That sample would describe the resumed process while
+    /// carrying the label of the earlier one, so a block that starts more than
+    /// its own delay late writes nothing.
+    ///
+    /// One clock caveat bounds that guard rather than breaking it: the
+    /// comparison reads `DispatchTime` — mach time, which pauses while the
+    /// *device* sleeps — so a sample delayed across a sleep window can look
+    /// punctual and slip through. The caller's cancellation covers the case
+    /// that matters (a rebuilt keyboard voids the pending sample); what the
+    /// clock caveat can cost is a single stale-but-plausible diagnostics
+    /// entry, which the log's consumers tolerate by design.
+    @discardableResult
+    func recordDeferred(_ label: String, after delay: TimeInterval) -> DispatchWorkItem {
+        let deadline = DispatchTime.now() + delay
+        // Overdue by more than the wait itself: no process that kept running
+        // is that far behind, so whatever the sample would read now belongs to
+        // a different situation than the label names.
+        let discardAfter = deadline + delay
+        let item = DispatchWorkItem {
+            guard DispatchTime.now() < discardAfter else { return }
+            appendEntry(makeEntry(label))
+        }
+        Self.ioQueue.asyncAfter(deadline: deadline, execute: item)
+        return item
     }
 
     /// Captures the footprint synchronously at the call site, so the

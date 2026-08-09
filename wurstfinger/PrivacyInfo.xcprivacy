@@ -13,8 +13,16 @@
 		<dict>
 			<key>NSPrivacyAccessedAPIType</key>
 			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<!-- Both reasons apply here, and an ordinary launch exercises both
+			     (a UI test redirects them to a throwaway suite instead):
+			     1C8F.1 for the app group suite the settings screens write and the
+			     keyboard extension reads back (SharedDefaults.suiteName), CA92.1
+			     for the app's own defaults, where the onboarding checklist lives
+			     (OnboardingProgress.store) precisely because the extension has no
+			     business seeing it. -->
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
+				<string>1C8F.1</string>
 				<string>CA92.1</string>
 			</array>
 		</dict>
