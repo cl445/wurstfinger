@@ -45,6 +45,11 @@
 //     - Handles touch glitches and multitouch interference
 //     - Keeps points consistent with a raw neighbor, so a single dropped-frame
 //       gap cannot cascade and discard the rest of a genuine fast swipe
+//     - Velocity-aware: a jump that continues the movement the finger was
+//       already making — same direction to within 45°, at most three times
+//       the established step and never beyond 3x maxJumpDistance — is kept,
+//       so a flick covering more than maxJumpDistance per sample is not read
+//       as a teleport
 //
 //  3. **Aspect Ratio Normalization**: Divides X by aspect ratio
 //     - Makes horizontal and vertical movements comparable on non-square keys
@@ -258,18 +263,50 @@ struct GesturePreprocessor {
     /// dropped-frame gap leaves the anchor stuck before the gap, so every
     /// later sample of a genuine fast swipe (or of a re-anchored long drag
     /// whose retained window sits far from the origin) would be discarded
-    /// too. Consistency with a raw neighbor proves real motion, so only
-    /// isolated glitch points are removed.
+    /// too. Consistency with a raw neighbor proves real motion; the ceiling
+    /// below is what stops a ghost cluster from vouching for itself.
+    ///
+    /// Those criteria all measure *where* a sample landed. The last one
+    /// measures *how the finger got there*, and it is the only evidence that
+    /// separates the two cases this filter has to tell apart — a touch glitch
+    /// and a violent flick land in the same place, but the glitch appears out
+    /// of a near-stationary path while the flick is preceded by a finger
+    /// already covering that ground every sample. Without it a fling faster
+    /// than `maxJumpDistance` per sample had *every* sample discarded and
+    /// committed the key's center letter, while the gesture trail — which
+    /// draws the raw path — showed the full swipe (review 2026-08-09,
+    /// finding 3).
+    ///
+    /// Accepting a point moves the anchor onto it, so a glitch let in here is
+    /// paid for twice: the genuine sample after it is then measured from the
+    /// glitch and can fail every criterion. That is why `isSameMovement` is
+    /// deliberately narrow — a jump has to continue the established direction
+    /// to within 45° and stay inside three times the established step.
+    ///
+    /// The one shape it cannot resolve is a jump straight out of the origin.
+    /// How long the finger rested there would separate a tap from a launch,
+    /// but the jitter filter has already collapsed that dwell by the time this
+    /// filter runs, so a tap followed by two consistently-moving interference
+    /// samples arrives byte-identical to a finger that landed already flying.
+    /// Both are accepted; what bounds the damage is the magnitude ceiling in
+    /// `isSameMovement`, not the shape. Separating them needs the pipeline
+    /// order changed (or the trail clamped to post-filter samples), which is
+    /// the structural half of finding 3 and is not attempted here.
     func filterOutliers(_ points: [CGPoint]) -> [CGPoint] {
         guard points.count >= 2 else { return points }
 
         var filtered: [CGPoint] = [points[0]]
+        // Step between the two most recently accepted samples — the velocity
+        // the accepted path has established so far. Nil while the origin is
+        // the entire accepted path.
+        var acceptedStep: CGVector?
 
         for i in 1 ..< points.count {
             // Safe: filtered always has at least one element (initialized with points[0])
             guard let lastAccepted = filtered.last else { continue }
             let current = points[i]
 
+            let step = CGVector(dx: current.x - lastAccepted.x, dy: current.y - lastAccepted.y)
             let distanceToAccepted = current.distance(to: lastAccepted)
             let nearAccepted = distanceToAccepted <= config.maxJumpDistance
             let nearRawPrevious = current.distance(to: points[i - 1]) <= config.maxJumpDistance
@@ -287,10 +324,16 @@ struct GesturePreprocessor {
             let supportIsPlausible = distanceToAccepted <= ceiling
                 || consistentRunLength(in: points, at: i) >= Self.sustainedRunMinimumLength
 
-            if nearAccepted || ((nearRawPrevious || nearRawNext) && supportIsPlausible) {
+            if nearAccepted
+                || ((nearRawPrevious || nearRawNext) && supportIsPlausible)
+                || continuesEstablishedMotion(step, after: acceptedStep, in: points, at: i) {
                 filtered.append(current)
+                acceptedStep = step
             }
-            // Isolated or clustered outlier: skip
+            // Isolated or clustered outlier: skip — and leave `acceptedStep`
+            // alone, so a rejected glitch never raises the velocity that would
+            // admit the next one. An *accepted* one cannot either: the
+            // reference is capped in `isSameMovement`.
         }
 
         return filtered
@@ -322,6 +365,96 @@ struct GesturePreprocessor {
             forward += 1
         }
         return length
+    }
+
+    /// A jump may be this multiple of the step the finger was already
+    /// covering — itself capped at `maxJumpDistance`, see `isSameMovement` —
+    /// and still count as the same movement.
+    ///
+    /// Sized against the two regimes it separates. The rule only ever runs for
+    /// jumps beyond `maxJumpDistance`, so the reference step is already a
+    /// third of that (≈17 pt per sample at the default — a finger crossing two
+    /// key heights in about six frames) before anything can be accepted at
+    /// all. The cap is what keeps the number meaning something: an accepted
+    /// jump becomes the next sample's reference, so without it every
+    /// admission would triple the allowance for the one after it and a chain
+    /// of ever-longer jumps would walk itself off the key. With it the rule
+    /// can never admit more than 3 × `maxJumpDistance` — 150 pt per sample at
+    /// the default, ≈1.4 m/s at 60 Hz, about three times the fling it exists
+    /// for.
+    private static let velocityToleranceFactor: CGFloat = 3
+
+    /// How far a jump may turn away from the established direction and still
+    /// count as the same movement, as a cosine: one swipe sector (45°).
+    ///
+    /// A finger that crosses a key in a single frame does not also change
+    /// direction in it. The half-plane this replaced — any angle short of a
+    /// right angle — admitted a near-perpendicular jump at three times the
+    /// established step, which flipped the committed direction of ordinary
+    /// fast swipes carrying one trailing glitch sample (review 2026-08-09).
+    private static let minimumDirectionCosine = CGFloat(cos(Double.pi / 4))
+
+    /// Whether the jump onto `points[i]` continues the movement the finger was
+    /// already making.
+    ///
+    /// `previousStep` is the velocity the accepted path established, and it
+    /// wins whenever there is one. Before that — the first sample after
+    /// touch-down, where the whole accepted path is the origin — the only
+    /// available evidence is the step that *follows*: a finger that lands
+    /// already moving keeps moving at a comparable rate, whereas a glitch
+    /// lands once and stops. That premise is an assumption, and a glitch that
+    /// moves consistently for two samples defeats it — see `filterOutliers`
+    /// for why nothing available here can tell that case from a real launch,
+    /// and what bounds it instead.
+    ///
+    /// A trailing jump has no following step, so it is judged against
+    /// `previousStep` alone, and only when the accepted path is still just the
+    /// origin does it have no evidence at all and stay an outlier. What keeps
+    /// a glitch at the end of a tap out is therefore how far it jumped, not
+    /// where it sits in the path: a tap establishes a step of a few points and
+    /// `isSameMovement` allows three times that, while the glitch is beyond
+    /// `maxJumpDistance`. A finger already travelling `maxJumpDistance`/3 per
+    /// sample does carry a trailing jump in — deliberately, since the last
+    /// sample of a genuine flick is itself one.
+    private func continuesEstablishedMotion(
+        _ step: CGVector,
+        after previousStep: CGVector?,
+        in points: [CGPoint],
+        at i: Int
+    ) -> Bool {
+        guard let reference = previousStep ?? followingRawStep(in: points, at: i) else { return false }
+        return isSameMovement(reference, step)
+    }
+
+    /// The raw step leading away from `points[i]`, or nil when it is the last
+    /// sample.
+    private func followingRawStep(in points: [CGPoint], at i: Int) -> CGVector? {
+        guard i + 1 < points.count else { return nil }
+        return CGVector(dx: points[i + 1].x - points[i].x, dy: points[i + 1].y - points[i].y)
+    }
+
+    /// Two steps belong to one movement when they point the same way to within
+    /// `minimumDirectionCosine` and the second does not explode in length.
+    ///
+    /// The direction test is what rejects an out-and-back teleport, whose two
+    /// steps are both long but opposed — a shape that a magnitude comparison
+    /// alone would happily accept — and, as a cone rather than a half-plane,
+    /// the sideways glitch: past a 45° turn the accepted sample pulls the
+    /// max-displacement angle far enough that the swipe can commit out of the
+    /// sector the finger was travelling towards.
+    ///
+    /// The reference is capped at `maxJumpDistance` so that a jump this rule
+    /// admits cannot raise the allowance for the next one. A zero-length
+    /// reference establishes no direction; the guard says so rather than
+    /// leaning on the magnitude test, which happens to reject it too because a
+    /// zero budget admits no step.
+    private func isSameMovement(_ reference: CGVector, _ step: CGVector) -> Bool {
+        let referenceLength = hypot(reference.dx, reference.dy)
+        let stepLength = hypot(step.dx, step.dy)
+        let budget = min(referenceLength, config.maxJumpDistance)
+        guard budget > 0, stepLength <= budget * Self.velocityToleranceFactor else { return false }
+        return reference.dx * step.dx + reference.dy * step.dy
+            >= Self.minimumDirectionCosine * referenceLength * stepLength
     }
 
     // MARK: - Step 3: Aspect Ratio Normalization

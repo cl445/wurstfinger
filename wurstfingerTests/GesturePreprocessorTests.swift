@@ -93,7 +93,9 @@ struct GesturePreprocessorTests {
         let preprocessor = GesturePreprocessor(config: config)
 
         // A glitch as the final sample has no raw successor and must
-        // still be removed.
+        // still be removed. What removes it is its size, not its position:
+        // the established step is 10pt and the jump is 130, thirteen times
+        // what the finger was covering per sample.
         let points: [CGPoint] = [
             CGPoint(x: 0, y: 0),
             CGPoint(x: 10, y: 0),
@@ -145,6 +147,177 @@ struct GesturePreprocessorTests {
         let filtered = preprocessor.filterOutliers(points)
 
         #expect(filtered == [points[0], points[1], points[4], points[5]])
+    }
+
+    @Test func outlierFilterKeepsAFlickFasterThanTheJumpThreshold() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // A fling at ~0.5 m/s delivered at 60 Hz puts ~53pt between
+        // consecutive samples, so *every* step exceeds maxJumpDistance and no
+        // sample has a raw neighbor within it. Only the fact that the steps
+        // continue one another marks this as real motion rather than a run of
+        // teleports — without that criterion the whole gesture was discarded
+        // and the key committed its center letter.
+        let points = (0 ... 4).map { CGPoint(x: CGFloat($0) * 53, y: 0) }
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == points)
+    }
+
+    @Test func outlierFilterRejectsAJumpTheFingerWasTooSlowFor() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // Same direction as the established motion, but ~15x its per-sample
+        // travel: a finger moving 12pt per sample cannot cover 176 in the
+        // next one. The glitch has a dwell partner after it, so the
+        // trailing-glitch rule does not apply — this pins that the velocity
+        // criterion refuses to admit it either.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 12, y: 0),
+            CGPoint(x: 24, y: 0),
+            CGPoint(x: 200, y: 0), // glitch: 176pt in one sample
+            CGPoint(x: 201, y: 0)
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(!filtered.contains(CGPoint(x: 200, y: 0)))
+    }
+
+    @Test func outlierFilterRejectsATeleportThatReturnsToThePath() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // A glitch on the first sample after touch-down, where the accepted
+        // path has no step of its own yet and the following raw step is the
+        // only velocity evidence there is. Both steps around the ghost are
+        // long, so magnitude alone reads as fast motion — they point opposite
+        // ways, which no finger does between two samples.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 150, y: 0), // out…
+            CGPoint(x: 5, y: 0), // …and straight back to the finger
+            CGPoint(x: 10, y: 0)
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == [points[0], points[2], points[3]])
+    }
+
+    @Test func outlierFilterRemovesATrailingGlitchOnAFastSwipe() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // An ordinary fast right swipe with one glitch sample on the end. The
+        // glitch is 119pt from the path — just inside 3x the 40pt established
+        // step — but nearly perpendicular to it. Admitting it moved the
+        // committed direction from right to down-right, i.e. a different
+        // letter, on a gesture the filter used to read correctly.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 40, y: 0),
+            CGPoint(x: 80, y: 0),
+            CGPoint(x: 120, y: 0),
+            CGPoint(x: 125, y: 119) // glitch: 88° off the established motion
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == Array(points.prefix(4)))
+    }
+
+    @Test func outlierFilterKeepsTheGenuineTailAfterRejectingAGlitch() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // The same glitch with the swipe continuing past it. Accepting a
+        // glitch costs twice: the anchor moves onto it, and the genuine
+        // sample after it is then measured from the glitch instead of from
+        // the path — so it fails every criterion and the swipe loses its tail.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 40, y: 0),
+            CGPoint(x: 80, y: 0),
+            CGPoint(x: 120, y: 0),
+            CGPoint(x: 125, y: 119), // glitch
+            CGPoint(x: 160, y: 0) // real motion continues
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == [points[0], points[1], points[2], points[3], points[5]])
+    }
+
+    @Test func outlierFilterRejectsAJumpAcrossTheEstablishedDirection() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // A 3-4-5 step: 100pt long, 53° off the established direction. The
+        // length is inside the 3x tolerance the 40pt established step buys, so
+        // only the direction cone rejects it — 53° is wider than the 45° a
+        // swipe sector spans, which is exactly when admitting a sample can
+        // change the committed letter.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 40, y: 0),
+            CGPoint(x: 80, y: 0),
+            CGPoint(x: 120, y: 0),
+            CGPoint(x: 180, y: 80) // step (60, 80): |100| at 53°
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == Array(points.prefix(4)))
+    }
+
+    @Test func outlierFilterCannotRaiseItsOwnJumpBudget() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // A 53pt flick, then jumps of 159 and 477 — each one exactly 3x its
+        // predecessor and dead straight, so every one of them continues the
+        // established direction. Only the cap on the reference stops the
+        // allowance from tripling per accepted jump; without it the chain
+        // walks itself arbitrarily far off the key.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 53, y: 0),
+            CGPoint(x: 106, y: 0),
+            CGPoint(x: 159, y: 0),
+            CGPoint(x: 318, y: 0), // 159pt in one sample
+            CGPoint(x: 795, y: 0) // 477pt in the next
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == Array(points.prefix(4)))
+    }
+
+    @Test func outlierFilterPrefersTheEstablishedStepOverTheFollowingRawStep() {
+        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let preprocessor = GesturePreprocessor(config: config)
+
+        // The glitch is followed by more fast motion rather than a dwell, so
+        // the two candidate references disagree: the 12pt step the accepted
+        // path established refuses the 120pt jump, the 60pt step that follows
+        // it would wave it through. The established one has to win — the step
+        // after a glitch is part of the same unverified excursion.
+        let points: [CGPoint] = [
+            CGPoint(x: 0, y: 0),
+            CGPoint(x: 12, y: 0),
+            CGPoint(x: 24, y: 0),
+            CGPoint(x: 144, y: 0), // glitch: 120pt in one sample
+            CGPoint(x: 204, y: 0)
+        ]
+
+        let filtered = preprocessor.filterOutliers(points)
+
+        #expect(filtered == Array(points.prefix(3)))
     }
 
     @Test func outlierFilterKeepsSustainedFarRun() {

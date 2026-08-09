@@ -67,6 +67,39 @@ struct GesturePreprocessorRobustnessTests {
         #expect(classify(points) == .swipeRight)
     }
 
+    /// A fling fast enough that no two consecutive samples are within
+    /// maxJumpDistance of each other used to have every sample dropped as a
+    /// teleport, leaving a single-point path that classifies as a tap — so the
+    /// key committed its center letter for an unmistakable swipe.
+    @Test func flickFasterThanTheJumpThresholdStaysASwipe() {
+        // ~0.5 m/s delivered at 60 Hz ≈ 53pt between samples (the threshold is
+        // 50pt), straight down the key.
+        let points = (0 ... 4).map { CGPoint(x: 0, y: CGFloat($0) * 53) }
+        #expect(classify(points) == .swipeDown)
+    }
+
+    /// The gesture trail draws the *raw* touch path while the classifier
+    /// consumes the filtered one. When they disagree the user watches a full
+    /// swipe comet and gets the center letter — the divergence that made this
+    /// failure mode invisible in the first place. Pinned for the flick that
+    /// used to diverge, through a real `GestureTrail` at the production
+    /// spacing and capacity rather than a copy of its retention rule: what the
+    /// overlay keeps is what the classifier has to agree with.
+    @Test func aFlickTheTrailDrawsInFullIsNotClassifiedAsATap() {
+        let points = (0 ... 4).map { CGPoint(x: CGFloat($0) * 53, y: 0) }
+
+        var trail = GestureTrail()
+        trail.begin(at: points[0], time: 0)
+        for (index, point) in points.enumerated().dropFirst() {
+            trail.extend(to: point, time: TimeInterval(index) / 60)
+        }
+
+        // The overlay draws the whole stroke…
+        #expect(trail.samples.map(\.point) == points)
+        // …so the classification must be the swipe the user saw.
+        #expect(classify(points) == .swipeRight)
+    }
+
     @Test func pathLongerThanPositionBufferStaysClassifiable() {
         // More samples than KeyboardConstants.Gesture.positionBufferSize
         // (120), a straight rightward drag — must still classify as a right

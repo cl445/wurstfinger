@@ -106,7 +106,7 @@ struct KeyGestureRecognizer: ViewModifier {
     var trail: GestureTrailRecorder?
 
     @State private var sequence = KeyGestureSequence()
-    @State private var longPress = LongPressScheduler()
+    @State private var longPress: LongPressScheduler
     /// Identifies this key's touch sequence to the shared trail recorder.
     @StateObject private var trailToken = GestureTrailToken()
     @Binding var isActive: Bool
@@ -116,6 +116,32 @@ struct KeyGestureRecognizer: ViewModifier {
     /// touches (incoming call, edge swipe, keyboard dismissal), where
     /// `onEnded` is never called — the reset is our cancellation signal.
     @GestureState private var sequenceInFlight = false
+
+    /// - Parameter longPress: The scheduler this recognizer arms. Held in
+    ///   `@State` so it survives body re-evaluations, and injectable so a test
+    ///   can arm it from the outside and then observe what teardown does to
+    ///   it. Without that seam the `onDisappear` → `abandonSequence()` wiring
+    ///   is unobservable from a unit test: arming it through the real gesture
+    ///   needs touch events the test target cannot synthesize. Mutation
+    ///   testing found the wiring unpinned for exactly that reason (review
+    ///   2026-08-09, finding 15).
+    init(
+        onGestureRecognized: @escaping (GestureClassification) -> Void,
+        onTouchDown: @escaping () -> Void,
+        aspectRatio: CGFloat,
+        onLongPress: (() -> Bool)? = nil,
+        trail: GestureTrailRecorder? = nil,
+        isActive: Binding<Bool>,
+        longPress: LongPressScheduler = LongPressScheduler()
+    ) {
+        self.onGestureRecognized = onGestureRecognized
+        self.onTouchDown = onTouchDown
+        self.aspectRatio = aspectRatio
+        self.onLongPress = onLongPress
+        self.trail = trail
+        _isActive = isActive
+        _longPress = State(initialValue: longPress)
+    }
 
     func body(content: Content) -> some View {
         content
@@ -208,6 +234,27 @@ struct KeyGestureRecognizer: ViewModifier {
     /// reads live `@State` (`sequence`) at fire time through the property
     /// wrapper. A fired press has typed its digit, so its trail freezes and
     /// fades like any other completed keystroke.
+    ///
+    /// The armed timer deliberately survives a mode switch that keeps this key
+    /// alive — an accepted tradeoff, re-derived exhaustively in the
+    /// 2026-08-09 review (finding 14) and recorded here so it does not get
+    /// re-litigated:
+    ///
+    /// * A `.longPress` resolves to exactly two things: the space bar's zero
+    ///   binding and the `GhostKeyResolver`'s digit-category tap fallback.
+    ///   Everything else leaves the touch unconsumed and classifies normally
+    ///   on release, so nothing else can fire late.
+    /// * A key that is *removed* by the switch tears the hold down through
+    ///   `onDisappear` → `abandonSequence()`. The portrait letters ↔ numeric
+    ///   switch moves the space and return cells structurally, so a space hold
+    ///   is torn down rather than surviving it.
+    /// * For a pure mode switch that keeps the slot, the digit that fires is
+    ///   the same one the uninterrupted hold would have typed — the numeric
+    ///   fallback is shared. The only observable deviation is a mid-hold
+    ///   *language* switch, i.e. a 0.7 s two-thumb race on an opt-in feature.
+    ///
+    /// Closing it would mean cancelling the timer from an `onChange` of the
+    /// active mode; it is not worth the extra state for that window.
     private func scheduleLongPress() {
         guard onLongPress != nil else { return }
         longPress.schedule {
