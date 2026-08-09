@@ -139,6 +139,9 @@ wurstfinger/
 │  └─ wurstfingerUITests/      # UI + screenshot tests
 ```
 
+Naming across the codebase follows [`docs/GLOSSARY.md`](docs/GLOSSARY.md) — the canonical
+vocabulary for modes, slots, gestures, and the pipeline. Check it before adding a type.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
