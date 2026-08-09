@@ -58,7 +58,7 @@ enum GridKeyboardFactory {
         supportsCapitalization: Bool = true,
         numericBackToAlphaLabel: String = NumericLayouts.defaultBackToAlphaLabel,
         numericDigits: [String] = NumericLayouts.westernDigits,
-        inputMethod: InputMethodKind = .direct,
+        inputMethod: InputMethodType = .direct,
         combineRuleSet: ComposeRuleSet? = nil
     ) -> KeyboardDefinition {
         precondition(

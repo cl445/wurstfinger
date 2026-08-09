@@ -178,7 +178,7 @@ struct SequentialCompositionMiddlewareTests {
 
 struct SequentialCombinerResolutionTests {
     private func settings(
-        inputMethod: InputMethodKind = .direct,
+        inputMethod: InputMethodType = .direct,
         combineRuleSet: ComposeRuleSet? = nil
     ) -> KeyboardDefinitionSettings {
         KeyboardDefinitionSettings(

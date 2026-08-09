@@ -108,7 +108,7 @@ to be able to tell from the name alone which of several classifications applies.
 | action | `KeyAction` | the command enum — `commitText`, `compose`, `cycleAccents`, `switchMode`, `capitalizeWord`, `advanceToNextInputMode`, `dismissKeyboard`, `switchToNextLanguage`, `deleteBackward`, `deleteForward`, `space`, `newline`, `moveCursor`, `copy`, `paste`, `cut`, `cutAll`, `none` |
 | label | `KeyBinding.label` | the text drawn on the key. May differ from the output (`"⇧"` for shift) and is empty for icon-driven utility keys |
 | compose | `ComposeRuleSet`, `ComposeEngine` | table-driven character composition (`' + a → á`) |
-| input method | `InputMethodKind` | stateful transformation of committed text: `direct`, `telex`, `hangul` |
+| input method | `InputMethodType` | stateful transformation of committed text: `direct`, `telex`, `hangul` |
 | descriptor | `LanguageDescriptor` | lazy handle to a language: cheap metadata plus a builder that materializes the definition on demand |
 
 ### Layout (`Definition/Layout/`)
@@ -228,7 +228,6 @@ will be brought in line in its own dedicated changes. This list is not exhaustiv
 | `NumpadStyle`, `CursorMovementStyle` | behavioral variants carrying a visual suffix; would be `…Type` |
 | `GesturePreprocessorConfig`, `KeyConfig`, `LanguageConfig` | abbreviated suffix |
 | `KeyConfig`, `LanguageConfig` | declarative data carrying the runtime-parameter suffix on top of that |
-| `InputMethodKind` | would be `…Type` |
 | `KeyboardInfo` | `…Info` says nothing about the contents; would be `…Metadata` |
 | `LanguageConfig` / `LanguageDescriptor` / `KeyboardInfo` | three near-identical language metadata types; the latter two are field-identical. A merge, not a rename |
 | `hideLetters`, `hideStandardSymbols`, `hideExtraSymbols`, `longPressNumbersEnabled` | booleans that do not read as assertions |
