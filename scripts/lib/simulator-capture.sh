@@ -25,17 +25,21 @@ NC='\033[0m' # No Color
 
 # Resolves a simulator UDID by exact device name (available devices only).
 # Prints the UDID, or nothing if no matching available device exists.
+# With several iOS runtimes installed the same name exists once per runtime,
+# each with its own UDID — an already-booted match wins so all callers end up
+# addressing the device that is actually running.
 sim_udid_for_name() {
     local name="$1"
     xcrun simctl list devices available -j | python3 -c "
 import json, sys
 name = sys.argv[1]
 devices = json.load(sys.stdin)['devices']
-for runtime_devices in devices.values():
-    for d in runtime_devices:
-        if d.get('name') == name and d.get('isAvailable', True):
-            print(d['udid'])
-            raise SystemExit(0)
+matches = [d for runtime_devices in devices.values() for d in runtime_devices
+           if d.get('name') == name and d.get('isAvailable', True)]
+booted = [d for d in matches if d.get('state') == 'Booted']
+for d in booted or matches[:1]:
+    print(d['udid'])
+    raise SystemExit(0)
 raise SystemExit(1)
 " "$name" 2>/dev/null || true
 }

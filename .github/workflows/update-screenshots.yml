@@ -51,22 +51,10 @@ jobs:
           sudo xcode-select -s "$XCODE_APP/Contents/Developer"
           xcodebuild -version
 
-      # Warm-boot only: the script detects and boots its own simulator, so a
-      # missing preferred device must not fail the job (this step used to
-      # hard-fail on an empty UDID when the hardcoded device was absent).
-      - name: Boot iOS Simulator
-        run: |
-          DEVICE_UDID=$(xcrun simctl list devices available | grep -E "iPhone" | grep -v "SE" | head -n 1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' || true)
-          if [ -z "$DEVICE_UDID" ]; then
-            echo "No iPhone simulator found to warm-boot; the script will handle device selection"
-            xcrun simctl list devices available
-            exit 0
-          fi
-          echo "Booting simulator: $DEVICE_UDID"
-          xcrun simctl boot "$DEVICE_UDID" 2>/dev/null || true
-          # Wait for simulator to be ready
-          xcrun simctl bootstatus "$DEVICE_UDID" -b
-          echo "Simulator ready"
+      # No boot step here: the script resolves one UDID and boots exactly that
+      # device itself. A separate name-based warm-boot can pick the same-named
+      # device of a *different* iOS runtime on multi-runtime runner images,
+      # leaving the script's target shutdown (SimError 405).
 
       - name: Save existing screenshots for comparison
         run: |
