@@ -8,14 +8,21 @@
 
 ### Fixed
 
-- Characters that could not be typed at all on the non-Latin layouts: Thai ฬ ฒ ฑ ฏ (circle gesture, matching the reference's center return) and the baht sign ฿, the Japanese 、 and 。 plus the small kana on return swipes, the Persian/Urdu half-space (ZWNJ), Arabic-script punctuation ؟ ، ؛ ٭ in place of the Latin marks, the Hindi rupee sign ₹, and the Hebrew geresh and gershayim ׳ ״ (#284)
+- Characters that could not be typed at all on the non-Latin layouts: Thai ฬ ฒ ฑ ฏ (circle gesture) and the baht sign ฿, the Japanese 、 and 。 plus the small kana on return swipes, the Persian/Urdu half-space (ZWNJ), Arabic-script punctuation ؟ ، ؛ ٭ in place of the Latin marks, the Hindi rupee sign ₹, and the Hebrew geresh and gershayim ׳ ״ (#284)
 - Forward-delete and capitalize-word with an active selection: forward-delete now removes the selection, and capitalize-word changes the case of the selection instead of eating the word in front of it (#281)
 - The double-space shortcut now requires two consecutive space presses within a short window, so a space typed into an already-finished sentence is no longer rewritten and a deliberate double space stays typable; it also inserts the script's own sentence mark (Devanagari danda, Japanese full-width stop, Urdu full stop) (#281)
 - Cut-all is bounded by the same size ceiling as a paste instead of issuing an unbounded number of delete round-trips to the host app (#281)
+- Returning to an app that was in the background now brings the keyboard back fully refreshed: settings, language, size and auto-capitalization changed in the meantime take effect before the first keystroke instead of the keyboard resurfacing on stale state (#277)
+- The app switcher no longer shows an empty gap where the keyboard was — a frozen stand-in keeps the card intact, and it neither swallows taps nor shows up in VoiceOver (#277)
+- Diagonal drags on the delete key are no longer dropped: a delete slide that drifts upwards deletes instead of doing nothing at all (#282)
+- A long press that was still armed when its key disappeared — switching mode or language mid-hold — no longer types the old key's digit into the new mode (#282)
+- Every key is operable with VoiceOver: activating the globe switches the input mode, and swipe-only actions such as copy, cut, paste and hide keyboard are offered as rotor actions (#283)
+- Key labels can no longer outgrow their key at the smallest keyboard sizes (#283)
 
 ### Changed
 
 - The `^` compose key's return swipe now types the caron dead key, so č ď ě ň ř š ť ž are reachable directly instead of only through the accent cycle (#285)
+- Leaner keyboard rendering: fewer allocations per keystroke and cached layouts released under memory pressure, leaving more headroom in the tight memory budget iOS gives keyboard extensions (#278)
 
 ## v1.4.0 — 2026-07-23
 

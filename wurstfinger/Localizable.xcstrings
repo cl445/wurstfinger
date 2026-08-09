@@ -2071,144 +2071,6 @@
       },
       "comment": "Settings section header"
     },
-    "Language": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sprache"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Langue"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Idioma"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lingua"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Язык"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Język"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Språk"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kieli"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jezik"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "שפה"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ngôn ngữ"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wika"
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γλώσσα"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Idioma"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Мова"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اللغة"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "زبان"
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "زبان"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ภาษา"
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "भाषा"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "言語"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "언어"
-          }
-        }
-      },
-      "comment": "Settings row: keyboard layout language"
-    },
     "Utility Keys on Left": {
       "extractionState": "manual",
       "localizations": {
@@ -6763,144 +6625,6 @@
       },
       "comment": "Keyboard toolbar button to dismiss the keyboard / finish editing"
     },
-    "Keyboard Language": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tastatursprache"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Langue du clavier"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Idioma del teclado"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lingua della tastiera"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Язык клавиатуры"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Język klawiatury"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tangentbordsspråk"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Näppäimistön kieli"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jezik tipkovnice"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "שפת המקלדת"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ngôn ngữ bàn phím"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wika ng Keyboard"
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γλώσσα πληκτρολογίου"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Idioma do teclado"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Мова клавіатури"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "لغة لوحة المفاتيح"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "زبان صفحه‌کلید"
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "کی بورڈ کی زبان"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ภาษาคีย์บอร์ด"
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "कीबोर्ड भाषा"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キーボードの言語"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "키보드 언어"
-          }
-        }
-      },
-      "comment": "Navigation title for the language picker"
-    },
     "MessagEase Layout": {
       "extractionState": "manual",
       "localizations": {
@@ -7314,144 +7038,6 @@
         }
       },
       "comment": "Note shown on pre-iOS-26 devices; 'Liquid Glass' is a style name (keep)"
-    },
-    "Enable or disable all haptic feedback vibrations.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aktiviere oder deaktiviere alle Vibrationen des haptischen Feedbacks."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Activez ou désactivez toutes les vibrations de retour haptique."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Activa o desactiva todas las vibraciones de respuesta háptica."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Attiva o disattiva tutte le vibrazioni del feedback aptico."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Включить или выключить вибрацию тактильного отклика."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Włącz lub wyłącz wszystkie wibracje reakcji haptycznych."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aktivera eller inaktivera alla vibrationer för taktil återkoppling."
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ota käyttöön tai poista käytöstä kaikki tuntopalautteen värinät."
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Uključi ili isključi sve vibracije haptičkih povratnih informacija."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "הפעל או השבת את כל רטטי המשוב המישושי."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bật hoặc tắt toàn bộ rung phản hồi xúc giác."
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I-enable o i-disable ang lahat ng haptic feedback na vibration."
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ενεργοποιήστε ή απενεργοποιήστε όλες τις δονήσεις απτικής ανάδρασης."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ative ou desative todas as vibrações de retorno tátil."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Увімкніть або вимкніть усі вібрації тактильного відгуку."
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تفعيل أو تعطيل جميع اهتزازات الاستجابة اللمسية."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "همهٔ لرزش‌های بازخورد لمسی را فعال یا غیرفعال کنید."
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تمام ہیپٹک فیڈ بیک وائبریشنز فعال یا غیر فعال کریں۔"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "เปิดหรือปิดการสั่นตอบสนองแบบสัมผัสทั้งหมด"
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "सभी हैप्टिक फ़ीडबैक वाइब्रेशन चालू या बंद करें।"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "すべての触覚フィードバックの振動を有効または無効にします。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "모든 햅틱 피드백 진동을 켜거나 끕니다."
-          }
-        }
-      },
-      "comment": "Caption under the haptic feedback toggle"
     },
     "Open the keyboard once to sync Full Access status.": {
       "extractionState": "manual",
@@ -9661,7 +9247,7 @@
       },
       "comment": "Warning with markdown bold and › separators; the path words inside ** ** are iOS Settings names — localize Settings/Keyboards/Allow Full Access, keep 'Wurstfinger', keep markdown ** and ›"
     },
-    "Keyboard Scale": {
+    "Keyboard Size": {
       "extractionState": "manual",
       "localizations": {
         "de": {
@@ -9673,37 +9259,37 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Échelle du clavier"
+            "value": "Taille du clavier"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escala del teclado"
+            "value": "Tamaño del teclado"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scala della tastiera"
+            "value": "Dimensione della tastiera"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Масштаб клавиатуры"
+            "value": "Размер клавиатуры"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skala klawiatury"
+            "value": "Rozmiar klawiatury"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tangentbordets skala"
+            "value": "Tangentbordets storlek"
           }
         },
         "fi": {
@@ -9721,37 +9307,37 @@
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "קנה מידה של המקלדת"
+            "value": "גודל המקלדת"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tỷ lệ bàn phím"
+            "value": "Kích thước bàn phím"
           }
         },
         "fil": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scale ng Keyboard"
+            "value": "Laki ng Keyboard"
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Κλίμακα πληκτρολογίου"
+            "value": "Μέγεθος πληκτρολογίου"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escala do teclado"
+            "value": "Tamanho do teclado"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Масштаб клавіатури"
+            "value": "Розмір клавіатури"
           }
         },
         "ar": {
@@ -9763,13 +9349,13 @@
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "مقیاس صفحه‌کلید"
+            "value": "اندازه صفحه‌کلید"
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "کی بورڈ اسکیل"
+            "value": "کی بورڈ کا سائز"
           }
         },
         "th": {
@@ -9781,7 +9367,7 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "कीबोर्ड स्केल"
+            "value": "कीबोर्ड का आकार"
           }
         },
         "ja": {
@@ -9799,419 +9385,143 @@
       },
       "comment": "Slider title: overall keyboard size"
     },
-    "Compact": {
+    "Size relative to the standard keyboard. It stays the same in every orientation; if it does not fit, it shrinks to the screen.": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kompakt"
+            "value": "Größe im Verhältnis zur Standardtastatur. Sie bleibt in jeder Bildschirmausrichtung gleich; passt sie nicht auf den Bildschirm, wird sie auf die Bildschirmbreite verkleinert."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compact"
+            "value": "Taille par rapport au clavier standard. Elle reste identique dans toutes les orientations ; si le clavier ne tient pas, il est réduit à la largeur de l'écran."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compacto"
+            "value": "Tamaño relativo al teclado estándar. Se mantiene igual en todas las orientaciones; si no cabe, se reduce al ancho de la pantalla."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compatta"
+            "value": "Dimensione relativa alla tastiera standard. Resta invariata in ogni orientamento; se non c'è spazio sufficiente, viene ridotta alla larghezza dello schermo."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Компактно"
+            "value": "Размер относительно стандартной клавиатуры. Он одинаков в любой ориентации; если клавиатура не помещается, она уменьшается до ширины экрана."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kompaktowa"
+            "value": "Rozmiar względem klawiatury standardowej. Pozostaje taki sam w każdej orientacji; jeśli klawiatura się nie mieści, jest zmniejszana do szerokości ekranu."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kompakt"
+            "value": "Storlek i förhållande till standardtangentbordet. Den är densamma i alla riktningar; om tangentbordet inte får plats krymps det till skärmens bredd."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tiivis"
+            "value": "Koko suhteessa vakionäppäimistöön. Se pysyy samana kaikissa asennoissa; jos näppäimistö ei mahdu, se kutistetaan näytön leveyteen."
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kompaktno"
+            "value": "Veličina u odnosu na standardnu tipkovnicu. Ostaje ista u svakoj orijentaciji; ako tipkovnica ne stane, smanjuje se na širinu zaslona."
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "קומפקטי"
+            "value": "הגודל ביחס למקלדת הרגילה. הוא נשאר זהה בכל כיוון; אם המקלדת לא נכנסת, היא מוקטנת לרוחב המסך."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Thu gọn"
+            "value": "Kích thước so với bàn phím tiêu chuẩn. Kích thước này giữ nguyên ở mọi hướng màn hình; nếu không vừa, bàn phím sẽ thu nhỏ theo chiều rộng màn hình."
           }
         },
         "fil": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compact"
+            "value": "Laki kumpara sa karaniwang keyboard. Nananatili itong pareho sa lahat ng oryentasyon; kung hindi kasya, liliitan ito ayon sa lapad ng screen."
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Συμπαγές"
+            "value": "Μέγεθος σε σχέση με το τυπικό πληκτρολόγιο. Παραμένει το ίδιο σε κάθε προσανατολισμό· αν δεν χωράει, σμικρύνεται στο πλάτος της οθόνης."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compacto"
+            "value": "Tamanho relativo ao teclado padrão. Mantém-se igual em qualquer orientação; se não couber, é reduzido à largura do ecrã."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Компактний"
+            "value": "Розмір відносно стандартної клавіатури. Він однаковий у будь-якій орієнтації; якщо клавіатура не вміщується, вона зменшується до ширини екрана."
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "مضغوط"
+            "value": "الحجم بالنسبة إلى لوحة المفاتيح القياسية. يبقى كما هو في كل الاتجاهات، وإذا لم تتسع لوحة المفاتيح فسيتم تصغيرها لتناسب عرض الشاشة."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "فشرده"
+            "value": "اندازه نسبت به صفحه‌کلید استاندارد. در همه جهت‌ها یکسان می‌ماند؛ اگر جا نشود، به عرض صفحه کوچک می‌شود."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "کومپیکٹ"
+            "value": "معیاری کی بورڈ کے مقابلے میں سائز۔ یہ ہر سمت میں یکساں رہتا ہے؛ اگر کی بورڈ نہ سما سکے تو اسے اسکرین کی چوڑائی کے مطابق چھوٹا کر دیا جاتا ہے۔"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "กะทัดรัด"
+            "value": "ขนาดเทียบกับคีย์บอร์ดมาตรฐาน ขนาดจะเท่าเดิมในทุกการวางแนว หากไม่พอดีจะย่อลงให้เท่าความกว้างของหน้าจอ"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "कॉम्पैक्ट"
+            "value": "मानक कीबोर्ड की तुलना में आकार। यह हर ओरिएंटेशन में एक जैसा रहता है; अगर यह नहीं समाता, तो इसे स्क्रीन की चौड़ाई तक छोटा कर दिया जाता है।"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "コンパクト"
+            "value": "標準キーボードを基準としたサイズです。どの画面の向きでも同じ大きさを保ち、収まらない場合は画面幅に合わせて縮小されます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "축소"
+            "value": "표준 키보드를 기준으로 한 크기입니다. 화면 방향이 바뀌어도 그대로 유지되며, 들어가지 않으면 화면 너비에 맞춰 줄어듭니다."
           }
         }
       },
-      "comment": "Slider label (small size)"
-    },
-    "Full Width": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Volle Breite"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pleine largeur"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ancho completo"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Larghezza piena"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вся ширина"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pełna szerokość"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Full bredd"
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Täysi leveys"
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Puna širina"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "רוחב מלא"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toàn chiều rộng"
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Buong Lapad"
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πλήρες πλάτος"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Largura total"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "На всю ширину"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "العرض الكامل"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "عرض کامل"
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "پوری چوڑائی"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "เต็มความกว้าง"
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "पूरी चौड़ाई"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "全幅"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "전체 너비"
-          }
-        }
-      },
-      "comment": "Slider label (full width / 100%)"
-    },
-    "Scale the keyboard to make it smaller. At 100% it fills the full width, at 25% it's much more compact.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skaliere die Tastatur, um sie zu verkleinern. Bei 100 % füllt sie die volle Breite, bei 25 % ist sie deutlich kompakter."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réduisez la taille du clavier. À 100 %, il occupe toute la largeur ; à 25 %, il est beaucoup plus compact."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajusta la escala del teclado para hacerlo más pequeño. Al 100 % ocupa todo el ancho; al 25 % es mucho más compacto."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ridimensiona la tastiera per rimpicciolirla. Al 100% occupa tutta la larghezza, al 25% è molto più compatta."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Уменьшите масштаб клавиатуры. При 100 % она занимает всю ширину, при 25 % становится гораздо компактнее."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skaluj klawiaturę, aby ją zmniejszyć. Przy 100% wypełnia całą szerokość, a przy 25% jest znacznie bardziej kompaktowa."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skala tangentbordet för att göra det mindre. Vid 100 % fyller det hela bredden, vid 25 % är det mycket mer kompakt."
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pienennä näppäimistöä skaalaamalla. 100 %:ssa se täyttää koko leveyden, 25 %:ssa se on huomattavasti tiiviimpi."
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Smanji tipkovnicu mijenjanjem njezine veličine. Pri 100 % ispunjava punu širinu, a pri 25 % znatno je kompaktnija."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "שנה את קנה המידה של המקלדת כדי להקטין אותה. ב-100% היא ממלאת את הרוחב המלא, וב-25% היא קומפקטית בהרבה."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Thu nhỏ bàn phím. Ở 100% bàn phím chiếm toàn bộ chiều rộng, ở 25% bàn phím gọn hơn nhiều."
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I-scale ang keyboard para gawing mas maliit. Sa 100% pinupuno nito ang buong lapad, sa 25% mas compact ito."
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αλλάξτε την κλίμακα του πληκτρολογίου για να το κάνετε μικρότερο. Στο 100% καλύπτει όλο το πλάτος, ενώ στο 25% είναι πολύ πιο συμπαγές."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reduza a escala do teclado para o tornar mais pequeno. A 100% ocupa toda a largura, a 25% fica muito mais compacto."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Масштабуйте клавіатуру, щоб зменшити її. На 100% вона займає всю ширину, на 25% — значно компактніша."
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "غيِّر حجم لوحة المفاتيح لجعلها أصغر. عند 100% تملأ العرض الكامل، وعند 25% تصبح أكثر إحكامًا."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "صفحه‌کلید را کوچک‌تر کنید. در ۱۰۰٪ تمام عرض را پر می‌کند و در ۲۵٪ بسیار فشرده‌تر است."
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "کی بورڈ کو چھوٹا کرنے کے لیے اس کا اسکیل تبدیل کریں۔ 100% پر یہ پوری چوڑائی بھرتا ہے، 25% پر یہ کہیں زیادہ کومپیکٹ ہوتا ہے۔"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ปรับขนาดคีย์บอร์ดให้เล็กลง ที่ 100% จะเต็มความกว้าง ที่ 25% จะกะทัดรัดมากขึ้น"
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "कीबोर्ड को छोटा करने के लिए स्केल करें। 100% पर यह पूरी चौड़ाई भरता है, 25% पर यह काफ़ी अधिक कॉम्पैक्ट होता है।"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キーボードを縮小します。100%では全幅に広がり、25%ではかなりコンパクトになります。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "키보드 크기를 조정하여 더 작게 만듭니다. 100%에서는 전체 너비를 채우고, 25%에서는 훨씬 더 작아집니다."
-          }
-        }
-      },
-      "comment": "Caption under the scale slider"
+      "comment": "Caption under the size slider"
     },
     "Horizontal Position": {
       "extractionState": "manual",
@@ -10765,277 +10075,139 @@
       },
       "comment": "Slider label: right position"
     },
-    "Position is only available when scale is below 100%.": {
+    "Adjust the horizontal position of the keyboard when it is narrower than the screen.": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Die Position ist nur verfügbar, wenn die Größe unter 100 % liegt."
+            "value": "Passe die horizontale Position der Tastatur an, wenn sie schmaler als der Bildschirm ist."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "La position n'est disponible que lorsque l'échelle est inférieure à 100 %."
+            "value": "Ajustez la position horizontale du clavier lorsqu'il est plus étroit que l'écran."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "La posición solo está disponible cuando la escala es inferior al 100 %."
+            "value": "Ajusta la posición horizontal del teclado cuando es más estrecho que la pantalla."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "La posizione è disponibile solo quando la scala è inferiore al 100%."
+            "value": "Regola la posizione orizzontale della tastiera quando è più stretta dello schermo."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Положение доступно только при масштабе менее 100 %."
+            "value": "Настройте положение клавиатуры по горизонтали, когда она уже экрана."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Położenie jest dostępne tylko, gdy skala jest poniżej 100%."
+            "value": "Dostosuj poziome położenie klawiatury, gdy jest węższa niż ekran."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Positionen är endast tillgänglig när skalan är under 100 %."
+            "value": "Justera tangentbordets horisontella position när det är smalare än skärmen."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sijainti on käytettävissä vain, kun koko on alle 100 %."
+            "value": "Säädä näppäimistön vaakasijaintia, kun se on näyttöä kapeampi."
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Položaj je dostupan samo kad je veličina ispod 100 %."
+            "value": "Prilagodi vodoravni položaj tipkovnice kad je uža od zaslona."
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "המיקום זמין רק כאשר קנה המידה נמוך מ-100%."
+            "value": "התאם את המיקום האופקי של המקלדת כאשר היא צרה מהמסך."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chỉ chỉnh được vị trí khi tỷ lệ dưới 100%."
+            "value": "Điều chỉnh vị trí ngang của bàn phím khi bàn phím hẹp hơn màn hình."
           }
         },
         "fil": {
           "stringUnit": {
             "state": "translated",
-            "value": "Available lang ang posisyon kapag mas mababa sa 100% ang scale."
+            "value": "Iayos ang horizontal na posisyon ng keyboard kapag mas makitid ito kaysa sa screen."
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Η θέση είναι διαθέσιμη μόνο όταν η κλίμακα είναι κάτω από 100%."
+            "value": "Προσαρμόστε την οριζόντια θέση του πληκτρολογίου όταν είναι στενότερο από την οθόνη."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "A posição só está disponível quando a escala é inferior a 100%."
+            "value": "Ajuste a posição horizontal do teclado quando este for mais estreito do que o ecrã."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Положення доступне лише коли масштаб менший за 100%."
+            "value": "Регулюйте горизонтальне положення клавіатури, коли вона вужча за екран."
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "لا يتوفر الموضع إلا عندما يكون الحجم أقل من 100%."
+            "value": "اضبط الموضع الأفقي للوحة المفاتيح عندما تكون أضيق من الشاشة."
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "موقعیت فقط زمانی در دسترس است که مقیاس کمتر از ۱۰۰٪ باشد."
+            "value": "وقتی صفحه‌کلید از صفحه نمایش باریک‌تر است، موقعیت افقی آن را تنظیم کنید."
           }
         },
         "ur": {
           "stringUnit": {
             "state": "translated",
-            "value": "پوزیشن صرف اس وقت دستیاب ہے جب اسکیل 100% سے کم ہو۔"
+            "value": "جب کی بورڈ اسکرین سے تنگ ہو تو اس کی افقی پوزیشن ایڈجسٹ کریں۔"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ตำแหน่งใช้ได้เฉพาะเมื่อขนาดต่ำกว่า 100% เท่านั้น"
+            "value": "ปรับตำแหน่งแนวนอนของคีย์บอร์ดเมื่อคีย์บอร์ดแคบกว่าหน้าจอ"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "स्थिति केवल तभी उपलब्ध है जब स्केल 100% से कम हो।"
+            "value": "जब कीबोर्ड स्क्रीन से सँकरा हो, तो उसकी क्षैतिज स्थिति समायोजित करें।"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "位置の調整は、サイズが100%未満のときのみ利用できます。"
+            "value": "キーボードが画面より狭いときに、水平方向の位置を調整します。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "위치는 크기가 100% 미만일 때만 사용할 수 있습니다."
-          }
-        }
-      },
-      "comment": "Note shown when scale is at 100%"
-    },
-    "Adjust the horizontal position of the keyboard when it's scaled below 100%.": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Passe die horizontale Position der Tastatur an, wenn sie unter 100 % skaliert ist."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajustez la position horizontale du clavier lorsque son échelle est inférieure à 100 %."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajusta la posición horizontal del teclado cuando su escala es inferior al 100 %."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Regola la posizione orizzontale della tastiera quando la scala è inferiore al 100%."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Настройте положение клавиатуры по горизонтали при масштабе менее 100 %."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dostosuj poziome położenie klawiatury, gdy jest przeskalowana poniżej 100%."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Justera tangentbordets horisontella position när det är skalat under 100 %."
-          }
-        },
-        "fi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Säädä näppäimistön vaakasijaintia, kun se on skaalattu alle 100 %:iin."
-          }
-        },
-        "hr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prilagodi vodoravni položaj tipkovnice kad je smanjena ispod 100 %."
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "התאם את המיקום האופקי של המקלדת כאשר קנה המידה שלה נמוך מ-100%."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Điều chỉnh vị trí ngang của bàn phím khi tỷ lệ dưới 100%."
-          }
-        },
-        "fil": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Iayos ang horizontal na posisyon ng keyboard kapag naka-scale ito nang mas mababa sa 100%."
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Προσαρμόστε την οριζόντια θέση του πληκτρολογίου όταν η κλίμακά του είναι κάτω από 100%."
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajuste a posição horizontal do teclado quando a escala for inferior a 100%."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Регулюйте горизонтальне положення клавіатури, коли її масштаб менший за 100%."
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اضبط الموضع الأفقي للوحة المفاتيح عندما يكون حجمها أقل من 100%."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "موقعیت افقی صفحه‌کلید را هنگامی که مقیاس آن کمتر از ۱۰۰٪ است تنظیم کنید."
-          }
-        },
-        "ur": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "جب کی بورڈ 100% سے کم اسکیل پر ہو تو اس کی افقی پوزیشن ایڈجسٹ کریں۔"
-          }
-        },
-        "th": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ปรับตำแหน่งแนวนอนของคีย์บอร์ดเมื่อย่อขนาดต่ำกว่า 100%"
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "जब कीबोर्ड 100% से कम स्केल हो तो उसकी क्षैतिज स्थिति समायोजित करें।"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "サイズが100%未満のときに、キーボードの水平方向の位置を調整します。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "크기가 100% 미만일 때 키보드의 가로 위치를 조정합니다."
+            "value": "키보드가 화면보다 좁을 때 가로 위치를 조정합니다."
           }
         }
       },
@@ -12421,6 +11593,144 @@
       },
       "comment": "ACCESSIBILITY label for the delete/backspace key (VoiceOver)"
     },
+    "Next language": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächste Sprache"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Langue suivante"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Idioma siguiente"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lingua successiva"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Следующий язык"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Następny język"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nästa språk"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuraava kieli"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sljedeći jezik"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "השפה הבאה"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngôn ngữ tiếp theo"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Susunod na wika"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επόμενη γλώσσα"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximo idioma"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Наступна мова"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اللغة التالية"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "زبان بعدی"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اگلی زبان"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ภาษาถัดไป"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अगली भाषा"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "次の言語"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 언어"
+          }
+        }
+      },
+      "comment": "ACCESSIBILITY action name for the switch-to-next-language gesture (VoiceOver)"
+    },
     "New line": {
       "extractionState": "manual",
       "localizations": {
@@ -12834,6 +12144,144 @@
         }
       },
       "comment": "ACCESSIBILITY label for the cut gesture (VoiceOver)"
+    },
+    "Cut all": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alles ausschneiden"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tout couper"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cortar todo"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taglia tutto"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вырезать всё"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wytnij wszystko"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klipp ut allt"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leikkaa kaikki"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Izreži sve"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "גזור הכול"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cắt tất cả"
+          }
+        },
+        "fil": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gupitin lahat"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αποκοπή όλων"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cortar tudo"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вирізати все"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "قص الكل"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "برش همه"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سب کاٹیں"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตัดทั้งหมด"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सभी काटें"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべて切り取り"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모두 잘라내기"
+          }
+        }
+      },
+      "comment": "ACCESSIBILITY label for the cut-all gesture (VoiceOver)"
     },
     "Paste": {
       "extractionState": "manual",

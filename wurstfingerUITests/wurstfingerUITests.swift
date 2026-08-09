@@ -13,7 +13,7 @@ final class wurstfingerUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
         app = XCUIApplication()
-        // The suite queries localized display text ("Settings", "Language", …),
+        // The suite queries localized display text ("Settings", "Languages", …),
         // so pin the app to English regardless of the simulator's locale.
         app.launchArguments = [
             "-AppleLanguages", "(en)",

@@ -6,6 +6,8 @@
 //  memory headroom and launch activity can be inspected on-device, without
 //  a Mac attached.
 //
+//  English only, like the rest of the Expert section — see docs/localization.md.
+//
 
 import SwiftUI
 

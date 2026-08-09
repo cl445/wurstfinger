@@ -135,14 +135,35 @@ struct LocalizationCompletenessTests {
 
 // MARK: - Usage → catalog coverage
 
-/// Source directories whose Swift files are scanned for localizable string usage.
-private let localizedSourceDirs: [String] = ["wurstfinger", "wurstfingerKeyboard"]
+/// Source directories scanned for localizable strings, mapped to the catalogs
+/// a key used there must exist in.
+///
+/// `wurstfingerKeyboard/` compiles into *both* products — the app renders the
+/// real keyboard in its previews and showcase — so a string used there is
+/// looked up in whichever bundle is running and must exist in both catalogs.
+/// A host-only string needs the host catalog only; the extension's catalog
+/// deliberately carries just the strings the keyboard itself displays.
+private let catalogsRequiredBySourceDir: [String: [String]] = [
+    "wurstfinger": ["wurstfinger/Localizable.xcstrings"],
+    "wurstfingerKeyboard": localizationCatalogs,
+]
 
-/// A `String(localized:)` usage discovered in the source tree.
+/// A localizable string usage discovered in the source tree.
 private struct LocalizedUsage: Hashable {
     let key: String
+    /// Source directory the file was scanned under, i.e. the key into
+    /// `catalogsRequiredBySourceDir`.
+    let dir: String
+    /// Path relative to the repo root, so a failure names a file that exists.
     let file: String
     let line: Int
+}
+
+/// Repo-relative path of a scanned source file.
+private func repoRelativePath(of url: URL) -> String {
+    let root = projectDir().standardizedFileURL.path + "/"
+    let path = url.standardizedFileURL.path
+    return path.hasPrefix(root) ? String(path.dropFirst(root.count)) : path
 }
 
 /// Matches `String(localized: "…")` and captures the literal, honouring escaped
@@ -202,7 +223,7 @@ private func scanLocalizedUsages() -> [LocalizedUsage] {
     var usages: [LocalizedUsage] = []
     let fileManager = FileManager.default
 
-    for dir in localizedSourceDirs {
+    for dir in catalogsRequiredBySourceDir.keys.sorted() {
         let base = root.appendingPathComponent(dir)
         guard let enumerator = fileManager.enumerator(at: base, includingPropertiesForKeys: nil) else { continue }
         for case let url as URL in enumerator where url.pathExtension == "swift" {
@@ -223,7 +244,8 @@ private func scanLocalizedUsages() -> [LocalizedUsage] {
                 usages.append(
                     LocalizedUsage(
                         key: unescapeSwiftLiteral(literal),
-                        file: "\(dir)/\(url.lastPathComponent)",
+                        dir: dir,
+                        file: repoRelativePath(of: url),
                         line: line
                     )
                 )
@@ -233,6 +255,31 @@ private func scanLocalizedUsages() -> [LocalizedUsage] {
     return usages
 }
 
+/// Catalog keys per catalog path, so a usage can be checked against exactly the
+/// catalogs its source directory ships into.
+private func catalogKeysByPath() throws -> [String: Set<String>] {
+    var keysByCatalog: [String: Set<String>] = [:]
+    for relativePath in localizationCatalogs {
+        keysByCatalog[relativePath] = try Set(loadCatalog(relativePath).strings.keys)
+    }
+    return keysByCatalog
+}
+
+/// One `file:line  "key" absent from <catalog>` line per gap, sorted by source
+/// position so the report reads like a compiler's.
+private func missingUsageReport(
+    _ usages: [LocalizedUsage],
+    keysByCatalog: [String: Set<String>]
+) -> [String] {
+    usages
+        .sorted { ($0.file, $0.line, $0.key) < ($1.file, $1.line, $1.key) }
+        .flatMap { usage in
+            (catalogsRequiredBySourceDir[usage.dir] ?? [])
+                .filter { keysByCatalog[$0]?.contains(usage.key) != true }
+                .map { "\(usage.file):\(usage.line)  \"\(usage.key)\" absent from \($0)" }
+        }
+}
+
 /// Guards the *other* direction from `LocalizationCompletenessTests`: that every
 /// string the code asks for actually exists in a catalog. The completeness tests
 /// work from the catalog outwards and cannot see a key that was never added, so a
@@ -240,28 +287,146 @@ private func scanLocalizedUsages() -> [LocalizedUsage] {
 /// language (as happened in #261) without failing any existing test.
 ///
 /// Scope: this covers the explicit `String(localized:)` API only. Bare
-/// `LocalizedStringKey` literals passed to a view initializer (e.g.
-/// `SettingsRow(title: "…")`) are not statically detectable without type
-/// information and remain outside this guard.
+/// `LocalizedStringKey` literals passed to a view initializer are covered by
+/// `LocalizedViewLiteralTests` below.
 struct LocalizationUsageTests {
-    @Test("Every String(localized:) key exists in a catalog")
+    @Test("Every String(localized:) key exists in the catalogs of the targets that compile it")
     func everyLocalizedKeyExistsInCatalog() throws {
-        var catalogKeys: Set<String> = []
-        for relativePath in localizationCatalogs {
-            try catalogKeys.formUnion(loadCatalog(relativePath).strings.keys)
-        }
+        let keysByCatalog = try catalogKeysByPath()
 
         let usages = scanLocalizedUsages()
         #expect(!usages.isEmpty, "Found no String(localized:) usages to check — has the source layout moved?")
 
-        let missing = usages.filter { !catalogKeys.contains($0.key) }
-        let detail = missing
-            .sorted { ($0.file, $0.line) < ($1.file, $1.line) }
-            .map { "\($0.file):\($0.line)  \"\($0.key)\"" }
-            .joined(separator: "\n")
+        let missing = missingUsageReport(usages, keysByCatalog: keysByCatalog)
+        let detail = missing.joined(separator: "\n")
         #expect(
             missing.isEmpty,
-            "\(missing.count) localized string(s) used in code but absent from every catalog:\n\(detail)"
+            "\(missing.count) localized string(s) used in code but absent from a catalog of a target that compiles them:\n\(detail)"
         )
+    }
+}
+
+// MARK: - View literal → catalog coverage
+
+/// Screens shipped in English only, with the reason. A file listed here is
+/// skipped below; everything else must have every user-visible literal in a
+/// catalog, so adding an English-only screen forces an entry here — and a line
+/// in `docs/localization.md`.
+private let englishOnlyViewFiles: [String: String] = [
+    "wurstfinger/ExpertSettingsView.swift":
+        "Gesture-tuning vocabulary nobody on the team can review in 22 translations; diagnostic tool behind an acknowledgement gate.",
+    "wurstfinger/GesturePlaygroundView.swift":
+        "Reachable only from the Expert screen and shares its vocabulary.",
+    "wurstfinger/KeyboardHealthView.swift":
+        "Reachable only from the Expert screen; renders raw on-device diagnostics.",
+    "wurstfinger/ImprintView.swift":
+        "Legal notice kept in a single authoritative wording.",
+    "wurstfinger/AppStoreScreenshotView.swift":
+        "Marketing screenshot chrome, not app UI.",
+]
+
+/// User-visible literals that read the same in every language.
+private let untranslatedProperNouns: Set<String> = ["GitHub", "MIT", "Wurstfinger"]
+
+/// First-argument literal of the SwiftUI initializers and modifiers whose
+/// parameter is a `LocalizedStringKey`. These are the strings
+/// `LocalizationUsageTests` cannot see: a bare literal carries no
+/// `String(localized:)` marker.
+private let viewLiteralRegex: NSRegularExpression = {
+    let inits = "Text|Button|Toggle|TextField|Section|Label|Picker|Link|Stepper|NavigationLink"
+    let modifiers = "navigationTitle|accessibilityLabel|accessibilityHint|alert|confirmationDialog"
+    let pattern = #"(?:\b(?:"# + inits + #")\(|\.(?:"# + modifiers + #")\()\s*"(?!"")((?:[^"\\]|\\.)*)""#
+    guard let regex = try? NSRegularExpression(pattern: pattern) else {
+        preconditionFailure("Invalid viewLiteralRegex pattern")
+    }
+    return regex
+}()
+
+/// `title:` / `description:` arguments of the app's own row components
+/// (`SettingsRow`, `SetupStepView`, `hapticControl`), which take
+/// `LocalizedStringKey`. Host-only on purpose: the same labels under
+/// `wurstfingerKeyboard/` name layout data (`LanguageDescriptor(title:)`),
+/// not UI strings.
+private let hostRowLabelRegex: NSRegularExpression = {
+    guard let regex = try? NSRegularExpression(
+        pattern: #"\b(?:title|description):\s*"(?!"")((?:[^"\\]|\\.)*)""#
+    ) else {
+        preconditionFailure("Invalid hostRowLabelRegex pattern")
+    }
+    return regex
+}()
+
+/// Every literal a view hands to a `LocalizedStringKey` parameter, minus the
+/// English-only screens, the proper nouns, and literals without letters
+/// (slider tick marks like "35%" or "1.62", identical in every language).
+private func scanViewLiterals() -> [LocalizedUsage] {
+    let root = projectDir()
+    var usages: [LocalizedUsage] = []
+    let fileManager = FileManager.default
+
+    for dir in catalogsRequiredBySourceDir.keys.sorted() {
+        let base = root.appendingPathComponent(dir)
+        guard let enumerator = fileManager.enumerator(at: base, includingPropertiesForKeys: nil) else { continue }
+        for case let url as URL in enumerator where url.pathExtension == "swift" {
+            let file = repoRelativePath(of: url)
+            guard englishOnlyViewFiles[file] == nil,
+                  let source = try? String(contentsOf: url, encoding: .utf8)
+            else { continue }
+            let ns = source as NSString
+            let fullRange = NSRange(location: 0, length: ns.length)
+            let regexes = dir == "wurstfinger" ? [viewLiteralRegex, hostRowLabelRegex] : [viewLiteralRegex]
+            for regex in regexes {
+                for match in regex.matches(in: source, range: fullRange) {
+                    let literal = ns.substring(with: match.range(at: 1))
+                    // Interpolated labels become format strings, proper nouns read
+                    // the same everywhere, and a literal without letters is not a
+                    // phrase (slider tick marks like "35%").
+                    if literal.contains("\\(") { continue }
+                    let key = unescapeSwiftLiteral(literal)
+                    if untranslatedProperNouns.contains(key) || !key.contains(where: \.isLetter) {
+                        continue
+                    }
+                    let line = ns.substring(to: match.range.location)
+                        .reduce(1) { $0 + ($1 == "\n" ? 1 : 0) }
+                    usages.append(LocalizedUsage(key: key, dir: dir, file: file, line: line))
+                }
+            }
+        }
+    }
+    return usages
+}
+
+/// Covers the blind spot `LocalizationUsageTests` documents: a bare literal
+/// passed to a `LocalizedStringKey` parameter (`Text("Keyboard Size")`) is a
+/// localizable string with no marker in the source, so a missing catalog entry
+/// renders as English in all 22 translations and no other test notices.
+struct LocalizedViewLiteralTests {
+    @Test("Every user-visible view literal exists in a catalog")
+    func everyViewLiteralExistsInCatalog() throws {
+        let keysByCatalog = try catalogKeysByPath()
+
+        let usages = scanViewLiterals()
+        #expect(!usages.isEmpty, "Found no view literals to check — has the source layout moved?")
+
+        let missing = missingUsageReport(usages, keysByCatalog: keysByCatalog)
+        let detail = missing.joined(separator: "\n")
+        let hint = "add the key to the catalog, or list the file in `englishOnlyViewFiles`"
+            + " with a reason and record it in docs/localization.md"
+        #expect(
+            missing.isEmpty,
+            "\(missing.count) view literal(s) render untranslated — \(hint):\n\(detail)"
+        )
+    }
+
+    @Test("The English-only allowlist has no stale entries")
+    func englishOnlyAllowlistIsCurrent() {
+        let root = projectDir()
+        for (file, reason) in englishOnlyViewFiles.sorted(by: { $0.key < $1.key }) {
+            #expect(
+                FileManager.default.fileExists(atPath: root.appendingPathComponent(file).path),
+                "\(file) is allowlisted as English-only but no longer exists — drop the entry"
+            )
+            #expect(!reason.isEmpty, "\(file) needs a reason for being English-only")
+        }
     }
 }
