@@ -167,14 +167,19 @@ struct KeyboardLayoutSettingsView: View {
                         }
                     }
 
+                // Numeric end labels derived from the range, so they cannot
+                // drift: the slider reaches past full width, which no word
+                // label at the maximum could describe correctly.
                 HStack {
-                    Text("Compact")
+                    Text(verbatim: "\(Int(Self.minPercent))%")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .monospacedDigit()
                     Spacer()
-                    Text("Full Width")
+                    Text(verbatim: "\(Int(Self.maxPercent))%")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                        .monospacedDigit()
                 }
             }
         } header: {
