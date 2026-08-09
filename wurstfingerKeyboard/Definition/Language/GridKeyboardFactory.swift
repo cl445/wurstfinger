@@ -94,7 +94,10 @@ enum GridKeyboardFactory {
                             : nil
                         bindings[gesture] = KeyBinding(
                             label: text, action: .commitText(text),
-                            category: nil, returnAction: returnAction, accessibilityLabel: nil
+                            category: nil, returnAction: returnAction,
+                            accessibilityLabel: inheritedAccessibilityName(
+                                replacing: bindings[gesture], isLetter: isLetter
+                            )
                         )
                     }
                 }
@@ -226,5 +229,27 @@ enum GridKeyboardFactory {
             numericBackToAlphaLabel: numericBackToAlphaLabel,
             numericDigits: numericDigits
         )
+    }
+
+    /// VoiceOver name a directional override inherits from the shared binding it
+    /// displaces, or nil when it must not inherit one.
+    ///
+    /// `CommonKeys.defaultSlotBindings` names `, . ?` after their *function*, not
+    /// their glyph, so a layout that puts its own script's mark on the same
+    /// gesture is still the comma (Arabic `،`), the full stop (Japanese `。`) or
+    /// the question mark (Arabic `؟`) — and dropping the name there would leave
+    /// exactly the RTL and CJK users the labelling was for with an unnamed key.
+    /// Two guards keep the inheritance honest:
+    ///
+    /// - a letter never inherits: "Comma" would be a lie on Japanese `ね`, and
+    ///   letters are deliberately unnamed (see `CommonKeys.defaultSlotBindings`);
+    /// - only a text-committing default hands its name down, so Hindi's danda on
+    ///   the midRight `⇩` gesture does not inherit the shift affordance's name.
+    private static func inheritedAccessibilityName(
+        replacing displaced: KeyBinding?,
+        isLetter: Bool
+    ) -> String? {
+        guard !isLetter, let displaced, case .commitText = displaced.action else { return nil }
+        return displaced.accessibilityLabel
     }
 }

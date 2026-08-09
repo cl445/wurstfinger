@@ -88,10 +88,15 @@ enum CommonKeys {
         .circularCounterclockwise: cutAll,
     ]
 
+    /// Switches to the numeric mode. The label is the glyph sequence "123",
+    /// which VoiceOver reads as the *number* one hundred twenty-three, so the
+    /// tap carries a semantic name — as every neighbouring utility key does.
+    /// Its counterpart is `NumericLayouts.backToMain`, named "Letters".
     static let symbols = KeyConfig.utility(
         UtilitySlot.symbols, label: "123", action: .switchMode(ModeNames.numeric),
         swipeMode: .eightWay,
-        swipes: clipboardBindings
+        swipes: clipboardBindings,
+        accessibilityLabel: String(localized: "Numbers")
     )
 
     /// Space bar. The `zeroDigit` parameterizes the hold-for-digit output so
@@ -136,6 +141,30 @@ enum CommonKeys {
     /// Shared punctuation, symbol, compose, and action bindings for each grid slot.
     /// The factory merges these with language-specific center characters.
     /// Each KeyBinding includes both the primary action and an optional return-swipe action.
+    ///
+    /// **Which of these carry an `accessibilityLabel`, and why so few.** A label
+    /// is the opt-in for a VoiceOver custom action (`KeyConfig.accessibilityActions`)
+    /// and every named binding becomes a rotor entry on that key, so naming all
+    /// eight directions would put eight to sixteen entries on every letter key —
+    /// exactly what the opt-in exists to prevent. Until swipe outputs can be
+    /// offered as generated, spoken-glyph actions (follow-up design work), only
+    /// bindings that are unreachable without gestures *and* have no workaround
+    /// are named:
+    ///
+    /// - `,` `.` `?` — sentence punctuation. Auto-capitalization and the
+    ///   double-space shortcut can stand in for a period; nothing stands in for
+    ///   comma and question mark, and a keyboard that cannot end a question is
+    ///   not usable without gestures.
+    /// - `⇧` / `⇩` — deliberate capitalization. Auto-capitalization only produces
+    ///   sentence-initial capitals, so names and acronyms need the modifier. Both
+    ///   directions are named so that caps lock is not a one-way door: `⇧` in the
+    ///   caps-lock mode is a no-op, and `⇩` is the only way back.
+    ///
+    /// Letter bindings stay unnamed on purpose: a key's own center letter is
+    /// already reachable by activating it, and naming its other eight directions
+    /// is the flooding case above. Names state the *function*, not the glyph, so
+    /// `GridKeyboardFactory` hands them down when a layout substitutes its own
+    /// script's mark (Arabic `،`, Japanese `。`).
     static let defaultSlotBindings: [String: [GestureType: KeyBinding]] = [
         // MARK: topLeft
 
@@ -204,7 +233,8 @@ enum CommonKeys {
             ),
             .swipeLeft: KeyBinding(
                 label: "?", action: .commitText("?"), category: nil,
-                returnAction: .commitText("¿"), accessibilityLabel: nil
+                returnAction: .commitText("¿"),
+                accessibilityLabel: String(localized: "Question mark")
             ),
         ],
 
@@ -242,9 +272,16 @@ enum CommonKeys {
                 label: "|", action: .commitText("|"), category: nil,
                 returnAction: .commitText("¶"), accessibilityLabel: nil
             ),
+            // The name is the same in every mode this binding survives into:
+            // `KeyboardMode.replacingShiftUpBinding` repoints it to caps lock in
+            // the shifted mode and to a no-op in caps lock itself, which matches
+            // how a single shift key behaves everywhere else. The return swipe
+            // (`capitalizeWord`) cannot be named separately — a binding carries
+            // one label, and a custom action always dispatches `isReturn: false`.
             .swipeUp: KeyBinding(
                 label: "⇧", action: .switchMode(ModeNames.shifted), category: .modifier,
-                returnAction: .capitalizeWord(uppercased: true), accessibilityLabel: nil
+                returnAction: .capitalizeWord(uppercased: true),
+                accessibilityLabel: String(localized: "Shift")
             ),
             .swipeUpRight: KeyBinding(
                 label: "}", action: .commitText("}"), category: nil,
@@ -254,9 +291,12 @@ enum CommonKeys {
                 label: ")", action: .commitText(")"), category: nil,
                 returnAction: .commitText("("), accessibilityLabel: nil
             ),
+            // Only present in the shifted and caps-lock modes (the factory strips
+            // it from main). Named because it is the only way out of caps lock,
+            // where the ⇧ above switches to the mode it is already in.
             .swipeDown: KeyBinding(
                 label: "⇩", action: .switchMode(ModeNames.main), category: .modifier,
-                returnAction: nil, accessibilityLabel: nil
+                returnAction: nil, accessibilityLabel: String(localized: "Lowercase")
             ),
             .swipeDownRight: KeyBinding(
                 label: "]", action: .commitText("]"), category: nil,
@@ -310,11 +350,13 @@ enum CommonKeys {
             ),
             .swipeDown: KeyBinding(
                 label: ".", action: .commitText("."), category: nil,
-                returnAction: .commitText("…"), accessibilityLabel: nil
+                returnAction: .commitText("…"),
+                accessibilityLabel: String(localized: "Period")
             ),
             .swipeDownLeft: KeyBinding(
                 label: ",", action: .commitText(","), category: nil,
-                returnAction: .commitText(","), accessibilityLabel: nil
+                returnAction: .commitText(","),
+                accessibilityLabel: String(localized: "Comma")
             ),
         ],
 

@@ -76,11 +76,16 @@ enum NumericLayouts {
 
     // MARK: - Numeric Utility Keys
 
+    /// Switches back to the main (alphabetic) mode. The label is the script's
+    /// first letters ("abc", "абв", "कखग"), which VoiceOver spells out or reads
+    /// as a nonsense word, so the tap carries a semantic name that is the same in
+    /// every layout — the counterpart to `CommonKeys.symbols`, named "Numbers".
     private static func backToMain(label: String) -> KeyConfig {
         KeyConfig.utility(
             UtilitySlot.symbols, label: label, action: .switchMode(ModeNames.main),
             swipeMode: .eightWay,
-            swipes: CommonKeys.clipboardBindings
+            swipes: CommonKeys.clipboardBindings,
+            accessibilityLabel: String(localized: "Letters")
         )
     }
 

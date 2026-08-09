@@ -42,7 +42,10 @@ extension KeyConfig {
     ///
     /// A binding qualifies by carrying an `accessibilityLabel`: that label is
     /// what a VoiceOver user hears, and it doubles as the opt-in, so a letter
-    /// or punctuation swipe does not add eight unnamed entries to every key.
+    /// swipe does not add eight unnamed entries to every key. Which bindings
+    /// take the opt-in is a deliberate, narrow choice — the utility keys plus
+    /// `, . ?` and the shift affordance; `CommonKeys.defaultSlotBindings`
+    /// documents the reasoning and `AccessibilityLabelTests` pins the set.
     /// Names are deduplicated — cut-all is bound to both circle directions
     /// with one label, and two identical rotor entries read as a bug.
     var accessibilityActions: [KeyAccessibilityAction] {
