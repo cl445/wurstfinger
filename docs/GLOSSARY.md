@@ -231,6 +231,5 @@ will be brought in line in its own dedicated changes. This list is not exhaustiv
 | `KeyboardInfo` | `…Info` says nothing about the contents; would be `…Metadata` |
 | `LanguageConfig` / `LanguageDescriptor` / `KeyboardInfo` | three near-identical language metadata types; the latter two are field-identical. A merge, not a rename |
 | `hideLetters`, `hideStandardSymbols`, `hideExtraSymbols`, `longPressNumbersEnabled` | booleans that do not read as assertions |
-| `HapticFeedbackManager` | `…Manager` |
 | `slotId` in `GridKeyboardFactory` and `NumericLayouts` | alias for `keyId` |
 | ~70 comment lines saying "layer" | pre-date this glossary |

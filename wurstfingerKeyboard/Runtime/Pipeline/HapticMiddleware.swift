@@ -13,7 +13,7 @@ import Foundation
 /// silent because their haptic already fired on touch-down.
 ///
 /// The concrete feedback implementation is injected as a closure so this
-/// file stays free of UIKit/`HapticFeedbackManager` dependencies. Wiring
+/// file stays free of UIKit/`HapticFeedbackPlayer` dependencies. Wiring
 /// happens in `KeyboardViewModel` when the pipeline is assembled.
 struct HapticMiddleware: ActionMiddleware {
     /// Called with the action before it is forwarded.
