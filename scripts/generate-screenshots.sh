@@ -31,7 +31,15 @@ else
     echo "📱 Detected simulator: $DEVICE_NAME"
 fi
 
-DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
+# Address the simulator by UDID from here on: with several iOS runtimes
+# installed the same device name exists once per runtime, and booting, the
+# status-bar override, and the test run must all hit the same device.
+TARGET_UDID=$(sim_udid_for_name "$DEVICE_NAME")
+if [ -n "$TARGET_UDID" ]; then
+    DESTINATION="platform=iOS Simulator,id=$TARGET_UDID"
+else
+    DESTINATION="platform=iOS Simulator,name=$DEVICE_NAME"
+fi
 TEST_TARGET="WurstfingerUITests/ScreenshotTests/testGenerateScreenshots"
 DOCS_DIR="$PROJECT_ROOT/docs/images"
 DERIVED_DATA="/tmp/WurstfingerScreenshots"
@@ -44,9 +52,6 @@ echo "  Scheme: $SCHEME"
 echo "  Destination: $DESTINATION"
 echo "  Output: $DOCS_DIR"
 echo ""
-
-# Find target simulator UDID by name
-TARGET_UDID=$(sim_udid_for_name "$DEVICE_NAME")
 
 # Marker file so we can count only screenshots created by this run
 # (pre-existing .webp files in $DOCS_DIR must not count as success).
@@ -63,6 +68,14 @@ cleanup() {
     rm -f "$RUN_MARKER"
 }
 trap cleanup EXIT
+
+# Boot the resolved device ourselves — the status-bar override below requires
+# a booted simulator, and relying on someone else having booted "the right one"
+# is exactly what broke under multi-runtime CI images.
+if [ -n "$TARGET_UDID" ]; then
+    echo -e "${BLUE}🚀 Booting simulator $TARGET_UDID ($DEVICE_NAME)...${NC}"
+    sim_boot_and_wait "$TARGET_UDID"
+fi
 
 # Override status bar to get consistent screenshots (Apple's standard 9:41)
 echo -e "${BLUE}⏰ Setting consistent status bar...${NC}"
