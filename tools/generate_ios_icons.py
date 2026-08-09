@@ -38,7 +38,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Final
+from typing import Final, NamedTuple
 
 # Palette, carried over from the pre-Liquid-Glass icon: dark line art on a
 # light background.
@@ -76,17 +76,6 @@ CANVAS: Final[float] = 1024.0
 # comfortably inside the container rather than bleeding to the edges.
 CONTENT_HEIGHT: Final[float] = 780.0
 
-# Bounding box of the drawing in Design/AppIcon.svg, in SVG user units.
-# Obtained via `inkscape --query-all Design/AppIcon.svg` (px / 3.779528).
-BBOX_X: Final[float] = 22.2245
-BBOX_Y: Final[float] = 12.6862
-BBOX_W: Final[float] = 101.6642
-BBOX_H: Final[float] = 128.4718
-
-# Transform on the source drawing's <g> wrapper, preserved verbatim so the
-# path data below it keeps its original coordinates.
-INNER_GROUP_TRANSFORM: Final[str] = "translate(-48.671656,-24.610504)"
-
 # Path ids from Design/AppIcon.svg grouped into icon layers, back to front.
 # Splitting hand and fingers gives the icon parallax depth on the Home Screen.
 LAYERS: Final[dict[str, list[str]]] = {
@@ -97,6 +86,15 @@ LAYERS: Final[dict[str, list[str]]] = {
 
 class ConversionError(RuntimeError):
     """Raised when SVG processing fails."""
+
+
+class BoundingBox(NamedTuple):
+    """A rectangle in SVG user units."""
+
+    x: float
+    y: float
+    width: float
+    height: float
 
 
 def require_inkscape() -> str:
@@ -121,16 +119,101 @@ def extract_paths(svg_content: str) -> dict[str, str]:
     return paths
 
 
-def build_layer_svg(elements: list[str]) -> str:
+def extract_group_transform(svg_content: str) -> str:
+    """
+    Return the transform of the <g> wrapper around the source drawing.
+
+    The generated layers reproduce it verbatim, so the path data below it
+    keeps its original coordinates.
+    """
+    transforms = re.findall(r'<g\b[^>]*?\btransform="([^"]+)"', svg_content, re.DOTALL)
+    if len(transforms) != 1:
+        raise ConversionError(
+            f"Expected exactly one transformed <g> wrapper in the source drawing, "
+            f"found {len(transforms)}."
+        )
+    return transforms[0]
+
+
+def query_object_boxes(inkscape: str, svg_path: Path) -> dict[str, BoundingBox]:
+    """Measure every object in the drawing via Inkscape, in px."""
+    try:
+        result = subprocess.run(
+            [inkscape, "--query-all", str(svg_path)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as error:
+        raise ConversionError(
+            f"Inkscape failed to measure {svg_path.name}: {error.stderr}"
+        ) from error
+
+    boxes: dict[str, BoundingBox] = {}
+    for line in result.stdout.splitlines():
+        object_id, _, values = line.partition(",")
+        parts = values.split(",")
+        if len(parts) == 4:
+            boxes[object_id] = BoundingBox(*(float(part) for part in parts))
+    return boxes
+
+
+def px_per_user_unit(svg_content: str) -> float:
+    """
+    Return how many px one SVG user unit of the source drawing covers.
+
+    Inkscape's --query-all measures in px, while the path data lives in user
+    units; the document's width attribute against its viewBox width gives the
+    conversion. The root <svg> line of --query-all cannot — it reports the
+    bounding box of the drawing, not the page size.
+    """
+    width = re.search(r'<svg\b[^>]*?\bwidth="([\d.]+)([a-z%]*)"', svg_content, re.DOTALL)
+    viewbox = re.search(
+        r'\bviewBox="\s*[-\d.eE]+[\s,]+[-\d.eE]+[\s,]+([-\d.eE]+)[\s,]+[-\d.eE]+\s*"',
+        svg_content,
+    )
+    unit_to_px = {"": 1.0, "px": 1.0, "in": 96.0, "pt": 96.0 / 72.0, "pc": 16.0,
+                  "mm": 96.0 / 25.4, "cm": 96.0 / 2.54}
+    if width is None or viewbox is None or width.group(2) not in unit_to_px:
+        raise ConversionError(
+            "Cannot derive the px-per-user-unit ratio: the source drawing needs "
+            "a width attribute in absolute units and a numeric viewBox."
+        )
+    return float(width.group(1)) * unit_to_px[width.group(2)] / float(viewbox.group(1))
+
+
+def drawing_bounding_box(svg_content: str, boxes: dict[str, BoundingBox]) -> BoundingBox:
+    """Return the union box of the layered paths, in SVG user units."""
+    px_per_unit = px_per_user_unit(svg_content)
+
+    path_ids = [path_id for ids in LAYERS.values() for path_id in ids]
+    if missing := [path_id for path_id in path_ids if path_id not in boxes]:
+        raise ConversionError(
+            f"Inkscape did not report a bounding box for: {', '.join(missing)}."
+        )
+
+    left = min(boxes[i].x for i in path_ids)
+    top = min(boxes[i].y for i in path_ids)
+    right = max(boxes[i].x + boxes[i].width for i in path_ids)
+    bottom = max(boxes[i].y + boxes[i].height for i in path_ids)
+    return BoundingBox(
+        left / px_per_unit,
+        top / px_per_unit,
+        (right - left) / px_per_unit,
+        (bottom - top) / px_per_unit,
+    )
+
+
+def build_layer_svg(elements: list[str], bbox: BoundingBox, group_transform: str) -> str:
     """
     Place the given path elements on the 1024x1024 icon canvas.
 
     The drawing is scaled to CONTENT_HEIGHT and centred; the background stays
     transparent because the container comes from icon.json, not the artwork.
     """
-    scale = CONTENT_HEIGHT / BBOX_H
-    offset_x = (CANVAS - BBOX_W * scale) / 2 - BBOX_X * scale
-    offset_y = (CANVAS - CONTENT_HEIGHT) / 2 - BBOX_Y * scale
+    scale = CONTENT_HEIGHT / bbox.height
+    offset_x = (CANVAS - bbox.width * scale) / 2 - bbox.x * scale
+    offset_y = (CANVAS - CONTENT_HEIGHT) / 2 - bbox.y * scale
     body = "\n      ".join(
         re.sub(
             r"stroke:#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b",
@@ -143,7 +226,7 @@ def build_layer_svg(elements: list[str]) -> str:
         '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"'
         ' viewBox="0 0 1024 1024">\n'
         f'  <g transform="translate({offset_x:.4f},{offset_y:.4f}) scale({scale:.6f})">\n'
-        f'    <g transform="{INNER_GROUP_TRANSFORM}">\n'
+        f'    <g transform="{group_transform}">\n'
         f"      {body}\n"
         "    </g>\n"
         "  </g>\n"
@@ -261,7 +344,8 @@ def generate_icon(svg_path: Path, icon_dir: Path, reset: bool = False) -> str:
     rewriting the file would throw that work away on every run.
     """
     inkscape = require_inkscape()
-    paths = extract_paths(svg_path.read_text(encoding="utf-8"))
+    svg_content = svg_path.read_text(encoding="utf-8")
+    paths = extract_paths(svg_content)
 
     missing = [i for ids in LAYERS.values() for i in ids if i not in paths]
     if missing:
@@ -269,6 +353,9 @@ def generate_icon(svg_path: Path, icon_dir: Path, reset: bool = False) -> str:
             f"Design/AppIcon.svg is missing expected path ids: {', '.join(missing)}. "
             "Update LAYERS in this script to match the artwork."
         )
+
+    group_transform = extract_group_transform(svg_content)
+    bbox = drawing_bounding_box(svg_content, query_object_boxes(inkscape, svg_path))
 
     assets_dir = icon_dir / "Assets"
     if assets_dir.exists():
@@ -278,7 +365,8 @@ def generate_icon(svg_path: Path, icon_dir: Path, reset: bool = False) -> str:
     for name, path_ids in LAYERS.items():
         layer_path = assets_dir / f"{name}.svg"
         layer_path.write_text(
-            build_layer_svg([paths[i] for i in path_ids]), encoding="utf-8"
+            build_layer_svg([paths[i] for i in path_ids], bbox, group_transform),
+            encoding="utf-8",
         )
         flatten_strokes(inkscape, layer_path)
 
