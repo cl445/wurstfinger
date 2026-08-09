@@ -23,7 +23,7 @@
 
 ### Changed
 
-- The `^` compose key's return swipe now types the caron dead key, so č ď ě ň ř š ť ž are reachable directly instead of only through the accent cycle (#285)
+- The `^` compose key's return swipe now types the caron dead key, so č ď ě ň ř š ť ž are reachable directly instead of only through the accent cycle. The stand-alone modifier circumflex `ˆ` (U+02C6) that this return swipe used to type is deliberately gone with it; the ASCII `^` on the same key is unchanged (#285)
 - Leaner keyboard rendering: fewer allocations per keystroke and cached layouts released under memory pressure, leaving more headroom in the tight memory budget iOS gives keyboard extensions (#278)
 
 ## v1.4.0 — 2026-07-23

@@ -294,16 +294,106 @@ struct AdvancedTextCapitalizeWordTests {
 
 // MARK: - Clipboard
 
+/// One-time probe for the process-global pasteboard, so a wedged daemon costs
+/// this suite a bounded wait instead of the whole run.
+///
+/// `UIPasteboard.general` talks to a system service, and on a cold simulator the
+/// first call can block for a very long time before returning perfectly normal
+/// data: one review run measured `copyWritesSelectionToPasteboardWithFullAccess`
+/// at 2268 s (~38 min) — and then green — where a healthy run takes 1.4 s. The
+/// call is not cancellable, so the probe hands it to a background thread and
+/// waits with a deadline; the answer decides whether the suite runs at all.
+///
+/// The environment-dependent tests in this target, worth knowing before chasing
+/// a slow or oddly-failing run:
+///
+/// - `LongPressSchedulerTests` — the only wall-clock unit tests: 20–50 ms timers
+///   awaited with 200–300 ms sleeps. Tightest budget in the suite; its negative
+///   tests can false-pass under load, not flake.
+/// - This suite — process-global pasteboard, serialized and capture/restore-ed;
+///   cross-suite safety rests on nothing else touching `UIPasteboard.general`.
+/// - `KeyboardHealthLogTests` — permission-dependent cases; false-fail as root.
+/// - `SettingsReloadObserverTests` — drains the runloop against wall-clock time.
+private enum PasteboardWarmUp {
+    /// Far above a healthy cold start (single-digit seconds), far below the
+    /// pathology (tens of minutes). Nothing legitimate lives in between.
+    static let deadline: TimeInterval = 30
+
+    /// Whether a full write/read/restore round-trip came back inside
+    /// `deadline`. Resolved once per process — later reads are free, so every
+    /// test can ask.
+    ///
+    /// The probe **writes**, and that is the whole point. A read of an empty
+    /// pasteboard can answer instantly on a host whose write path is wedged:
+    /// measured on one such machine, a read-only probe passed while
+    /// `copyWritesSelectionToPasteboardWithFullAccess` — the first test to
+    /// *assign* `UIPasteboard.general.string` — then took 59 minutes and
+    /// passed. A read-only probe therefore certifies an environment it never
+    /// exercised. Since `xcodebuild` runs the target in parallel clones and
+    /// each clone is its own process resolving this on its own, one clone
+    /// gating correctly does nothing for the next one; the probe has to test
+    /// the operation that actually stalls.
+    ///
+    /// The restore is inside the probe because nothing else can do it: the
+    /// suite's own capture/restore only runs once this has resolved.
+    static let didAnswer: Bool = {
+        let answered = DispatchSemaphore(value: 0)
+        // Detached on purpose: a stuck call owns its thread until the service
+        // replies, and that must not be the thread the suite waits on. The
+        // thread stays stuck for the rest of the run, which is survivable —
+        // it holds no lock the suite needs, and a skipped suite touches the
+        // pasteboard no further.
+        DispatchQueue.global().async {
+            let original = UIPasteboard.general.string
+            UIPasteboard.general.string = "warm-up-\(UUID().uuidString)"
+            _ = UIPasteboard.general.string
+            UIPasteboard.general.string = original
+            answered.signal()
+        }
+        return answered.wait(timeout: .now() + deadline) == .success
+    }()
+}
+
+/// Reports the wedged daemon as a failure of its own. Skipping the clipboard
+/// suite keeps the run bounded, and this keeps the run *loud*: without it, a
+/// stuck pasteboard would read as a green build with twenty quietly skipped
+/// tests.
+struct PasteboardEnvironmentTests {
+    @Test func pasteboardAnswersWithinTheWarmUpDeadline() {
+        #expect(
+            PasteboardWarmUp.didAnswer,
+            """
+            UIPasteboard.general did not answer within \(Int(PasteboardWarmUp.deadline)) s — the known \
+            cold-simulator pasteboard stall. AdvancedTextMiddlewareClipboardTests was skipped for this \
+            run, so clipboard behaviour is unverified; re-run against a warm simulator (or reboot it).
+            """
+        )
+    }
+}
+
 // Serialized: these tests share the process-wide `UIPasteboard.general`
 // singleton, so they must not run concurrently with one another. A fresh
 // instance is created per test, so capturing the pasteboard in `init` and
 // restoring it in `deinit` reverts any clipboard writes and prevents leaking
 // process-global state into later tests.
-@Suite(.serialized)
+//
+// Gated on the warm-up rather than warmed up inside `init`, because a condition
+// trait is the only hook that can still *decline* to run: once the daemon has
+// gone quiet, every test body would otherwise pay the same unbounded block.
+@Suite(
+    .serialized,
+    .enabled(
+        if: PasteboardWarmUp.didAnswer,
+        "The pasteboard did not answer within the warm-up deadline — see PasteboardEnvironmentTests"
+    )
+)
 final class AdvancedTextMiddlewareClipboardTests {
     private let originalPasteboard: String?
 
     init() {
+        // Free once the suite trait resolved it; keeps the capture below from
+        // becoming the blocking call should trait evaluation ever move.
+        _ = PasteboardWarmUp.didAnswer
         originalPasteboard = UIPasteboard.general.string
     }
 
