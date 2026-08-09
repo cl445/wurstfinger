@@ -196,9 +196,12 @@ These are not domain-specific, but they are where new code drifts most.
 - **Booleans read as assertions:** `is…`, `has…`, `should…` (`isSliding`, `shouldCapitalize`).
   A settings flag is `isSomethingEnabled`, not `enableSomething` or `hideSomething` — the
   latter read as commands. Existing `hideLetters` / `longPressNumbersEnabled` are legacy.
-- **Tests carry no `test` prefix.** All 161 `@Test` functions are named as the assertion
+- **Tests carry no `test` prefix.** All `@Test` functions are named as the assertion
   they make: `symbolsKeySwitchesToNumeric()`, `allLanguagesHaveUniqueIds()`. Write the
   expected behavior as a sentence; the `@Test` attribute already says it is a test.
+  Exception: the XCTest-based UI tests (`wurstfingerUITests`) **must** keep the `test`
+  prefix — XCTest discovers test methods by that prefix, so a UI test without it
+  silently never runs.
 - **No abbreviations** beyond `id`, `min`, `max`, and the `…Idx` loop-index locals already
   in use.
 - **Name parameters by role, not by type:** `keyId: String`, not `string: String`.
