@@ -125,6 +125,51 @@ struct KanaLayoutTests {
 
         #expect(inserts(target) == ["・", ":"])
     }
+
+    /// The voiced iteration mark is the reference's return output on ゝ,
+    /// like the small kana on their full-size counterparts.
+    @Test func hiraganaIterationMarkVoicesOnTheReturnSwipe() {
+        let (vm, target) = makeViewModel(languageId: "ja_JP")
+
+        vm.handleGesture(.swipeUpLeft, keyId: GridSlot.bottomLeft, isReturn: false)
+        vm.handleGesture(.swipeUpLeft, keyId: GridSlot.bottomLeft, isReturn: true)
+
+        #expect(inserts(target) == ["ゝ", "ゞ"])
+    }
+
+    @Test func katakanaIterationMarkIsDerivedFromHiragana() {
+        let (vm, target) = makeViewModel(languageId: "ja_JP_katakana")
+
+        vm.handleGesture(.swipeUpLeft, keyId: GridSlot.bottomLeft, isReturn: false)
+        vm.handleGesture(.swipeUpLeft, keyId: GridSlot.bottomLeft, isReturn: true)
+
+        #expect(inserts(target) == ["ヽ", "ヾ"])
+    }
+
+    /// The ゛ key voices the iteration mark like a consonant, so both kana
+    /// combine tables must carry the entry the global table already has.
+    @Test(arguments: [("ja_JP", "ゝ", "ゞ"), ("ja_JP_katakana", "ヽ", "ヾ")])
+    func dakutenKeyVoicesTheIterationMark(id: String, plain: String, voiced: String) {
+        let (vm, target) = makeViewModel(languageId: id)
+
+        vm.dispatchAction(.commitText(plain))
+        vm.dispatchAction(.commitText("゛"))
+
+        #expect(target.documentContextBeforeInput == voiced)
+    }
+
+    /// The ellipsis that 。 displaced from the full stop's return swipe stays
+    /// reachable on the numeric layer, which inherits the Latin punctuation
+    /// bindings unchanged.
+    @Test(arguments: ["ja_JP", "ja_JP_katakana"])
+    func ellipsisStaysOnTheNumericLayerReturnSwipe(id: String) {
+        let (vm, target) = makeViewModel(languageId: id)
+
+        vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
+        vm.handleGesture(.swipeDown, keyId: GridSlot.bottomCenter, isReturn: true)
+
+        #expect(inserts(target) == ["…"])
+    }
 }
 
 // MARK: - Arabic script
@@ -160,6 +205,19 @@ struct ArabicScriptLayoutTests {
         }
 
         #expect(inserts(target) == ["?", ",", ";", "*"], "[\(id)] displaced Latin mark is unreachable")
+    }
+
+    /// The dagger that ٭ displaced from the asterisk's return swipe (the
+    /// reference keeps ٭ → † on the letter layer) stays reachable on the
+    /// numeric layer, which inherits the Latin punctuation bindings unchanged.
+    @Test(arguments: ArabicScriptLayoutTests.ids)
+    func daggerStaysOnTheNumericLayerReturnSwipe(id: String) {
+        let (vm, target) = makeViewModel(languageId: id)
+
+        vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
+        vm.handleGesture(.swipeRight, keyId: GridSlot.bottomLeft, isReturn: true)
+
+        #expect(inserts(target) == ["†"], "[\(id)] † lost with the letter-layer asterisk")
     }
 
     /// The three layouts share one punctuation table, so they cannot drift.

@@ -70,7 +70,7 @@ struct KatakanaDerivationTests {
             GridSlot.center: [.swipeUp: "ァ"],
             GridSlot.midLeft: [.swipeDown: "ヮ"],
             GridSlot.midRight: [.swipeUpLeft: "ュ"],
-            GridSlot.bottomLeft: [.swipeRight: "ゥ"],
+            GridSlot.bottomLeft: [.swipeUpLeft: "ヾ", .swipeRight: "ゥ"],
             GridSlot.bottomCenter: [.swipeDown: ".", .swipeDownLeft: ",", .swipeDownRight: ":"],
             GridSlot.bottomRight: [.swipeUp: "ェ", .swipeLeft: "ョ", .swipeDownLeft: "ォ"],
         ]
