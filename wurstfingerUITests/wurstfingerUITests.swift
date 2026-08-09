@@ -77,9 +77,11 @@ final class wurstfingerUITests: XCTestCase {
         let newValue = firstToggle.value as? String
         XCTAssertNotEqual(initialValue, newValue, "Toggle value should change after tap")
 
-        // Toggling back must return the original value. Either state is safe:
-        // the app under test writes to the isolated defaults suite, not the
-        // app group the user's own keyboard reads.
+        // Toggling back must return the original value. Both taps write real
+        // persisted checklist state, but the isolation launch argument routes
+        // `OnboardingProgress.store` into the throwaway suite along with
+        // `SharedDefaults.store`, so a failure between them leaves a ticked step
+        // there rather than in the tester's own app defaults.
         firstToggle.tap()
         let restoredValue = firstToggle.value as? String
         XCTAssertEqual(initialValue, restoredValue, "Toggle must return to its original state")
@@ -152,47 +154,107 @@ final class wurstfingerUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Drag Feedback"].exists, "Drag Feedback control missing")
     }
 
+    /// The "Utility Keys on Left" row. It has no stable accessibility
+    /// identifier (adding one would be a production change, out of scope here),
+    /// so match on the pinned-English label. The SwiftUI Toggle label combines
+    /// title + subtitle, hence CONTAINS rather than an exact subscript match.
+    @MainActor
+    private func utilityKeysToggle() -> XCUIElement {
+        app.switches
+            .matching(NSPredicate(format: "label CONTAINS %@", "Utility Keys on Left"))
+            .firstMatch
+    }
+
+    /// SwiftUI exposes the whole row as the switch element; tapping its center
+    /// hits the label, not the UISwitch. Tap the nested switch when present,
+    /// otherwise the trailing edge where the UISwitch sits.
+    @MainActor
+    private func flip(_ toggle: XCUIElement) {
+        let inner = toggle.switches.firstMatch
+        if inner.exists {
+            inner.tap()
+        } else {
+            toggle
+                .coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5))
+                .tap()
+        }
+    }
+
     @MainActor
     func testSettingsUtilityKeysToggle() {
         app.tabBars.buttons["Settings"].tap()
 
-        // Find the "Utility Keys on Left" toggle. The row has no stable
-        // accessibility identifier (adding one would be a production change,
-        // out of scope here), so match on the pinned-English label. The
-        // SwiftUI Toggle label combines title + subtitle, hence CONTAINS
-        // rather than an exact subscript match.
-        let utilityToggle = app.switches
-            .matching(NSPredicate(format: "label CONTAINS %@", "Utility Keys on Left"))
-            .firstMatch
+        let utilityToggle = utilityKeysToggle()
         XCTAssertTrue(
             utilityToggle.waitForExistence(timeout: 2),
             "Utility Keys on Left toggle must exist in Settings"
         )
 
-        // SwiftUI exposes the whole row as the switch element; tapping its
-        // center hits the label, not the UISwitch. Tap the nested switch when
-        // present, otherwise the trailing edge where the UISwitch sits.
-        func flip() {
-            let inner = utilityToggle.switches.firstMatch
-            if inner.exists {
-                inner.tap()
-            } else {
-                utilityToggle
-                    .coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5))
-                    .tap()
-            }
-        }
-
         let initialValue = utilityToggle.value as? String
-        flip()
+        flip(utilityToggle)
         let newValue = utilityToggle.value as? String
         XCTAssertNotEqual(initialValue, newValue, "Toggle should change state")
 
         // Toggling back must return the original value; both writes land in the
         // isolated defaults suite, not the real app-group store.
-        flip()
+        flip(utilityToggle)
         let restoredValue = utilityToggle.value as? String
         XCTAssertEqual(initialValue, restoredValue, "Toggle must return to its original state")
+    }
+
+    // MARK: - Defaults Isolation
+
+    /// Runtime proof that the isolation launch argument still reaches the app.
+    ///
+    /// `UITestApp.isolatedDefaultsArgument` is a copy of
+    /// `SharedDefaults.isolatedStoreArgument` across a boundary no compiler
+    /// checks — this target cannot import the app module. `SharedDefaultsIsolationTests`
+    /// pins the app-side spelling, but a rename on *this* side keeps compiling
+    /// and every UI test would quietly go back to writing the user's real
+    /// app-group settings. Only the running app can testify, so ask it: flip a
+    /// setting, relaunch, and see whether the value survived.
+    ///
+    /// It survives exactly when isolation is broken — the real store is never
+    /// wiped — or when the app stopped wiping the throwaway suite on launch
+    /// (`SharedDefaults.store`), which would let UI tests inherit each other's
+    /// leftovers. Both are worth failing over.
+    @MainActor
+    func testLaunchArgumentIsolatesDefaultsFromTheRealStore() {
+        app.tabBars.buttons["Settings"].tap()
+        let toggle = utilityKeysToggle()
+        XCTAssertTrue(toggle.waitForExistence(timeout: 2), "Utility Keys on Left toggle must exist in Settings")
+
+        let valueAtLaunch = toggle.value as? String
+        flip(toggle)
+        XCTAssertNotEqual(valueAtLaunch, toggle.value as? String, "Toggle should change state")
+
+        app.terminate()
+        app.launch()
+        app.tabBars.buttons["Settings"].tap()
+        let toggleAfterRelaunch = utilityKeysToggle()
+        XCTAssertTrue(
+            toggleAfterRelaunch.waitForExistence(timeout: 5),
+            "Settings must be reachable again after the relaunch"
+        )
+        let valueAfterRelaunch = toggleAfterRelaunch.value as? String
+
+        // Undo first, assert second: `continueAfterFailure = false` stops the
+        // test at the assertion, and in the failing case the flip landed in the
+        // user's real app-group store, which nothing else will clean up.
+        if valueAfterRelaunch != valueAtLaunch {
+            flip(toggleAfterRelaunch)
+        }
+
+        XCTAssertEqual(
+            valueAfterRelaunch, valueAtLaunch,
+            """
+            A flipped setting survived a relaunch. Either \
+            UITestApp.isolatedDefaultsArgument no longer matches \
+            SharedDefaults.isolatedStoreArgument — every UI test is then writing the \
+            real app-group store — or SharedDefaults.store stopped wiping the \
+            isolated suite on launch.
+            """
+        )
     }
 
     // MARK: - Test Area Tests

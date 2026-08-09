@@ -13,8 +13,16 @@
 		<dict>
 			<key>NSPrivacyAccessedAPIType</key>
 			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<!-- 1C8F.1 is the whole story in practice: every setting the keyboard
+			     reads lives in the app group suite it shares with the host app
+			     (SharedDefaults.suiteName), which is verbatim the app-group case.
+			     CA92.1 covers the one other store this target can end up on: if
+			     UserDefaults(suiteName:) ever returned nil, SharedDefaults falls
+			     back to .standard — a debug assertion in development, but in a
+			     release build a silent fallback to this process' own defaults. -->
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
+				<string>1C8F.1</string>
 				<string>CA92.1</string>
 			</array>
 		</dict>

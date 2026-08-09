@@ -49,6 +49,22 @@ struct OnboardingProgressTests {
         #expect(!local.bool(forKey: AppSettingsKey.onboardingFullAccessEnabled.rawValue))
     }
 
+    /// An isolated UI-test launch really does hand both arguments the same
+    /// object — `OnboardingProgress.store` resolves to `SharedDefaults.store`
+    /// there. Aliased, the copy would be skipped because the value is already
+    /// under that key and the removal would take it with it, so passing one
+    /// store as both must leave it exactly as it was.
+    @Test func migrationLeavesASingleAliasedStoreUntouched() {
+        let aliased = InMemoryUserDefaults()
+        aliased.set(true, forKey: AppSettingsKey.onboardingKeyboardInstalled.rawValue)
+        aliased.set(true, forKey: AppSettingsKey.onboardingFullAccessEnabled.rawValue)
+
+        OnboardingProgress.migrateFromSharedStoreIfNeeded(from: aliased, to: aliased)
+
+        #expect(aliased.bool(forKey: AppSettingsKey.onboardingKeyboardInstalled.rawValue))
+        #expect(aliased.bool(forKey: AppSettingsKey.onboardingFullAccessEnabled.rawValue))
+    }
+
     /// A key owned by both enums would be written to the app's own defaults by
     /// the host and read from the app group by the keyboard, which is the split
     /// this store move removes.
