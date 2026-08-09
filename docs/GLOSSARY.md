@@ -12,7 +12,7 @@ When code and this file disagree, the code wins for *reading*; this file wins fo
 **How to use it:** before naming a type, parameter, or test — and before writing a doc
 comment — check whether the concept already has a canonical term here. Use that term and
 nothing else. Known mismatches are listed under
-[Legacy exceptions](#legacy-exceptions); that list is not exhaustive, so a name in the
+[Legacy exceptions](#7-legacy-exceptions); that list is not exhaustive, so a name in the
 codebase that contradicts this file is a legacy name, not a counter-example.
 
 Where this file does not decide something, the
@@ -71,7 +71,7 @@ about the *thing bound to it* ("the `topLeft` key commits `q`").
 `KeyStyle` (`.primary`, `.utility`, `.spacebar`, …) and `KeyboardStyle` (`.classic`,
 `.liquidGlass`) are appearance. `NumpadStyle` (digit order) and `CursorMovementStyle`
 (drag behavior) are **not** visual and are misnamed — see
-[Legacy exceptions](#legacy-exceptions).
+[Legacy exceptions](#7-legacy-exceptions).
 
 For new code: `…Style` = how it looks, `…Type` = a closed set of behavioral variants (as in
 `GestureType`, `SlideType`). Never `…Mode` for either — that word belongs to keyboard
@@ -97,7 +97,7 @@ to be able to tell from the name alone which of several classifications applies.
 
 ## 2. Core vocabulary
 
-### Declarative layer (`Definition/`)
+### Declarative model (`Definition/`)
 
 | Term | Type | Means |
 |---|---|---|
@@ -197,7 +197,7 @@ These are not domain-specific, but they are where new code drifts most.
   A settings flag is `isSomethingEnabled`, not `enableSomething` or `hideSomething` — the
   latter read as commands. Existing `hideLetters` / `longPressNumbersEnabled` are legacy.
 - **Tests carry no `test` prefix.** All 161 `@Test` functions are named as the assertion
-  they make: `numericLayerStaysOnSentenceEnder()`, `allLanguagesHaveUniqueIds()`. Write the
+  they make: `symbolsKeySwitchesToNumeric()`, `allLanguagesHaveUniqueIds()`. Write the
   expected behavior as a sentence; the `@Test` attribute already says it is a test.
 - **No abbreviations** beyond `id`, `min`, `max`, and the `…Idx` loop-index locals already
   in use.
