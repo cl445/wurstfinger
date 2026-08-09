@@ -184,6 +184,11 @@ enum GridKeyboardFactory {
             let shiftedBase = baseMode.generateShifted(locale: locale)
 
             // 4. Shifted — shift-up points directly to capsLock (label stays ⇧).
+            // The VoiceOver name stays "Shift" too, although this step enters
+            // caps lock: it is one affordance progressing through its states,
+            // exactly like the visual ⇧ it mirrors, and announcing the middle
+            // step as "Caps Lock" would promise a mode the first activation
+            // does not enter. Deliberate, not an oversight.
             modes[ModeNames.shifted] = shiftedBase
                 .with(autoTransitions: [.letter: ModeNames.main])
                 .replacingShiftUpBinding(

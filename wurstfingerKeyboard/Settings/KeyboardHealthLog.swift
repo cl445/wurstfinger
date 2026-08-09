@@ -154,6 +154,14 @@ struct KeyboardHealthLog {
     /// process is reused. That sample would describe the resumed process while
     /// carrying the label of the earlier one, so a block that starts more than
     /// its own delay late writes nothing.
+    ///
+    /// One clock caveat bounds that guard rather than breaking it: the
+    /// comparison reads `DispatchTime` — mach time, which pauses while the
+    /// *device* sleeps — so a sample delayed across a sleep window can look
+    /// punctual and slip through. The caller's cancellation covers the case
+    /// that matters (a rebuilt keyboard voids the pending sample); what the
+    /// clock caveat can cost is a single stale-but-plausible diagnostics
+    /// entry, which the log's consumers tolerate by design.
     @discardableResult
     func recordDeferred(_ label: String, after delay: TimeInterval) -> DispatchWorkItem {
         let deadline = DispatchTime.now() + delay
