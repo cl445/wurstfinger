@@ -43,7 +43,10 @@ struct SlideGestureConfiguration: Equatable {
 
     /// Upward travel that classifies a vertical swipe, or nil for keys
     /// without an up-swipe binding — those never let the vertical axis block
-    /// the latch and never report `.swipeUp`.
+    /// the latch and never report `.swipeUp`. An up-and-return flick on such
+    /// a key ends near its origin and therefore classifies as a tap — on
+    /// delete that deletes one character. Deliberate: the alternative, a
+    /// gesture that produces nothing at all, reads as a dropped input.
     let swipeUpThreshold: CGFloat?
 
     static let moveCursor = SlideGestureConfiguration(
