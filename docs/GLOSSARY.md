@@ -3,12 +3,21 @@
 Canonical vocabulary for Wurstfinger. Written primarily for LLM agents working in this
 repo, but binding for humans too.
 
+**Scope: new and changed code only.** The existing codebase is grandfathered. This file is
+not a TODO list, and nothing here justifies a rename in code you were not already
+modifying — the existing names will be brought in line in their own dedicated changes.
+When code and this file disagree, the code wins for *reading*; this file wins for
+*writing*.
+
 **How to use it:** before naming a type, parameter, or test — and before writing a doc
 comment — check whether the concept already has a canonical term here. Use that term and
-nothing else. When code and this file disagree, the code wins for *reading*; this file
-wins for *writing*. Existing mismatches are listed under
-[Legacy exceptions](#legacy-exceptions) — do not silently rename them as a side effect of
-unrelated work.
+nothing else. Known mismatches are listed under
+[Legacy exceptions](#legacy-exceptions); that list is not exhaustive, so a name in the
+codebase that contradicts this file is a legacy name, not a counter-example.
+
+Where this file does not decide something, the
+[Swift API Design Guidelines](https://www.swift.org/documentation/api-design-guidelines/)
+do: clarity at the point of use, no abbreviations, names by role rather than by type.
 
 ---
 
@@ -64,8 +73,9 @@ about the *thing bound to it* ("the `topLeft` key commits `q`").
 (drag behavior) are **not** visual and are misnamed — see
 [Legacy exceptions](#legacy-exceptions).
 
-For new code: `…Style` = how it looks. `…Kind` = a behavioral variant (as in
-`InputMethodKind`). Never `…Mode` for either — that word is taken.
+For new code: `…Style` = how it looks, `…Type` = a closed set of behavioral variants (as in
+`GestureType`, `SlideType`). Never `…Mode` for either — that word belongs to keyboard
+state.
 
 ### `KeyCategory` vs `LabelCategory`
 
@@ -78,6 +88,10 @@ the wrong one is a silent behavior bug.
 | `LabelCategory` | render-time visibility (the "hide labels" settings) | `letter`, `standardSymbol`, `extraSymbol`, `number`, `functional` |
 
 Note the vocabulary clash: the same concept is `digit` in one and `number` in the other.
+
+That two enums named `…Category` classify the same keys is the underlying smell. A new
+classification enum must name its **axis**, not just the word "category" — the reader has
+to be able to tell from the name alone which of several classifications applies.
 
 ---
 
@@ -145,18 +159,23 @@ Note the vocabulary clash: the same concept is `digit` in one and `number` in th
 | Suffix | Reserved for | Example |
 |---|---|---|
 | `…Definition` | complete declarative data | `KeyboardDefinition` |
-| `…Descriptor` | lazy handle: metadata + builder | `LanguageDescriptor` |
-| `…Info` | flat metadata DTO, no behavior | `KeyboardInfo` |
-| `…Config` | injected parameters of a runtime component | `GesturePreprocessorConfig` |
+| `…Descriptor` | lazy handle: metadata + a builder that materializes the real thing | `LanguageDescriptor` |
+| `…Configuration` | injected parameters of a runtime component | `SlideGestureConfiguration` |
 | `…Settings` | user-changeable, persisted | `LayoutSettings` |
 | `…Metrics` | computed geometry | `KeyboardLayoutMetrics` |
 | `…Style` | visual appearance | `KeyStyle` |
-| `…Kind` | behavioral variant | `InputMethodKind` |
-| `…Category` | classification used for dispatch | `KeyCategory` |
+| `…Type` | closed set of behavioral variants | `GestureType`, `SlideType` |
+| `…Mode` | keyboard state — **reserved**, do not use for anything else | `KeyboardMode` |
+| `…Category` | classification; the prefix must name the axis | `KeyCategory` |
 | `…Resolver` / `…Middleware` | pipeline participants | `GhostKeyResolver` |
 | `…Factory` / `…Registry` | build / look up + cache definitions | `GridKeyboardFactory` |
 
-`…Configuration` spelled out is **not** used — write `…Config`.
+Spell suffixes out: `…Configuration`, not `…Config`. Apple's own APIs are consistent about
+this (`URLSessionConfiguration`, `WKWebViewConfiguration`), and the Swift API Design
+Guidelines rule out abbreviations. The three `…Config` types in the codebase are legacy.
+
+Do not introduce `…Manager` or `…Helper`. Both describe no responsibility; name the type
+after what it actually does.
 
 ## 4. Function-name verbs
 
@@ -168,28 +187,48 @@ Note the vocabulary clash: the same concept is `digit` in one and `number` in th
 | `make…` | pure factory returning a value (`makeDefinition`) |
 | `build…` | assembling a larger structure in place (`buildMode`) |
 
-`create…`, `perform…`, and `execute…` are unused — do not introduce them.
+`make…` is the factory verb — do not introduce `create…` alongside it.
 
-## 5. Do not write
+## 5. General naming rules
+
+These are not domain-specific, but they are where new code drifts most.
+
+- **Booleans read as assertions:** `is…`, `has…`, `should…` (`isSliding`, `shouldCapitalize`).
+  A settings flag is `isSomethingEnabled`, not `enableSomething` or `hideSomething` — the
+  latter read as commands. Existing `hideLetters` / `longPressNumbersEnabled` are legacy.
+- **Tests carry no `test` prefix.** All 161 `@Test` functions are named as the assertion
+  they make: `numericLayerStaysOnSentenceEnder()`, `allLanguagesHaveUniqueIds()`. Write the
+  expected behavior as a sentence; the `@Test` attribute already says it is a test.
+- **No abbreviations** beyond `id`, `min`, `max`, and the `…Idx` loop-index locals already
+  in use.
+- **Name parameters by role, not by type:** `keyId: String`, not `string: String`.
+
+## 6. Do not write
 
 | Avoid | Write instead |
 |---|---|
 | layer | mode |
 | slotId | keyId |
-| `…Configuration` | `…Config` |
+| `…Config` | `…Configuration` |
+| `…Kind` | `…Type` |
 | "return" for the gesture | "return swipe" |
 | "swipe" for a held drag | "slide" |
 | number (for 0–9 keys) | digit — except inside `LabelCategory`, where the case is named `number` |
 
-## 6. Legacy exceptions
+## 7. Legacy exceptions
 
-Known violations, deliberately left in place. Do not rename them opportunistically; each
-needs its own change with its own tests.
+Known violations, deliberately left in place. **Do not rename them** — the existing code
+will be brought in line in its own dedicated changes. This list is not exhaustive.
 
 | Name | Problem |
 |---|---|
-| `NumpadStyle`, `CursorMovementStyle` | behavioral variants carrying a visual suffix; would be `…Kind` |
-| `SlideGestureConfiguration` | spelled-out `Configuration` |
-| `KeyConfig`, `LanguageConfig` | declarative data carrying the runtime-parameter suffix |
+| `NumpadStyle`, `CursorMovementStyle` | behavioral variants carrying a visual suffix; would be `…Type` |
+| `GesturePreprocessorConfig`, `KeyConfig`, `LanguageConfig` | abbreviated suffix |
+| `KeyConfig`, `LanguageConfig` | declarative data carrying the runtime-parameter suffix on top of that |
+| `InputMethodKind` | would be `…Type` |
+| `KeyboardInfo` | `…Info` says nothing about the contents; would be `…Metadata` |
 | `LanguageConfig` / `LanguageDescriptor` / `KeyboardInfo` | three near-identical language metadata types; the latter two are field-identical. A merge, not a rename |
+| `hideLetters`, `hideStandardSymbols`, `hideExtraSymbols`, `longPressNumbersEnabled` | booleans that do not read as assertions |
+| `HapticFeedbackManager` | `…Manager` |
+| `slotId` in `GridKeyboardFactory` and `NumericLayouts` | alias for `keyId` |
 | ~70 comment lines saying "layer" | pre-date this glossary |
