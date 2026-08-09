@@ -39,6 +39,7 @@ the same setting when invoking `xcodebuild` by hand.
 ### Output
 
 Screenshots are saved to `../docs/images/` as WebP files:
+
 - `keyboard-lower-light.webp` - Lower case layout (light theme)
 - `keyboard-lower-dark.webp` - Lower case layout (dark theme)
 - `keyboard-numbers-light.webp` - Numbers layer (light theme)
@@ -56,6 +57,7 @@ The screenshot system consists of:
 4. **generate-screenshots.sh** - Script that orchestrates everything and converts to WebP
 
 The app enters "screenshot mode" when launched with the `SCREENSHOT_MODE` argument, which displays a minimal keyboard preview. Environment variables control the appearance:
+
 - `FORCE_LANGUAGE` - Sets keyboard language (e.g., "en_US")
 - `FORCE_LAYER` - Sets keyboard layer ("lower", "upper", "numbers", "symbols")
 - `FORCE_APPEARANCE` - Sets theme ("light", "dark")

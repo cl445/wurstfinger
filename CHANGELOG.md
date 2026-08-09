@@ -5,6 +5,7 @@
 ### Added
 
 - Optional gesture trail — a soft, tapered stroke follows the finger while it swipes and fades out when it lifts, in the style of the iOS keyboard's swipe trail. Off by default, enabled under Settings › Gestures (#279)
+- Markdown linting (markdownlint) as a pre-commit hook and a CI check (#292)
 
 ### Fixed
 

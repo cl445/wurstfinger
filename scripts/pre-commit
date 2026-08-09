@@ -1,51 +1,98 @@
 #!/bin/bash
-# Pre-commit hook: runs SwiftFormat and SwiftLint on staged Swift files
+# Pre-commit hook: runs SwiftFormat and SwiftLint on staged Swift files,
+# and markdownlint on staged Markdown files
 
-# Get staged Swift files (added, copied, modified, renamed)
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR -- '*.swift')
+# Get staged files (added, copied, modified, renamed)
+STAGED_SWIFT=$(git diff --cached --name-only --diff-filter=ACMR -- '*.swift')
+STAGED_MARKDOWN=$(git diff --cached --name-only --diff-filter=ACMR -- '*.md')
 
-if [ -z "$STAGED_FILES" ]; then
+if [ -z "$STAGED_SWIFT" ] && [ -z "$STAGED_MARKDOWN" ]; then
     exit 0
 fi
 
 FAILED=0
 
-# SwiftFormat: auto-format staged files and re-stage them
-if command -v swiftformat &> /dev/null; then
-    echo "Running SwiftFormat on staged files..."
-    while IFS= read -r file; do
-        if [ -f "$file" ]; then
-            if swiftformat "$file"; then
-                git add "$file"
-            else
-                echo "error: SwiftFormat failed for $file"
-                FAILED=1
+if [ -n "$STAGED_SWIFT" ]; then
+    # SwiftFormat: auto-format staged files and re-stage them
+    if command -v swiftformat &> /dev/null; then
+        echo "Running SwiftFormat on staged files..."
+        while IFS= read -r file; do
+            if [ -f "$file" ]; then
+                if swiftformat "$file"; then
+                    git add "$file"
+                else
+                    echo "error: SwiftFormat failed for $file"
+                    FAILED=1
+                fi
             fi
-        fi
-    done <<< "$STAGED_FILES"
-else
-    echo "error: SwiftFormat not installed (brew install swiftformat)"
-    FAILED=1
+        done <<< "$STAGED_SWIFT"
+    else
+        echo "error: SwiftFormat not installed (brew install swiftformat)"
+        FAILED=1
+    fi
+
+    # SwiftLint: check staged files for violations
+    if command -v swiftlint &> /dev/null; then
+        echo "Running SwiftLint on staged files..."
+        while IFS= read -r file; do
+            if [ -f "$file" ]; then
+                # Warn about partially staged files (working tree differs from index)
+                if ! git diff --quiet -- "$file"; then
+                    echo "warning: $file has unstaged changes — linting working tree version"
+                fi
+                swiftlint lint --strict --quiet "$file"
+                if [ $? -ne 0 ]; then
+                    FAILED=1
+                fi
+            fi
+        done <<< "$STAGED_SWIFT"
+    else
+        echo "error: SwiftLint not installed (brew install swiftlint)"
+        FAILED=1
+    fi
 fi
 
-# SwiftLint: check staged files for violations
-if command -v swiftlint &> /dev/null; then
-    echo "Running SwiftLint on staged files..."
-    while IFS= read -r file; do
-        if [ -f "$file" ]; then
-            # Warn about partially staged files (working tree differs from index)
-            if ! git diff --quiet -- "$file"; then
-                echo "warning: $file has unstaged changes — linting working tree version"
+if [ -n "$STAGED_MARKDOWN" ]; then
+    # markdownlint: auto-fix and re-stage fully staged files, check the rest.
+    # Rules and ignores come from .markdownlint-cli2.jsonc in the repo root.
+    if command -v markdownlint-cli2 &> /dev/null; then
+        echo "Running markdownlint on staged files..."
+
+        # Splitting matters: --fix rewrites the working tree, so re-staging a
+        # partially staged file would sweep in unrelated unstaged edits.
+        FIXABLE=()
+        CHECK_ONLY=()
+        while IFS= read -r file; do
+            if [ -f "$file" ]; then
+                if git diff --quiet -- "$file"; then
+                    FIXABLE+=("$file")
+                else
+                    echo "warning: $file has unstaged changes — checking without --fix"
+                    CHECK_ONLY+=("$file")
+                fi
             fi
-            swiftlint lint --strict --quiet "$file"
-            if [ $? -ne 0 ]; then
+        done <<< "$STAGED_MARKDOWN"
+
+        if [ ${#FIXABLE[@]} -gt 0 ]; then
+            if markdownlint-cli2 --fix "${FIXABLE[@]}"; then
+                git add "${FIXABLE[@]}"
+            else
+                # Re-stage whatever --fix managed to repair so the remaining
+                # violations are the only thing left to deal with.
+                git add "${FIXABLE[@]}"
                 FAILED=1
             fi
         fi
-    done <<< "$STAGED_FILES"
-else
-    echo "error: SwiftLint not installed (brew install swiftlint)"
-    FAILED=1
+
+        if [ ${#CHECK_ONLY[@]} -gt 0 ]; then
+            if ! markdownlint-cli2 "${CHECK_ONLY[@]}"; then
+                FAILED=1
+            fi
+        fi
+    else
+        echo "error: markdownlint-cli2 not installed (brew install markdownlint-cli2)"
+        FAILED=1
+    fi
 fi
 
 if [ $FAILED -ne 0 ]; then
