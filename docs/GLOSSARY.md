@@ -43,7 +43,7 @@ qualify which one you mean.
 ### `return` means three different things
 
 | Usage | Meaning |
-|---|---|
+| --- | --- |
 | `UtilitySlot.return`, `KeyAction.newline` | the Return/Enter **key** |
 | `KeyBinding.returnAction`, `isReturn`, `returnOverrides`, `ReturnSwipeResolver` | the **return-swipe gesture** — swipe out and back to the start |
 | Swift `return` | the language keyword |
@@ -83,7 +83,7 @@ Two classification enums over the same keys on different axes. Both are legitima
 the wrong one is a silent behavior bug.
 
 | | Axis | Cases |
-|---|---|---|
+| --- | --- | --- |
 | `KeyCategory` | runtime behavior: auto-shift, haptics, hint styling | `letter`, `digit`, `symbol`, `compose`, `modifier`, `utility`, `whitespace` |
 | `LabelCategory` | render-time visibility (the "hide labels" settings) | `letter`, `standardSymbol`, `extraSymbol`, `number`, `functional` |
 
@@ -100,7 +100,7 @@ to be able to tell from the name alone which of several classifications applies.
 ### Declarative model (`Definition/`)
 
 | Term | Type | Means |
-|---|---|---|
+| --- | --- | --- |
 | definition | `KeyboardDefinition` | the complete declarative description of one keyboard: all modes, keys, bindings, arrangements |
 | mode | `KeyboardMode` | one state of a definition (`main`, `shifted`, `numeric`, …) with its own keys + arrangement |
 | key | `KeyConfig` | one key: `id`, `bindings`, `swipeMode`, `slideType`, `style`, `tapCycleActions` |
@@ -114,7 +114,7 @@ to be able to tell from the name alone which of several classifications applies.
 ### Layout (`Definition/Layout/`)
 
 | Term | Type | Means |
-|---|---|---|
+| --- | --- | --- |
 | slot | `GridSlot`, `UtilitySlot` | semantic name of a position; the string that is also a key id |
 | arrangement | `GridArrangement` | which keys sit where, at what size, for one `ArrangementContext` |
 | arrangement context | `ArrangementContext` | the situation an arrangement applies to: `portrait`, `portraitUtilityLeft`, `landscape`, `landscapeUtilityLeft` |
@@ -125,7 +125,7 @@ to be able to tell from the name alone which of several classifications applies.
 ### Gestures (`Runtime/Gesture/`)
 
 | Term | Means |
-|---|---|
+| --- | --- |
 | gesture | one recognized input, typed as `GestureType`: `tap`, the eight `swipe…` directions, `circularClockwise` / `circularCounterclockwise`, `longPress` |
 | swipe | a directional gesture from the key center. Qualify direction; never say "swipe" for a slide |
 | return swipe | out-and-back to the start position; fires `KeyBinding.returnAction`. Always two words |
@@ -136,7 +136,7 @@ to be able to tell from the name alone which of several classifications applies.
 ### Runtime pipeline (`Runtime/Pipeline/`)
 
 | Term | Means |
-|---|---|
+| --- | --- |
 | resolver | `GestureResolver` — maps (`keyId`, gesture, mode) to a `KeyBinding?`. Returning `nil` delegates to the next resolver |
 | resolver chain | `GestureResolverChain` — priority-ordered resolvers; first non-`nil` wins, else `KeyAction.none` |
 | middleware | `ActionMiddleware` — `process(_ context:next:)`; may mutate the context, call `next`, or short-circuit |
@@ -147,7 +147,7 @@ to be able to tell from the name alone which of several classifications applies.
 ### Settings (`Settings/`)
 
 | Term | Means |
-|---|---|
+| --- | --- |
 | settings | user-changeable, persisted values (`LayoutSettings`, `HapticSettings`, `LanguageSettings`) |
 | constants | compile-time values that users cannot change (`KeyboardConstants`) |
 | shared defaults | the app-group `UserDefaults` bridging host app and extension (`SharedDefaults`) |
@@ -157,7 +157,7 @@ to be able to tell from the name alone which of several classifications applies.
 ## 3. Type-name suffixes
 
 | Suffix | Reserved for | Example |
-|---|---|---|
+| --- | --- | --- |
 | `…Definition` | complete declarative data | `KeyboardDefinition` |
 | `…Descriptor` | lazy handle: metadata + a builder that materializes the real thing | `LanguageDescriptor` |
 | `…Configuration` | injected parameters of a runtime component | `SlideGestureConfiguration` |
@@ -180,7 +180,7 @@ after what it actually does.
 ## 4. Function-name verbs
 
 | Verb | Reserved for |
-|---|---|
+| --- | --- |
 | `resolve…` | resolver-chain lookups returning an optional |
 | `process…` | middleware entry points |
 | `handle…` | view-model entry points reacting to user input |
@@ -209,7 +209,7 @@ These are not domain-specific, but they are where new code drifts most.
 ## 6. Do not write
 
 | Avoid | Write instead |
-|---|---|
+| --- | --- |
 | layer | mode |
 | slotId | keyId |
 | `…Config` | `…Configuration` |
@@ -224,7 +224,7 @@ Known violations, deliberately left in place. **Do not rename them** — the exi
 will be brought in line in its own dedicated changes. This list is not exhaustive.
 
 | Name | Problem |
-|---|---|
+| --- | --- |
 | `NumpadStyle`, `CursorMovementStyle` | behavioral variants carrying a visual suffix; would be `…Type` |
 | `GesturePreprocessorConfig`, `KeyConfig`, `LanguageConfig` | abbreviated suffix |
 | `KeyConfig`, `LanguageConfig` | declarative data carrying the runtime-parameter suffix on top of that |
