@@ -135,7 +135,10 @@ enum KeyboardConstants {
         static let visibleDuration: TimeInterval = 0.55
 
         /// How long the frozen trail takes to fade out after the finger lifts.
-        static let fadeOutDuration: TimeInterval = 0.22
+        /// Tuned on device: 0.22 read as an abrupt blink once the press dot
+        /// made single keystrokes draw; the longer glow lets the mark register
+        /// without lagging behind fast typing.
+        static let fadeOutDuration: TimeInterval = 0.35
 
         /// Head width as a fraction of the row height, so the trail scales
         /// with the user's key size instead of overwhelming small keyboards.
