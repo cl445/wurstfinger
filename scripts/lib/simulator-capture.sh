@@ -61,6 +61,8 @@ sim_status_bar_clear() {
 # Runs the screenshot UI test and returns xcodebuild's real exit code.
 # `$?` after the pipe is the formatter's exit code (always 0), so we recover
 # xcodebuild's via PIPESTATUS. Callers decide what a non-zero result means.
+# `TEST_RUNNER_`-prefixed settings reach the test runner's environment with the
+# prefix stripped; ScreenshotTests skip themselves without GENERATE_SCREENSHOTS.
 run_screenshot_tests() {
     local scheme="$1" destination="$2" test_target="$3" derived_data="$4"
     rm -rf "$derived_data"
@@ -72,6 +74,7 @@ run_screenshot_tests() {
         -only-testing:"$test_target" \
         -derivedDataPath "$derived_data" \
         CODE_SIGNING_ALLOWED=NO \
+        TEST_RUNNER_GENERATE_SCREENSHOTS=1 \
         2>&1 | if command -v xcpretty >/dev/null; then xcpretty --color; else cat; fi
     result=${PIPESTATUS[0]}
     set -e
@@ -79,9 +82,10 @@ run_screenshot_tests() {
 }
 
 # Prints the first .xcresult bundle under the given derived-data path (empty
-# if none). Callers guard against the empty case with their own message.
+# if none). Callers guard against the empty case with their own message, so a
+# missing path or the SIGPIPE from `head` must not fail them under `pipefail`.
 find_xcresult_bundle() {
-    find "$1" -name "*.xcresult" -type d | head -n 1
+    find "$1" -name "*.xcresult" -type d 2>/dev/null | head -n 1 || true
 }
 
 # Exports all attachments from an .xcresult bundle into a fresh output dir.

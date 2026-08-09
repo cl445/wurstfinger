@@ -15,12 +15,16 @@ private struct ScreenshotConfig {
     var received: String = ""
 }
 
+/// Screenshot generators. They relaunch the app 15 times with hard sleeps and
+/// produce attachments rather than assertions, so they opt out of a plain
+/// `xcodebuild test` and only run when `GENERATE_SCREENSHOTS=1` reaches the
+/// test runner — see `scripts/lib/simulator-capture.sh`.
 final class ScreenshotTests: XCTestCase {
     var app: XCUIApplication!
 
     override func setUpWithError() throws {
+        try UITestApp.skipUnlessGeneratingScreenshots()
         continueAfterFailure = false
-        app = XCUIApplication()
     }
 
     // MARK: - README Screenshots (keyboard-only, cropped)
@@ -29,7 +33,7 @@ final class ScreenshotTests: XCTestCase {
     /// Uses SCREENSHOT_MODE to show KeyboardShowcaseView
     @MainActor
     func testGenerateScreenshots() {
-        app.launchArguments = ["SCREENSHOT_MODE"]
+        app = UITestApp.make(["SCREENSHOT_MODE"])
 
         // Detect the rendered keyboard via a stable key identifier (the
         // center grid slot) rather than the container element, which SwiftUI
@@ -65,15 +69,13 @@ final class ScreenshotTests: XCTestCase {
 
     /// Generate App Store screenshots showing the full app experience
     /// Does NOT use SCREENSHOT_MODE - shows normal app with TabView
-    /// Run this test on different simulators to get all required sizes:
-    /// - iPhone 15 Plus (6.7" - 1290x2796)
-    /// - iPhone 11 Pro Max (6.5" - 1242x2688)
-    /// - iPhone 8 Plus (5.5" - 1242x2208)
-    /// - iPad Pro 12.9" (2048x2732)
+    /// Not part of the shipping set: `scripts/generate-appstore-screenshots.sh`
+    /// uploads `testGenerateAppStoreKeyboardScreenshots`, rendered natively on
+    /// iPhone 17 Pro Max (1320x2868, 6.9") and iPhone 16e (1170x2532, 6.1").
     @MainActor
     func testGenerateAppStoreScreenshots() {
         // Don't use SCREENSHOT_MODE - we want the full app with tabs
-        app.launchArguments = []
+        app = UITestApp.make()
 
         // Get device identifier for naming
         let deviceName = UIDevice.current.name
@@ -142,7 +144,7 @@ final class ScreenshotTests: XCTestCase {
     /// Uses SCREENSHOT_MODE to show KeyboardShowcaseView with different layers
     @MainActor
     func testGenerateKeyboardShowcaseScreenshots() {
-        app.launchArguments = ["SCREENSHOT_MODE"]
+        app = UITestApp.make(["SCREENSHOT_MODE"])
 
         // Detect the rendered keyboard via a stable key identifier (the
         // center grid slot) rather than the container element, which SwiftUI
@@ -184,7 +186,7 @@ final class ScreenshotTests: XCTestCase {
     /// These are the primary screenshots showing the keyboard in action
     @MainActor
     func testGenerateAppStoreKeyboardScreenshots() {
-        app.launchArguments = ["APPSTORE_SCREENSHOT_MODE"]
+        app = UITestApp.make(["APPSTORE_SCREENSHOT_MODE"])
 
         let keyboard = app.buttons["center"]
 

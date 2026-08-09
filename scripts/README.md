@@ -13,6 +13,11 @@ cd wurstfinger/wurstfinger
 ./scripts/generate-screenshots.sh
 ```
 
+The `ScreenshotTests` skip themselves unless the test runner sees
+`GENERATE_SCREENSHOTS=1`, so a plain `xcodebuild test` does not pay for ~15 app
+relaunches. The script passes it as `TEST_RUNNER_GENERATE_SCREENSHOTS=1`; add
+the same setting when invoking `xcodebuild` by hand.
+
 ### What it does
 
 1. Runs UI tests (`ScreenshotTests`) that capture the keyboard in different states
@@ -27,9 +32,9 @@ cd wurstfinger/wurstfinger
 ### Requirements
 
 - Xcode 16+
-- iPhone 16 simulator installed with iOS 18.6
+- An available iPhone simulator (the script picks the first non-SE iPhone it finds)
 - `xcpretty` gem (install with `gem install xcpretty`)
-- Python 3 with Pillow library (install with `pip3 install Pillow`)
+- Python 3 with Pillow and NumPy (install with `pip3 install Pillow numpy`)
 
 ### Output
 

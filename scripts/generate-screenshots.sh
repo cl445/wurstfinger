@@ -5,7 +5,7 @@
 #
 # Usage: ./scripts/generate-screenshots.sh
 
-set -e
+set -euo pipefail
 
 # Change to project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,8 +19,10 @@ echo ""
 
 # Configuration
 SCHEME="Wurstfinger"
-# Detect available iPhone simulator
-DEVICE_NAME=$(xcrun simctl list devices available | grep "iPhone" | grep -v "SE" | head -n 1 | sed 's/    //g' | sed 's/ (.*//g' | xargs)
+# Detect available iPhone simulator. `head` closes the pipe early, so the
+# upstream `grep` reports SIGPIPE, and an absent simulator makes it exit 1 —
+# under `pipefail` both would abort the script instead of feeding the fallback.
+DEVICE_NAME=$(xcrun simctl list devices available | grep "iPhone" | grep -v "SE" | head -n 1 | sed 's/    //g' | sed 's/ (.*//g' | xargs || true)
 
 if [ -z "$DEVICE_NAME" ]; then
     DEVICE_NAME="iPhone 16"
@@ -270,8 +272,8 @@ else
   echo "Troubleshooting:"
   echo "  - Check if UI tests ran successfully"
   echo "  - Verify simulator is available"
-  echo "  - Verify Pillow is installed: pip3 install Pillow"
-  echo "  - Run tests manually: xcodebuild test -scheme $SCHEME -destination '$DESTINATION' -only-testing:$TEST_TARGET"
+  echo "  - Verify Pillow and numpy are installed: pip3 install Pillow numpy"
+  echo "  - Run tests manually: xcodebuild test -scheme $SCHEME -destination '$DESTINATION' -only-testing:$TEST_TARGET TEST_RUNNER_GENERATE_SCREENSHOTS=1"
 fi
 
 echo -e "${GREEN}✨ Done!${NC}"

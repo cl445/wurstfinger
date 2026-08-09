@@ -12,13 +12,7 @@ final class wurstfingerUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
-        app = XCUIApplication()
-        // The suite queries localized display text ("Settings", "Languages", …),
-        // so pin the app to English regardless of the simulator's locale.
-        app.launchArguments = [
-            "-AppleLanguages", "(en)",
-            "-AppleLocale", "en_US",
-        ]
+        app = UITestApp.make(UITestApp.englishLocaleArguments)
         app.launch()
     }
 
@@ -83,11 +77,12 @@ final class wurstfingerUITests: XCTestCase {
         let newValue = firstToggle.value as? String
         XCTAssertNotEqual(initialValue, newValue, "Toggle value should change after tap")
 
-        // The setup steps persist to the app's own defaults — restore the
-        // original state so the test leaves no trace on the device/simulator.
+        // Toggling back must return the original value. Either state is safe:
+        // the app under test writes to the isolated defaults suite, not the
+        // app group the user's own keyboard reads.
         firstToggle.tap()
         let restoredValue = firstToggle.value as? String
-        XCTAssertEqual(initialValue, restoredValue, "Toggle must be restored to its original state")
+        XCTAssertEqual(initialValue, restoredValue, "Toggle must return to its original state")
     }
 
     // MARK: - Settings Tests
@@ -193,10 +188,11 @@ final class wurstfingerUITests: XCTestCase {
         let newValue = utilityToggle.value as? String
         XCTAssertNotEqual(initialValue, newValue, "Toggle should change state")
 
-        // The toggle writes to the real shared app-group store — restore it.
+        // Toggling back must return the original value; both writes land in the
+        // isolated defaults suite, not the real app-group store.
         flip()
         let restoredValue = utilityToggle.value as? String
-        XCTAssertEqual(initialValue, restoredValue, "Toggle must be restored to its original state")
+        XCTAssertEqual(initialValue, restoredValue, "Toggle must return to its original state")
     }
 
     // MARK: - Test Area Tests
@@ -235,7 +231,7 @@ final class wurstfingerUITests: XCTestCase {
     @MainActor
     func testLaunchPerformance() {
         measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
+            app.launch()
         }
     }
 }
