@@ -272,12 +272,13 @@ enum CommonKeys {
                 label: "|", action: .commitText("|"), category: nil,
                 returnAction: .commitText("¶"), accessibilityLabel: nil
             ),
-            // The name is the same in every mode this binding survives into:
-            // `KeyboardMode.replacingShiftUpBinding` repoints it to caps lock in
-            // the shifted mode and to a no-op in caps lock itself, which matches
-            // how a single shift key behaves everywhere else. The return swipe
-            // (`capitalizeWord`) cannot be named separately — a binding carries
-            // one label, and a custom action always dispatches `isReturn: false`.
+            // `KeyboardMode.replacingShiftUpBinding` repoints this to caps lock
+            // in the shifted mode and to a no-op in caps lock itself, which
+            // matches how a single shift key behaves everywhere else — and it
+            // decides the name per mode, because the caps-lock no-op must not
+            // become a rotor action. The return swipe (`capitalizeWord`) cannot
+            // be named separately: a binding carries one label, and a custom
+            // action always dispatches `isReturn: false`.
             .swipeUp: KeyBinding(
                 label: "⇧", action: .switchMode(ModeNames.shifted), category: .modifier,
                 returnAction: .capitalizeWord(uppercased: true),

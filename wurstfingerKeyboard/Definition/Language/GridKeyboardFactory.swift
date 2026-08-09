@@ -186,12 +186,21 @@ enum GridKeyboardFactory {
             // 4. Shifted — shift-up points directly to capsLock (label stays ⇧).
             modes[ModeNames.shifted] = shiftedBase
                 .with(autoTransitions: [.letter: ModeNames.main])
-                .replacingShiftUpBinding(label: "⇧", action: .switchMode(ModeNames.capsLock))
+                .replacingShiftUpBinding(
+                    label: "⇧", action: .switchMode(ModeNames.capsLock),
+                    accessibilityLabel: String(localized: "Shift")
+                )
 
             // 5. Caps lock — shift-up is no-op (stays in capsLock), label shows ⇪.
+            // Unnamed on purpose: a named binding becomes a VoiceOver rotor
+            // action, and this one would lead back to the mode it was invoked
+            // from. The ⇩ below is the labelled way out.
             modes[ModeNames.capsLock] = shiftedBase
                 .with(name: ModeNames.capsLock)
-                .replacingShiftUpBinding(label: "⇪", action: .switchMode(ModeNames.capsLock))
+                .replacingShiftUpBinding(
+                    label: "⇪", action: .switchMode(ModeNames.capsLock),
+                    accessibilityLabel: nil
+                )
 
             // 6. Main mode — remove shift-down hint from midRight (only shown in shifted/capsLock).
             modes[ModeNames.main] = baseMode

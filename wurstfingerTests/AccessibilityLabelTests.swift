@@ -270,16 +270,39 @@ struct NamedAccessibilityBindingTests {
 
     /// Deliberate capitalization: auto-capitalization only produces
     /// sentence-initial capitals, so without a name the modifier is unreachable.
+    ///
+    /// A binding that switches to the mode it already lives in is the one
+    /// exception, pinned separately below.
     @Test func theShiftAffordanceIsNamedWhereverItExists() {
         for def in definitions {
             for (modeName, mode) in def.modes {
                 for gesture in [GestureType.swipeUp, .swipeDown] {
                     guard let binding = mode.keys[GridSlot.midRight]?.bindings[gesture],
-                          case .switchMode = binding.action
+                          case let .switchMode(target) = binding.action,
+                          target != modeName
                     else { continue }
                     #expect(
                         !(binding.accessibilityLabel ?? "").isEmpty,
                         "\(def.id)/\(modeName) midRight \(gesture) switches mode unnamed"
+                    )
+                }
+            }
+        }
+    }
+
+    /// The counterpart: naming a binding is what puts it in the rotor, so a
+    /// binding that switches to the mode it is invoked from must stay unnamed.
+    /// The caps-lock `⇪` is the only one — activating it would return the
+    /// VoiceOver user exactly where they were.
+    @Test func aModeSwitchOntoItsOwnModeOffersNoAction() {
+        for def in definitions {
+            for (modeName, mode) in def.modes {
+                for (gesture, binding) in mode.keys[GridSlot.midRight]?.bindings ?? [:] {
+                    guard case let .switchMode(target) = binding.action, target == modeName
+                    else { continue }
+                    #expect(
+                        binding.accessibilityLabel == nil,
+                        "\(def.id)/\(modeName) midRight \(gesture) names a switch onto its own mode"
                     )
                 }
             }

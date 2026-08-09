@@ -83,14 +83,24 @@ struct KeyboardMode: Codable, Equatable {
 
     /// Returns a copy where the shift-up binding on midRight is replaced.
     /// Used to point shifted → capsLock and capsLock → capsLock (no-op).
-    func replacingShiftUpBinding(label: String, action: KeyAction) -> KeyboardMode {
+    ///
+    /// `accessibilityLabel` is passed rather than inherited because the two
+    /// uses disagree about it: the shifted mode's binding still does
+    /// something and deserves a name, the caps-lock one switches to the mode
+    /// it is already in and must stay unnamed, or `KeyConfig.accessibilityActions`
+    /// would offer VoiceOver a rotor entry that does nothing.
+    func replacingShiftUpBinding(
+        label: String,
+        action: KeyAction,
+        accessibilityLabel: String?
+    ) -> KeyboardMode {
         guard var midRight = keys[GridSlot.midRight],
               let existing = midRight.bindings[.swipeUp]
         else { return self }
         midRight.bindings[.swipeUp] = KeyBinding(
             label: label, action: action,
             category: existing.category, returnAction: existing.returnAction,
-            accessibilityLabel: existing.accessibilityLabel
+            accessibilityLabel: accessibilityLabel
         )
         var updatedKeys = keys
         updatedKeys[GridSlot.midRight] = midRight

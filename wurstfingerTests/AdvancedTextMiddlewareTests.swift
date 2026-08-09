@@ -344,10 +344,13 @@ private enum PasteboardWarmUp {
         // it holds no lock the suite needs, and a skipped suite touches the
         // pasteboard no further.
         DispatchQueue.global().async {
-            let original = UIPasteboard.general.string
+            // `items`, not `string`: assigning `string` replaces every item, so
+            // capturing only the string would drop an image or a URL a
+            // developer had on their clipboard when the suite ran.
+            let original = UIPasteboard.general.items
             UIPasteboard.general.string = "warm-up-\(UUID().uuidString)"
             _ = UIPasteboard.general.string
-            UIPasteboard.general.string = original
+            UIPasteboard.general.items = original
             answered.signal()
         }
         return answered.wait(timeout: .now() + deadline) == .success
@@ -388,16 +391,19 @@ struct PasteboardEnvironmentTests {
     )
 )
 final class AdvancedTextMiddlewareClipboardTests {
-    private let originalPasteboard: String?
+    /// The whole pasteboard, not just its string: the tests below assign
+    /// `string`, which replaces every item, so restoring a `String?` would
+    /// leave a developer's image or URL destroyed by a test run.
+    private let originalPasteboard: [[String: Any]]
 
     init() {
         // Free once the suite trait resolved it; keeps the capture below from
         // becoming the blocking call should trait evaluation ever move.
         _ = PasteboardWarmUp.didAnswer
-        originalPasteboard = UIPasteboard.general.string
+        originalPasteboard = UIPasteboard.general.items
     }
 
-    deinit { UIPasteboard.general.string = originalPasteboard }
+    deinit { UIPasteboard.general.items = originalPasteboard }
 
     @Test func copyWritesSelectionToPasteboardWithFullAccess() {
         let target = MockTextTarget()
