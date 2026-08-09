@@ -207,7 +207,9 @@ struct SettingsView: View {
                     icon: "scope",
                     color: .red,
                     title: "Touch Correction",
-                    subtitle: touchOffsetEnabled ? "Learning your taps" : "Adapt targets to your taps"
+                    subtitle: touchOffsetEnabled
+                        ? String(localized: "Learning your taps")
+                        : String(localized: "Adapt targets to your taps")
                 )
             }
 

@@ -45,9 +45,14 @@ struct TouchOffsetSettingsView: View {
             Section {
                 Toggle("Correct my typing", isOn: $enabled)
             } footer: {
-                Text("Learns where you tend to tap each key and quietly adjusts the "
-                    + "touch targets to match. Everything is learned **on this device** "
-                    + "and never leaves it.")
+                // One literal, never a `+` concatenation: only a literal binds to `Text`'s
+                // `LocalizedStringKey` overload, so a concatenated footer would be
+                // untranslatable and would render its markdown as raw asterisks.
+                // swiftlint:disable line_length
+                Text(
+                    "Learns where you tend to tap each key and quietly adjusts the touch targets to match. Everything is learned **on this device** and never leaves it."
+                )
+                // swiftlint:enable line_length
             }
 
             Section {
@@ -57,9 +62,11 @@ struct TouchOffsetSettingsView: View {
                     Text("Two thumbs").tag(PostureClass.twoThumb)
                 }
             } footer: {
-                Text("Wurstfinger keeps a **separate** profile per posture, because a thumb "
-                    + "reaching across the keyboard lands differently than two thumbs. A wrong "
-                    + "choice can nudge keys the wrong way, so this isn't auto-detected.")
+                // swiftlint:disable line_length
+                Text(
+                    "Wurstfinger keeps a **separate** profile per posture, because a thumb reaching across the keyboard lands differently than two thumbs. A wrong choice can nudge keys the wrong way, so this isn't auto-detected."
+                )
+                // swiftlint:enable line_length
             }
 
             Section {
@@ -69,10 +76,17 @@ struct TouchOffsetSettingsView: View {
             } header: {
                 Text("Learned adjustments")
             } footer: {
-                Text(totalSamples > 0
-                    ? "\(totalSamples) taps learned for this posture. The red arrow shows how far "
-                    + "each key's target has moved; fainter means less data."
-                    : "No data yet for this posture — type this way and the keyboard learns it.")
+                // Two `Text`s rather than one with a ternary: each branch stays a bare
+                // literal and therefore a `LocalizedStringKey`.
+                if totalSamples > 0 {
+                    // swiftlint:disable line_length
+                    Text(
+                        "\(totalSamples) taps learned for this posture. The red arrow shows how far each key's target has moved; fainter means less data."
+                    )
+                    // swiftlint:enable line_length
+                } else {
+                    Text("No data yet for this posture — type this way and the keyboard learns it.")
+                }
             }
 
             Section {
@@ -147,11 +161,11 @@ private struct TouchOffsetStatsView: View {
             } header: {
                 Text("Error rate")
             } footer: {
-                Text("Estimated backspace rate **with** the correction vs. what it would have "
-                    + "been **without** it — inferred per tap from whether correction changed a "
-                    + "key you then kept or deleted. Lower with correction means it's helping. "
-                    + "(\(counterfactual.taps) taps · \(counterfactual.caught) caught · "
-                    + "\(counterfactual.caused) caused)")
+                // swiftlint:disable line_length
+                Text(
+                    "Estimated backspace rate **with** the correction vs. what it would have been **without** it — inferred per tap from whether correction changed a key you then kept or deleted. Lower with correction means it's helping. (\(counterfactual.taps) taps · \(counterfactual.caught) caught · \(counterfactual.caused) caused)"
+                )
+                // swiftlint:enable line_length
             }
 
             if let classes = telemetry.classes[regimeKey], !classes.isEmpty {
@@ -168,8 +182,11 @@ private struct TouchOffsetStatsView: View {
                 } header: {
                     Text("Gesture correction rates")
                 } footer: {
-                    Text("How often each gesture class gets corrected (rate · sample count). "
-                        + "A high rate hints at a mis-tuned threshold for that gesture.")
+                    // swiftlint:disable line_length
+                    Text(
+                        "How often each gesture class gets corrected (rate · sample count). A high rate hints at a mis-tuned threshold for that gesture."
+                    )
+                    // swiftlint:enable line_length
                 }
             } else {
                 Section {
