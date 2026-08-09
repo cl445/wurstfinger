@@ -7,7 +7,7 @@ Neu:
 Verbessert:
 • Schnelle Wischer werden wieder als Wischgeste erkannt, statt den mittleren Buchstaben der Taste zu tippen
 • Zeichen, die auf den neuen Layouts gar nicht tippbar waren: Thai ฬ ฒ ฑ ฏ und ฿, die japanischen 、 und 。 samt kleiner Kana, das Halbleerzeichen in Persisch und Urdu, die arabische Interpunktion, das Hindi-₹, die hebräischen ׳ und ״ sowie die Kana-Wiederholungszeichen ゞ und ヾ
-• č ď ě ň ř š ť ž sind direkt erreichbar: das Hatschek liegt jetzt auf dem Rück-Wisch der ^-Taste und ersetzt dort das alleinstehende Akzentzeichen ˆ (das ^ selbst bleibt unverändert)
+• č ď ě ň ř š ť ž sind direkt erreichbar: das Hatschek liegt jetzt auf dem Rück-Wisch der ^-Taste und ersetzt dort den bisherigen alleinstehenden Zirkumflex-Akzent (das ^ selbst bleibt unverändert)
 • Diagonales Ziehen auf der Löschtaste löscht, statt gar nichts zu tun
 • Ein gehaltener Tastendruck über einen Modus- oder Sprachwechsel hinweg tippt nicht mehr die Ziffer der alten Taste
 • Doppel-Leerzeichen tippt einen Punkt nur bei zwei aufeinanderfolgenden Leerzeichen; gesetzt wird das Satzzeichen der jeweiligen Schrift
