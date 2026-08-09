@@ -17183,6 +17183,66 @@
             "state": "translated",
             "value": "Pagta-type"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الكتابة"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πληκτρολόγηση"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تایپ"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "टाइपिंग"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "入力"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "입력"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escrita"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การพิมพ์"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Набір тексту"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ٹائپنگ"
+          }
         }
       }
     },
@@ -17259,6 +17319,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Layout"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التخطيط"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Διάταξη"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "چیدمان"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लेआउट"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "レイアウト"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "레이아웃"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esquema"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลย์เอาต์"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Розкладка"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لے آؤٹ"
           }
         }
       }
@@ -17337,6 +17457,66 @@
             "state": "translated",
             "value": "Laki at Layout"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحجم والتخطيط"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μέγεθος και διάταξη"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اندازه و چیدمان"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आकार और लेआउट"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サイズとレイアウト"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "크기 및 레이아웃"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tamanho e esquema"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ขนาดและเลย์เอาต์"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Розмір і форма"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سائز اور لے آؤٹ"
+          }
         }
       }
     },
@@ -17413,6 +17593,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lapad: %@, mga key: %@:1"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "العرض: %@، المفاتيح: %@:1"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πλάτος: %@, Πλήκτρα: %@:1"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عرض: %@، کلیدها: %@:۱"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "चौड़ाई: %@, कीज़: %@:1"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "幅：%@、キー：%@:1"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "너비: %@, 키: %@:1"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Largura: %@, teclas: %@:1"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ความกว้าง: %@, ปุ่ม: %@:1"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ширина: %@, клавіші: %@:1"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "چوڑائی: %@، کیز: %@:1"
           }
         }
       }
@@ -17491,6 +17731,66 @@
             "state": "translated",
             "value": "Tingnan kung paano nakikilala ang iyong mga galaw"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اطّلع على كيفية التعرّف على إيماءاتك"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δείτε πώς αναγνωρίζονται οι χειρονομίες σας"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ببینید اشاره‌های شما چگونه تشخیص داده می‌شوند"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "देखें कि आपके जेस्चर कैसे पहचाने जाते हैं"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ジェスチャがどのように認識されるかを確認できます"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제스처가 어떻게 인식되는지 확인합니다"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veja como os seus gestos são reconhecidos"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ดูว่าท่าทางของคุณถูกตีความอย่างไร"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подивіться, як розпізнаються ваші жести"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دیکھیں کہ آپ کے اشارے کیسے پہچانے جاتے ہیں"
+          }
         }
       }
     },
@@ -17567,6 +17867,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Playground ng mga Galaw"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مختبر الإيماءات"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δοκιμές χειρονομιών"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "آزمایشگاه اشاره‌ها"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "जेस्चर प्लेग्राउंड"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ジェスチャプレイグラウンド"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제스처 플레이그라운드"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Área de testes de gestos"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "พื้นที่ทดลองท่าทาง"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Майданчик жестів"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اشاروں کی تجربہ گاہ"
           }
         }
       }
@@ -17645,6 +18005,66 @@
             "state": "translated",
             "value": "I-reset ang Lahat ng Setting"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعادة تعيين كل الإعدادات"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επαναφορά όλων των ρυθμίσεων"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بازنشانی همهٔ تنظیمات"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सभी सेटिंग्स रीसेट करें"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべての設定をリセット"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 설정 재설정"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repor todas as definições"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รีเซ็ตการตั้งค่าทั้งหมด"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скинути всі налаштування"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تمام ترتیبات ری سیٹ کریں"
+          }
         }
       }
     },
@@ -17721,6 +18141,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "I-reset ang lahat ng setting ng keyboard sa mga default?"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعادة تعيين كل إعدادات لوحة المفاتيح إلى الوضع الافتراضي؟"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επαναφορά όλων των ρυθμίσεων του πληκτρολογίου στις προεπιλογές;"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "همهٔ تنظیمات صفحه‌کلید به مقادیر پیش‌فرض بازنشانی شود؟"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सभी कीबोर्ड सेटिंग्स को डिफ़ॉल्ट पर रीसेट करें?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべてのキーボード設定をデフォルトに戻しますか？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 키보드 설정을 기본값으로 재설정하시겠습니까?"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repor todas as definições do teclado nos valores predefinidos?"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รีเซ็ตการตั้งค่าคีย์บอร์ดทั้งหมดเป็นค่าเริ่มต้นหรือไม่"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скинути всі налаштування клавіатури до стандартних?"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کی بورڈ کی تمام ترتیبات طے شدہ حالت پر ری سیٹ کریں؟"
           }
         }
       }
@@ -17799,6 +18279,66 @@
             "state": "translated",
             "value": "Ibinabalik nito ang bawat setting ng keyboard, kasama ang mga wika at expert na pag-tune ng galaw."
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يعيد هذا كل إعدادات لوحة المفاتيح، بما في ذلك اللغات وضبط الإيماءات للخبراء."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αυτό επαναφέρει κάθε ρύθμιση του πληκτρολογίου, συμπεριλαμβανομένων των γλωσσών και της ρύθμισης χειρονομιών για προχωρημένους."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "این کار همهٔ تنظیمات صفحه‌کلید، از جمله زبان‌ها و تنظیم حرفه‌ای اشاره‌ها، را بازمی‌گرداند."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इससे हर कीबोर्ड सेटिंग वापस डिफ़ॉल्ट पर आ जाती है, जिसमें भाषाएँ और एक्सपर्ट जेस्चर ट्यूनिंग भी शामिल हैं।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "言語やエキスパートのジェスチャ調整を含む、すべてのキーボード設定が元に戻ります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "언어와 전문가용 제스처 조정을 포함한 모든 키보드 설정이 기본값으로 되돌아갑니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isto repõe todas as definições do teclado, incluindo os idiomas e o ajuste de gestos de especialista."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การดำเนินการนี้จะคืนค่าการตั้งค่าคีย์บอร์ดทุกอย่าง รวมถึงภาษาและการปรับแต่งท่าทางสำหรับผู้เชี่ยวชาญ"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Це відновить усі налаштування клавіатури, зокрема мови й експертне налаштування жестів."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "یہ کی بورڈ کی ہر ترتیب بحال کر دیتا ہے، بشمول زبانیں اور ماہر اشارہ ٹیوننگ۔"
+          }
         }
       }
     },
@@ -17875,6 +18415,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ibinabalik ang lahat ng setting ng keyboard sa mga default."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يعيد كل إعدادات لوحة المفاتيح إلى قيمها الافتراضية."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επαναφέρει όλες τις ρυθμίσεις του πληκτρολογίου στις προεπιλογές τους."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "همهٔ تنظیمات صفحه‌کلید را به مقادیر پیش‌فرض بازمی‌گرداند."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सभी कीबोर्ड सेटिंग्स को डिफ़ॉल्ट पर वापस लाता है।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべてのキーボード設定をデフォルトに戻します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 키보드 설정을 기본값으로 되돌립니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repõe todas as definições do teclado nos valores predefinidos."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คืนค่าการตั้งค่าคีย์บอร์ดทั้งหมดเป็นค่าเริ่มต้น"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Відновлює стандартні значення всіх налаштувань клавіатури."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کی بورڈ کی تمام ترتیبات کو طے شدہ اقدار پر بحال کر دیتا ہے۔"
           }
         }
       }
@@ -17953,6 +18553,66 @@
             "state": "translated",
             "value": "Hugis ng Key"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "شكل المفتاح"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σχήμα πλήκτρων"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "شکل کلید"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कुंजी का आकार"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キーの形"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "키 모양"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forma das teclas"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รูปทรงปุ่ม"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Форма клавіш"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کیز کی شکل"
+          }
         }
       }
     },
@@ -18029,6 +18689,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Parisukat"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مربّع"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Τετράγωνο"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مربع"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "वर्ग"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正方形"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "정사각형"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quadrada"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สี่เหลี่ยมจัตุรัส"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Квадратне"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مربع"
           }
         }
       }
@@ -18107,6 +18827,66 @@
             "state": "translated",
             "value": "Mas malapad"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أعرض"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πλατύτερο"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "پهن‌تر"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अधिक चौड़ा"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "より広い"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "더 넓게"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mais larga"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กว้างขึ้น"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ширше"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "زیادہ چوڑا"
+          }
         }
       }
     },
@@ -18183,6 +18963,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pumili ng preset o i-fine-tune ang ratio ng lapad at taas ng mga key."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختر إعدادًا جاهزًا أو اضبط بدقة نسبة العرض إلى الارتفاع للمفاتيح."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επιλέξτε μια προρύθμιση ή ρυθμίστε με ακρίβεια την αναλογία πλάτους προς ύψος των πλήκτρων."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "یک پیش‌تنظیم را انتخاب کنید یا نسبت عرض به ارتفاع کلیدها را دقیق تنظیم کنید."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कोई प्रीसेट चुनें या कीज़ के चौड़ाई-से-ऊँचाई अनुपात को बारीकी से सेट करें।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プリセットを選ぶか、キーの幅と高さの比率を細かく調整します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "프리셋을 선택하거나 키의 너비 대 높이 비율을 세밀하게 조정하세요."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha uma predefinição ou ajuste com precisão a proporção entre a largura e a altura das teclas."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลือกค่าที่ตั้งไว้ หรือปรับอัตราส่วนความกว้างต่อความสูงของปุ่มอย่างละเอียด"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Виберіть готовий варіант або точно налаштуйте співвідношення ширини до висоти клавіш."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کوئی پری سیٹ منتخب کریں یا کیز کی چوڑائی اور اونچائی کا تناسب باریکی سے ایڈجسٹ کریں۔"
           }
         }
       }
@@ -18261,6 +19101,66 @@
             "state": "translated",
             "value": "Lapad"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "العرض"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πλάτος"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عرض"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "चौड़ाई"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "幅"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "너비"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Largura"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ความกว้าง"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ширина"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "چوڑائی"
+          }
         }
       }
     },
@@ -18337,6 +19237,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Paliitin ang lapad ng keyboard para ma-unlock ang pahalang na pagpoposisyon."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صغّر عرض لوحة المفاتيح لتفعيل الموضع الأفقي."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κάντε το πληκτρολόγιο στενότερο για να ξεκλειδώσετε την οριζόντια τοποθέτηση."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "برای فعال شدن موقعیت افقی، صفحه‌کلید را باریک‌تر کنید."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्षैतिज स्थिति सेट करने की सुविधा पाने के लिए कीबोर्ड को सँकरा करें।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "水平方向の位置を調整するには、キーボードを狭くしてください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가로 위치를 조정하려면 키보드를 더 좁게 만드세요."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Torne o teclado mais estreito para desbloquear o posicionamento horizontal."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทำให้คีย์บอร์ดแคบลงเพื่อปลดล็อกการปรับตำแหน่งแนวนอน"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зробіть клавіатуру вужчою, щоб розблокувати горизонтальне положення."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "افقی پوزیشن فعال کرنے کے لیے کی بورڈ کو تنگ کریں۔"
           }
         }
       }
@@ -18415,6 +19375,66 @@
             "state": "translated",
             "value": "Mas madaling abutin gamit ang isang kamay ang mas makitid na keyboard."
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لوحة المفاتيح الأضيق أسهل في الوصول إليها بيد واحدة."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ένα στενότερο πληκτρολόγιο είναι πιο εύκολα προσβάσιμο με το ένα χέρι."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صفحه‌کلید باریک‌تر با یک دست راحت‌تر در دسترس است."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सँकरे कीबोर्ड तक एक हाथ से पहुँचना आसान होता है।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キーボードを狭くすると、片手でも指が届きやすくなります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "키보드가 좁을수록 한 손으로 닿기 쉽습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um teclado mais estreito é mais fácil de alcançar com uma só mão."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คีย์บอร์ดที่แคบลงจะเอื้อมถึงได้ง่ายขึ้นเมื่อใช้มือเดียว"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "До вужчої клавіатури легше дотягнутися однією рукою."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تنگ کی بورڈ تک ایک ہاتھ سے پہنچنا آسان ہوتا ہے۔"
+          }
         }
       }
     },
@@ -18491,6 +19511,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Posisyon"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الموضع"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Θέση"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "موقعیت"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्थिति"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位置"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posição"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตำแหน่ง"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Положення"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "پوزیشن"
           }
         }
       }
@@ -18569,6 +19649,66 @@
             "state": "translated",
             "value": "Ilipat ang keyboard sa isang gilid para sa isang-kamay na pagta-type."
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حرّك لوحة المفاتيح نحو أحد الجانبين للكتابة بيد واحدة."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μετακινήστε το πληκτρολόγιο προς τη μία άκρη για πληκτρολόγηση με το ένα χέρι."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "برای تایپ یک‌دستی، صفحه‌کلید را به یکی از لبه‌ها نزدیک کنید."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एक हाथ से टाइप करने के लिए कीबोर्ड को किसी एक किनारे की ओर खिसकाएँ।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "片手で入力しやすいように、キーボードを左右どちらかに寄せます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한 손으로 입력하기 쉽도록 키보드를 한쪽으로 옮기세요."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desloque o teclado para um dos lados para escrever com uma só mão."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลื่อนคีย์บอร์ดไปทางขอบด้านใดด้านหนึ่งเพื่อพิมพ์ด้วยมือเดียว"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Змістіть клавіатуру до одного краю для набору однією рукою."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ایک ہاتھ سے ٹائپ کرنے کے لیے کی بورڈ کو ایک کنارے کی طرف منتقل کریں۔"
+          }
         }
       }
     },
@@ -18645,6 +19785,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "I-reset ang laki at layout sa mga default?"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعادة تعيين الحجم والتخطيط إلى الوضع الافتراضي؟"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επαναφορά μεγέθους και διάταξης στις προεπιλογές;"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اندازه و چیدمان به مقادیر پیش‌فرض بازنشانی شوند؟"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आकार और लेआउट को डिफ़ॉल्ट पर रीसेट करें?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サイズとレイアウトをデフォルトに戻しますか？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "크기 및 레이아웃을 기본값으로 재설정하시겠습니까?"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repor o tamanho e o esquema nos valores predefinidos?"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รีเซ็ตขนาดและเลย์เอาต์เป็นค่าเริ่มต้นหรือไม่"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скинути розмір і форму до стандартних значень?"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سائز اور لے آؤٹ طے شدہ حالت پر ری سیٹ کریں؟"
           }
         }
       }
@@ -18723,6 +19923,66 @@
             "state": "translated",
             "value": "Kailangan ng haptic feedback ng Full Access para sa Wurstfinger keyboard."
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تتطلب الاستجابة اللمسية الوصول الكامل للوحة مفاتيح Wurstfinger."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Η απτική ανάδραση απαιτεί πλήρη πρόσβαση για το πληκτρολόγιο Wurstfinger."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بازخورد لمسی برای صفحه‌کلید Wurstfinger به دسترسی کامل نیاز دارد."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हैप्टिक फ़ीडबैक के लिए Wurstfinger कीबोर्ड को पूर्ण एक्सेस चाहिए।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "触覚フィードバックには、Wurstfingerキーボードのフルアクセスが必要です。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "햅틱 피드백에는 Wurstfinger 키보드의 전체 접근이 필요합니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O retorno tátil requer acesso total para o teclado Wurstfinger."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การตอบสนองแบบสัมผัสต้องใช้การเข้าถึงเต็มรูปแบบสำหรับคีย์บอร์ด Wurstfinger"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тактильний відгук потребує повного доступу для клавіатури Wurstfinger."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ہیپٹک فیڈ بیک کے لیے Wurstfinger کی بورڈ کو مکمل رسائی درکار ہے۔"
+          }
         }
       }
     },
@@ -18799,6 +20059,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Payagan ang Full Access sa Settings"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السماح بالوصول الكامل في الإعدادات"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ενεργοποίηση πλήρους πρόσβασης"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اجازهٔ دسترسی کامل در تنظیمات"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सेटिंग्स में पूर्ण एक्सेस दें"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定でフルアクセスを許可"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정에서 전체 접근 허용"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir acesso total nas Definições"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อนุญาตการเข้าถึงเต็มรูปแบบในการตั้งค่า"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дозволити повний доступ у Параметрах"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ترتیبات میں مکمل رسائی کی اجازت دیں"
           }
         }
       }
@@ -18877,6 +20197,66 @@
             "state": "translated",
             "value": "I-reset ang haptic feedback sa mga default?"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعادة تعيين الاستجابة اللمسية إلى الوضع الافتراضي؟"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επαναφορά της απτικής ανάδρασης στις προεπιλογές;"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بازخورد لمسی به مقادیر پیش‌فرض بازنشانی شود؟"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हैप्टिक फ़ीडबैक को डिफ़ॉल्ट पर रीसेट करें?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "触覚フィードバックをデフォルトに戻しますか？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "햅틱 피드백을 기본값으로 재설정하시겠습니까?"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repor o retorno tátil nos valores predefinidos?"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รีเซ็ตการตอบสนองแบบสัมผัสเป็นค่าเริ่มต้นหรือไม่"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скинути тактильний відгук до стандартних значень?"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ہیپٹک فیڈ بیک طے شدہ حالت پر ری سیٹ کریں؟"
+          }
         }
       }
     },
@@ -18953,6 +20333,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Naka-set up na ang keyboard"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم إعداد لوحة المفاتيح"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το πληκτρολόγιο έχει ρυθμιστεί"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صفحه‌کلید راه‌اندازی شده است"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कीबोर्ड सेट हो गया"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キーボードは設定済みです"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "키보드가 설정되었습니다"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teclado está configurado"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งค่าคีย์บอร์ดเรียบร้อยแล้ว"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Клавіатуру налаштовано"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کی بورڈ سیٹ اپ ہو گیا"
           }
         }
       }
@@ -19031,6 +20471,66 @@
             "state": "translated",
             "value": "I-set Up ang Keyboard"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إعداد لوحة المفاتيح"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ρύθμιση του πληκτρολογίου"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "راه‌اندازی صفحه‌کلید"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कीबोर्ड सेट अप करें"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キーボードをセットアップ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "키보드 설정하기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar o teclado"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งค่าคีย์บอร์ด"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Налаштувати клавіатуру"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کی بورڈ سیٹ اپ کریں"
+          }
         }
       }
     },
@@ -19107,6 +20607,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Alamin ang mga Galaw"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعلَّم الإيماءات"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μάθετε τις χειρονομίες"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "آموزش اشاره‌ها"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "जेस्चर सीखें"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ジェスチャを学ぶ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제스처 배우기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprender os gestos"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เรียนรู้ท่าทาง"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вивчити жести"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اشارے سیکھیں"
           }
         }
       }
@@ -19185,6 +20745,66 @@
             "state": "translated",
             "value": "I-tap ang isang wika para i-enable o i-disable ito. I-tap ang bituin para piliin ang wikang panimula ng keyboard. Mag-swipe pakanan sa globe key para magpalit ng wika habang nagta-type."
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اضغط على لغة لتفعيلها أو تعطيلها. اضغط على النجمة لاختيار اللغة التي تبدأ بها لوحة المفاتيح. مرِّر يمينًا على مفتاح الكرة الأرضية لتبديل اللغات أثناء الكتابة."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πατήστε μια γλώσσα για να την ενεργοποιήσετε ή να την απενεργοποιήσετε. Πατήστε το αστέρι για να επιλέξετε τη γλώσσα με την οποία ξεκινά το πληκτρολόγιο. Σαρώστε δεξιά στο πλήκτρο της υδρογείου για εναλλαγή γλωσσών κατά την πληκτρολόγηση."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "روی یک زبان ضربه بزنید تا فعال یا غیرفعال شود. روی ستاره ضربه بزنید تا زبانی که صفحه‌کلید با آن شروع می‌شود انتخاب شود. هنگام تایپ، روی کلید کره به راست بکشید تا زبان‌ها عوض شوند."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "किसी भाषा को चालू या बंद करने के लिए उस पर टैप करें। कीबोर्ड जिस भाषा से शुरू हो, उसे चुनने के लिए स्टार पर टैप करें। टाइप करते समय भाषा बदलने के लिए ग्लोब की पर दाएँ स्वाइप करें।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "言語をタップすると、有効・無効を切り替えられます。星をタップすると、キーボードの起動時の言語を選べます。入力中に地球儀キーを右にスワイプすると、言語を切り替えられます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "언어를 탭하면 사용하거나 사용을 중지할 수 있습니다. 별표를 탭하면 키보드가 시작할 때 사용할 언어를 선택합니다. 입력 중에 지구본 키를 오른쪽으로 스와이프하면 언어를 전환할 수 있습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque num idioma para o ativar ou desativar. Toque na estrela para escolher o idioma com que o teclado arranca. Deslize para a direita na tecla do globo para mudar de idioma enquanto escreve."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แตะที่ภาษาเพื่อเปิดหรือปิดใช้ แตะรูปดาวเพื่อเลือกภาษาที่คีย์บอร์ดจะเริ่มต้นใช้ ปัดขวาที่ปุ่มลูกโลกเพื่อสลับภาษาขณะพิมพ์"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Торкніться мови, щоб увімкнути або вимкнути її. Торкніться зірочки, щоб обрати мову, з якої стартує клавіатура. Проведіть праворуч по клавіші глобуса, щоб перемикати мови під час набору."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کسی زبان کو فعال یا غیر فعال کرنے کے لیے اس پر ٹیپ کریں۔ کی بورڈ جس زبان سے شروع ہو، اسے منتخب کرنے کے لیے ستارے پر ٹیپ کریں۔ ٹائپ کرتے ہوئے زبانیں بدلنے کے لیے گلوب کی پر دائیں سوائپ کریں۔"
+          }
         }
       }
     },
@@ -19261,6 +20881,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gawing default na wika ang %@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جعل %@ اللغة الافتراضية"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ορισμός της γλώσσας %@ ως προεπιλεγμένης"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تنظیم %@ به‌عنوان زبان پیش‌فرض"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ को डिफ़ॉल्ट भाषा बनाएँ"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@をデフォルトの言語にする"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 기본 언어로 설정"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Definir %@ como idioma predefinido"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้ง %@ เป็นภาษาเริ่มต้น"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зробити %@ мовою за замовчуванням"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ کو طے شدہ زبان بنائیں"
           }
         }
       }
@@ -19339,6 +21019,66 @@
             "state": "translated",
             "value": "Mga Titik at Simbolo"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحروف والرموز"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Γράμματα και σύμβολα"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حروف و نمادها"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अक्षर और सिंबल"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字と記号"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "문자 및 기호"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letras e símbolos"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตัวอักษรและสัญลักษณ์"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Літери й символи"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حروف اور علامات"
+          }
         }
       }
     },
@@ -19415,6 +21155,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pag-edit"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التحرير"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επεξεργασία"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ویرایش"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एडिटिंग"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "編集"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "편집"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edição"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การแก้ไข"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Редагування"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ترمیم"
           }
         }
       }
@@ -19493,6 +21293,66 @@
             "state": "translated",
             "value": "Paglipat"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التبديل"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εναλλαγή"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعویض"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्विचिंग"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切り替え"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전환"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mudança"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การสลับ"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перемикання"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تبدیلی"
+          }
         }
       }
     },
@@ -19569,6 +21429,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tap"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اللمس"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πάτημα"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ضربه"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "टैप"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "タップ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "탭"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แตะ"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дотик"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ٹیپ"
           }
         }
       }
@@ -19647,6 +21567,66 @@
             "state": "translated",
             "value": "Swipe"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التمرير"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σάρωση"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کشیدن"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्वाइप"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スワイプ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스와이프"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deslize"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปัด"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свайп"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سوائپ"
+          }
         }
       }
     },
@@ -19723,6 +21703,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Return Swipe"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التمرير العائد"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σάρωση επιστροφής"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کشیدن‌و‌بازگشت"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "रिटर्न स्वाइप"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リターンスワイプ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리턴 스와이프"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deslize de retorno"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปัดกลับ"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зворотний свайп"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ریٹرن سوائپ"
           }
         }
       }
@@ -19801,6 +21841,66 @@
             "state": "translated",
             "value": "Bilog"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دائرة"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κύκλος"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دایره"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "गोला"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "円を描く"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "원 그리기"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Círculo"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วนนิ้ว"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Круговий жест"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دائرہ"
+          }
         }
       }
     },
@@ -19877,6 +21977,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pag-drag sa Space"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سحب المسافة"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σύρσιμο διαστήματος"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کشیدن کلید فاصله"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्पेस ड्रैग"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スペースキーのドラッグ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스페이스 드래그"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastar a tecla Espaço"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลากปุ่มเว้นวรรค"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перетягування пробілу"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اسپیس ڈریگ"
           }
         }
       }
@@ -19955,6 +22115,66 @@
             "state": "translated",
             "value": "Pag-drag sa Delete"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سحب الحذف"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σύρσιμο διαγραφής"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کشیدن کلید حذف"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "डिलीट ड्रैग"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "削除キーのドラッグ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "삭제 드래그"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastar a tecla Eliminar"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลากปุ่มลบ"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перетягування видалення"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ڈیلیٹ ڈریگ"
+          }
         }
       }
     },
@@ -20031,6 +22251,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clipboard"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحافظة"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πρόχειρο"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کلیپ‌بورد"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्लिपबोर्ड"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クリップボード"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "클립보드"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Área de transferência"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คลิปบอร์ด"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Буфер обміну"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کلپ بورڈ"
           }
         }
       }
@@ -20109,6 +22389,66 @@
             "state": "translated",
             "value": "Globe Key"
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مفتاح الكرة الأرضية"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πλήκτρο υδρογείου"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کلید کره"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ग्लोब की"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "地球儀キー"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지구본 키"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tecla do globo"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปุ่มลูกโลก"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Клавіша глобуса"
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "گلوب کی"
+          }
         }
       }
     },
@@ -20185,6 +22525,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nagta-type ng malaking character sa gitna ng key."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يكتب الحرف الظاهر بحجم كبير في وسط المفتاح."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πληκτρολογεί τον μεγάλο χαρακτήρα στο κέντρο του πλήκτρου."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نویسهٔ بزرگ وسط کلید را تایپ می‌کند."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कुंजी के बीच में मौजूद बड़ा अक्षर टाइप करता है।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キーの中央にある大きな文字を入力します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "키 가운데에 있는 큰 문자를 입력합니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escreve o carácter grande no centro da tecla."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "พิมพ์อักขระขนาดใหญ่ที่อยู่ตรงกลางปุ่ม"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вводить великий символ у центрі клавіші."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کی کے وسط میں بڑے سائز میں دکھائے گئے حرف کو ٹائپ کرتا ہے۔"
           }
         }
       }
@@ -20263,6 +22663,66 @@
             "state": "translated",
             "value": "Nagta-type ng maliit na character na nakikita sa direksyong iyon sa key."
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يكتب الحرف الصغير الظاهر في ذلك الاتجاه على المفتاح."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πληκτρολογεί τον μικρό χαρακτήρα που εμφανίζεται προς αυτή την κατεύθυνση στο πλήκτρο."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نویسهٔ کوچکی را که در آن جهت روی کلید نشان داده شده تایپ می‌کند."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कुंजी पर उस दिशा में दिख रहा छोटा अक्षर टाइप करता है।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キーのその方向に表示されている小さな文字を入力します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "키에서 해당 방향에 표시된 작은 문자를 입력합니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escreve o carácter pequeno indicado nessa direção na tecla."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "พิมพ์อักขระขนาดเล็กที่แสดงอยู่ในทิศทางนั้นบนปุ่ม"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вводить маленький символ, показаний у цьому напрямку на клавіші."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کی پر اُس سمت میں دکھائے گئے چھوٹے حرف کو ٹائپ کرتا ہے۔"
+          }
         }
       }
     },
@@ -20339,6 +22799,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mag-swipe palayo at pabalik nang hindi inaangat ang daliri para makuha ang alternatibong character ng key."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مرِّر بعيدًا ثم عُد إلى نقطة البداية دون رفع إصبعك للحصول على الحرف البديل للمفتاح."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σαρώστε προς τα έξω και πίσω χωρίς να σηκώσετε το δάχτυλό σας για να πάρετε τον εναλλακτικό χαρακτήρα του πλήκτρου."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بدون برداشتن انگشت، به بیرون بکشید و به نقطهٔ شروع برگردید تا نویسهٔ جایگزین کلید تایپ شود."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "उंगली उठाए बिना दूर और वापस स्वाइप करें, ताकि कुंजी का वैकल्पिक अक्षर मिले।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指を離さずに外へスワイプして元の位置に戻すと、そのキーの別の文字を入力できます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "손가락을 떼지 않고 바깥으로 스와이프했다가 제자리로 돌아오면 해당 키의 대체 문자가 입력됩니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deslize para fora e de volta sem levantar o dedo para obter o carácter alternativo da tecla."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปัดออกแล้วปัดกลับโดยไม่ยกนิ้ว เพื่อพิมพ์อักขระสำรองของปุ่มนั้น"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проведіть від центру клавіші й назад, не відриваючи пальця, щоб отримати альтернативний символ клавіші."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کی کا متبادل حرف حاصل کرنے کے لیے انگلی اٹھائے بغیر باہر کی طرف سوائپ کریں اور واپس آ جائیں۔"
           }
         }
       }
@@ -20417,6 +22937,66 @@
             "state": "translated",
             "value": "Gumuhit ng maliit na bilog sa isang letter key para i-type ito bilang malaking titik."
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ارسم دائرة صغيرة على مفتاح حرف لكتابته بحرف كبير."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σχεδιάστε έναν μικρό κύκλο πάνω σε ένα πλήκτρο γράμματος για να το πληκτρολογήσετε ως κεφαλαίο."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "روی کلید حرف یک دایرهٔ کوچک بکشید تا آن حرف بزرگ تایپ شود."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "किसी अक्षर कुंजी पर छोटा गोला बनाएँ, ताकि वह बड़े अक्षर में टाइप हो।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字キーの上で小さく円を描くと、その文字が大文字で入力されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "문자 키 위에 작은 원을 그리면 해당 문자가 대문자로 입력됩니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desenhe um pequeno círculo numa tecla de letra para a escrever em maiúscula."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วาดวงกลมเล็กๆ บนปุ่มตัวอักษรเพื่อพิมพ์เป็นตัวพิมพ์ใหญ่"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Намалюйте невелике коло на клавіші з літерою, щоб ввести її великою."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کسی حرف والی کی پر چھوٹا دائرہ بنائیں تاکہ وہ بڑے حرف کے طور پر ٹائپ ہو۔"
+          }
         }
       }
     },
@@ -20493,6 +23073,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pindutin nang matagal at i-drag ang space key para igalaw ang cursor sa iyong text."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اضغط مطوّلاً على مفتاح المسافة واسحب لتحريك المؤشر داخل النص."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κρατήστε και σύρετε το πλήκτρο διαστήματος για να μετακινήσετε τον δρομέα μέσα στο κείμενό σας."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کلید فاصله را نگه دارید و بکشید تا نشانگر در متن جابه‌جا شود."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अपने टेक्स्ट में कर्सर घुमाने के लिए स्पेस की को दबाए रखें और खींचें।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スペースキーを押したままドラッグすると、テキスト内でカーソルを移動できます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스페이스 키를 누른 채 드래그하면 텍스트에서 커서를 이동할 수 있습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantenha premida e arraste a tecla Espaço para mover o cursor pelo texto."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กดปุ่มเว้นวรรคค้างแล้วลากเพื่อเลื่อนเคอร์เซอร์ไปในข้อความ"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Утримуйте й тягніть клавішу пробілу, щоб переміщати курсор у тексті."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اپنے متن میں کرسر منتقل کرنے کے لیے اسپیس کی دبائے رکھیں اور ڈریگ کریں۔"
           }
         }
       }
@@ -20571,6 +23211,66 @@
             "state": "translated",
             "value": "Pindutin nang matagal at i-drag ang delete key para tuloy-tuloy na magbura — habang mas malayo ang drag, mas marami ang nabubura."
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اضغط مطوّلاً على مفتاح الحذف واسحب لمواصلة الحذف — كلما سحبت أبعد حُذف المزيد."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κρατήστε και σύρετε το πλήκτρο διαγραφής για συνεχή διαγραφή — όσο πιο μακριά σύρετε, τόσο περισσότερα διαγράφονται."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کلید حذف را نگه دارید و بکشید تا حذف ادامه یابد — هرچه بیشتر بکشید، بیشتر حذف می‌شود."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लगातार डिलीट करने के लिए डिलीट की को दबाए रखें और खींचें — जितना दूर खींचेंगे, उतना ज़्यादा हटेगा।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "削除キーを押したままドラッグすると削除を続けます。ドラッグするほど、多くの文字が削除されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "삭제 키를 누른 채 드래그하면 계속 삭제됩니다. 멀리 드래그할수록 더 많이 지워집니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantenha premida e arraste a tecla Eliminar para continuar a apagar — quanto mais arrastar, mais é removido."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กดปุ่มลบค้างแล้วลากเพื่อลบต่อเนื่อง — ยิ่งลากไกล ยิ่งลบมากขึ้น"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Утримуйте й тягніть клавішу видалення, щоб видаляти далі — що більше тягнете, то більше видаляється."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مسلسل حذف کرنے کے لیے ڈیلیٹ کی دبائے رکھیں اور ڈریگ کریں — جتنا دور ڈریگ کریں گے، اتنا ہی زیادہ حذف ہوگا۔"
+          }
         }
       }
     },
@@ -20647,6 +23347,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sa 123 key: mag-swipe pataas para kumopya, pataas-pakanan para gumupit, pababa para mag-paste."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "على مفتاح 123: مرِّر لأعلى للنسخ، ولأعلى اليمين للقص، ولأسفل للصق."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Στο πλήκτρο 123: σάρωση προς τα πάνω για αντιγραφή, πάνω δεξιά για αποκοπή, κάτω για επικόλληση."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "روی کلید 123: برای کپی به بالا، برای برش به بالا-راست و برای چسباندن به پایین بکشید."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "123 कुंजी पर: कॉपी के लिए ऊपर स्वाइप करें, कट के लिए ऊपर-दाएँ, पेस्ट के लिए नीचे।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "123キーで、上にスワイプでコピー、右上にスワイプで切り取り、下にスワイプで貼り付けです。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "123 키에서 위로 스와이프하면 복사, 오른쪽 위는 잘라내기, 아래는 붙여넣기입니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na tecla 123: deslize para cima para copiar, para cima e à direita para cortar, para baixo para colar."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บนปุ่ม 123: ปัดขึ้นเพื่อคัดลอก ปัดขึ้นขวาเพื่อตัด ปัดลงเพื่อวาง"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На клавіші 123: свайп угору копіює, вгору-праворуч вирізає, вниз вставляє."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "123 کی پر: کاپی کے لیے اوپر سوائپ کریں، کٹ کے لیے اوپر دائیں، اور پیسٹ کے لیے نیچے۔"
           }
         }
       }
@@ -20725,6 +23485,66 @@
             "state": "translated",
             "value": "Mag-swipe pakaliwa para lumipat sa susunod na system keyboard, pakanan para magpalit ng wika, pababa para itago ang keyboard."
           }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مرِّر يسارًا للانتقال إلى لوحة مفاتيح النظام التالية، ويمينًا لتغيير اللغة، ولأسفل لإخفاء لوحة المفاتيح."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σαρώστε αριστερά για μετάβαση στο επόμενο πληκτρολόγιο του συστήματος, δεξιά για αλλαγή γλώσσας και κάτω για απόκρυψη του πληκτρολογίου."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "به چپ بکشید تا به صفحه‌کلید بعدی سیستم بروید، به راست بکشید تا زبان عوض شود و به پایین بکشید تا صفحه‌کلید پنهان شود."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अगले सिस्टम कीबोर्ड पर जाने के लिए बाएँ स्वाइप करें, भाषा बदलने के लिए दाएँ, और कीबोर्ड छिपाने के लिए नीचे स्वाइप करें।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左にスワイプで次のシステムキーボードに切り替え、右にスワイプで言語を変更、下にスワイプでキーボードを隠します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "왼쪽으로 스와이프하면 다음 시스템 키보드로 전환하고, 오른쪽으로 스와이프하면 언어를 변경하고, 아래로 스와이프하면 키보드를 숨깁니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deslize para a esquerda para mudar para o teclado de sistema seguinte, para a direita para mudar de idioma, para baixo para ocultar o teclado."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปัดซ้ายเพื่อสลับไปยังคีย์บอร์ดถัดไปของระบบ ปัดขวาเพื่อเปลี่ยนภาษา ปัดลงเพื่อซ่อนคีย์บอร์ด"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свайп ліворуч перемикає на наступну системну клавіатуру, свайп праворуч змінює мову, свайп униз ховає клавіатуру."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اگلے سسٹم کی بورڈ پر جانے کے لیے بائیں سوائپ کریں، زبان بدلنے کے لیے دائیں، اور کی بورڈ چھپانے کے لیے نیچے۔"
+          }
         }
       }
     },
@@ -20801,6 +23621,66 @@
           "stringUnit": {
             "state": "translated",
             "value": "Subukan ang lahat ng galaw nang ligtas sa Test tab o sa preview ng mga setting."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جرّب كل الإيماءات بأمان في علامة تبويب الاختبار أو في معاينة الإعدادات."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δοκιμάστε με ασφάλεια όλες τις χειρονομίες στην καρτέλα Δοκιμή ή στην προεπισκόπηση των ρυθμίσεων."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "همهٔ اشاره‌ها را بی‌خطر در زبانهٔ آزمایش یا پیش‌نمایش تنظیمات امتحان کنید."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सभी जेस्चर बिना किसी जोखिम के टेस्ट टैब या सेटिंग्स के प्रीव्यू में आज़माएँ।"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「テスト」タブや設定のプレビューで、すべてのジェスチャを安心して試せます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "테스트 탭이나 설정의 미리보기에서 모든 제스처를 안전하게 시험해 볼 수 있습니다."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Experimente todos os gestos em segurança no separador Testar ou na pré-visualização das definições."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลองท่าทางทั้งหมดได้อย่างปลอดภัยในแท็บทดสอบหรือในตัวอย่างของการตั้งค่า"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Безпечно випробуйте всі жести на вкладці «Тест» або в перегляді в налаштуваннях."
+          }
+        },
+        "ur": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تمام اشاروں کو ٹیسٹ ٹیب یا ترتیبات کے پیش منظر میں بحفاظت آزمائیں۔"
           }
         }
       }
