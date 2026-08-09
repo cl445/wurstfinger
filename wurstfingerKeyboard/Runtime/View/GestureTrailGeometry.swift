@@ -2,15 +2,16 @@
 //  GestureTrailGeometry.swift
 //  Wurstfinger
 //
-//  Turns recorded touch positions into the tapered ribbon the swipe trail
-//  is drawn as. Pure functions, no view state.
+//  Turns recorded touch positions into the shapes the gesture trail is drawn
+//  as: a dot for a press, a tapered ribbon for a swipe. Pure functions, no
+//  view state.
 //
 
 import CoreGraphics
 import Foundation
 import SwiftUI
 
-/// Path construction for the swipe trail.
+/// Path construction for the gesture trail.
 ///
 /// The trail is built as a single closed outline rather than as a stroked
 /// polyline: a translucent stroke made of overlapping round-capped segments
@@ -18,6 +19,32 @@ import SwiftUI
 /// itself, which shows up as dark blotches exactly where the finger changed
 /// direction. One filled contour has uniform alpha everywhere.
 enum GestureTrailGeometry {
+    /// The shape for one visible trail: a dot while the touch has not moved,
+    /// the tapered ribbon once it has.
+    ///
+    /// The ribbon needs two points to have a direction at all, so a lone
+    /// sample — a press — is drawn as a dot instead.
+    static func shape(through points: [CGPoint], headWidth: CGFloat) -> Path {
+        if points.count == 1 {
+            let diameter = headWidth * KeyboardConstants.GestureTrail.pressDotWidthFactor
+            return dot(at: points[0], diameter: diameter)
+        }
+        return ribbon(through: smoothed(points), headWidth: headWidth)
+    }
+
+    /// Filled circle marking a stationary touch.
+    static func dot(at point: CGPoint, diameter: CGFloat) -> Path {
+        guard diameter > 0 else { return Path() }
+        return Path(
+            ellipseIn: CGRect(
+                x: point.x - diameter / 2,
+                y: point.y - diameter / 2,
+                width: diameter,
+                height: diameter
+            )
+        )
+    }
+
     /// Resamples `points` through a uniform Catmull-Rom spline.
     ///
     /// A fast flick only produces a handful of drag samples, and drawing those

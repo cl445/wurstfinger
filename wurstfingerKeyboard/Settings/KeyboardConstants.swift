@@ -110,7 +110,7 @@ enum KeyboardConstants {
 
     // MARK: - Gesture Trail
 
-    /// Tuning for the optional swipe trail drawn under the finger.
+    /// Tuning for the optional gesture trail drawn under the finger.
     ///
     /// A soft ribbon, widest at the finger and tapering to a point at its
     /// tail, kept short so it reads as a comet tail rather than a drawing of
@@ -135,7 +135,10 @@ enum KeyboardConstants {
         static let visibleDuration: TimeInterval = 0.55
 
         /// How long the frozen trail takes to fade out after the finger lifts.
-        static let fadeOutDuration: TimeInterval = 0.22
+        /// Tuned on device: 0.22 read as an abrupt blink once the press dot
+        /// made single keystrokes draw; the longer glow lets the mark register
+        /// without lagging behind fast typing.
+        static let fadeOutDuration: TimeInterval = 0.35
 
         /// Head width as a fraction of the row height, so the trail scales
         /// with the user's key size instead of overwhelming small keyboards.
@@ -144,6 +147,14 @@ enum KeyboardConstants {
         /// Clamps for the scaled head width.
         static let minWidth: CGFloat = 5
         static let maxWidth: CGFloat = 14
+
+        /// Diameter of the press dot, as a multiple of the head width.
+        ///
+        /// Slightly wider than the ribbon's head so both carry a comparable
+        /// amount of ink: a swipe spreads its mark along the whole path, while
+        /// a press has nothing but the dot. At 1.0 the dot reads as a smudge
+        /// next to the key label; much beyond this it starts to swamp it.
+        static let pressDotWidthFactor: CGFloat = 1.4
 
         /// Exponent of the tail taper: `width = headWidth * progress^exponent`
         /// with `progress` running 0 (tail) → 1 (finger). `headWidth` is the

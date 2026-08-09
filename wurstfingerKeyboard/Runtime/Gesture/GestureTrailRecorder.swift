@@ -2,7 +2,7 @@
 //  GestureTrailRecorder.swift
 //  Wurstfinger
 //
-//  Collects touch positions for the swipe trail and tells the overlay when
+//  Collects touch positions for the gesture trail and tells the overlay when
 //  there is something to draw.
 //
 
@@ -18,7 +18,7 @@ import SwiftUI
 /// only for `@StateObject`'s deferred construction.
 final class GestureTrailToken: ObservableObject {}
 
-/// Per-keyboard collector for the swipe trail.
+/// Per-keyboard collector for the gesture trail.
 ///
 /// Owned by `KeyboardGridView`, fed by the gesture modifiers with positions in
 /// the shared `coordinateSpace`, and read by `GestureTrailOverlay`.
@@ -35,9 +35,10 @@ final class GestureTrailRecorder: ObservableObject {
     /// points need no offset correction to be drawn.
     static let coordinateSpace = NamedCoordinateSpace.named("wurstfinger.gestureTrail")
 
-    /// Whether the overlay should be rendering. False for taps (below the
-    /// activation distance), while the setting is off, and once the fade-out
-    /// has finished.
+    /// Whether the overlay should be rendering. True from the moment a touch
+    /// goes down with the setting on — a press that never moves is drawn as
+    /// the head of the trail standing still — and false while the setting is
+    /// off or once the fade-out has finished.
     @Published private(set) var isVisible = false
 
     /// The trail to draw. Unpublished, so drag samples cannot invalidate the
@@ -51,24 +52,6 @@ final class GestureTrailRecorder: ObservableObject {
     /// once per gesture so a toggle flipped mid-swipe cannot leave a
     /// half-recorded trail behind.
     private var isRecording = false
-
-    /// Travel at which the recognizer that owns the current touch stops
-    /// classifying it as a tap. Supplied per touch by that recognizer rather
-    /// than kept as a constant: it is the classifier's `minSwipeLength` on a
-    /// letter key, the slide activation threshold on space and delete.
-    /// `.infinity` until a touch begins, so nothing can draw unclaimed.
-    private var activationDistance: CGFloat = .infinity
-
-    /// Aspect ratio the owning recognizer classifies in. `classify` divides the
-    /// horizontal component by it before measuring travel, so its tap boundary
-    /// is an ellipse in screen space; measuring the trail the same way keeps
-    /// the two boundaries identical on non-square keys. 1 for recognizers that
-    /// classify in raw points.
-    private var aspectRatio: CGFloat = 1
-
-    /// Running maximum travel from the touch-down point, measured the way the
-    /// owning recognizer measures it.
-    private var maxNormalizedDisplacement: CGFloat = 0
 
     /// The gesture modifier whose touch sequence currently owns the trail.
     ///
@@ -90,29 +73,15 @@ final class GestureTrailRecorder: ObservableObject {
         self.now = now
     }
 
-    /// Starts recording a new touch sequence.
-    ///
-    /// `activationDistance` is the travel below which the calling recognizer
-    /// will dispatch this touch as a tap; drawing before it would advertise a
-    /// swipe that never happens. `aspectRatio` is the space that travel is
-    /// measured in. `token` identifies the recognizer.
-    func begin(
-        at location: CGPoint,
-        from token: GestureTrailToken,
-        activationDistance: CGFloat,
-        aspectRatio: CGFloat = 1
-    ) {
+    /// Starts recording a new touch sequence. `token` identifies the
+    /// recognizer it came from.
+    func begin(at location: CGPoint, from token: GestureTrailToken) {
         // First finger down wins the trail and keeps it until its sequence
         // ends. A concurrent second touch is ignored rather than drawn as
         // a second trail: one stroke matches the system keyboard, and the
         // overlay renders a single path.
         guard owner == nil else { return }
         owner = token
-        self.activationDistance = activationDistance
-        // A zero, negative or non-finite ratio would divide the horizontal
-        // component into nothing and draw under every tap.
-        self.aspectRatio = aspectRatio.isFinite && aspectRatio > 0 ? aspectRatio : 1
-        maxNormalizedDisplacement = 0
         beginTouch(at: location)
     }
 
@@ -120,21 +89,11 @@ final class GestureTrailRecorder: ObservableObject {
     func extend(to location: CGPoint, from token: GestureTrailToken) {
         guard owner === token, isRecording else { return }
         trail.extend(to: location, time: now())
-        // Suppress taps: every keystroke on this keyboard begins as a touch
-        // down, so drawing from the first sample would flash a dot under every
-        // letter typed.
-        guard !isVisible else { return }
-        if let origin = trail.origin {
-            let travel = hypot((location.x - origin.x) / aspectRatio, location.y - origin.y)
-            maxNormalizedDisplacement = max(maxNormalizedDisplacement, travel)
-        }
-        if maxNormalizedDisplacement >= activationDistance {
-            setVisible(true)
-        }
     }
 
-    /// Ends the current touch. A trail that became visible freezes and fades
-    /// out; one that stayed below the activation distance is dropped silently.
+    /// Ends the current touch: the trail freezes where the finger left it and
+    /// fades out. A tap freezes as its dot, which is the only feedback this
+    /// keyboard gives for a press — it has no key pop-up.
     func finish(from token: GestureTrailToken) {
         guard owner === token else { return }
         // Released before the `isRecording` check so a touch taken while the
@@ -142,18 +101,14 @@ final class GestureTrailRecorder: ObservableObject {
         owner = nil
         guard isRecording else { return }
         isRecording = false
-        guard isVisible else {
-            trail.clear()
-            return
-        }
         trail.release(at: now())
         scheduleFadeOut()
     }
 
     /// Discards the trail immediately, without a fade. Used for the paths that
-    /// end a touch without a gesture: a system cancellation, a long press that
-    /// consumed the touch, and the teardown of a key that was mid-gesture
-    /// (which reaches neither `onEnded` nor the cancel path).
+    /// end a touch without a gesture: a system cancellation and the teardown
+    /// of a key that was mid-gesture (which reaches neither `onEnded` nor the
+    /// cancel path).
     func cancel(from token: GestureTrailToken) {
         // Also gates the recognizers' unconditional cancel paths: a key whose
         // gesture never started is not the owner and must not clear a trail
@@ -181,6 +136,7 @@ final class GestureTrailRecorder: ObservableObject {
         isRecording = defaults.bool(forKey: SettingsKey.gestureTrailEnabled.rawValue)
         guard isRecording else { return }
         trail.begin(at: location, time: now())
+        setVisible(true)
     }
 
     private func scheduleFadeOut() {

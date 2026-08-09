@@ -229,7 +229,7 @@ struct SlideGestureHandler: ViewModifier {
     /// on release). `nil` disables detection.
     var onLongPress: (() -> Bool)?
 
-    /// Collects the touch path for the swipe trail overlay. Nil disables the
+    /// Collects the touch path for the gesture trail overlay. Nil disables the
     /// feed entirely (previews and tests); when set, the recorder itself
     /// decides whether the user has the trail turned on.
     var trail: GestureTrailRecorder?
@@ -260,11 +260,9 @@ struct SlideGestureHandler: ViewModifier {
                     .onChanged { value in
                         // A fired long press owns the rest of this touch:
                         // don't feed the state machine, or the movement would
-                        // start a cursor slide after the digit was typed.
+                        // start a cursor slide after the digit was typed. The
+                        // trail already froze when the press fired.
                         if longPress.consumedTouch {
-                            // The digit is already typed, so stop drawing a
-                            // gesture that will never be dispatched.
-                            trail?.cancel(from: trailToken)
                             isActive = true
                             return
                         }
@@ -273,10 +271,7 @@ struct SlideGestureHandler: ViewModifier {
                             configuration: configuration
                         )
                         if update.isTouchDown {
-                            trail?.begin(
-                                at: value.location, from: trailToken,
-                                activationDistance: configuration.activationThreshold
-                            )
+                            trail?.begin(at: value.location, from: trailToken)
                             onTouchDown()
                             scheduleLongPress()
                         } else {
@@ -299,7 +294,6 @@ struct SlideGestureHandler: ViewModifier {
                             // release produces neither a tap nor a slide end.
                             longPress.clearConsumed()
                             _ = state.handleCancelled()
-                            trail?.cancel(from: trailToken)
                             isActive = false
                             return
                         }
@@ -344,30 +338,24 @@ struct SlideGestureHandler: ViewModifier {
     // MARK: - Long Press
 
     /// Arms the shared scheduler with this handler's fire guard. The guard
-    /// reads live `@State` (`state`) at fire time through the property wrapper
-    /// — identical to the previous `fireLongPress()` semantics. The
-    /// `!state.isSliding` axis is preserved: it is the one guard that
-    /// legitimately differs from `KeyGestureRecognizer` (which has no sliding
-    /// concept).
+    /// reads live `@State` (`state`) at fire time through the property
+    /// wrapper; `!state.isSliding` is the one condition `KeyGestureRecognizer`
+    /// does not share, because only slide keys can latch a slide. A fired
+    /// press has typed its digit, so its trail freezes and fades like any
+    /// other completed keystroke.
     private func scheduleLongPress() {
         guard onLongPress != nil else { return }
         longPress.schedule {
-            state.dragStarted
+            let fired = state.dragStarted
                 && !state.isSliding
                 && state.maxDisplacement <= KeyboardConstants.LongPress.movementTolerance
                 && onLongPress?() == true
+            if fired { trail?.finish(from: trailToken) }
+            return fired
         }
     }
 
     private var configuration: SlideGestureConfiguration {
         .for(slideType)
-    }
-
-    // MARK: - Activation Threshold
-
-    /// Travel below which this key's touch is dispatched as a tap. `internal`
-    /// and static so the trail-threshold guard test can pin it.
-    static func activationThreshold(for slideType: SlideType) -> CGFloat {
-        SlideGestureConfiguration.for(slideType).activationThreshold
     }
 }

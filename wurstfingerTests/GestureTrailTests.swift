@@ -2,8 +2,8 @@
 //  GestureTrailTests.swift
 //  WurstfingerTests
 //
-//  Tests for the swipe trail: sample buffer, ribbon geometry and the
-//  recorder that gates both on the user setting.
+//  Tests for the gesture trail: sample buffer, dot and ribbon geometry, and
+//  the recorder that gates both on the user setting.
 //
 
 import CoreGraphics
@@ -15,20 +15,17 @@ import Testing
 // MARK: - Sample Buffer
 
 struct GestureTrailBufferTests {
-    @Test func beginSeedsOriginAndFirstSample() {
+    @Test func beginSeedsTheFirstSample() {
         var trail = GestureTrail()
         trail.begin(at: CGPoint(x: 10, y: 20), time: 100)
-        #expect(trail.samples.count == 1)
-        #expect(trail.origin == CGPoint(x: 10, y: 20))
-        #expect(trail.maxDisplacement == 0)
+        #expect(trail.samples.map(\.point) == [CGPoint(x: 10, y: 20)])
         #expect(trail.releaseTime == nil)
     }
 
     @Test func extendBeforeBeginStartsTheTrail() {
         var trail = GestureTrail()
         trail.extend(to: CGPoint(x: 5, y: 5), time: 100)
-        #expect(trail.origin == CGPoint(x: 5, y: 5))
-        #expect(trail.samples.count == 1)
+        #expect(trail.samples.map(\.point) == [CGPoint(x: 5, y: 5)])
     }
 
     @Test func samplesCloserThanTheSpacingAreDropped() {
@@ -42,26 +39,15 @@ struct GestureTrailBufferTests {
         #expect(trail.samples.count == 2)
     }
 
-    @Test func droppedSamplesStillAdvanceMaxDisplacement() {
-        // Tap suppression must not depend on the decimation: a finger that
-        // creeps outward in sub-spacing steps has still travelled.
+    @Test func aTouchThatNeverMovesKeepsItsSingleSample() {
+        // The press dot is drawn from exactly this: a finger that creeps in
+        // sub-spacing steps must keep one sample, not zero and not a smear.
         var trail = GestureTrail()
         trail.begin(at: .zero, time: 100)
         for step in 1 ... 3 {
             trail.extend(to: CGPoint(x: CGFloat(step), y: 0), time: 100 + Double(step), minimumSpacing: 4)
         }
-        #expect(trail.samples.count == 1)
-        #expect(trail.maxDisplacement == 3)
-    }
-
-    @Test func maxDisplacementIsARunningMaximum() {
-        // An out-and-back return swipe ends near its origin but has clearly
-        // moved, so the peak — not the final distance — has to be reported.
-        var trail = GestureTrail()
-        trail.begin(at: .zero, time: 100)
-        trail.extend(to: CGPoint(x: 40, y: 0), time: 101)
-        trail.extend(to: CGPoint(x: 1, y: 0), time: 102)
-        #expect(trail.maxDisplacement == 40)
+        #expect(trail.samples.map(\.point) == [.zero])
     }
 
     @Test func capacityEvictsTheOldestSamples() {
@@ -83,6 +69,38 @@ struct GestureTrailBufferTests {
 
         let visible = trail.visiblePoints(at: 100.9, visibleDuration: 0.55)
         #expect(visible == [CGPoint(x: 10, y: 0), CGPoint(x: 20, y: 0)])
+    }
+
+    @Test func theNewestSampleSurvivesTheVisibleWindow() {
+        // A held key produces one sample and then nothing, so the window would
+        // empty under a still finger and the press dot would blink out while
+        // the touch is still down.
+        var trail = GestureTrail()
+        trail.begin(at: CGPoint(x: 7, y: 9), time: 100)
+        #expect(trail.visiblePoints(at: 103, visibleDuration: 0.55) == [CGPoint(x: 7, y: 9)])
+    }
+
+    @Test func aPausedSwipeShrinksBackToTheFinger() {
+        // Same rule seen from the other side: the tail expires as usual, but
+        // the head stays put instead of the whole trail disappearing.
+        var trail = GestureTrail()
+        trail.begin(at: .zero, time: 100)
+        trail.extend(to: CGPoint(x: 30, y: 0), time: 100.2)
+        #expect(trail.visiblePoints(at: 103, visibleDuration: 0.55) == [CGPoint(x: 30, y: 0)])
+    }
+
+    @Test func theDotSurvivesAReleaseAfterALongHold() {
+        // Lifting after a long hold anchors the window to the release time,
+        // which the lone touch-down sample predates — the fade must still
+        // have a dot to draw.
+        var trail = GestureTrail()
+        trail.begin(at: CGPoint(x: 7, y: 9), time: 100)
+        trail.release(at: 103)
+        #expect(trail.visiblePoints(at: 103.1, visibleDuration: 0.55) == [CGPoint(x: 7, y: 9)])
+    }
+
+    @Test func visiblePointsStayEmptyForAnEmptyTrail() {
+        #expect(GestureTrail().visiblePoints(at: 100, visibleDuration: 0.55).isEmpty)
     }
 
     @Test func releaseFreezesTheVisibleWindow() {
@@ -132,15 +150,54 @@ struct GestureTrailBufferTests {
         trail.release(at: 102)
         trail.clear()
         #expect(trail.isEmpty)
-        #expect(trail.origin == nil)
-        #expect(trail.maxDisplacement == 0)
         #expect(trail.releaseTime == nil)
+        #expect(trail.visiblePoints(at: 103).isEmpty)
     }
 }
 
 // MARK: - Ribbon Geometry
 
 struct GestureTrailGeometryTests {
+    @Test func aSinglePointDrawsADotAtTheTouch() {
+        // Exercises the production `pressDotWidthFactor`, so retuning the
+        // constant keeps a test pinning the rendered diameter to it.
+        let diameter = 12 * KeyboardConstants.GestureTrail.pressDotWidthFactor
+        let box = GestureTrailGeometry.shape(
+            through: [CGPoint(x: 40, y: 60)], headWidth: 12
+        ).boundingRect
+        #expect(abs(box.midX - 40) < 0.5)
+        #expect(abs(box.midY - 60) < 0.5)
+        #expect(abs(box.width - diameter) < 0.5)
+        #expect(abs(box.height - diameter) < 0.5)
+    }
+
+    @Test func theDotStaysComparableToTheRibbonHead() {
+        // A press that turns into a swipe must not jump in size when the
+        // second sample arrives, so the dot stays in the same league as the
+        // head it hands over to — a little wider, never a different order.
+        let head: CGFloat = 12
+        let dot = GestureTrailGeometry.shape(through: [CGPoint(x: 100, y: 50)], headWidth: head)
+        let ribbon = GestureTrailGeometry.shape(
+            through: [CGPoint(x: 0, y: 50), CGPoint(x: 100, y: 50)], headWidth: head
+        )
+        #expect(dot.boundingRect.height >= ribbon.boundingRect.height)
+        #expect(dot.boundingRect.height <= ribbon.boundingRect.height * 1.5)
+    }
+
+    @Test func aPathStillDrawsTheRibbon() {
+        let path = [CGPoint(x: 0, y: 50), CGPoint(x: 60, y: 50), CGPoint(x: 120, y: 50)]
+        let shape = GestureTrailGeometry.shape(through: path, headWidth: 12)
+        let ribbon = GestureTrailGeometry.ribbon(
+            through: GestureTrailGeometry.smoothed(path), headWidth: 12
+        )
+        #expect(shape.boundingRect == ribbon.boundingRect)
+    }
+
+    @Test func shapeIsEmptyForDegenerateInput() {
+        #expect(GestureTrailGeometry.shape(through: [], headWidth: 10).isEmpty)
+        #expect(GestureTrailGeometry.shape(through: [.zero], headWidth: 0).isEmpty)
+    }
+
     @Test func smoothingKeepsTheOriginalSamplesOnThePath() {
         // Catmull-Rom interpolates rather than approximates, so the trail must
         // still pass through every position the finger actually visited.
@@ -263,10 +320,6 @@ struct GestureTrailGeometryTests {
 
 // MARK: - Recorder
 
-/// Travel below which a letter key dispatches its touch as a tap — what
-/// `KeyGestureRecognizer` hands the recorder at touch down.
-private let letterKeyTapBoundary = GestureClassificationThresholds.defaultMinSwipeLength
-
 struct GestureTrailRecorderTests {
     /// Feeds a straight drag of `distance` points into the recorder, as a
     /// letter key would.
@@ -275,10 +328,9 @@ struct GestureTrailRecorderTests {
         distance: CGFloat,
         steps: Int = 8,
         from token: GestureTrailToken = GestureTrailToken(),
-        origin: CGPoint = .zero,
-        activationDistance: CGFloat = letterKeyTapBoundary
+        origin: CGPoint = .zero
     ) {
-        recorder.begin(at: origin, from: token, activationDistance: activationDistance)
+        recorder.begin(at: origin, from: token)
         for step in 1 ... steps {
             let x = origin.x + distance * CGFloat(step) / CGFloat(steps)
             recorder.extend(to: CGPoint(x: x, y: origin.y), from: token)
@@ -309,7 +361,7 @@ struct GestureTrailRecorderTests {
         var clock: TimeInterval = 0
         let recorder = makeRecorder(enabled: true, clock: { clock })
         let token = GestureTrailToken()
-        recorder.begin(at: .zero, from: token, activationDistance: letterKeyTapBoundary)
+        recorder.begin(at: .zero, from: token)
         for step in 1 ... 8 {
             clock += 0.01
             recorder.extend(to: CGPoint(x: CGFloat(step) * 15, y: 0), from: token)
@@ -318,22 +370,34 @@ struct GestureTrailRecorderTests {
         #expect(recorder.trail.samples.count > 1)
     }
 
-    @Test func tapStaysInvisible() {
-        // Every keystroke starts as a touch down, so a trail that drew from
-        // the first sample would flash under every letter typed.
+    @Test func aPressIsVisibleFromTheFirstSample() {
+        // The dot has to be there while the finger rests on the key, not only
+        // once the touch has travelled far enough to count as a swipe.
         let recorder = makeRecorder(enabled: true)
         let token = GestureTrailToken()
-        recorder.begin(at: .zero, from: token, activationDistance: letterKeyTapBoundary)
-        recorder.extend(to: CGPoint(x: 2, y: 1), from: token)
-        #expect(!recorder.isVisible)
+        recorder.begin(at: CGPoint(x: 20, y: 30), from: token)
+        #expect(recorder.isVisible)
+        #expect(recorder.trail.samples.map(\.point) == [CGPoint(x: 20, y: 30)])
+
+        recorder.extend(to: CGPoint(x: 22, y: 31), from: token)
+        #expect(recorder.isVisible)
     }
 
-    @Test func finishingATapDropsTheTrailWithoutAFade() {
-        let recorder = makeRecorder(enabled: true)
+    @Test func finishingATapFreezesTheDotForItsFade() {
+        var clock: TimeInterval = 500
+        let recorder = makeRecorder(enabled: true, clock: { clock })
         let token = GestureTrailToken()
-        recorder.begin(at: .zero, from: token, activationDistance: letterKeyTapBoundary)
-        recorder.extend(to: CGPoint(x: 2, y: 0), from: token)
+        recorder.begin(at: .zero, from: token)
+        clock = 500.1
         recorder.finish(from: token)
+        // Still drawn — the fade-out runs on a timer, not on this call.
+        #expect(recorder.isVisible)
+        #expect(recorder.trail.releaseTime == 500.1)
+    }
+
+    @Test func aPressDrawsNothingWhileTheSettingIsOff() {
+        let recorder = makeRecorder(enabled: false)
+        recorder.begin(at: .zero, from: GestureTrailToken())
         #expect(!recorder.isVisible)
         #expect(recorder.trail.isEmpty)
     }
@@ -366,8 +430,7 @@ struct GestureTrailRecorderTests {
         let first = GestureTrailToken()
         drag(recorder, distance: 120, from: first)
         recorder.finish(from: first)
-        recorder.begin(at: CGPoint(x: 300, y: 300), from: GestureTrailToken(), activationDistance: letterKeyTapBoundary)
-        #expect(!recorder.isVisible)
+        recorder.begin(at: CGPoint(x: 300, y: 300), from: GestureTrailToken())
         #expect(recorder.trail.samples.map(\.point) == [CGPoint(x: 300, y: 300)])
     }
 
@@ -386,81 +449,6 @@ struct GestureTrailRecorderTests {
         #expect(recorder.isVisible)
     }
 
-    // MARK: - Activation Distance
-
-    @Test func nothingIsDrawnBelowTheActivationDistance() {
-        let recorder = makeRecorder(enabled: true)
-        let token = GestureTrailToken()
-        recorder.begin(at: .zero, from: token, activationDistance: 20)
-        for x in stride(from: 4.0, through: 16.0, by: 4.0) {
-            recorder.extend(to: CGPoint(x: x, y: 0), from: token)
-        }
-        #expect(!recorder.isVisible)
-        recorder.extend(to: CGPoint(x: 24, y: 0), from: token)
-        #expect(recorder.isVisible)
-    }
-
-    @Test func theActivationDistanceIsPerKeyNotGlobal() {
-        // The same 12 pt drag is still a tap on a letter key (20 pt boundary)
-        // and already a cursor slide on the space bar (8 pt), so the trail has
-        // to follow the key that recorded it — a sloppy tap must not flash a
-        // streak.
-        let letterKey = makeRecorder(enabled: true)
-        let spaceBar = makeRecorder(enabled: true)
-        let left = GestureTrailToken()
-        let right = GestureTrailToken()
-        letterKey.begin(at: .zero, from: left, activationDistance: letterKeyTapBoundary)
-        spaceBar.begin(
-            at: .zero, from: right,
-            activationDistance: KeyboardConstants.SpaceGestures.dragActivationThreshold
-        )
-        for x in stride(from: 4.0, through: 12.0, by: 4.0) {
-            letterKey.extend(to: CGPoint(x: x, y: 0), from: left)
-            spaceBar.extend(to: CGPoint(x: x, y: 0), from: right)
-        }
-        #expect(!letterKey.isVisible)
-        #expect(spaceBar.isVisible)
-    }
-
-    @Test func theTapBoundaryIsMeasuredInTheClassifiersSpace() {
-        // `classify` divides the horizontal component by the key's aspect
-        // ratio, so on a wide key a sideways slip stays a tap for longer than
-        // the same travel downwards. The trail has to use the same ellipse or
-        // it draws under a touch that is about to be dispatched as a tap.
-        let aspect: CGFloat = 1.62
-        let sideways = makeRecorder(enabled: true)
-        let downwards = makeRecorder(enabled: true)
-        let left = GestureTrailToken()
-        let right = GestureTrailToken()
-        sideways.begin(at: .zero, from: left, activationDistance: 20, aspectRatio: aspect)
-        downwards.begin(at: .zero, from: right, activationDistance: 20, aspectRatio: aspect)
-        sideways.extend(to: CGPoint(x: 25, y: 0), from: left)
-        downwards.extend(to: CGPoint(x: 0, y: 25), from: right)
-        #expect(!sideways.isVisible)
-        #expect(downwards.isVisible)
-        // 20 pt normalized is 32.4 raw points across.
-        sideways.extend(to: CGPoint(x: 33, y: 0), from: left)
-        #expect(sideways.isVisible)
-    }
-
-    @Test func aDegenerateAspectRatioFallsBackToRawTravel() {
-        let recorder = makeRecorder(enabled: true)
-        let token = GestureTrailToken()
-        recorder.begin(at: .zero, from: token, activationDistance: 20, aspectRatio: 0)
-        recorder.extend(to: CGPoint(x: 24, y: 0), from: token)
-        #expect(recorder.isVisible)
-    }
-
-    @Test func theLetterKeyTrailStartsAtTheClassifiersTapBoundary() {
-        let store = InMemoryUserDefaults()
-        #expect(KeyGestureRecognizer.tapBoundary(store: store) == letterKeyTapBoundary)
-        // Expert mode retunes the classification boundary; the trail follows
-        // it instead of keeping a threshold of its own.
-        store.set(true, forKey: SettingsKey.expertModeEnabled.rawValue)
-        store.set(42.0, forKey: GestureClassificationThresholds.minSwipeLengthKey)
-        #expect(KeyGestureRecognizer.tapBoundary(store: store) == 42)
-    }
-
     // MARK: - Touch-Sequence Ownership
 
     @Test func aSecondFingerDoesNotHijackTheTrail() {
@@ -472,13 +460,13 @@ struct GestureTrailRecorderTests {
         let right = GestureTrailToken()
         drag(recorder, distance: 120, from: left)
 
-        recorder.begin(at: CGPoint(x: 300, y: 300), from: right, activationDistance: letterKeyTapBoundary)
+        recorder.begin(at: CGPoint(x: 300, y: 300), from: right)
         recorder.extend(to: CGPoint(x: 340, y: 300), from: right)
 
         #expect(recorder.isVisible)
         let points = recorder.trail.samples.map(\.point)
         #expect(points.allSatisfy { $0.y == 0 })
-        #expect(recorder.trail.origin == .zero)
+        #expect(points.first == .zero)
     }
 
     @Test func aSecondFingerLiftingDoesNotEndTheOwnersTrail() {
@@ -487,7 +475,7 @@ struct GestureTrailRecorderTests {
         let right = GestureTrailToken()
         drag(recorder, distance: 120, from: left)
 
-        recorder.begin(at: CGPoint(x: 300, y: 300), from: right, activationDistance: letterKeyTapBoundary)
+        recorder.begin(at: CGPoint(x: 300, y: 300), from: right)
         recorder.finish(from: right)
         #expect(recorder.trail.releaseTime == nil)
 
@@ -520,7 +508,7 @@ struct GestureTrailRecorderTests {
         // Only the recorder's weak `owner` refers to the token now.
         doomed = nil
 
-        recorder.begin(at: CGPoint(x: 300, y: 300), from: GestureTrailToken(), activationDistance: letterKeyTapBoundary)
+        recorder.begin(at: CGPoint(x: 300, y: 300), from: GestureTrailToken())
         #expect(recorder.trail.samples.map(\.point) == [CGPoint(x: 300, y: 300)])
     }
 
