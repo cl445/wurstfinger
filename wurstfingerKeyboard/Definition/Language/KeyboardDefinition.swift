@@ -100,7 +100,7 @@ enum ModeNames {
 /// transformation over recent document context — Vietnamese Telex being
 /// the first real example. Making this a data-driven enum on the keyboard
 /// definition keeps language activation out of view-controller locale checks.
-enum InputMethodKind: String, Codable, Equatable {
+enum InputMethodType: String, Codable, Equatable {
     /// Characters are committed verbatim. Default.
     case direct
 
@@ -128,7 +128,7 @@ struct KeyboardDefinitionSettings: Codable, Equatable {
 
     /// Which input method to apply to committed characters. Defaults to
     /// `.direct`; set to `.telex` for Vietnamese Telex composition.
-    let inputMethod: InputMethodKind
+    let inputMethod: InputMethodType
 
     /// Sequential-combine rules (`trigger → base → result`) applied by
     /// `SequentialCompositionMiddleware` (via `sequentialCombiner`): when the
@@ -142,7 +142,7 @@ struct KeyboardDefinitionSettings: Codable, Equatable {
     init(
         autoCapitalize: Bool,
         composeRuleOverrides: ComposeRuleSet?,
-        inputMethod: InputMethodKind = .direct,
+        inputMethod: InputMethodType = .direct,
         combineRuleSet: ComposeRuleSet? = nil
     ) {
         self.autoCapitalize = autoCapitalize

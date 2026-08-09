@@ -1,5 +1,5 @@
 //
-//  HapticFeedbackManager.swift
+//  HapticFeedbackPlayer.swift
 //  Wurstfinger
 //
 //  Extracted from KeyboardViewModel to improve separation of concerns.
@@ -71,12 +71,12 @@ enum HapticIntensityLevel: Int, CaseIterable, Equatable {
     }
 }
 
-/// Manages haptic feedback generation for keyboard events.
+/// Plays haptic feedback for keyboard events.
 ///
 /// Requires Full Access to be enabled — without it, `UIFeedbackGenerator` silently
 /// fails because the underlying `CHHapticEngine` is blocked by the keyboard sandbox.
 /// The host app settings UI prevents enabling haptics when Full Access is not granted.
-final class HapticFeedbackManager {
+final class HapticFeedbackPlayer {
     private let settings: HapticSettings
 
     /// Cached generators per feedback style to avoid per-event allocation

@@ -21,14 +21,14 @@ extension KeyboardViewModel {
         guard let base = KeyboardRegistry.load(id: id)
             ?? KeyboardRegistry.load(id: LanguageConfig.english.id)
         else { return }
-        let definition = applyNumpadStyle(to: base)
+        let definition = applyNumpadType(to: base)
         currentDefinition = definition
         // Record the signature of what was actually loaded (the id may differ
         // from the requested one after the English fallback) so the controller
         // can skip redundant rebuilds on the next appearance.
         loadedDefinitionSignature = Self.definitionSignature(
             languageId: definition.id,
-            numpadStyle: sharedDefaults.string(forKey: SettingsKey.numpadStyle.rawValue)
+            numpadType: sharedDefaults.string(forKey: SettingsKey.numpadStyle.rawValue)
         )
         activeModeName = definition.defaultMode
         pipelineLocale = definition.locale
@@ -37,20 +37,20 @@ extension KeyboardViewModel {
     }
 
     /// Signature of the inputs that determine a loaded definition (language +
-    /// numpad style). Pure so the desync-free comparison between the
+    /// numpad type). Pure so the desync-free comparison between the
     /// controller's desired inputs and the view model's loaded state can be
     /// unit-tested without a UIKit lifecycle.
-    static func definitionSignature(languageId: String, numpadStyle: String?) -> String {
-        "\(languageId)|\(numpadStyle ?? "")"
+    static func definitionSignature(languageId: String, numpadType: String?) -> String {
+        "\(languageId)|\(numpadType ?? "")"
     }
 
     /// Swaps the numeric layer to the classic (7-8-9) ordering when the user
     /// selected it. The registry caches the phone-style definition, so this
     /// always derives from the canonical phone layout and never mutates the cache.
-    private func applyNumpadStyle(to definition: KeyboardDefinition) -> KeyboardDefinition {
+    private func applyNumpadType(to definition: KeyboardDefinition) -> KeyboardDefinition {
         let raw = sharedDefaults.string(forKey: SettingsKey.numpadStyle.rawValue)
-        let style = raw.flatMap(NumpadStyle.init(rawValue:)) ?? .phone
-        guard style == .classic else { return definition }
+        let numpadType = raw.flatMap(NumpadType.init(rawValue:)) ?? .phone
+        guard numpadType == .classic else { return definition }
         let classicNumeric = NumericLayouts.classic(
             digits: definition.numericDigits,
             backToAlphaLabel: definition.numericBackToAlphaLabel
@@ -436,11 +436,11 @@ extension KeyboardViewModel {
         }
     }
 
-    /// Cursor-movement style for the space-bar drag. Read per gesture (stable
+    /// Cursor-movement type for the space-bar drag. Read per gesture (stable
     /// for the duration of a drag); defaults to `.continuous`.
-    var cursorMovementStyle: CursorMovementStyle {
+    var cursorMovementType: CursorMovementType {
         let raw = sharedDefaults.string(forKey: SettingsKey.cursorMovementStyle.rawValue)
-        return raw.flatMap(CursorMovementStyle.init(rawValue:)) ?? .continuous
+        return raw.flatMap(CursorMovementType.init(rawValue:)) ?? .continuous
     }
 
     func handleSpaceSlide(phase: SlidePhase, key: KeyConfig) {
@@ -449,13 +449,13 @@ extension KeyboardViewModel {
             isSpaceDragging = true
             spaceDragResidual = 0
             spaceDragPeak = 0
-            // Snapshot the style once so a mid-drag settings change can't switch
+            // Snapshot the type once so a mid-drag settings change can't switch
             // this gesture between discrete and continuous classification.
-            spaceDragCursorStyle = cursorMovementStyle
+            spaceDragCursorType = cursorMovementType
         case let .changed(deltaX):
             guard isSpaceDragging, deltaX != 0 else { return }
             spaceDragResidual += deltaX
-            if spaceDragCursorStyle == .discrete {
+            if spaceDragCursorType == .discrete {
                 // Track the peak; movement is deferred to `.ended` so the whole
                 // swipe counts as a single discrete step.
                 if abs(spaceDragResidual) > abs(spaceDragPeak) {
@@ -465,7 +465,7 @@ extension KeyboardViewModel {
                 stepContinuousCursor()
             }
         case .ended:
-            if spaceDragCursorStyle == .discrete {
+            if spaceDragCursorType == .discrete {
                 finishDiscreteSpaceSlide()
             }
             isSpaceDragging = false

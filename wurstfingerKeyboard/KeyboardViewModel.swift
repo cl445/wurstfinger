@@ -82,7 +82,7 @@ final class KeyboardViewModel: ObservableObject {
 
     var currentDefinition: KeyboardDefinition?
     /// Signature of the inputs that produced `currentDefinition` (see
-    /// `definitionSignature(languageId:numpadStyle:)`). Kept on the view model
+    /// `definitionSignature(languageId:numpadType:)`). Kept on the view model
     /// — not the controller — so in-keyboard language switches, which load a
     /// new definition directly, keep it in sync.
     var loadedDefinitionSignature: String?
@@ -107,7 +107,7 @@ final class KeyboardViewModel: ObservableObject {
 
     let hapticSettings: HapticSettings
     let layoutSettings: LayoutSettings
-    private let hapticManager: HapticFeedbackManager
+    private let hapticPlayer: HapticFeedbackPlayer
 
     // MARK: - Computed Properties for Backward Compatibility
 
@@ -150,9 +150,9 @@ final class KeyboardViewModel: ObservableObject {
     /// Peak signed displacement during the current space drag. Used by the
     /// discrete cursor-movement mode to classify regular vs. return swipes.
     var spaceDragPeak: CGFloat = 0
-    /// Cursor-movement style captured at the start of the current space drag, so
+    /// Cursor-movement type captured at the start of the current space drag, so
     /// a mid-drag settings change cannot switch classification mode mid-gesture.
-    var spaceDragCursorStyle: CursorMovementStyle = .continuous
+    var spaceDragCursorType: CursorMovementType = .continuous
     var isDeleteDragging = false
     var deleteDragResidual: CGFloat = 0
     private var userDefaultsObserver: NSObjectProtocol?
@@ -170,7 +170,7 @@ final class KeyboardViewModel: ObservableObject {
         // Initialize extracted settings classes
         hapticSettings = HapticSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
         layoutSettings = LayoutSettings(defaults: defaults, shouldPersist: shouldPersistSettings)
-        hapticManager = HapticFeedbackManager(settings: hapticSettings)
+        hapticPlayer = HapticFeedbackPlayer(settings: hapticSettings)
 
         enabledLanguageIds = LanguageSettings.normalizedEnabledLanguageIds(from: defaults)
 
@@ -291,7 +291,7 @@ final class KeyboardViewModel: ObservableObject {
     /// Text actions stay silent — their haptic fires on touch-down.
     func triggerHaptic(for action: KeyAction) {
         guard let event = KeyboardHapticEvent.forPipelineAction(action) else { return }
-        hapticManager.trigger(event)
+        hapticPlayer.trigger(event)
     }
 
     func reloadSettings() {
@@ -338,19 +338,19 @@ final class KeyboardViewModel: ObservableObject {
         return LanguageSettings.label(for: locale)
     }
 
-    // MARK: - Haptic Feedback (delegated to HapticFeedbackManager)
+    // MARK: - Haptic Feedback (delegated to HapticFeedbackPlayer)
 
     /// Haptic feedback for key touch-down — called by button views on first contact
     func feedbackTap() {
-        hapticManager.tap()
+        hapticPlayer.tap()
     }
 
     func feedbackDrag() {
-        hapticManager.drag()
+        hapticPlayer.drag()
     }
 
     /// Confirmation tick for explicit layer/language switches.
     func feedbackStateChange() {
-        hapticManager.stateChange()
+        hapticPlayer.stateChange()
     }
 }

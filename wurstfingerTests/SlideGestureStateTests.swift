@@ -531,8 +531,8 @@ struct SpaceLabelTogglePipelineTests {
         #expect(defaults.bool(forKey: SettingsKey.hideStandardSymbols.rawValue))
     }
 
-    @Test(arguments: [CursorMovementStyle.continuous, .discrete])
-    func upSwipeTogglesExtraSymbolsWithoutTextInput(style: CursorMovementStyle) throws {
+    @Test(arguments: [CursorMovementType.continuous, .discrete])
+    func upSwipeTogglesExtraSymbolsWithoutTextInput(style: CursorMovementType) throws {
         let (vm, target) = makeViewModel(languageId: "de_DE")
         vm.sharedDefaults.set(style.rawValue, forKey: SettingsKey.cursorMovementStyle.rawValue)
         let spaceKey = try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))

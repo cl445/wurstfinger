@@ -29,10 +29,10 @@ struct SettingsView: View {
     private var hapticDragIntensity = Double(HapticSettings.defaultDragIntensity)
 
     @AppStorage(SettingsKey.numpadStyle.rawValue, store: SharedDefaults.store)
-    private var numpadStyleRaw = NumpadStyle.phone.rawValue
+    private var numpadTypeRaw = NumpadType.phone.rawValue
 
     @AppStorage(SettingsKey.cursorMovementStyle.rawValue, store: SharedDefaults.store)
-    private var cursorMovementStyleRaw = CursorMovementStyle.continuous.rawValue
+    private var cursorMovementTypeRaw = CursorMovementType.continuous.rawValue
 
     @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyleRaw = KeyboardStyle.classic.rawValue
@@ -129,14 +129,14 @@ struct SettingsView: View {
                 )
             }
 
-            Picker(selection: $cursorMovementStyleRaw) {
-                Text("Continuous").tag(CursorMovementStyle.continuous.rawValue)
-                Text("Step-by-step").tag(CursorMovementStyle.discrete.rawValue)
+            Picker(selection: $cursorMovementTypeRaw) {
+                Text("Continuous").tag(CursorMovementType.continuous.rawValue)
+                Text("Step-by-step").tag(CursorMovementType.discrete.rawValue)
             } label: {
                 SettingsRow(
                     icon: "cursor.rays", color: .green,
                     title: "Cursor Movement",
-                    subtitle: cursorMovementStyleDescription
+                    subtitle: cursorMovementTypeDescription
                 )
             }
         } header: {
@@ -199,11 +199,11 @@ struct SettingsView: View {
                 )
             }
 
-            Picker(selection: $numpadStyleRaw) {
-                Text("Phone (1-2-3)").tag(NumpadStyle.phone.rawValue)
-                Text("Classic (7-8-9)").tag(NumpadStyle.classic.rawValue)
+            Picker(selection: $numpadTypeRaw) {
+                Text("Phone (1-2-3)").tag(NumpadType.phone.rawValue)
+                Text("Classic (7-8-9)").tag(NumpadType.classic.rawValue)
             } label: {
-                SettingsRow(icon: "number.square", color: .purple, title: "Numpad Style", subtitle: numpadStyleDescription)
+                SettingsRow(icon: "number.square", color: .purple, title: "Numpad Style", subtitle: numpadTypeDescription)
             }
         } header: {
             Text("Appearance")
@@ -350,9 +350,9 @@ struct SettingsView: View {
         return String(localized: "Hiding \(hidden.joined(separator: ", "))")
     }
 
-    private var cursorMovementStyleDescription: String {
-        let style = CursorMovementStyle(rawValue: cursorMovementStyleRaw) ?? .continuous
-        switch style {
+    private var cursorMovementTypeDescription: String {
+        let cursorMovementType = CursorMovementType(rawValue: cursorMovementTypeRaw) ?? .continuous
+        switch cursorMovementType {
         case .continuous:
             return String(localized: "Drag to move cursor")
         case .discrete:
@@ -381,9 +381,9 @@ struct SettingsView: View {
         """)
     }
 
-    private var numpadStyleDescription: String {
-        let style = NumpadStyle(rawValue: numpadStyleRaw) ?? .phone
-        switch style {
+    private var numpadTypeDescription: String {
+        let numpadType = NumpadType(rawValue: numpadTypeRaw) ?? .phone
+        switch numpadType {
         case .phone:
             return String(localized: "Phone layout (1-2-3)")
         case .classic:

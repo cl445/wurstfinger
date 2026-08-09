@@ -306,14 +306,14 @@ struct ViewModelVCActionTests {
     }
 }
 
-// MARK: - Numpad style wiring
+// MARK: - Numpad type wiring
 
 @Suite(.serialized)
-struct ViewModelNumpadStyleTests {
-    private func loadedNumericTopLeftDigit(numpadStyle: String?) -> String? {
+struct ViewModelNumpadTypeTests {
+    private func loadedNumericTopLeftDigit(numpadType: String?) -> String? {
         let defaults = InMemoryUserDefaults()
-        if let numpadStyle {
-            defaults.set(numpadStyle, forKey: SettingsKey.numpadStyle.rawValue)
+        if let numpadType {
+            defaults.set(numpadType, forKey: SettingsKey.numpadStyle.rawValue)
         }
         let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
         vm.loadDefinition(for: "de_DE")
@@ -325,11 +325,11 @@ struct ViewModelNumpadStyleTests {
 
     @Test func defaultNumpadIsPhone() {
         // Phone layout: 1-2-3 in the top row.
-        #expect(loadedNumericTopLeftDigit(numpadStyle: nil) == "1")
+        #expect(loadedNumericTopLeftDigit(numpadType: nil) == "1")
     }
 
     @Test func classicNumpadSwapsTopRow() {
         // Classic calculator layout: 7-8-9 in the top row.
-        #expect(loadedNumericTopLeftDigit(numpadStyle: NumpadStyle.classic.rawValue) == "7")
+        #expect(loadedNumericTopLeftDigit(numpadType: NumpadType.classic.rawValue) == "7")
     }
 }

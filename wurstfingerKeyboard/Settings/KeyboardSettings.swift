@@ -14,6 +14,8 @@ import Foundation
 
 /// Centralized storage for all UserDefaults keys used by the keyboard.
 /// Using an enum prevents typos and makes refactoring easier.
+/// The rawValues are persisted storage keys — never rename a case, even when
+/// the type it points to is renamed.
 enum SettingsKey: String, CaseIterable {
     case hapticIntensityTap
     case hapticIntensityDrag
@@ -327,17 +329,17 @@ final class LayoutSettings: ObservableObject {
     }
 }
 
-// MARK: - Numpad Style
+// MARK: - Numpad Type
 
-enum NumpadStyle: String, CaseIterable {
+enum NumpadType: String, CaseIterable {
     case phone // 1-2-3 / 4-5-6 / 7-8-9 (default, like phone keypad)
     case classic // 7-8-9 / 4-5-6 / 1-2-3 (like calculator)
 }
 
-// MARK: - Cursor Movement Style
+// MARK: - Cursor Movement Type
 
-/// Space bar cursor movement style
-enum CursorMovementStyle: String, CaseIterable {
+/// Space bar cursor movement type
+enum CursorMovementType: String, CaseIterable {
     case continuous // Joystick-style: drag distance controls cursor position
     case discrete // MessagEase-style: one swipe = one character, return-swipe = one word
 }

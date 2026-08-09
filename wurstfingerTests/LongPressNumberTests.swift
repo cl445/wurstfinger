@@ -73,9 +73,9 @@ struct LongPressNumberPipelineTests {
         }
     }
 
-    @Test func longPressFollowsClassicNumpadStyle() {
+    @Test func longPressFollowsClassicNumpadType() {
         let defaults = InMemoryUserDefaults()
-        defaults.set(NumpadStyle.classic.rawValue, forKey: SettingsKey.numpadStyle.rawValue)
+        defaults.set(NumpadType.classic.rawValue, forKey: SettingsKey.numpadStyle.rawValue)
         let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
         let target = MockTextTarget()
         vm.bindTextInputTarget(target)
