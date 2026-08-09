@@ -7,7 +7,7 @@ New:
 Improved:
 • Fast flicks are recognized as swipes again instead of typing the key's center letter
 • Characters that could not be typed at all on the new layouts: Thai ฬ ฒ ฑ ฏ and ฿, the Japanese 、 and 。 with the small kana, the half-space in Persian and Urdu, Arabic-script punctuation, the Hindi ₹, the Hebrew ׳ and ״, and the voiced kana iteration marks ゞ and ヾ
-• č ď ě ň ř š ť ž are directly reachable: the caron now sits on the return swipe of the ^ key
+• č ď ě ň ř š ť ž are directly reachable: the caron now sits on the return swipe of the ^ key, replacing the stand-alone accent mark ˆ that swipe used to type (the ^ itself is unchanged)
 • Diagonal drags on the delete key delete instead of doing nothing
 • A long press held across a mode or language switch no longer types the old key's digit
 • Double-space types a period only on two consecutive spaces, and inserts the sentence mark of the script you are typing
