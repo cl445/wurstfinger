@@ -111,11 +111,29 @@ xcodebuild test -scheme Wurstfinger -destination 'platform=iOS Simulator,name=iP
 
 > **Note:** Some tests require an available iOS Simulator. Adjust the
 > destination to match your local simulator name if necessary.
-
+>
 > **Note:** The screenshot-generating UI tests (`ScreenshotTests`,
 > `wurstfingerUITestsLaunchTests`) skip themselves unless the test runner sees
 > `GENERATE_SCREENSHOTS=1`. Pass `TEST_RUNNER_GENERATE_SCREENSHOTS=1` to
 > `xcodebuild` — `scripts/generate-screenshots.sh` does this for you.
+
+### Linting
+
+SwiftFormat, SwiftLint and markdownlint run in CI on every pull request. To get
+the same checks before committing, install the tools and the pre-commit hook:
+
+```bash
+brew install swiftformat swiftlint markdownlint-cli2
+./scripts/install-hooks.sh
+```
+
+The hook formats staged Swift files, auto-fixes what it can in staged Markdown,
+and fails the commit on whatever is left. To check every Markdown file by hand,
+run this from the repository root:
+
+```bash
+markdownlint-cli2 "**/*.md"
+```
 
 ### Installing the Keyboard
 
@@ -127,7 +145,7 @@ xcodebuild test -scheme Wurstfinger -destination 'platform=iOS Simulator,name=iP
 
 ### Project Layout
 
-```
+```text
 wurstfinger/
 ├─ README.md
 ├─ LICENSE

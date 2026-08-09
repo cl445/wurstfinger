@@ -11,6 +11,7 @@ Wurstfinger is a keyboard app that respects your privacy. We believe your typing
 **Wurstfinger does not collect, store, or transmit any personal data.**
 
 Specifically:
+
 - We do not collect what you type
 - We do not collect usage statistics
 - We do not use analytics services
@@ -21,6 +22,7 @@ Specifically:
 ## Full Access Permission
 
 iOS may ask you to grant "Full Access" to the keyboard. This permission is **optional** and only used for:
+
 - Haptic feedback (vibration when you tap keys)
 
 Even with Full Access enabled, Wurstfinger does not transmit any data. All processing happens locally on your device.
@@ -44,7 +46,7 @@ If we make changes to this privacy policy, we will update the "Last updated" dat
 ## Contact
 
 If you have questions about this privacy policy, please open an issue at:
-https://github.com/cl445/wurstfinger/issues
+<https://github.com/cl445/wurstfinger/issues>
 
 ---
 
