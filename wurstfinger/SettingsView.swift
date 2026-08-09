@@ -186,7 +186,7 @@ struct SettingsView: View {
                 SettingsRow(
                     icon: "square.resize", color: .orange,
                     title: "Key Aspect Ratio",
-                    subtitle: String(localized: "Current: \(String(format: "%.2f", keyAspectRatio)):1")
+                    subtitle: Self.keyAspectRatioSubtitle(for: keyAspectRatio)
                 )
             }
 
@@ -296,6 +296,33 @@ struct SettingsView: View {
             return String(localized: "\(list) (default: \(pinned.name))")
         }
         return list
+    }
+
+    /// The key aspect ratio subtitle, e.g. `Current: 1.00:1`.
+    ///
+    /// The ratio is substituted with `String(format:)` instead of the localized
+    /// string interpolation used everywhere else, on purpose: Foundation wraps
+    /// every interpolated argument in a bidi isolate (U+2068 … U+2069) as soon as
+    /// the resolved localization is right-to-left. That isolate covered only the
+    /// number, so the `:1` that lives at the end of the translated template fell
+    /// back to the Arabic/Hebrew paragraph direction and reordered — the subtitle
+    /// read `1:1.00`. Substituted plainly, the digits, the decimal point and the
+    /// colon form a single uninterrupted number run (UAX#9 rule W4 folds a lone
+    /// common separator between two numbers into the number type), which stays
+    /// left-to-right in every script.
+    ///
+    /// This is why the translated values must keep `:1` directly behind `%@`: a
+    /// space in between splits the run and the reordering returns.
+    /// `AspectRatioSubtitleTests` pins both halves of that contract.
+    ///
+    /// - Parameter bundle: Where the template is resolved from; `nil` is the
+    ///   main bundle. Only the tests pass one. Foundation inserts the isolate
+    ///   solely when the *resolved* localization is right-to-left, so under the
+    ///   English test localization this body and the interpolating one it
+    ///   replaced return byte-identical strings — resolving against the app's
+    ///   `ar.lproj` is the only way a test can fail on a revert.
+    static func keyAspectRatioSubtitle(for ratio: Double, bundle: Bundle? = nil) -> String {
+        String(format: String(localized: "Current: %@:1", bundle: bundle), String(format: "%.2f", ratio))
     }
 
     private var sizePositionDescription: String {
