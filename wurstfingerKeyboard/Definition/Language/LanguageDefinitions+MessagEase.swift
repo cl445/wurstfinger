@@ -550,16 +550,17 @@ extension LanguageDefinitions {
     ]
 
     /// Small kana are the reference's *return* outputs on their full-size
-    /// counterparts (や → ゃ, あ → ぁ). A caseless script gets no auto-generated
-    /// return, so without these a return swipe just repeats the plain kana and
-    /// ゃゅょ / ぁぅぇぉ are reachable only through the accent-cycle key. Voicing
-    /// stays on the ゛ key (`hiraganaCombineRules`), as in the reference.
+    /// counterparts (や → ゃ, あ → ぁ), and the voiced iteration mark ゞ is the
+    /// return of ゝ. A caseless script gets no auto-generated return, so
+    /// without these a return swipe just repeats the plain kana and the small
+    /// and voiced forms are reachable only through the accent-cycle key.
+    /// Consonant voicing stays on the ゛ key (`hiraganaCombineRules`).
     /// `bottomCenter` keeps the Latin comma and full stop that 、 and 。 displace.
     private static let hiraganaReturnOverrides: [String: [GestureType: String]] = [
         GridSlot.topLeft: [.swipeDown: "ゃ"],
         GridSlot.center: [.swipeUp: "ぁ"],
         GridSlot.midRight: [.swipeUpLeft: "ゅ"],
-        GridSlot.bottomLeft: [.swipeRight: "ぅ"],
+        GridSlot.bottomLeft: [.swipeUpLeft: "ゞ", .swipeRight: "ぅ"],
         GridSlot.bottomCenter: [.swipeDown: ".", .swipeDownLeft: ","],
         GridSlot.bottomRight: [.swipeUp: "ぇ", .swipeLeft: "ょ", .swipeDownLeft: "ぉ"],
     ]
@@ -575,13 +576,14 @@ extension LanguageDefinitions {
     /// Dakuten voicing (kana + ゛ → voiced kana), from MessagEase hiraganaCombine.
     /// A second ゛ cascades the ha-row voiced kana to their handakuten form
     /// (ば→ぱ …) and the voiced づ to the sokuon っ, so the single ゛ key reaches
-    /// ぱぴぷぺぽ and っ (matching the global ゛ table).
+    /// ぱぴぷぺぽ and っ; the iteration mark voices like a consonant (ゝ→ゞ)
+    /// (all matching the global ゛ table).
     private static let hiraganaCombineRules = ComposeRuleSet(rules: [
         "゛": [
             "か": "が", "き": "ぎ", "く": "ぐ", "け": "げ", "こ": "ご", "さ": "ざ",
             "し": "じ", "す": "ず", "せ": "ぜ", "そ": "ぞ", "た": "だ", "ち": "ぢ",
             "つ": "づ", "て": "で", "と": "ど", "は": "ば", "ひ": "び", "ふ": "ぶ",
-            "へ": "べ", "ほ": "ぼ", "う": "ゔ",
+            "へ": "べ", "ほ": "ぼ", "う": "ゔ", "ゝ": "ゞ",
             "ば": "ぱ", "び": "ぴ", "ぶ": "ぷ", "べ": "ぺ", "ぼ": "ぽ", "づ": "っ",
         ],
     ])
@@ -656,14 +658,15 @@ extension LanguageDefinitions {
 
     /// Dakuten voicing (kana + ゛ → voiced kana), from MessagEase katakanaCombine.
     /// A second ゛ cascades the ha-row voiced kana to their handakuten form
-    /// (バ→パ …) and the voiced ヅ to the sokuon ッ.
+    /// (バ→パ …) and the voiced ヅ to the sokuon ッ; the iteration mark voices
+    /// like a consonant (ヽ→ヾ), matching the global ゛ table.
     private static let katakanaCombineRules = ComposeRuleSet(rules: [
         "゛": [
             "カ": "ガ", "キ": "ギ", "ク": "グ", "ケ": "ゲ", "コ": "ゴ", "サ": "ザ",
             "シ": "ジ", "ス": "ズ", "セ": "ゼ", "ソ": "ゾ", "タ": "ダ", "チ": "ヂ",
             "ツ": "ヅ", "テ": "デ", "ト": "ド", "ハ": "バ", "ヒ": "ビ", "フ": "ブ",
             "ヘ": "ベ", "ホ": "ボ", "ウ": "ヴ", "ワ": "ヷ", "ヰ": "ヸ", "ヱ": "ヹ",
-            "ヲ": "ヺ",
+            "ヲ": "ヺ", "ヽ": "ヾ",
             "バ": "パ", "ビ": "ピ", "ブ": "プ", "ベ": "ペ", "ボ": "ポ", "ヅ": "ッ",
         ],
     ])

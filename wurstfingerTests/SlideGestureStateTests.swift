@@ -341,6 +341,17 @@ struct SlideGestureStateTests {
         #expect(state.handleEnded(translation: translation, configuration: .delete) == .tap)
     }
 
+    /// An up-and-return flick on delete ends near its origin, classifies as a
+    /// tap, and deletes one character. Deliberate (decided 2026-08-09): with
+    /// no up-swipe binding on the key, the vertical peak carries no meaning,
+    /// and a gesture that produced nothing at all would read as dropped input.
+    @Test func upAndReturnFlickOnDeleteEndsAsATap() {
+        var state = SlideGestureState()
+        _ = state.handleChanged(translation: CGSize(width: 0, height: -40), configuration: .delete)
+        let ended = state.handleEnded(translation: CGSize(width: 0, height: -4), configuration: .delete)
+        #expect(ended == .tap)
+    }
+
     @Test func slideTypesResolveToTheirConfiguration() {
         #expect(SlideGestureConfiguration.for(.moveCursor) == .moveCursor)
         #expect(SlideGestureConfiguration.for(.delete) == .delete)

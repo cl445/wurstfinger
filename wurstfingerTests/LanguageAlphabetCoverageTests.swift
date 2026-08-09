@@ -186,17 +186,18 @@ struct LanguageAlphabetCoverageTests {
             ]
         ),
         AlphabetInventory(
-            id: "ja_JP", source: "Hiragana gojūon, voiced and small kana, Japanese punctuation",
+            id: "ja_JP", source: "Hiragana gojūon, voiced and small kana, iteration marks, Japanese punctuation",
             groups: [
                 "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
-                "がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ", "ぁぃぅぇぉゃゅょっ", "ー、。",
+                "がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ", "ぁぃぅぇぉゃゅょっ", "ゝゞ", "ー、。",
             ]
         ),
         AlphabetInventory(
-            id: "ja_JP_katakana", source: "Katakana gojūon, plus small ヮ and the nakaguro separator",
+            id: "ja_JP_katakana",
+            source: "Katakana gojūon, iteration marks, plus small ヮ and the nakaguro separator",
             groups: [
                 "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
-                "ガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポ", "ァィゥェォャュョッヮ", "ー、。・",
+                "ガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポ", "ァィゥェォャュョッヮ", "ヽヾ", "ー、。・",
             ]
         ),
     ]
