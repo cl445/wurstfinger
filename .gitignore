@@ -31,6 +31,9 @@ vendor/bundle/
 .bundle/
 Gemfile.lock
 
+# Linked git worktrees checked out inside the repository
+/worktrees/
+
 # Claude Code
 .claude/
 AGENTS.md
