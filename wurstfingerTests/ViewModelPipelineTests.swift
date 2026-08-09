@@ -306,7 +306,7 @@ struct ViewModelVCActionTests {
     }
 }
 
-// MARK: - Numpad style wiring
+// MARK: - Numpad type wiring
 
 @Suite(.serialized)
 struct ViewModelNumpadTypeTests {

@@ -351,8 +351,8 @@ struct SettingsView: View {
     }
 
     private var cursorMovementTypeDescription: String {
-        let style = CursorMovementType(rawValue: cursorMovementTypeRaw) ?? .continuous
-        switch style {
+        let cursorMovementType = CursorMovementType(rawValue: cursorMovementTypeRaw) ?? .continuous
+        switch cursorMovementType {
         case .continuous:
             return String(localized: "Drag to move cursor")
         case .discrete:
@@ -382,8 +382,8 @@ struct SettingsView: View {
     }
 
     private var numpadTypeDescription: String {
-        let style = NumpadType(rawValue: numpadTypeRaw) ?? .phone
-        switch style {
+        let numpadType = NumpadType(rawValue: numpadTypeRaw) ?? .phone
+        switch numpadType {
         case .phone:
             return String(localized: "Phone layout (1-2-3)")
         case .classic:

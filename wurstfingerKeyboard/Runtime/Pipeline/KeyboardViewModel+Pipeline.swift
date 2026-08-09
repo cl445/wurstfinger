@@ -37,7 +37,7 @@ extension KeyboardViewModel {
     }
 
     /// Signature of the inputs that determine a loaded definition (language +
-    /// numpad style). Pure so the desync-free comparison between the
+    /// numpad type). Pure so the desync-free comparison between the
     /// controller's desired inputs and the view model's loaded state can be
     /// unit-tested without a UIKit lifecycle.
     static func definitionSignature(languageId: String, numpadType: String?) -> String {
@@ -49,8 +49,8 @@ extension KeyboardViewModel {
     /// always derives from the canonical phone layout and never mutates the cache.
     private func applyNumpadType(to definition: KeyboardDefinition) -> KeyboardDefinition {
         let raw = sharedDefaults.string(forKey: SettingsKey.numpadStyle.rawValue)
-        let style = raw.flatMap(NumpadType.init(rawValue:)) ?? .phone
-        guard style == .classic else { return definition }
+        let numpadType = raw.flatMap(NumpadType.init(rawValue:)) ?? .phone
+        guard numpadType == .classic else { return definition }
         let classicNumeric = NumericLayouts.classic(
             digits: definition.numericDigits,
             backToAlphaLabel: definition.numericBackToAlphaLabel
@@ -436,7 +436,7 @@ extension KeyboardViewModel {
         }
     }
 
-    /// Cursor-movement style for the space-bar drag. Read per gesture (stable
+    /// Cursor-movement type for the space-bar drag. Read per gesture (stable
     /// for the duration of a drag); defaults to `.continuous`.
     var cursorMovementType: CursorMovementType {
         let raw = sharedDefaults.string(forKey: SettingsKey.cursorMovementStyle.rawValue)
@@ -449,7 +449,7 @@ extension KeyboardViewModel {
             isSpaceDragging = true
             spaceDragResidual = 0
             spaceDragPeak = 0
-            // Snapshot the style once so a mid-drag settings change can't switch
+            // Snapshot the type once so a mid-drag settings change can't switch
             // this gesture between discrete and continuous classification.
             spaceDragCursorType = cursorMovementType
         case let .changed(deltaX):

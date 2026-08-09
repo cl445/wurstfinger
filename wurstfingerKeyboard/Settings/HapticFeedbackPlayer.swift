@@ -71,7 +71,7 @@ enum HapticIntensityLevel: Int, CaseIterable, Equatable {
     }
 }
 
-/// Manages haptic feedback generation for keyboard events.
+/// Plays haptic feedback for keyboard events.
 ///
 /// Requires Full Access to be enabled — without it, `UIFeedbackGenerator` silently
 /// fails because the underlying `CHHapticEngine` is blocked by the keyboard sandbox.
