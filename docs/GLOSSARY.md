@@ -89,9 +89,10 @@ about the *thing bound to it* ("the `topLeft` key commits `q`").
 
 ### `…Style` is visual only
 
-`KeyStyle` (`.primary`, `.utility`, `.spacebar`, …) and `KeyboardStyle` (`.classic`,
-`.liquidGlass`) are appearance. `NumpadType` (digit order) and `CursorMovementType`
-(drag behavior) are **not** visual and therefore carry `…Type`.
+`KeyStyle` (`.primary`, `.utility`, `.spacebar`, …) is appearance, and so are
+`BoardSurfaceStyle` and `KeySurfaceStyle` (both `.color` / `.glass`), which say how a theme
+paints its two surfaces. `NumpadType` (digit order) and `CursorMovementType` (drag
+behavior) are **not** visual and therefore carry `…Type`.
 
 For new code: `…Style` = how it looks, `…Type` = a closed set of behavioral variants (as in
 `GestureType`, `SlideType`). Never `…Mode` for either — that word belongs to keyboard
