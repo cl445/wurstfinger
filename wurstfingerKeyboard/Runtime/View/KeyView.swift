@@ -294,6 +294,13 @@ struct KeyView: View {
     /// The stacked key layers. Native glass wraps the label/hint content with
     /// `glassEffect` (label as content = crisp); every other style keeps the
     /// pre-engine order of a background layer beneath the labels.
+    ///
+    /// The glass branch has to claim the whole cell itself. The other branch
+    /// gets that for free from `background`, whose `RoundedRectangle` is a
+    /// flexible shape, but glass is applied to the content — and the content of
+    /// a key without swipe hints is only its glyph, or for the space bar
+    /// nothing at all. Without the frame the pane shrinks to the glyph and the
+    /// space bar disappears entirely.
     @ViewBuilder
     private var keyLayers: some View {
         if usesNativeGlass, #available(iOS 26.0, *) {
@@ -301,6 +308,7 @@ struct KeyView: View {
                 label
                 hintOverlay
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .glassEffect(.regular.tint(Self.glassTint), in: RoundedRectangle(cornerRadius: theme.cornerRadius))
         } else {
             ZStack {

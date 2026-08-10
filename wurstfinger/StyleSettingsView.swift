@@ -34,6 +34,10 @@ struct StyleSettingsView: View {
     /// the light slot and the dark one is left untouched.
     @State private var editingAppearance: ColorScheme = .light
 
+    /// The device appearance, used wherever a theme is rendered while the
+    /// gallery is not pinned to one slot.
+    @Environment(\.colorScheme) private var systemColorScheme
+
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var previewAspectRatio = DeviceLayout.defaultKeyAspectRatio
 
@@ -304,7 +308,14 @@ struct StyleSettingsView: View {
 
     private func selectLabel(_ theme: KeyboardThemeDefinition, isSelected: Bool) -> some View {
         HStack(spacing: 12) {
+            // Forced into the edited appearance for the same reason the preview
+            // is: a swatch resolves the theme's semantic colors against its own
+            // trait, so on a light device editing the dark slot it would draw
+            // the light rendering of the very theme the preview above shows
+            // dark. Only the swatch is overridden — the row's own text is app
+            // chrome and follows the device.
             ThemeSwatch(theme: theme)
+                .environment(\.colorScheme, appearanceOverride ?? systemColorScheme)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(theme.displayName)

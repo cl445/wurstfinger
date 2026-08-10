@@ -10,7 +10,7 @@ deliberately left in English.
 | Catalog | Holds |
 | --- | --- |
 | `wurstfinger/Localizable.xcstrings` | Everything the host app displays: settings, onboarding, the test area — plus the keyboard's own strings, because the app renders real keyboards in its previews and showcase. |
-| `wurstfingerKeyboard/Localizable.xcstrings` | Only the strings the keyboard extension itself displays, today the VoiceOver labels of the utility keys. |
+| `wurstfingerKeyboard/Localizable.xcstrings` | The strings that live in extension sources: the VoiceOver labels of the utility keys, plus the built-in theme names and descriptions. |
 
 Sources under `wurstfingerKeyboard/` compile into **both** products, so a
 string used there is looked up in whichever bundle is running and must exist in
