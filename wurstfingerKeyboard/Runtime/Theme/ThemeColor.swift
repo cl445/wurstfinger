@@ -2,7 +2,7 @@
 //  ThemeColor.swift
 //  Wurstfinger
 //
-//  Color and fill primitives of the theme engine.
+//  Color primitives of the theme engine.
 //
 
 import SwiftUI
@@ -139,45 +139,6 @@ extension ThemeColor: Codable {
             try container.encode(Kind.adaptive, forKey: .type)
             try container.encode(light, forKey: .light)
             try container.encode(dark, forKey: .dark)
-        }
-    }
-}
-
-// MARK: - ThemeFill
-
-/// A fill: either a theme color or the system bar material (Liquid Glass).
-enum ThemeFill: Equatable {
-    case color(ThemeColor)
-    case material
-}
-
-extension ThemeFill: Codable {
-    private enum CodingKeys: String, CodingKey {
-        case type, color
-    }
-
-    private enum Kind: String, Codable {
-        case color, material
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        switch try container.decode(Kind.self, forKey: .type) {
-        case .color:
-            self = try .color(container.decode(ThemeColor.self, forKey: .color))
-        case .material:
-            self = .material
-        }
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case let .color(color):
-            try container.encode(Kind.color, forKey: .type)
-            try container.encode(color, forKey: .color)
-        case .material:
-            try container.encode(Kind.material, forKey: .type)
         }
     }
 }

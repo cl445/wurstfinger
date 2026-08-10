@@ -8,18 +8,10 @@
 
 import SwiftUI
 
-/// A resolved fill. Deliberately not `AnyShapeStyle` (which is not
-/// Equatable, and whose wrapping shifts how `.bar` samples its backdrop);
-/// the view layer switches on this and applies `.bar` directly.
-enum ResolvedFill: Equatable {
-    case color(Color)
-    case material
-}
-
 struct ResolvedTheme: Equatable {
-    let boardBackground: ResolvedFill
-    let keyFill: ResolvedFill
-    let keyFillActive: ResolvedFill
+    let boardBackground: Color
+    let keyColor: Color
+    let keyColorActive: Color
     /// nil = no border overlay in the view tree.
     let keyBorder: Color?
     let keyBorderWidth: CGFloat
@@ -30,12 +22,14 @@ struct ResolvedTheme: Equatable {
     let hintSymbol: Color
     let hintIconProminent: Color
     let hintIconSubtle: Color
+    let gestureTrail: Color
 
-    /// Whether any key fill is the bar/glass material, so the grid wraps its
-    /// keys in a `GlassEffectContainer` on iOS 26 (shared sampling region).
-    var usesGlassMaterial: Bool {
-        keyFill == .material || keyFillActive == .material
-    }
+    /// Whether the keys render as the bar/glass material, so the grid wraps
+    /// them in a `GlassEffectContainer` on iOS 26 (glass cannot sample other
+    /// glass) and each key applies the effect instead of a fill. Stored rather
+    /// than derived from a resolved `keySurface`: that field would have no
+    /// reader other than its own getter.
+    let hasGlassKeys: Bool
 }
 
 extension KeyboardThemeDefinition {
@@ -44,17 +38,24 @@ extension KeyboardThemeDefinition {
     /// a fully transparent board would drop taps between keys (#198).
     static let minimumBoardOpacity = 0.02
 
+    /// The board a glass theme paints: nearly clear so the backdrop comes
+    /// through, but still rendered (#198). The literal is the value of the
+    /// shipped Liquid Glass look; that it coincides with `minimumBoardOpacity`
+    /// is a coincidence, not a derivation.
+    static let glassBoardColor: ThemeColor = .semantic(.gray, opacity: 0.02)
+
     /// Resolves the definition into renderable values. Unparsable hex colors
     /// fall back to the Classic value of the same role, so a broken user
     /// theme degrades gracefully instead of rendering invisibly.
     func resolved() -> ResolvedTheme {
         let fallback = BuiltInThemes.classic
+        let board: ThemeColor = boardSurface == .glass
+            ? Self.glassBoardColor
+            : boardColor.withMinimumOpacity(Self.minimumBoardOpacity)
         return ResolvedTheme(
-            boardBackground: boardBackground
-                .withMinimumOpacity(Self.minimumBoardOpacity)
-                .resolvedFill(fallback: fallback.boardBackground),
-            keyFill: keyFill.resolvedFill(fallback: fallback.keyFill),
-            keyFillActive: keyFillActive.resolvedFill(fallback: fallback.keyFillActive),
+            boardBackground: board.resolvedColor(fallback: fallback.boardColor),
+            keyColor: keyColor.resolvedColor(fallback: fallback.keyColor),
+            keyColorActive: keyColorActive.resolvedColor(fallback: fallback.keyColorActive),
             keyBorder: keyBorder.flatMap { $0.resolvedColor() },
             keyBorderWidth: CGFloat(keyBorderWidth),
             cornerRadius: CGFloat(cornerRadius),
@@ -63,7 +64,9 @@ extension KeyboardThemeDefinition {
             hintLetter: hintLetter.resolvedColor(fallback: fallback.hintLetter),
             hintSymbol: hintSymbol.resolvedColor(fallback: fallback.hintSymbol),
             hintIconProminent: hintIconProminent.resolvedColor(fallback: fallback.hintIconProminent),
-            hintIconSubtle: hintIconSubtle.resolvedColor(fallback: fallback.hintIconSubtle)
+            hintIconSubtle: hintIconSubtle.resolvedColor(fallback: fallback.hintIconSubtle),
+            gestureTrail: gestureTrail.resolvedColor(fallback: fallback.gestureTrail),
+            hasGlassKeys: keySurface == .glass
         )
     }
 }
@@ -73,26 +76,5 @@ extension ThemeColor {
     /// is expected to be infallible — built-ins only use valid values).
     fileprivate func resolvedColor(fallback: ThemeColor) -> Color {
         resolvedColor() ?? fallback.resolvedColor() ?? .primary
-    }
-}
-
-extension ThemeFill {
-    fileprivate func withMinimumOpacity(_ minimum: Double) -> ThemeFill {
-        switch self {
-        case let .color(color): .color(color.withMinimumOpacity(minimum))
-        case .material: .material
-        }
-    }
-
-    fileprivate func resolvedFill(fallback: ThemeFill) -> ResolvedFill {
-        switch self {
-        case let .color(color):
-            if let resolved = color.resolvedColor() {
-                return .color(resolved)
-            }
-            return fallback.resolvedFill(fallback: .color(.semantic(.secondarySystemBackground)))
-        case .material:
-            return .material
-        }
     }
 }

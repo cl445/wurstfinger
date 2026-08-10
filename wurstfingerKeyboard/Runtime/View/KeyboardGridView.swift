@@ -81,18 +81,19 @@ struct KeyboardGridView: View {
         .overlay {
             GestureTrailOverlay(
                 recorder: gestureTrail,
-                headWidth: GestureTrailOverlay.headWidth(for: metrics)
+                headWidth: GestureTrailOverlay.headWidth(for: metrics),
+                trailColor: theme.gestureTrail
             )
         }
     }
 
     /// Wraps the key grid in a `GlassEffectContainer` when the active theme
-    /// uses the glass material, so all keys share one sampling region on
-    /// iOS 26 (glass cannot sample other glass). Color themes (Classic, Dark
-    /// Gold) and older systems render the grid unwrapped, unchanged.
+    /// uses glass keys, so all keys share one sampling region on iOS 26 (glass
+    /// cannot sample other glass). Color themes (Classic, Dark Gold) and older
+    /// systems render the grid unwrapped, unchanged.
     @ViewBuilder
     private func glassWrapped(@ViewBuilder _ content: () -> some View) -> some View {
-        if theme.usesGlassMaterial, #available(iOS 26.0, *) {
+        if theme.hasGlassKeys, #available(iOS 26.0, *) {
             GlassEffectContainer { content() }
         } else {
             content()

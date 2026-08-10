@@ -92,7 +92,20 @@ struct DataDrivenKeyboardRootView: View {
 
         let theme = resolvedTheme
         ZStack {
-            keyboardBackground(theme)
+            // The board is never fully transparent, whatever the theme asks
+            // for: a keyboard extension only delivers touches over rendered
+            // pixels and UIKit hit-testing ignores `alpha <= 0.01`, so a clear
+            // board would drop every tap that lands in an inter-key gap (#198).
+            // The resolver floors a color board to
+            // `KeyboardThemeDefinition.minimumBoardOpacity` and paints a glass
+            // board as `glassBoardColor` — faint enough to read as clear over
+            // the `UIInputView(.keyboard)` backdrop, opaque enough to stay live.
+            //
+            // It renders as a plain `Color`, matching the pre-engine board
+            // exactly: `Color` and `Rectangle().fill` have different ideal
+            // sizes, and in the height-free showcase layout that difference
+            // would shift the whole keyboard.
+            theme.boardBackground
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             if let mode = viewModel.activeModeFromDefinition,
@@ -135,30 +148,5 @@ struct DataDrivenKeyboardRootView: View {
         // still renders correctly. (Finding #4.)
         .environment(\.layoutDirection, .leftToRight)
         .environment(\.keyboardTheme, theme)
-    }
-
-    // MARK: - Background
-
-    /// The board behind the keys — always the theme's own resolved
-    /// `boardBackground`. The resolver floors a color board to
-    /// `KeyboardThemeDefinition.minimumBoardOpacity` so it stays a rendered,
-    /// tappable surface: a keyboard extension only delivers touches over
-    /// rendered pixels, and UIKit hit-testing ignores `alpha <= 0.01`, so a
-    /// fully transparent board would drop taps in the inter-key gaps (#198).
-    /// Glass themes therefore declare a faint neutral board that reads as clear
-    /// over the `UIInputView(.keyboard)` backdrop while keeping the gaps live.
-    ///
-    /// A color fill renders as a plain `Color`, matching the pre-engine board
-    /// exactly: `Color` and `Rectangle().fill` have different ideal sizes, and
-    /// in the height-free showcase layout the difference would shift the whole
-    /// keyboard, so only the (currently unused) material board needs a shape.
-    @ViewBuilder
-    private func keyboardBackground(_ theme: ResolvedTheme) -> some View {
-        switch theme.boardBackground {
-        case let .color(color):
-            color
-        case .material:
-            Rectangle().fill(.bar)
-        }
     }
 }

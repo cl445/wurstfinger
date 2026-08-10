@@ -265,7 +265,7 @@ private struct ThemeSwatch: View {
         let resolved = theme.resolved()
         ZStack {
             RoundedRectangle(cornerRadius: 8)
-                .fill(keyColor(resolved.keyFill))
+                .fill(resolved.keyColor)
 
             Text(verbatim: "a")
                 .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -285,15 +285,6 @@ private struct ThemeSwatch: View {
                     lineWidth: isSelected ? 2.5 : 0.5
                 )
         )
-    }
-
-    /// The swatch fill color. Palettes are always color fills; the material
-    /// fallback is only a safety net (styles aren't shown as swatches).
-    private func keyColor(_ fill: ResolvedFill) -> Color {
-        if case let .color(color) = fill {
-            return color
-        }
-        return Color(.secondarySystemBackground)
     }
 }
 

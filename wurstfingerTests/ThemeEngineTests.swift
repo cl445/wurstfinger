@@ -68,9 +68,33 @@ struct ThemeCodableTests {
     @Test func missingFieldsDecodeToClassicDefaults() throws {
         let json = Data(#"{"id": "abc", "name": "Sparse"}"#.utf8)
         let decoded = try JSONDecoder().decode(KeyboardThemeDefinition.self, from: json)
-        #expect(decoded.keyFill == BuiltInThemes.classic.keyFill)
+        #expect(decoded.keyColor == BuiltInThemes.classic.keyColor)
         #expect(decoded.cornerRadius == BuiltInThemes.classic.cornerRadius)
         #expect(decoded.keyBorder == nil)
+    }
+
+    @Test func unknownSurfaceStyleDecodesToColorWithoutLosingTheTheme() throws {
+        // Decoding the surface through the enum would throw here, and
+        // `Archive.FailableTheme` would drop the entire theme over one field.
+        let json = Data(#"""
+        {"id": "abc", "name": "From The Future",
+         "boardSurface": "hologram", "keySurface": "hologram",
+         "mainLabel": {"type": "fixed", "hex": "#D1AA05"}}
+        """#.utf8)
+        let decoded = try JSONDecoder().decode(KeyboardThemeDefinition.self, from: json)
+        #expect(decoded.boardSurface == .color)
+        #expect(decoded.keySurface == .color)
+        #expect(decoded.mainLabel == .fixed(hex: "#D1AA05"))
+    }
+
+    @Test func archiveFromANewerSchemaYieldsNoThemes() throws {
+        // Field-wise tolerance would invent a plausible-but-wrong theme, and
+        // the next save would write it back over the user's original.
+        let json = Data("""
+        {"schemaVersion": 99, "themes": [{"id": "user-1", "name": "Mine"}]}
+        """.utf8)
+        let archive = try JSONDecoder().decode(ThemeStore.Archive.self, from: json)
+        #expect(archive.themes.isEmpty)
     }
 
     @Test func archiveDecodingIsLossy() throws {
@@ -109,22 +133,97 @@ struct BuiltInThemeTests {
         #expect(BuiltInThemes.liquidGlass.id == "liquid-glass")
         #expect(BuiltInThemes.darkGold.id == "dark-gold")
         #expect(BuiltInThemes.all.count == 3)
+        #expect(BuiltInThemes.all.map(\.id) == ["classic", "liquid-glass", "dark-gold"])
     }
 
     @Test func classicHasNoBorder() {
         #expect(BuiltInThemes.classic.resolved().keyBorder == nil)
     }
 
-    @Test func liquidGlassUsesMaterialKeys() {
-        let resolved = BuiltInThemes.liquidGlass.resolved()
-        #expect(resolved.keyFill == .material)
-        #expect(resolved.keyFillActive == .material)
+    @Test func liquidGlassUsesGlassSurfaces() {
+        #expect(BuiltInThemes.liquidGlass.boardSurface == .glass)
+        #expect(BuiltInThemes.liquidGlass.keySurface == .glass)
+        #expect(BuiltInThemes.liquidGlass.resolved().hasGlassKeys)
+    }
+
+    @Test func aGlassBoardPaintsTheTouchableConstant() {
+        // Two assertions, not one tautology: raising the touch floor must not
+        // silently recolor every glass theme's board.
+        #expect(BuiltInThemes.liquidGlass.resolved().boardBackground == Color.gray.opacity(0.02))
+        #expect(KeyboardThemeDefinition.minimumBoardOpacity == 0.02)
     }
 
     @Test func darkGoldResolvesItsFixedPalette() throws {
         let resolved = BuiltInThemes.darkGold.resolved()
         #expect(resolved.mainLabel == HexColor.color(from: "#D1AA05"))
-        #expect(try resolved.keyFill == .color(#require(HexColor.color(from: "#333A48"))))
+        #expect(try resolved.keyColor == #require(HexColor.color(from: "#333A48")))
+    }
+
+    @Test func resolvingIsStable() {
+        // An `.adaptive` color in a built-in would break this: every
+        // `resolvedColor()` mints a fresh dynamic UIColor and two are never
+        // equal, so the resolved theme would compare unequal to itself and
+        // invalidate the grid plus every key on each root body evaluation.
+        #expect(BuiltInThemes.all.allSatisfy { $0.resolved() == $0.resolved() })
+    }
+}
+
+// MARK: - Gesture Trail Role
+
+struct ThemeGestureTrailTests {
+    @Test func classicTrailMatchesThePreEngineConstant() {
+        #expect(BuiltInThemes.classic.resolved().gestureTrail == Color.primary.opacity(0.38))
+        #expect(KeyboardConstants.GestureTrail.opacity == 0.38)
+    }
+
+    @Test func explicitTrailColorKeepsItsOwnAlpha() throws {
+        // The draw path no longer multiplies the 0.38 constant on top, so a
+        // fully opaque pick has to resolve fully opaque.
+        var theme = BuiltInThemes.darkGold
+        theme.gestureTrail = .fixed(hex: "#FF0000")
+        let hex = try #require(HexColor.string(from: theme.resolved().gestureTrail))
+        #expect(HexColor.parse(hex) == .init(rgb: 0xFF0000, alpha: 1))
+    }
+
+    @Test func unparsableTrailHexFallsBackToClassicRole() {
+        var theme = BuiltInThemes.darkGold
+        theme.gestureTrail = .fixed(hex: "garbage")
+        #expect(theme.resolved().gestureTrail == BuiltInThemes.classic.resolved().gestureTrail)
+    }
+
+    @Test func everyBuiltInTrailContrastsWithItsKeyColor() throws {
+        // Glass keys have no color of their own to measure against.
+        for theme in BuiltInThemes.all where theme.keySurface == .color {
+            let resolved = theme.resolved()
+            let key = try components(of: resolved.keyColor)
+            let trail = try components(of: resolved.gestureTrail)
+            let composited = luminance(of: trail.rgb, over: key.rgb, alpha: trail.alpha)
+            let delta = abs(composited - luminance(of: key.rgb, over: key.rgb, alpha: 1))
+            // Dark Gold's gold-over-slate sits at ~0.19 (3.06:1), Classic's
+            // ink-over-system-fill far above it.
+            #expect(delta > 0.1, "\(theme.id) trail barely differs from its key color")
+        }
+    }
+
+    private func components(of color: Color) throws -> HexColor.Components {
+        let hex = try #require(HexColor.string(from: color))
+        return try #require(HexColor.parse(hex))
+    }
+
+    /// WCAG relative luminance of `rgb` composited over the opaque `background`
+    /// at `alpha`.
+    private func luminance(of rgb: UInt32, over background: UInt32, alpha: Double) -> Double {
+        func channel(_ packed: UInt32, _ shift: UInt32) -> Double {
+            Double((packed >> shift) & 0xFF) / 255
+        }
+        func linear(_ value: Double) -> Double {
+            value <= 0.03928 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
+        }
+        let weights = [(16 as UInt32, 0.2126), (8 as UInt32, 0.7152), (0 as UInt32, 0.0722)]
+        return weights.reduce(0) { total, entry in
+            let mixed = alpha * channel(rgb, entry.0) + (1 - alpha) * channel(background, entry.0)
+            return total + entry.1 * linear(mixed)
+        }
     }
 }
 
@@ -254,7 +353,7 @@ struct ThemeEditingTests {
         #expect(copy.id != source.id)
         #expect(!copy.isBuiltIn)
         // Colors carry over untouched; only identity/name change.
-        #expect(copy.keyFill == source.keyFill)
+        #expect(copy.keyColor == source.keyColor)
         #expect(copy.mainLabel == source.mainLabel)
         #expect(copy.name != source.displayName)
         #expect(copy.name.contains(source.displayName))

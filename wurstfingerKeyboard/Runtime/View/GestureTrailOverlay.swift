@@ -20,13 +20,23 @@ struct GestureTrailOverlay: View {
     /// `headWidth(for:)`.
     let headWidth: CGFloat
 
+    /// The active theme's `gestureTrail` color, passed in rather than read
+    /// from `@Environment` here: `TimelineView` calls the `Canvas` renderer
+    /// once per frame *without* re-evaluating `body`, so a property-wrapper
+    /// access from that escaping closure is the "Accessing Environment outside
+    /// of being installed on a View" trap — and a stale value would stay wrong
+    /// for the whole gesture.
+    let trailColor: Color
+
     var body: some View {
         // Nothing is rendered — and no display-linked timer runs — unless a
         // trail is in flight.
         if recorder.isVisible {
+            // Captured as a plain value here, outside the per-frame closure.
+            let color = trailColor
             TimelineView(.animation) { timeline in
                 Canvas { context, _ in
-                    draw(in: &context, at: timeline.date.timeIntervalSinceReferenceDate)
+                    draw(in: &context, at: timeline.date.timeIntervalSinceReferenceDate, color: color)
                 }
             }
             .allowsHitTesting(false)
@@ -48,7 +58,14 @@ struct GestureTrailOverlay: View {
         )
     }
 
-    private func draw(in context: inout GraphicsContext, at now: TimeInterval) {
+    /// The color one frame fills with: the theme's own alpha, dimmed only by
+    /// the fade-out. Separate from `draw` because a `GraphicsContext` cannot be
+    /// built outside a `Canvas`, so this is the only testable seam.
+    static func fillColor(_ base: Color, fade: Double) -> Color {
+        base.opacity(fade)
+    }
+
+    private func draw(in context: inout GraphicsContext, at now: TimeInterval, color: Color) {
         let trail = recorder.trail
         // The recorder drops a faded-out trail from a main-queue work item, so
         // a busy main thread can hand this a trail whose fade already expired.
@@ -61,7 +78,6 @@ struct GestureTrailOverlay: View {
         let path = GestureTrailGeometry.shape(through: points, headWidth: headWidth)
         // One fill of one closed contour, so the alpha is uniform even where
         // the path crosses itself.
-        context.opacity = KeyboardConstants.GestureTrail.opacity * trail.fadeOpacity(at: now)
-        context.fill(path, with: .color(.primary))
+        context.fill(path, with: .color(Self.fillColor(color, fade: trail.fadeOpacity(at: now))))
     }
 }

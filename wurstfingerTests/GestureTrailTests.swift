@@ -546,6 +546,30 @@ struct GestureTrailRecorderTests {
     }
 }
 
+// MARK: - Overlay Fill Color
+
+struct GestureTrailFillColorTests {
+    private func alpha(of color: Color) throws -> Double {
+        let hex = try #require(HexColor.string(from: color))
+        return try #require(HexColor.parse(hex)).alpha
+    }
+
+    @Test func fadeIsTheOnlyMultiplierOnTheThemeAlpha() throws {
+        // The theme's own alpha counts literally — the pre-engine 0.38 is no
+        // longer multiplied on top, so a 100% pick draws at 100%.
+        let opaque = try #require(HexColor.color(from: "#D1AA05"))
+        #expect(try alpha(of: GestureTrailOverlay.fillColor(opaque, fade: 1)) == 1)
+        #expect(try abs(alpha(of: GestureTrailOverlay.fillColor(opaque, fade: 0.5)) - 0.5) < 0.01)
+    }
+
+    @Test func fadeScalesATranslucentTrail() throws {
+        let translucent = try #require(HexColor.color(from: "#D1AA0580"))
+        #expect(try abs(alpha(of: GestureTrailOverlay.fillColor(translucent, fade: 1)) - 0.502) < 0.01)
+        #expect(try abs(alpha(of: GestureTrailOverlay.fillColor(translucent, fade: 0.5)) - 0.251) < 0.01)
+        #expect(try alpha(of: GestureTrailOverlay.fillColor(translucent, fade: 0)) == 0)
+    }
+}
+
 // MARK: - Overlay Sizing
 
 struct GestureTrailOverlaySizingTests {

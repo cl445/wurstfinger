@@ -263,14 +263,23 @@ struct KeyView: View {
     // MARK: - View Construction
 
     /// Whether this key should render as native Liquid Glass (iOS 26 with a
-    /// material fill). The glass then wraps the label layer directly, so the
-    /// label stays crisp and picks up glass vibrancy — applying it to a
+    /// glass key surface). The glass then wraps the label layer directly, so
+    /// the label stays crisp and picks up glass vibrancy — applying it to a
     /// separate background layer instead blurs the label.
+    ///
+    /// One surface style decides this for pressed and unpressed alike, so the
+    /// subtree structure stays stable across a key press. (Two independent
+    /// fills used to allow a half-glass state; nothing changes for the shipped
+    /// Liquid Glass theme, where both fills were the material anyway.)
     private var usesNativeGlass: Bool {
-        if #available(iOS 26.0, *) {
-            return (isActive ? theme.keyFillActive : theme.keyFill) == .material
-        }
+        if #available(iOS 26.0, *) { return theme.hasGlassKeys }
         return false
+    }
+
+    /// Glass keys on a system without native Liquid Glass — only reachable
+    /// before iOS 26.
+    private var usesGlassFallback: Bool {
+        theme.hasGlassKeys && !usesNativeGlass
     }
 
     /// A subtle neutral tint on the glass, so the keys gain a bit of presence
@@ -301,15 +310,13 @@ struct KeyView: View {
     @ViewBuilder
     private var background: some View {
         let shape = RoundedRectangle(cornerRadius: theme.cornerRadius)
-        let fill = isActive ? theme.keyFillActive : theme.keyFill
-        switch fill {
-        case let .color(color):
-            filled(shape, with: color)
-        case .material:
+        if usesGlassFallback {
             // Reached only before iOS 26 (native glass takes the other branch):
             // the bar material with a hairline border, pixel-identical to the
             // pre-engine Liquid Glass rendering.
             filled(shape, with: .bar)
+        } else {
+            filled(shape, with: isActive ? theme.keyColorActive : theme.keyColor)
         }
     }
 

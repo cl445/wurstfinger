@@ -191,6 +191,14 @@ extension ThemeStore.Archive: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion)
             ?? Self.currentSchemaVersion
+        // A blob from a future schema may give the same field names different
+        // meanings. Decoding it field by field would yield a plausible but
+        // wrong theme, and the next save would write that back over the
+        // original — so drop the themes wholesale instead.
+        guard schemaVersion <= Self.currentSchemaVersion else {
+            themes = []
+            return
+        }
         let raw = try container.decodeIfPresent([FailableTheme].self, forKey: .themes) ?? []
         themes = raw.compactMap(\.value).filter { !BuiltInThemes.ids.contains($0.id) }
     }

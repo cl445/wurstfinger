@@ -490,7 +490,8 @@ final class KeyboardViewController: UIInputViewController {
     /// delivery for the inter-key gaps comes from the SwiftUI board fill,
     /// because a keyboard extension delivers touches over SwiftUI-rendered
     /// pixels, not over this UIKit backdrop behind them (see
-    /// `DataDrivenKeyboardRootView.keyboardBackground` + #198). It is left
+    /// `ResolvedTheme.boardBackground` /
+    /// `KeyboardThemeDefinition.minimumBoardOpacity` + #198). It is left
     /// interactive only so it never swallows a stray touch itself; the SwiftUI
     /// content above always wins the hit-test.
     ///

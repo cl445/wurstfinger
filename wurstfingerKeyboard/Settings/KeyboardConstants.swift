@@ -177,8 +177,11 @@ enum KeyboardConstants {
         /// interpolation those would draw as a visible polyline.
         static let smoothingSubdivisions: Int = 6
 
-        /// Opacity of the ribbon. Translucent enough to keep the key labels
-        /// underneath readable while the finger passes over them.
+        /// Default alpha of the `gestureTrail` role in the built-in themes.
+        /// Translucent enough to keep the key labels underneath readable while
+        /// the finger passes over them. Not applied at draw time any more: the
+        /// theme color's own alpha counts literally, so a theme that asks for a
+        /// fully opaque ribbon gets one.
         static let opacity: Double = 0.38
     }
 

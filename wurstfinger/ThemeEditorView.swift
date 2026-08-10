@@ -49,9 +49,9 @@ struct ThemeEditorView: View {
                 }
 
                 Section("Surfaces") {
-                    fillRow("Keyboard background", fill: $theme.boardBackground)
-                    fillRow("Key", fill: $theme.keyFill)
-                    fillRow("Key (pressed)", fill: $theme.keyFillActive)
+                    colorRow("Keyboard background", color: $theme.boardColor)
+                    colorRow("Key", color: $theme.keyColor)
+                    colorRow("Key (pressed)", color: $theme.keyColorActive)
                     borderRows
                     cornerRadiusRow
                 }
@@ -116,25 +116,6 @@ struct ThemeEditorView: View {
         )
     }
 
-    /// A color well for a surface fill. The glass material has no single color,
-    /// so it reads as a neutral gray and picking any color converts the fill to
-    /// a solid color.
-    private func fillRow(_ title: LocalizedStringKey, fill: Binding<ThemeFill>) -> some View {
-        ColorPicker(
-            title,
-            selection: Binding(
-                get: {
-                    if case let .color(color) = fill.wrappedValue {
-                        return color.resolvedColor() ?? .gray
-                    }
-                    return .gray
-                },
-                set: { fill.wrappedValue = .color(.from($0)) }
-            ),
-            supportsOpacity: true
-        )
-    }
-
     @ViewBuilder private var borderRows: some View {
         Toggle("Key border", isOn: Binding(
             get: { theme.keyBorder != nil },
@@ -188,7 +169,7 @@ struct ThemePreviewGrid: View {
     let theme: ResolvedTheme
 
     private let letters = [["a", "n", "i"], ["h", "d", "r"], ["t", "e", "s"]]
-    /// The center key renders in the pressed fill to preview `keyFillActive`.
+    /// The center key renders in the pressed fill to preview `keyColorActive`.
     private let pressed = (row: 1, column: 1)
 
     var body: some View {
@@ -202,14 +183,14 @@ struct ThemePreviewGrid: View {
             }
         }
         .padding(10)
-        .background { fill(theme.boardBackground) }
+        .background { theme.boardBackground }
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .padding(.vertical, 4)
     }
 
     private func key(_ letter: String, isPressed: Bool) -> some View {
         ZStack {
-            fill(isPressed ? theme.keyFillActive : theme.keyFill)
+            (isPressed ? theme.keyColorActive : theme.keyColor)
                 .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius))
                 .overlay(
                     RoundedRectangle(cornerRadius: theme.cornerRadius)
@@ -231,13 +212,6 @@ struct ThemePreviewGrid: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         }
         .frame(width: 52, height: 52)
-    }
-
-    @ViewBuilder private func fill(_ resolved: ResolvedFill) -> some View {
-        switch resolved {
-        case let .color(color): color
-        case .material: Rectangle().fill(.regularMaterial)
-        }
     }
 }
 

@@ -13,9 +13,11 @@ enum BuiltInThemes {
     static let classic = KeyboardThemeDefinition(
         id: "classic",
         name: "Classic",
-        boardBackground: .color(.semantic(.systemBackground)),
-        keyFill: .color(.semantic(.secondarySystemBackground)),
-        keyFillActive: .color(.semantic(.tertiarySystemFill)),
+        boardSurface: .color,
+        boardColor: .semantic(.systemBackground),
+        keySurface: .color,
+        keyColor: .semantic(.secondarySystemBackground),
+        keyColorActive: .semantic(.tertiarySystemFill),
         keyBorder: nil,
         keyBorderWidth: 0,
         cornerRadius: Double(KeyboardConstants.KeyDimensions.cornerRadius),
@@ -24,22 +26,29 @@ enum BuiltInThemes {
         hintLetter: .semantic(.primary, opacity: 0.65),
         hintSymbol: .semantic(.secondary, opacity: 0.55),
         hintIconProminent: .semantic(.primary, opacity: 0.5),
-        hintIconSubtle: .semantic(.secondary, opacity: 0.45)
+        hintIconSubtle: .semantic(.secondary, opacity: 0.45),
+        // The pre-engine trail color, now a theme role. Its alpha is used as
+        // it stands: `GestureTrailOverlay` multiplies in the fade-out only.
+        gestureTrail: .semantic(.primary, opacity: KeyboardConstants.GestureTrail.opacity)
     )
 
-    /// Bar-material theme matching the pre-engine "liquidGlass" style. The
-    /// board is a near-invisible color fill, not a material — that is the
-    /// touch fix from #198 (see DataDrivenKeyboardRootView).
+    /// Glass theme matching the pre-engine "liquidGlass" style: native Liquid
+    /// Glass keys over a board that is a near-invisible color fill rather than
+    /// a material — that is the touch fix from #198 (see
+    /// `ResolvedTheme.boardBackground` / `KeyboardThemeDefinition.minimumBoardOpacity`).
+    ///
+    /// The color fields are real fallbacks, not placeholders: switching either
+    /// surface back to `.color` has to yield a usable keyboard, so the board
+    /// carries Classic's opaque background (a 2% gray would make the toggle
+    /// look dead) and the keys carry Classic's key colors.
     static let liquidGlass = KeyboardThemeDefinition(
         id: "liquid-glass",
         name: "Liquid Glass",
-        // A faint neutral board: it reads as clear over the
-        // `UIInputView(.keyboard)` backdrop (so the keyboard matches the system
-        // row) while staying just opaque enough to keep the inter-key gaps
-        // tappable (see `keyboardBackground` / `minimumBoardOpacity`, #198).
-        boardBackground: .color(.semantic(.gray, opacity: 0.02)),
-        keyFill: .material,
-        keyFillActive: .material,
+        boardSurface: .glass,
+        boardColor: .semantic(.systemBackground),
+        keySurface: .glass,
+        keyColor: .semantic(.secondarySystemBackground),
+        keyColorActive: .semantic(.tertiarySystemFill),
         keyBorder: .semantic(.primary, opacity: 0.1),
         keyBorderWidth: 0.5,
         cornerRadius: Double(KeyboardConstants.KeyDimensions.cornerRadius),
@@ -48,7 +57,8 @@ enum BuiltInThemes {
         hintLetter: .semantic(.primary, opacity: 0.65),
         hintSymbol: .semantic(.secondary, opacity: 0.55),
         hintIconProminent: .semantic(.primary, opacity: 0.5),
-        hintIconSubtle: .semantic(.secondary, opacity: 0.45)
+        hintIconSubtle: .semantic(.secondary, opacity: 0.45),
+        gestureTrail: .semantic(.primary, opacity: KeyboardConstants.GestureTrail.opacity)
     )
 
     /// Fixed dark-slate/gold palette. Identical in light and dark mode by
@@ -57,9 +67,11 @@ enum BuiltInThemes {
     static let darkGold = KeyboardThemeDefinition(
         id: "dark-gold",
         name: "Dark Gold",
-        boardBackground: .color(.fixed(hex: "#252A34")),
-        keyFill: .color(.fixed(hex: "#333A48")),
-        keyFillActive: .color(.fixed(hex: "#4A5468")),
+        boardSurface: .color,
+        boardColor: .fixed(hex: "#252A34"),
+        keySurface: .color,
+        keyColor: .fixed(hex: "#333A48"),
+        keyColorActive: .fixed(hex: "#4A5468"),
         keyBorder: .fixed(hex: "#FFFFFF1F"),
         keyBorderWidth: 0.5,
         cornerRadius: Double(KeyboardConstants.KeyDimensions.cornerRadius),
@@ -68,7 +80,12 @@ enum BuiltInThemes {
         hintLetter: .fixed(hex: "#FFFFFFE6"),
         hintSymbol: .fixed(hex: "#FFFFFFB3"),
         hintIconProminent: .fixed(hex: "#FFFFFF80"),
-        hintIconSubtle: .fixed(hex: "#FFFFFF73")
+        hintIconSubtle: .fixed(hex: "#FFFFFF73"),
+        // Gold at 0xA6 (0.65). Measured per WCAG over the key color #333A48:
+        // gold at 0.38 reaches only 1.95:1 and disappears under the finger,
+        // 0.65 reaches 3.06:1. White at 0.38 would give a comparable 3.09:1 but
+        // collides with the already-white `utilityLabel` / `hintLetter` roles.
+        gestureTrail: .fixed(hex: "#D1AA05A6")
     )
 
     static let all: [KeyboardThemeDefinition] = [classic, liquidGlass, darkGold]
