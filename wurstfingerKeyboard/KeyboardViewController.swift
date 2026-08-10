@@ -501,6 +501,10 @@ final class KeyboardViewController: UIInputViewController {
     private func installBackdropIfNeeded() {
         guard backdropView == nil else { return }
         let backdrop = UIInputView(frame: .zero, inputViewStyle: .keyboard)
+        // Visual only. It spans the whole input view behind the SwiftUI
+        // content, and touch delivery in an extension is the fragile part
+        // (#198) — nothing here should be able to take a touch off a key.
+        backdrop.isUserInteractionEnabled = false
         backdrop.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(backdrop)
         NSLayoutConstraint.activate([

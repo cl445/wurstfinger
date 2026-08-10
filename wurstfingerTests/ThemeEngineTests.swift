@@ -145,6 +145,26 @@ struct ThemeCodableTests {
         #expect(decoded.keyBorderWidth == 2)
     }
 
+    @Test func aBorderedThemeNeverDecodesToAnInvisibleWidth() throws {
+        // `KeyView.filled` only strokes for a positive width, so a stored zero
+        // next to a border color would show an enabled control that draws
+        // nothing — and `setKeyBorder(_:)` only repairs an exact zero, so
+        // toggling it off and on would not recover either.
+        let bordered = Data(#"""
+        {"id": "abc", "name": "Mine", "keyBorder": {"type": "fixed", "hex": "#FFFFFF1F"}, "keyBorderWidth": 0}
+        """#.utf8)
+        let decoded = try JSONDecoder().decode(KeyboardThemeDefinition.self, from: bordered)
+        #expect(decoded.keyBorder != nil)
+        #expect(decoded.keyBorderWidth == KeyboardThemeDefinition.minimumKeyBorderWidth)
+
+        // Without a border color the width is inert, and Classic legitimately
+        // stores zero there.
+        let borderless = Data(#"""
+        {"id": "abc", "name": "Mine", "keyBorderWidth": 0}
+        """#.utf8)
+        #expect(try JSONDecoder().decode(KeyboardThemeDefinition.self, from: borderless).keyBorderWidth == 0)
+    }
+
     @Test func aThemeWithOneMalformedFieldSurvivesTheArchive() throws {
         // The damage path in full: `FailableTheme` would drop the theme, and
         // the next save would write that loss back over the original.
@@ -569,6 +589,27 @@ struct ThemeEditingTests {
         #expect(ThemeStore.userThemes(defaults: defaults).isEmpty)
         #expect(defaults.string(forKey: SettingsKey.selectedThemeLight.rawValue) == BuiltInThemes.classic.id)
         #expect(defaults.string(forKey: SettingsKey.selectedThemeDark.rawValue) == BuiltInThemes.classic.id)
+    }
+
+    @Test func readingUserThemesSeesAWriteFromAnotherProcess() throws {
+        // `userThemes()` memoizes the decode. The cache is keyed on the stored
+        // bytes rather than invalidated by the writers, because the host app
+        // and the keyboard extension are separate processes — a write in one
+        // must not leave the other serving a stale list.
+        let defaults = try isolatedDefaults()
+        var theme = BuiltInThemes.darkGold
+        theme.id = "user-1"
+        theme.name = "First"
+        ThemeStore.saveUserTheme(theme, defaults: defaults)
+        #expect(ThemeStore.userThemes(defaults: defaults).map(\.name) == ["First"])
+
+        // Written the way the other process would: straight into defaults,
+        // bypassing every in-process code path that could invalidate a cache.
+        let renamed = Data("""
+        {"schemaVersion": 1, "themes": [{"id": "user-1", "name": "Renamed Elsewhere"}]}
+        """.utf8)
+        defaults.set(renamed, forKey: SettingsKey.userThemes.rawValue)
+        #expect(ThemeStore.userThemes(defaults: defaults).map(\.name) == ["Renamed Elsewhere"])
     }
 
     @Test func writingDoesNotClobberANewerSchemaArchive() throws {

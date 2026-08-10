@@ -32,15 +32,36 @@ enum ThemeStore {
         var schemaVersion: Int?
     }
 
+    /// The last decoded archive, keyed by the bytes it was decoded from.
+    ///
+    /// Keyed by the raw data rather than invalidated by the writers, because
+    /// the host app and the keyboard extension are separate processes: a
+    /// write-invalidated cache would go stale in whichever one did not perform
+    /// the write. Re-reading `Data` from `UserDefaults` and comparing it is
+    /// cheap; the `JSONDecoder` pass is the part worth skipping.
+    private static let cacheLock = NSLock()
+    private nonisolated(unsafe) static var decodedArchive: (data: Data, themes: [KeyboardThemeDefinition])?
+
     /// Decodes the archive from defaults. Lossy on purpose: a corrupt entry
     /// is skipped instead of destroying all user themes, and entries claiming
     /// a built-in id are dropped (built-in status is derived, never trusted).
+    ///
+    /// Called from render paths — the gallery list, and the keyboard's own root
+    /// view whenever a slot names a user theme — so repeated calls with
+    /// unchanged defaults must not re-decode.
     static func userThemes(defaults: UserDefaults = SharedDefaults.store) -> [KeyboardThemeDefinition] {
         guard let data = defaults.data(forKey: SettingsKey.userThemes.rawValue) else {
             return []
         }
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        if let cached = decodedArchive, cached.data == data {
+            return cached.themes
+        }
         let archive = try? JSONDecoder().decode(Archive.self, from: data)
-        return archive?.themes ?? []
+        let themes = archive?.themes ?? []
+        decodedArchive = (data, themes)
+        return themes
     }
 
     /// Writes the archive — unless defaults already hold one from a schema

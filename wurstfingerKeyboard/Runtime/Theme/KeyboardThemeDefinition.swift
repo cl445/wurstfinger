@@ -144,7 +144,15 @@ extension KeyboardThemeDefinition: Codable {
         keyColorActive = container.decodeIfReadable(ThemeColor.self, forKey: .keyColorActive)
             ?? legacy.keyColorActive ?? fallback.keyColorActive
         keyBorder = container.decodeIfReadable(ThemeColor.self, forKey: .keyBorder)
-        keyBorderWidth = container.decodeIfReadable(Double.self, forKey: .keyBorderWidth) ?? fallback.keyBorderWidth
+        let storedBorderWidth = container.decodeIfReadable(Double.self, forKey: .keyBorderWidth)
+            ?? fallback.keyBorderWidth
+        // A theme that names a border colour but stores a width of zero (or
+        // less) would show an enabled, permanently invisible border in the
+        // editor: `KeyView.filled` only strokes for a positive width, and
+        // `setKeyBorder(_:)` only repairs an exact zero.
+        keyBorderWidth = keyBorder == nil
+            ? storedBorderWidth
+            : max(storedBorderWidth, Self.minimumKeyBorderWidth)
         cornerRadius = container.decodeIfReadable(Double.self, forKey: .cornerRadius) ?? fallback.cornerRadius
         mainLabel = container.decodeIfReadable(ThemeColor.self, forKey: .mainLabel) ?? fallback.mainLabel
         utilityLabel = container.decodeIfReadable(ThemeColor.self, forKey: .utilityLabel) ?? fallback.utilityLabel
