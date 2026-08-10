@@ -17,7 +17,7 @@ import Foundation
 /// a *rendered* surface — a keyboard extension only receives touches over
 /// rendered pixels, so a truly transparent board would drop every tap that
 /// lands in the gaps between keys (#198).
-enum BoardSurfaceStyle: String, Codable, CaseIterable {
+enum BoardSurfaceStyle: String, Codable {
     case color
     case glass
 }
@@ -26,7 +26,7 @@ enum BoardSurfaceStyle: String, Codable, CaseIterable {
 ///
 /// Here `glass` *is* a material: native Liquid Glass on iOS 26, the `.bar`
 /// material on older systems.
-enum KeySurfaceStyle: String, Codable, CaseIterable {
+enum KeySurfaceStyle: String, Codable {
     case color
     case glass
 }

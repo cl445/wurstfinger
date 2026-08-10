@@ -65,6 +65,20 @@ enum ThemeColor: Equatable {
         }
     }
 
+    /// The color as it renders in one specific appearance, frozen to a static
+    /// value.
+    ///
+    /// The editor's color wells need this. A semantic or adaptive color
+    /// resolves against the environment it is *displayed* in, so a well drawn
+    /// in a light-mode sheet would show a dark-slot theme's label in its light
+    /// value — and because the well's setter freezes whatever it was seeded
+    /// with, that wrong reading gets written into the theme permanently.
+    func resolvedColor(in colorScheme: ColorScheme) -> Color? {
+        guard let color = resolvedColor() else { return nil }
+        let traits = UITraitCollection(userInterfaceStyle: colorScheme == .dark ? .dark : .light)
+        return Color(UIColor(color).resolvedColor(with: traits))
+    }
+
     /// Builds a fixed color from a SwiftUI color — the form the editor's color
     /// wells write. A color with no RGB representation (e.g. a pattern) falls
     /// back to opaque black rather than dropping the edit.

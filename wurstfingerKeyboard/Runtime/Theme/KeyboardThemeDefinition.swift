@@ -55,6 +55,52 @@ struct KeyboardThemeDefinition: Identifiable, Equatable {
     /// Color of the swipe trail. Its alpha is used literally — the draw path
     /// multiplies in the fade-out and nothing else.
     var gestureTrail: ThemeColor
+
+    // MARK: Surface switches
+
+    /// Switches the keys between the glass material and their own color.
+    ///
+    /// The editor's glass toggle writes through here rather than assigning
+    /// `keySurface` inline, so the promise that switching glass on keeps the
+    /// palette intact lives in the model and can be tested there. A test that
+    /// re-implements the assignment tests Swift, not this rule.
+    mutating func setGlassKeys(_ isOn: Bool) {
+        keySurface = isOn ? .glass : .color
+    }
+
+    /// Switches the board between near-clear glass and its own color. Same
+    /// reasoning as `setGlassKeys(_:)`.
+    mutating func setGlassBoard(_ isOn: Bool) {
+        boardSurface = isOn ? .glass : .color
+    }
+
+    /// Border color a theme without one gets when the border is switched on.
+    static let defaultKeyBorder: ThemeColor = .fixed(hex: "#00000030")
+
+    /// Thinnest border that actually renders, and the editor slider's minimum.
+    static let minimumKeyBorderWidth = 0.5
+
+    /// Switches the key border on or off.
+    ///
+    /// Unlike the two glass switches this one is a *coupled* write, which is
+    /// why it lives here rather than inline in the editor's binding: turning
+    /// the border on has to bring a width with it. `KeyView.filled` draws no
+    /// border at all at width 0, so a Classic copy (no border, width 0) would
+    /// switch the border on and see nothing change — and the width slider would
+    /// be handed a stored 0 that sits below its own range.
+    ///
+    /// A width the user already picked is kept, and so is a color the theme
+    /// already carries, so switching on never overwrites either.
+    mutating func setKeyBorder(_ isOn: Bool) {
+        guard isOn else {
+            keyBorder = nil
+            return
+        }
+        keyBorder = keyBorder ?? Self.defaultKeyBorder
+        if keyBorderWidth == 0 {
+            keyBorderWidth = Self.minimumKeyBorderWidth
+        }
+    }
 }
 
 /// Tolerant, stable persistence: explicit keys, and every field except

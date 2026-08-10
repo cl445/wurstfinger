@@ -82,28 +82,45 @@ enum ThemeStore {
     /// This is the single source of truth for slot selection; both the live
     /// keyboard (`DataDrivenKeyboardRootView`) and `selectedTheme(for:)` call it
     /// so the tested path is the rendered path.
+    ///
+    /// `hasSeparateDarkSlot` is what makes the dark slot *mean* anything: with
+    /// it off the dark slot is ignored and both appearances render the light
+    /// one. That is the whole reason the flag is honoured here rather than
+    /// collapsed into the stored ids by the settings screen — overwriting the
+    /// dark id would destroy the user's dark assignment on one toggle tap,
+    /// while ignoring it keeps the assignment intact for when the flag comes
+    /// back on.
     static func theme(
         lightId: String,
         darkId: String,
+        hasSeparateDarkSlot: Bool,
         for colorScheme: ColorScheme,
         defaults: UserDefaults = SharedDefaults.store
     ) -> KeyboardThemeDefinition {
+        guard hasSeparateDarkSlot else {
+            return theme(id: lightId, defaults: defaults) ?? BuiltInThemes.classic
+        }
         let (primary, secondary) = colorScheme == .dark ? (darkId, lightId) : (lightId, darkId)
         return theme(id: primary, defaults: defaults)
             ?? theme(id: secondary, defaults: defaults)
             ?? BuiltInThemes.classic
     }
 
-    /// The theme for the given appearance, reading the slot ids from defaults.
-    /// An unset dark slot follows the light slot (both slots track one
-    /// selection until the gallery adds separate assignment in M2).
+    /// The theme for the given appearance, reading the slot ids and the
+    /// separate-dark-slot flag from defaults.
     static func selectedTheme(
         for colorScheme: ColorScheme,
         defaults: UserDefaults = SharedDefaults.store
     ) -> KeyboardThemeDefinition {
         let lightId = defaults.string(forKey: SettingsKey.selectedThemeLight.rawValue) ?? BuiltInThemes.classic.id
         let darkId = defaults.string(forKey: SettingsKey.selectedThemeDark.rawValue) ?? lightId
-        return theme(lightId: lightId, darkId: darkId, for: colorScheme, defaults: defaults)
+        return theme(
+            lightId: lightId,
+            darkId: darkId,
+            hasSeparateDarkSlot: defaults.bool(forKey: SettingsKey.themeSeparateDarkSlot.rawValue),
+            for: colorScheme,
+            defaults: defaults
+        )
     }
 
     // MARK: - Editing

@@ -12,7 +12,7 @@ import SwiftUI
 /// of being re-decided by every control — one shared row builder serves both
 /// sections, which is exactly where an edit or delete control could otherwise
 /// leak onto a built-in.
-enum ThemeRowAction {
+enum ThemeRowAction: CaseIterable {
     case select
     case duplicate
     case edit
@@ -27,10 +27,11 @@ struct StyleSettingsView: View {
     private var selectedThemeDark = BuiltInThemes.classic.id
 
     @AppStorage(SettingsKey.themeSeparateDarkSlot.rawValue, store: SharedDefaults.store)
-    private var separateDarkSlot = false
+    private var hasSeparateDarkSlot = false
 
     /// Which slot the gallery currently edits and previews. Only meaningful
-    /// while `separateDarkSlot` is on; otherwise selection writes both slots.
+    /// while `hasSeparateDarkSlot` is on; otherwise everything reads and writes
+    /// the light slot and the dark one is left untouched.
     @State private var editingAppearance: ColorScheme = .light
 
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
@@ -42,6 +43,9 @@ struct StyleSettingsView: View {
     @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
     private var previewPosition = DeviceLayout.defaultKeyboardPosition
 
+    /// 44 pt grown with the user's text size; clamped by `iconTargetSide(scaledFrom:)`.
+    @ScaledMetric(relativeTo: .body) private var scaledIconTarget: CGFloat = 44
+
     /// User-created themes, reloaded from the store after every edit.
     @State private var userThemes: [KeyboardThemeDefinition] = ThemeStore.userThemes()
 
@@ -51,10 +55,13 @@ struct StyleSettingsView: View {
     /// The user theme the row-level delete button is asking about.
     @State private var themePendingDeletion: KeyboardThemeDefinition?
 
+    /// The row a save just created, so the gallery can scroll it into view.
+    @State private var themeToRevealId: String?
+
     /// A theme handed to the editor. A duplicate is *not* persisted before the
     /// editor opens — Save creates it — so cancelling leaves no orphaned
     /// "… Copy" behind, and the editor needs to know which case it is in.
-    private struct ThemeEditSession: Identifiable {
+    struct ThemeEditSession: Identifiable, Equatable {
         var theme: KeyboardThemeDefinition
         var isNewTheme: Bool
 
@@ -64,10 +71,44 @@ struct StyleSettingsView: View {
     }
 
     /// The theme id the gallery currently reflects: the dark slot while editing
-    /// dark mode, otherwise the light slot (which both slots share when the
-    /// separate-dark-slot toggle is off).
+    /// dark mode, otherwise the light slot (the only slot the resolver reads
+    /// while the separate-dark-slot toggle is off).
+    ///
+    /// Static, like the write side in `slots(selecting:…)`: this decides which
+    /// row wears the checkmark and which theme the preview renders, so getting
+    /// the flag wrong here shows the user a theme they are not editing.
+    static func activeThemeId(
+        light: String,
+        dark: String,
+        hasSeparateDarkSlot: Bool,
+        editingAppearance: ColorScheme
+    ) -> String {
+        hasSeparateDarkSlot && editingAppearance == .dark ? dark : light
+    }
+
+    /// The appearance the gallery previews and the editor designs against, or
+    /// nil while one theme serves both slots (then the device decides).
+    ///
+    /// Static for the same reason, and this one is load-bearing twice over:
+    /// every color well in the editor is seeded from the theme *as it renders
+    /// in this appearance*, and the well freezes what it was seeded with as a
+    /// fixed hex. Returning `.light` where nil belongs would hand a user on a
+    /// dark device a whole palette of light-mode values, permanently.
+    static func appearanceOverride(hasSeparateDarkSlot: Bool, editingAppearance: ColorScheme) -> ColorScheme? {
+        hasSeparateDarkSlot ? editingAppearance : nil
+    }
+
     private var activeThemeId: String {
-        separateDarkSlot && editingAppearance == .dark ? selectedThemeDark : selectedThemeLight
+        Self.activeThemeId(
+            light: selectedThemeLight,
+            dark: selectedThemeDark,
+            hasSeparateDarkSlot: hasSeparateDarkSlot,
+            editingAppearance: editingAppearance
+        )
+    }
+
+    private var appearanceOverride: ColorScheme? {
+        Self.appearanceOverride(hasSeparateDarkSlot: hasSeparateDarkSlot, editingAppearance: editingAppearance)
     }
 
     /// Everything the gallery lists, built-ins first.
@@ -83,17 +124,28 @@ struct StyleSettingsView: View {
                 aspectRatio: $previewAspectRatio,
                 width: $previewWidth,
                 position: $previewPosition,
-                appearanceOverride: separateDarkSlot ? editingAppearance : nil
+                appearanceOverride: appearanceOverride
             )
             .padding(.horizontal, 16)
 
-            ScrollView {
-                VStack(spacing: 24) {
-                    appearanceSection
-                    builtInSection
-                    userThemesSection
+            ScrollViewReader { scrollProxy in
+                ScrollView {
+                    VStack(spacing: 24) {
+                        appearanceSection
+                        builtInSection
+                        userThemesSection
+                    }
+                    .padding(.vertical, 8)
                 }
-                .padding(.vertical, 8)
+                // A theme saved from the editor is appended to "My Themes",
+                // which on a phone sits below the fold: without this the only
+                // visible result of Duplicate → Save is the checkmark leaving
+                // the built-in row it was copied from.
+                .onChange(of: themeToRevealId) { _, id in
+                    guard let id else { return }
+                    withAnimation { scrollProxy.scrollTo(id, anchor: .center) }
+                    themeToRevealId = nil
+                }
             }
         }
         .padding(.vertical, 20)
@@ -103,21 +155,33 @@ struct StyleSettingsView: View {
             ThemeEditorView(
                 theme: session.theme,
                 isNewTheme: session.isNewTheme,
+                // The editor designs for one slot and has to render in that
+                // slot's appearance and the user's real geometry — otherwise a
+                // dark-slot theme is judged against a light board at stock
+                // width, and every color picked there is wrong where it lands.
+                appearanceOverride: appearanceOverride,
+                previewAspectRatio: $previewAspectRatio,
+                previewWidth: $previewWidth,
+                previewPosition: $previewPosition,
                 onSave: { updated in save(updated, isNewTheme: session.isNewTheme) },
                 onDelete: { id in delete(id: id) }
             )
         }
+        // `presenting:` rather than reading `themePendingDeletion` back inside
+        // the action: the derived `isPresented` binding nils the state, and
+        // nothing defines whether SwiftUI writes it before or after the button
+        // runs. Captured payload, no ordering assumption.
         .confirmationDialog(
             "Delete this theme?",
             isPresented: Binding(
                 get: { themePendingDeletion != nil },
                 set: { if !$0 { themePendingDeletion = nil } }
             ),
-            titleVisibility: .visible
-        ) {
-            Button("Delete Theme", role: .destructive) {
-                if let theme = themePendingDeletion { delete(id: theme.id) }
-                themePendingDeletion = nil
+            titleVisibility: .visible,
+            presenting: themePendingDeletion
+        ) { theme in
+            Button(String(localized: "Delete \(theme.displayName)"), role: .destructive) {
+                delete(id: theme.id)
             }
         }
     }
@@ -126,17 +190,18 @@ struct StyleSettingsView: View {
     /// segment that picks which slot the gallery edits.
     private var appearanceSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Toggle("Use a different theme in Dark Mode", isOn: $separateDarkSlot)
+            Toggle("Use a different theme in Dark Mode", isOn: $hasSeparateDarkSlot)
                 .padding(.horizontal, 16)
-                .onChange(of: separateDarkSlot) { _, isOn in
-                    if !isOn {
-                        // Collapse back to one selection.
-                        selectedThemeDark = selectedThemeLight
-                        editingAppearance = .light
-                    }
+                .onChange(of: hasSeparateDarkSlot) { _, isOn in
+                    // Only the editing focus resets. The dark slot is left
+                    // exactly as it is: the resolver ignores it while the flag
+                    // is off (`ThemeStore.theme(lightId:darkId:hasSeparateDarkSlot:for:)`),
+                    // so collapsing it into the light id would buy nothing and
+                    // cost the user their dark assignment on a single tap.
+                    if !isOn { editingAppearance = .light }
                 }
 
-            if separateDarkSlot {
+            if hasSeparateDarkSlot {
                 Picker("Editing appearance", selection: $editingAppearance) {
                     Label("Light Mode", systemImage: "sun.max").tag(ColorScheme.light)
                     Label("Dark Mode", systemImage: "moon").tag(ColorScheme.dark)
@@ -233,6 +298,8 @@ struct StyleSettingsView: View {
         )
         .padding(.horizontal, 8)
         .contextMenu { themeMenu(for: theme) }
+        // Scroll anchor for a freshly saved theme (see `themeToRevealId`).
+        .id(theme.id)
     }
 
     private func selectLabel(_ theme: KeyboardThemeDefinition, isSelected: Bool) -> some View {
@@ -266,36 +333,89 @@ struct StyleSettingsView: View {
     /// A visible affordance for one row action. Duplicating used to live in the
     /// context menu only — a long press with no hint — and it is now the only
     /// route to an editable theme.
+    ///
+    /// Every label names its theme. Without it the rotor and the Item Chooser
+    /// list one "Delete" per user theme, all identical, for an action with no
+    /// undo. Same pattern as `LanguageSelectionView`'s "Disable %@".
     @ViewBuilder private func rowActionButton(
         _ action: ThemeRowAction,
         for theme: KeyboardThemeDefinition
     ) -> some View {
-        switch action {
-        case .select:
-            EmptyView()
-        case .duplicate:
-            iconButton("plus.square.on.square") { duplicate(theme) }
-                .accessibilityLabel("Duplicate")
-        case .edit:
-            iconButton("pencil") { editSession = ThemeEditSession(theme: theme, isNewTheme: false) }
-                .accessibilityLabel("Edit")
-        case .delete:
-            iconButton("trash") { themePendingDeletion = theme }
-                .foregroundStyle(.red)
-                .accessibilityLabel("Delete")
+        if let icon = Self.icon(for: action) {
+            switch action {
+            case .select:
+                EmptyView()
+            case .duplicate:
+                iconButton(icon) { duplicate(theme) }
+                    .accessibilityLabel(String(localized: "Duplicate \(theme.displayName)"))
+            case .edit:
+                iconButton(icon) { editSession = ThemeEditSession(theme: theme, isNewTheme: false) }
+                    .accessibilityLabel(String(localized: "Edit \(theme.displayName)"))
+            case .delete:
+                iconButton(icon) { themePendingDeletion = theme }
+                    .accessibilityLabel(String(localized: "Delete \(theme.displayName)"))
+            }
         }
     }
 
-    /// A glyph-only control with a hit area around it — the icons sit next to
-    /// each other and a bare SF Symbol is far under the 44 pt minimum.
-    private func iconButton(_ systemImage: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .frame(width: 36, height: 44)
+    /// Glyph and tint of a row action's icon button. `.select` has none — the
+    /// whole row is its control.
+    ///
+    /// The tint belongs in this table because it has to reach `iconButton` and
+    /// be applied there, exactly once: a `.foregroundStyle` wrapped *around*
+    /// the button loses to the one inside it, which is how the destructive
+    /// trash came to render in the accent tint, indistinguishable from
+    /// duplicate and edit.
+    static func icon(for action: ThemeRowAction) -> RowIcon? {
+        switch action {
+        case .select: nil
+        case .duplicate: RowIcon(systemImage: "plus.square.on.square", tint: .accentColor)
+        case .edit: RowIcon(systemImage: "pencil", tint: .accentColor)
+        // The one irreversible, undo-less action in the row. Red is its only
+        // cue beyond the glyph.
+        case .delete: RowIcon(systemImage: "trash", tint: .red)
+        }
+    }
+
+    struct RowIcon: Equatable {
+        var systemImage: String
+        var tint: Color
+    }
+
+    /// Side of a row icon's hit area for a Dynamic-Type-scaled 44 pt, clamped.
+    ///
+    /// The lower bound holds the 44 pt minimum target at the small text sizes,
+    /// where the scaled value drops below it. The upper bound is what makes
+    /// three of these fit a phone at AX5 — a fully scaled target would be
+    /// ~137 pt wide and the row would run off the screen.
+    static func iconTargetSide(scaledFrom scaled: CGFloat) -> CGFloat {
+        min(max(scaled, 44), 64)
+    }
+
+    /// Fraction of the hit area the glyph is drawn at, so the two can never
+    /// diverge — see `iconButton`.
+    static let iconGlyphFraction: CGFloat = 0.45
+
+    /// A glyph-only control with a hit area around it.
+    ///
+    /// Both the area and the glyph scale with Dynamic Type, and the glyph is
+    /// sized *from* the area rather than from the ambient font. `.frame` does
+    /// not clip a non-resizable `Image`: with a fixed 36×44 box an AX5 glyph
+    /// rendered ~60 pt and spilled ~12 pt past each edge, so the visible trash
+    /// overlapped the pencil's hit region and tapping it opened the editor.
+    ///
+    /// The tint arrives as a parameter and is applied here and nowhere else —
+    /// see `icon(for:)`.
+    private func iconButton(_ icon: RowIcon, action: @escaping () -> Void) -> some View {
+        let side = Self.iconTargetSide(scaledFrom: scaledIconTarget)
+        return Button(action: action) {
+            Image(systemName: icon.systemImage)
+                .font(.system(size: side * Self.iconGlyphFraction))
+                .frame(width: side, height: side)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .foregroundStyle(Color.accentColor)
+        .foregroundStyle(icon.tint)
     }
 
     // MARK: - Theme actions
@@ -329,13 +449,25 @@ struct StyleSettingsView: View {
         }
     }
 
-    /// Opens a user-owned copy in the editor without persisting it. Saving
-    /// creates it; cancelling leaves the store untouched.
-    private func duplicate(_ theme: KeyboardThemeDefinition) {
-        editSession = ThemeEditSession(
-            theme: ThemeStore.duplicate(theme, existing: userThemes),
+    /// The editor session a Duplicate tap opens: a user-owned copy of `theme`
+    /// that is **not** written to `defaults`. Save creates it, so cancelling
+    /// leaves no orphaned "… Copy" behind.
+    ///
+    /// Static and defaults-injected so that promise is actually testable — the
+    /// instance method below is unreachable from a test, and asserting on
+    /// `ThemeStore.duplicate` instead only proves that a pure function is pure.
+    static func editSession(
+        duplicating theme: KeyboardThemeDefinition,
+        defaults: UserDefaults = SharedDefaults.store
+    ) -> ThemeEditSession {
+        ThemeEditSession(
+            theme: ThemeStore.duplicate(theme, existing: ThemeStore.userThemes(defaults: defaults)),
             isNewTheme: true
         )
+    }
+
+    private func duplicate(_ theme: KeyboardThemeDefinition) {
+        editSession = Self.editSession(duplicating: theme)
     }
 
     private func save(_ theme: KeyboardThemeDefinition, isNewTheme: Bool) {
@@ -346,9 +478,10 @@ struct StyleSettingsView: View {
             isNewTheme: isNewTheme,
             light: selectedThemeLight,
             dark: selectedThemeDark,
-            separateDarkSlot: separateDarkSlot,
+            hasSeparateDarkSlot: hasSeparateDarkSlot,
             editingAppearance: editingAppearance
         ))
+        themeToRevealId = theme.id
     }
 
     private func delete(id: String) {
@@ -362,7 +495,7 @@ struct StyleSettingsView: View {
             selecting: theme.id,
             light: selectedThemeLight,
             dark: selectedThemeDark,
-            separateDarkSlot: separateDarkSlot,
+            hasSeparateDarkSlot: hasSeparateDarkSlot,
             editingAppearance: editingAppearance
         ))
     }
@@ -373,15 +506,23 @@ struct StyleSettingsView: View {
     }
 
     /// The two slot ids after assigning `themeId` to the slot being edited.
-    /// With the separate-dark-slot toggle off, both slots follow one selection.
+    ///
+    /// With the separate-dark-slot toggle off only the light slot is written.
+    /// Mirroring into the dark slot would render identically — the resolver
+    /// ignores the dark slot in that state — but it would destroy a stored dark
+    /// assignment on a tap, which is the same data loss the toggle itself was
+    /// stopped from doing. Leaving the slot alone means switching the toggle
+    /// back on restores the user's earlier dark choice instead of whatever was
+    /// selected last, so a round trip through the toggle is lossless from
+    /// either side.
     static func slots(
         selecting themeId: String,
         light: String,
         dark: String,
-        separateDarkSlot: Bool,
+        hasSeparateDarkSlot: Bool,
         editingAppearance: ColorScheme
     ) -> (light: String, dark: String) {
-        guard separateDarkSlot else { return (themeId, themeId) }
+        guard hasSeparateDarkSlot else { return (themeId, dark) }
         return editingAppearance == .dark ? (light, themeId) : (themeId, dark)
     }
 
@@ -394,7 +535,7 @@ struct StyleSettingsView: View {
         isNewTheme: Bool,
         light: String,
         dark: String,
-        separateDarkSlot: Bool,
+        hasSeparateDarkSlot: Bool,
         editingAppearance: ColorScheme
     ) -> (light: String, dark: String) {
         guard isNewTheme else { return (light, dark) }
@@ -402,7 +543,7 @@ struct StyleSettingsView: View {
             selecting: themeId,
             light: light,
             dark: dark,
-            separateDarkSlot: separateDarkSlot,
+            hasSeparateDarkSlot: hasSeparateDarkSlot,
             editingAppearance: editingAppearance
         )
     }
@@ -414,19 +555,36 @@ struct StyleSettingsView: View {
 
 /// Miniature key over the theme's own board, rendered through the same
 /// resolved values and surface styles the keyboard uses. It has to draw the
-/// board and the glass material, not just a fill: with glass a per-surface
-/// style, a glass copy and a Classic copy of the same palette carry identical
-/// colors and would otherwise be indistinguishable in the list.
-private struct ThemeSwatch: View {
+/// board, the glass material, the corner radius and the border, not just a
+/// fill: with glass a per-surface style, a glass copy and a Classic copy of the
+/// same palette carry identical colors — and two copies that differ only in
+/// radius or border would read as the same grey square, which is exactly the
+/// indistinguishability this swatch exists to prevent.
+struct ThemeSwatch: View {
     let theme: KeyboardThemeDefinition
-
-    /// Mirrors `KeyView.glassTint`, which is private to the keyboard: without
-    /// it the swatch's glass reads as an empty hole at this size.
-    private static let glassTint = Color.gray.opacity(0.12)
 
     private static let size: CGFloat = 44
     private static let keyInset: CGFloat = 7
-    private static let keyRadius: CGFloat = 6
+
+    /// Side of the drawn key.
+    private static let keySize: CGFloat = size - 2 * keyInset
+
+    /// Shrink factor from a rendered key to this miniature, so the theme's
+    /// point values keep their *proportions* here. Used raw, a 12 pt radius
+    /// would turn a 30 pt key into a pill.
+    private static let keyScale = keySize / KeyboardConstants.KeyDimensions.height
+
+    /// The theme's corner radius at swatch scale.
+    static func swatchRadius(forKeyRadius radius: CGFloat) -> CGFloat {
+        radius * keyScale
+    }
+
+    /// The theme's border width at swatch scale, but never thinner than a
+    /// hairline: scaled down, a 0.5 pt border would vanish and a theme with a
+    /// border would look like one without.
+    static func swatchBorderWidth(forKeyBorderWidth width: CGFloat) -> CGFloat {
+        max(width * keyScale, 0.5)
+    }
 
     var body: some View {
         let resolved = theme.resolved()
@@ -445,17 +603,37 @@ private struct ThemeSwatch: View {
         .accessibilityHidden(true)
     }
 
-    /// The same two branches `KeyView` renders: native Liquid Glass on iOS 26,
-    /// the `.bar` material below it, a plain fill for a color key.
+    /// The same three branches `KeyView` renders, including which of them
+    /// draws the border: native Liquid Glass on iOS 26 (no border — the effect
+    /// replaces the background layer), the `.bar` material with the border
+    /// below it, a plain fill with the border for a color key.
     @ViewBuilder private func key(_ resolved: ResolvedTheme) -> some View {
-        let shape = RoundedRectangle(cornerRadius: Self.keyRadius)
+        let shape = RoundedRectangle(cornerRadius: Self.swatchRadius(forKeyRadius: resolved.cornerRadius))
         if resolved.hasGlassKeys, #available(iOS 26.0, *) {
             letter(resolved)
-                .glassEffect(.regular.tint(Self.glassTint), in: shape)
+                .glassEffect(.regular.tint(KeyView.glassTint), in: shape)
         } else if resolved.hasGlassKeys {
-            shape.fill(.bar).overlay(letter(resolved))
+            filled(shape, with: .bar, resolved: resolved).overlay(letter(resolved))
         } else {
-            shape.fill(resolved.keyColor).overlay(letter(resolved))
+            filled(shape, with: resolved.keyColor, resolved: resolved).overlay(letter(resolved))
+        }
+    }
+
+    /// Mirrors `KeyView.filled`: no border in the tree at all for a theme
+    /// without one.
+    @ViewBuilder private func filled(
+        _ shape: RoundedRectangle,
+        with fill: some ShapeStyle,
+        resolved: ResolvedTheme
+    ) -> some View {
+        if let border = resolved.keyBorder, resolved.keyBorderWidth > 0 {
+            shape.fill(fill)
+                .overlay(shape.strokeBorder(
+                    border,
+                    lineWidth: Self.swatchBorderWidth(forKeyBorderWidth: resolved.keyBorderWidth)
+                ))
+        } else {
+            shape.fill(fill)
         }
     }
 

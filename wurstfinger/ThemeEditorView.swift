@@ -20,6 +20,20 @@ struct ThemeEditorView: View {
     /// word for keyboard state.
     let isNewTheme: Bool
 
+    /// The appearance the edited theme is destined for, or nil when it serves
+    /// both. Everything that shows a color has to be judged in it: a theme
+    /// bound for the dark slot but previewed light invites label colors that
+    /// are near-invisible where they actually render — and the color wells
+    /// freeze whatever they were seeded with.
+    let appearanceOverride: ColorScheme?
+
+    /// The user's real keyboard geometry, threaded through from the gallery so
+    /// the preview here matches the one there — and so the corner-radius
+    /// slider is judged against the key size the user actually types on.
+    @Binding var previewAspectRatio: Double
+    @Binding var previewWidth: Double
+    @Binding var previewPosition: Double
+
     let onSave: (KeyboardThemeDefinition) -> Void
     let onDelete: (String) -> Void
 
@@ -30,23 +44,38 @@ struct ThemeEditorView: View {
     private var gestureTrailEnabled = false
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var systemColorScheme
     @State private var showDeleteConfirmation = false
     @FocusState private var isNameFocused: Bool
 
     init(
         theme: KeyboardThemeDefinition,
         isNewTheme: Bool,
+        appearanceOverride: ColorScheme? = nil,
+        previewAspectRatio: Binding<Double> = .constant(DeviceLayoutUtils.defaultKeyAspectRatio),
+        previewWidth: Binding<Double> = .constant(DeviceLayoutUtils.defaultKeyboardWidth),
+        previewPosition: Binding<Double> = .constant(DeviceLayoutUtils.defaultKeyboardPosition),
         onSave: @escaping (KeyboardThemeDefinition) -> Void,
         onDelete: @escaping (String) -> Void
     ) {
         _theme = State(initialValue: theme)
         self.isNewTheme = isNewTheme
+        self.appearanceOverride = appearanceOverride
+        _previewAspectRatio = previewAspectRatio
+        _previewWidth = previewWidth
+        _previewPosition = previewPosition
         self.onSave = onSave
         self.onDelete = onDelete
     }
 
     private var trimmedName: String {
         theme.name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// The appearance every color in this editor is judged in: the slot's own
+    /// when the theme is bound to one, the device's otherwise.
+    private var editedAppearance: ColorScheme {
+        appearanceOverride ?? systemColorScheme
     }
 
     var body: some View {
@@ -56,9 +85,15 @@ struct ThemeEditorView: View {
                     // The real renderer, not a mock: it is the only way to
                     // preview glass on glass, and because it mounts the actual
                     // grid, swiping over it draws the trail in the edited color.
-                    InteractiveKeyboardPreview(themeOverride: theme)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
+                    InteractiveKeyboardPreview(
+                        aspectRatio: $previewAspectRatio,
+                        width: $previewWidth,
+                        position: $previewPosition,
+                        appearanceOverride: appearanceOverride,
+                        themeOverride: theme
+                    )
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
                 }
 
                 Section("Name") {
@@ -125,7 +160,7 @@ struct ThemeEditorView: View {
         Section {
             Toggle("Liquid Glass", isOn: Binding(
                 get: { theme.keySurface == .glass },
-                set: { theme.keySurface = $0 ? .glass : .color }
+                set: { theme.setGlassKeys($0) }
             ))
             // Both surfaces carry the same visible label in different
             // sections; for VoiceOver the accessibility label is the only
@@ -148,13 +183,23 @@ struct ThemeEditorView: View {
             Text("Keys")
         } footer: {
             if theme.keySurface == .glass {
-                // The literal has to stay on one line: a comment between
-                // `Text(` and it would hide the key from the localization
-                // coverage test.
+                // Split per OS: the border controls stay live on both, but only
+                // the pre-iOS-26 fallback actually draws the border. Stating
+                // that unconditionally told an iOS 26 user — a VoiceOver one in
+                // particular — that three controls do something they do not.
+                // The literals have to stay on one line each: a comment between
+                // `Text(` and the string would hide the key from the
+                // localization coverage test.
                 // swiftlint:disable line_length
-                Text(
-                    "Glass keys take their color from what is behind the keyboard, so the key colors do not apply. Corner radius still shapes them. The border shows only before iOS 26, where a simplified translucent style stands in for Liquid Glass."
-                )
+                if #available(iOS 26.0, *) {
+                    Text(
+                        "Glass keys take their color from what is behind the keyboard, so the key colors do not apply. Corner radius still shapes them. Liquid Glass draws no border, so the border settings only take effect if this theme is used on a device before iOS 26."
+                    )
+                } else {
+                    Text(
+                        "Glass keys take their color from what is behind the keyboard, so the key colors do not apply. Corner radius and border still apply: this system renders a simplified translucent style instead of Liquid Glass."
+                    )
+                }
                 // swiftlint:enable line_length
             }
         }
@@ -166,7 +211,7 @@ struct ThemeEditorView: View {
         Section {
             Toggle("Liquid Glass", isOn: Binding(
                 get: { theme.boardSurface == .glass },
-                set: { theme.boardSurface = $0 ? .glass : .color }
+                set: { theme.setGlassBoard($0) }
             ))
             .accessibilityLabel("Liquid Glass background")
 
@@ -211,13 +256,15 @@ struct ThemeEditorView: View {
 
     // MARK: - Rows
 
-    /// A color well for one theme role. Reads the resolved color; writing
-    /// stores a fixed hex (a user theme is fully explicit once edited).
+    /// A color well for one theme role. Seeds from the color as it renders in
+    /// the edited appearance — not as it renders in the sheet the user happens
+    /// to be looking at — because writing freezes the pick as a fixed hex (a
+    /// user theme is fully explicit once edited) and there is no way back.
     private func colorRow(title: LocalizedStringKey, color: Binding<ThemeColor>) -> some View {
         ColorPicker(
             title,
             selection: Binding(
-                get: { color.wrappedValue.resolvedColor() ?? .gray },
+                get: { color.wrappedValue.resolvedColor(in: editedAppearance) ?? .gray },
                 set: { color.wrappedValue = .from($0) }
             ),
             supportsOpacity: true
@@ -225,19 +272,19 @@ struct ThemeEditorView: View {
     }
 
     @ViewBuilder private var borderRows: some View {
+        // The coupled write (a border switched on needs a width to render)
+        // lives in the model, so the rule is testable — see
+        // `KeyboardThemeDefinition.setKeyBorder(_:)`.
         Toggle("Key border", isOn: Binding(
             get: { theme.keyBorder != nil },
-            set: { isOn in
-                theme.keyBorder = isOn ? (theme.keyBorder ?? .fixed(hex: "#00000030")) : nil
-                if isOn, theme.keyBorderWidth == 0 { theme.keyBorderWidth = 0.5 }
-            }
+            set: { theme.setKeyBorder($0) }
         ))
 
         if let border = theme.keyBorder {
             ColorPicker(
                 "Border color",
                 selection: Binding(
-                    get: { border.resolvedColor() ?? .gray },
+                    get: { border.resolvedColor(in: editedAppearance) ?? .gray },
                     set: { theme.keyBorder = .from($0) }
                 ),
                 supportsOpacity: true
@@ -250,7 +297,7 @@ struct ThemeEditorView: View {
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
             }
-            Slider(value: $theme.keyBorderWidth, in: 0.5 ... 4, step: 0.5)
+            Slider(value: $theme.keyBorderWidth, in: KeyboardThemeDefinition.minimumKeyBorderWidth ... 4, step: 0.5)
         }
     }
 

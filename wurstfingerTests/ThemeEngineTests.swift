@@ -321,45 +321,66 @@ struct ThemeGestureTrailTests {
         #expect(theme.resolved().gestureTrail == BuiltInThemes.classic.resolved().gestureTrail)
     }
 
-    @Test func everyBuiltInTrailContrastsWithItsKeyColor() throws {
+    /// Contrast *ratio*, which is what the palette was tuned against — a raw
+    /// luminance delta diverges from it at the light end, where a #F2F2F7 key
+    /// with a 6 %-black trail clears a 0.1 delta at an invisible 1.13:1.
+    ///
+    /// Measured on the shipped palettes, per appearance: Classic 2.65:1 light
+    /// and 3.56:1 dark, Dark Gold 3.06:1 in both. Classic's light-mode ink on
+    /// a near-white key is the floor, so the bound sits just under it; Dark
+    /// Gold's own tuned 3.06:1 is pinned separately below.
+    @Test(arguments: [ColorScheme.light, .dark])
+    func everyBuiltInTrailContrastsWithItsKeyColor(appearance: ColorScheme) throws {
         // Glass keys have no color of their own to measure against.
         for theme in BuiltInThemes.all where theme.keySurface == .color {
-            let resolved = theme.resolved()
-            let key = try components(of: resolved.keyColor)
-            let trail = try components(of: resolved.gestureTrail)
-            let composited = luminance(of: trail.rgb, over: key.rgb, alpha: trail.alpha)
-            let delta = abs(composited - luminance(of: key.rgb, over: key.rgb, alpha: 1))
-            // Dark Gold's gold-over-slate sits at ~0.19 (3.06:1), Classic's
-            // ink-over-system-fill far above it.
-            #expect(delta > 0.1, "\(theme.id) trail barely differs from its key color")
+            let key = try #require(ThemeContrast.components(of: theme.keyColor, in: appearance))
+            let trail = try #require(ThemeContrast.components(of: theme.gestureTrail, in: appearance))
+            let ratio = ThemeContrast.ratio(of: trail, over: key)
+            #expect(ratio >= 2.5, "\(theme.id) trail is \(ratio):1 against its key color in \(appearance)")
         }
     }
 
-    private func components(of color: Color) throws -> HexColor.Components {
-        let hex = try #require(HexColor.string(from: color))
-        return try #require(HexColor.parse(hex))
-    }
-
-    /// WCAG relative luminance of `rgb` composited over the opaque `background`
-    /// at `alpha`.
-    private func luminance(of rgb: UInt32, over background: UInt32, alpha: Double) -> Double {
-        func channel(_ packed: UInt32, _ shift: UInt32) -> Double {
-            Double((packed >> shift) & 0xFF) / 255
-        }
-        func linear(_ value: Double) -> Double {
-            value <= 0.03928 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
-        }
-        let weights = [(16 as UInt32, 0.2126), (8 as UInt32, 0.7152), (0 as UInt32, 0.0722)]
-        return weights.reduce(0) { total, entry in
-            let mixed = alpha * channel(rgb, entry.0) + (1 - alpha) * channel(background, entry.0)
-            return total + entry.1 * linear(mixed)
-        }
+    /// The bound Dark Gold's gold was actually tuned to: 0.38 alpha reached
+    /// only 1.95:1 and disappeared under the finger, 0.65 reaches 3.06:1.
+    @Test func darkGoldTrailHoldsTheRatioItsPaletteWasTunedTo() throws {
+        let key = try #require(ThemeContrast.components(of: BuiltInThemes.darkGold.keyColor, in: .dark))
+        let trail = try #require(ThemeContrast.components(of: BuiltInThemes.darkGold.gestureTrail, in: .dark))
+        #expect(ThemeContrast.ratio(of: trail, over: key) >= 3.0)
     }
 }
 
 // MARK: - Resolver
 
 struct ThemeResolverTests {
+    /// The headline capability of the surface rework: the two surfaces are
+    /// independent. Every built-in has `boardSurface == keySurface`, so nothing
+    /// else in the suite would notice the resolver reading one surface's style
+    /// for the other's decision.
+    @Test func aGlassBoardUnderColorKeysResolvesEachSurfaceOnItsOwn() {
+        var theme = BuiltInThemes.darkGold
+        theme.id = "user-glass-board"
+        theme.boardSurface = .glass
+        theme.keySurface = .color
+
+        let resolved = theme.resolved()
+        #expect(!resolved.hasGlassKeys)
+        #expect(resolved.boardBackground == Color.gray.opacity(KeyboardThemeDefinition.minimumBoardOpacity))
+        // The key still paints its own color, not the glass constant.
+        #expect(resolved.keyColor == HexColor.color(from: "#333A48"))
+    }
+
+    @Test func glassKeysOverAColorBoardResolveEachSurfaceOnItsOwn() {
+        var theme = BuiltInThemes.darkGold
+        theme.id = "user-glass-keys"
+        theme.boardSurface = .color
+        theme.keySurface = .glass
+
+        let resolved = theme.resolved()
+        #expect(resolved.hasGlassKeys)
+        #expect(resolved.boardBackground == HexColor.color(from: "#252A34"))
+        #expect(resolved.boardBackground != Color.gray.opacity(KeyboardThemeDefinition.minimumBoardOpacity))
+    }
+
     @Test func unparsableHexFallsBackToClassicRole() {
         var theme = BuiltInThemes.darkGold
         theme.mainLabel = .fixed(hex: "garbage")
@@ -439,6 +460,9 @@ struct ThemeMigrationTests {
 
     @Test func selectionFallsBackThroughCascade() throws {
         let defaults = try isolatedDefaults()
+        // The flag has to be on, or the resolver never reads the dark slot at
+        // all and the cascade below is never entered.
+        defaults.set(true, forKey: SettingsKey.themeSeparateDarkSlot.rawValue)
         // Dark slot points at a nonexistent theme → falls back to the light
         // slot, then Classic.
         defaults.set("dark-gold", forKey: SettingsKey.selectedThemeLight.rawValue)
@@ -446,6 +470,27 @@ struct ThemeMigrationTests {
         #expect(ThemeStore.selectedTheme(for: .dark, defaults: defaults).id == "dark-gold")
         defaults.set("also-gone", forKey: SettingsKey.selectedThemeLight.rawValue)
         #expect(ThemeStore.selectedTheme(for: .dark, defaults: defaults).id == "classic")
+    }
+
+    /// The same cascade with a theme that is *stored* but no longer decodes —
+    /// the archive drops the corrupt entry, so the dark slot resolves to
+    /// nothing and the light slot has to take over.
+    @Test func aDarkSlotPointingAtAnUndecodableThemeFallsBackToTheLightSlot() throws {
+        let defaults = try isolatedDefaults()
+        let stored = Data("""
+        {"schemaVersion": 1, "themes": [
+            {"id": "user-light", "name": "Mine"},
+            {"name": "user-dark"}
+        ]}
+        """.utf8)
+        defaults.set(stored, forKey: SettingsKey.userThemes.rawValue)
+        defaults.set(true, forKey: SettingsKey.themeSeparateDarkSlot.rawValue)
+        defaults.set("user-light", forKey: SettingsKey.selectedThemeLight.rawValue)
+        defaults.set("user-dark", forKey: SettingsKey.selectedThemeDark.rawValue)
+
+        #expect(ThemeStore.theme(id: "user-dark", defaults: defaults) == nil)
+        #expect(ThemeStore.selectedTheme(for: .dark, defaults: defaults).id == "user-light")
+        #expect(ThemeStore.selectedTheme(for: .light, defaults: defaults).id == "user-light")
     }
 
     @Test func userThemesPersistThroughStore() throws {

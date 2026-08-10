@@ -49,12 +49,16 @@ struct DataDrivenKeyboardRootView: View {
     @AppStorage(SettingsKey.selectedThemeDark.rawValue, store: SharedDefaults.store)
     private var selectedThemeDark = BuiltInThemes.classic.id
 
+    /// Observed here rather than read once from defaults: the flag decides
+    /// whether the dark slot is honoured at all, so the keyboard has to
+    /// re-render when the settings screen flips it.
+    @AppStorage(SettingsKey.themeSeparateDarkSlot.rawValue, store: SharedDefaults.store)
+    private var hasSeparateDarkSlot = false
+
     /// The keyboard follows the system color scheme. A keyboard extension can
     /// also be asked for a specific appearance via
     /// `textDocumentProxy.keyboardAppearance`; wiring the slot selection to
-    /// that instead of `colorScheme` is deferred to M2, when the gallery lets
-    /// the light/dark slots actually diverge (today both hold one selection,
-    /// so the distinction is a no-op).
+    /// that instead of `colorScheme` is still open.
     @Environment(\.colorScheme) private var colorScheme
 
     private var renderSettings: KeyRenderSettings {
@@ -76,6 +80,7 @@ struct DataDrivenKeyboardRootView: View {
         return ThemeStore.theme(
             lightId: selectedThemeLight,
             darkId: selectedThemeDark,
+            hasSeparateDarkSlot: hasSeparateDarkSlot,
             for: colorScheme
         ).resolved()
     }

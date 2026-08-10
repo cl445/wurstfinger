@@ -285,7 +285,11 @@ struct KeyView: View {
     /// A subtle neutral tint on the glass, so the keys gain a bit of presence
     /// and stand out from the backdrop instead of reading as fully clear glass
     /// — while staying native Liquid Glass that blends with the system row.
-    private static let glassTint = Color.gray.opacity(0.12)
+    ///
+    /// `internal` so the theme gallery's swatch renders glass through the same
+    /// constant; a copy of the literal there would silently desynchronize the
+    /// moment this value is retuned.
+    static let glassTint = Color.gray.opacity(0.12)
 
     /// The stacked key layers. Native glass wraps the label/hint content with
     /// `glassEffect` (label as content = crisp); every other style keeps the

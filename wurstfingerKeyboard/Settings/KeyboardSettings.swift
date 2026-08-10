@@ -42,9 +42,11 @@ enum SettingsKey: String, CaseIterable {
     case keyboardStyle
     case selectedThemeLight
     case selectedThemeDark
-    /// Whether the user assigns a separate theme for dark mode. Settings-UI
-    /// only: the keyboard always resolves per-slot; this just governs whether
-    /// the two slots are edited together or independently.
+    /// Whether the user assigns a separate theme for dark mode. Read by the
+    /// resolver (`ThemeStore.theme(lightId:darkId:hasSeparateDarkSlot:for:)`),
+    /// not just by the settings screen: with the flag off the dark slot is
+    /// ignored rather than overwritten, so turning the toggle off and on again
+    /// gives the user their dark assignment back.
     case themeSeparateDarkSlot
     case userThemes
     case keyboardFullAccess
