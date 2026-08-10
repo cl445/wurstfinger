@@ -2,10 +2,10 @@
 //  ThemeEditorView.swift
 //  wurstfinger
 //
-//  Edits a single user theme: name, surface fills, and label colors. Works on
-//  a local copy and calls back on Save/Delete, so the gallery owns
-//  persistence. A live preview renders the working copy through the same
-//  `ResolvedTheme` path as the keyboard.
+//  Edits a single user theme: name, the two surfaces, label colors, and the
+//  gesture-trail color. Works on a local copy and calls back on Save/Delete,
+//  so the gallery owns persistence. The live preview is the real keyboard
+//  renderer, driven by the working copy through `themeOverride`.
 //
 
 import SwiftUI
@@ -14,18 +14,33 @@ struct ThemeEditorView: View {
     /// Working copy. Edits stay local until Save.
     @State private var theme: KeyboardThemeDefinition
 
+    /// Whether Save *creates* the theme. A new theme is an unpersisted
+    /// duplicate: Cancel has to leave no trace, and there is nothing to delete
+    /// yet. A `Bool` rather than a `…Mode` enum — the glossary reserves that
+    /// word for keyboard state.
+    let isNewTheme: Bool
+
     let onSave: (KeyboardThemeDefinition) -> Void
     let onDelete: (String) -> Void
 
+    /// The trail color only renders when the user has the trail switched on,
+    /// so the editor discloses that instead of offering a control that
+    /// silently does nothing.
+    @AppStorage(SettingsKey.gestureTrailEnabled.rawValue, store: SharedDefaults.store)
+    private var gestureTrailEnabled = false
+
     @Environment(\.dismiss) private var dismiss
     @State private var showDeleteConfirmation = false
+    @FocusState private var isNameFocused: Bool
 
     init(
         theme: KeyboardThemeDefinition,
+        isNewTheme: Bool,
         onSave: @escaping (KeyboardThemeDefinition) -> Void,
         onDelete: @escaping (String) -> Void
     ) {
         _theme = State(initialValue: theme)
+        self.isNewTheme = isNewTheme
         self.onSave = onSave
         self.onDelete = onDelete
     }
@@ -38,43 +53,37 @@ struct ThemeEditorView: View {
         NavigationStack {
             Form {
                 Section {
-                    ThemePreviewGrid(theme: theme.resolved())
-                        .frame(maxWidth: .infinity)
+                    // The real renderer, not a mock: it is the only way to
+                    // preview glass on glass, and because it mounts the actual
+                    // grid, swiping over it draws the trail in the edited color.
+                    InteractiveKeyboardPreview(themeOverride: theme)
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
                 }
 
                 Section("Name") {
                     TextField("Theme name", text: $theme.name)
+                        .focused($isNameFocused)
                 }
 
-                Section("Surfaces") {
-                    colorRow("Keyboard background", color: $theme.boardColor)
-                    colorRow("Key", color: $theme.keyColor)
-                    colorRow("Key (pressed)", color: $theme.keyColorActive)
-                    borderRows
-                    cornerRadiusRow
-                }
+                keysSection
+                backgroundSection
 
                 Section("Labels") {
-                    colorRow("Main letter", color: $theme.mainLabel)
-                    colorRow("Function label", color: $theme.utilityLabel)
-                    colorRow("Hint letter", color: $theme.hintLetter)
-                    colorRow("Hint symbol", color: $theme.hintSymbol)
-                    colorRow("Prominent icon", color: $theme.hintIconProminent)
-                    colorRow("Subtle icon", color: $theme.hintIconSubtle)
+                    colorRow(title: "Main letter", color: $theme.mainLabel)
+                    colorRow(title: "Function label", color: $theme.utilityLabel)
+                    colorRow(title: "Hint letter", color: $theme.hintLetter)
+                    colorRow(title: "Hint symbol", color: $theme.hintSymbol)
+                    colorRow(title: "Prominent icon", color: $theme.hintIconProminent)
+                    colorRow(title: "Subtle icon", color: $theme.hintIconSubtle)
                 }
 
-                Section {
-                    Button(role: .destructive) {
-                        showDeleteConfirmation = true
-                    } label: {
-                        Label("Delete Theme", systemImage: "trash")
-                            .frame(maxWidth: .infinity)
-                    }
-                }
+                gestureTrailSection
+                deleteSection
             }
-            .navigationTitle("Edit Theme")
+            // Passed as `Text` rather than a ternary over two string literals
+            // so the localization coverage test can see both keys.
+            .navigationTitle(isNewTheme ? Text("New Theme") : Text("Edit Theme"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -98,14 +107,113 @@ struct ThemeEditorView: View {
                     dismiss()
                 }
             }
+            .onAppear {
+                guard isNewTheme else { return }
+                // A sheet's text field is not in the responder chain yet on the
+                // run-loop pass that presents it, so the focus request has to
+                // wait for the next one.
+                DispatchQueue.main.async { isNameFocused = true }
+            }
+        }
+    }
+
+    // MARK: - Sections
+
+    /// Keys: the glass switch, the key colors it replaces, and the shape
+    /// controls that apply either way.
+    private var keysSection: some View {
+        Section {
+            Toggle("Liquid Glass", isOn: Binding(
+                get: { theme.keySurface == .glass },
+                set: { theme.keySurface = $0 ? .glass : .color }
+            ))
+            // Both surfaces carry the same visible label in different
+            // sections; for VoiceOver the accessibility label is the only
+            // thing that tells the two switches apart.
+            .accessibilityLabel("Liquid Glass keys")
+
+            // Hidden rather than disabled: a disabled color well still shows a
+            // swatch and reads as a control that does something. The footer
+            // carries the explanation, which VoiceOver reads with the section.
+            if theme.keySurface == .color {
+                colorRow(title: "Key", color: $theme.keyColor)
+                colorRow(title: "Key (pressed)", color: $theme.keyColorActive)
+            }
+
+            // Border and radius stay visible in every state: the radius shapes
+            // glass too, and the border is drawn on the pre-iOS-26 fallback.
+            borderRows
+            cornerRadiusRow
+        } header: {
+            Text("Keys")
+        } footer: {
+            if theme.keySurface == .glass {
+                // The literal has to stay on one line: a comment between
+                // `Text(` and it would hide the key from the localization
+                // coverage test.
+                // swiftlint:disable line_length
+                Text(
+                    "Glass keys take their color from what is behind the keyboard, so the key colors do not apply. Corner radius still shapes them. The border shows only before iOS 26, where a simplified translucent style stands in for Liquid Glass."
+                )
+                // swiftlint:enable line_length
+            }
+        }
+    }
+
+    /// Background: the board behind the keys, which is either a color or
+    /// near-clear glass.
+    private var backgroundSection: some View {
+        Section {
+            Toggle("Liquid Glass", isOn: Binding(
+                get: { theme.boardSurface == .glass },
+                set: { theme.boardSurface = $0 ? .glass : .color }
+            ))
+            .accessibilityLabel("Liquid Glass background")
+
+            if theme.boardSurface == .color {
+                colorRow(title: "Keyboard background", color: $theme.boardColor)
+            }
+        } header: {
+            Text("Background")
+        } footer: {
+            if theme.boardSurface == .glass {
+                Text("A glass background lets the app behind the keyboard show through, so the background color does not apply.")
+            }
+        }
+    }
+
+    private var gestureTrailSection: some View {
+        Section {
+            colorRow(title: "Trail color", color: $theme.gestureTrail)
+        } header: {
+            Text("Gesture Trail")
+        } footer: {
+            if !gestureTrailEnabled {
+                Text("Turn on Gesture Trail in Settings to draw this color while you swipe.")
+            }
+        }
+    }
+
+    /// Absent while the theme is new — there is nothing persisted to delete,
+    /// and Cancel already discards it.
+    @ViewBuilder private var deleteSection: some View {
+        if !isNewTheme {
+            Section {
+                Button(role: .destructive) {
+                    showDeleteConfirmation = true
+                } label: {
+                    Label("Delete Theme", systemImage: "trash")
+                        .frame(maxWidth: .infinity)
+                }
+            }
         }
     }
 
     // MARK: - Rows
 
-    /// A color well for a label color. Reads the resolved color; writing stores
-    /// a fixed hex (a user theme is fully explicit once edited).
-    private func colorRow(_ title: LocalizedStringKey, color: Binding<ThemeColor>) -> some View {
+    /// A color well for one theme role. Reads the resolved color; writing
+    /// stores a fixed hex (a user theme is fully explicit once edited).
+    private func colorRow(title: LocalizedStringKey, color: Binding<ThemeColor>) -> some View {
         ColorPicker(
             title,
             selection: Binding(
@@ -160,61 +268,6 @@ struct ThemeEditorView: View {
     }
 }
 
-// MARK: - Preview grid
-
-/// A static, representative slice of the keyboard rendered from a resolved
-/// theme: the board fill behind a small grid of keys, with a pressed key and a
-/// couple of hint glyphs so every editable role is visible at a glance.
-struct ThemePreviewGrid: View {
-    let theme: ResolvedTheme
-
-    private let letters = [["a", "n", "i"], ["h", "d", "r"], ["t", "e", "s"]]
-    /// The center key renders in the pressed fill to preview `keyColorActive`.
-    private let pressed = (row: 1, column: 1)
-
-    var body: some View {
-        VStack(spacing: 6) {
-            ForEach(Array(letters.enumerated()), id: \.offset) { rowIndex, row in
-                HStack(spacing: 6) {
-                    ForEach(Array(row.enumerated()), id: \.offset) { columnIndex, letter in
-                        key(letter, isPressed: rowIndex == pressed.row && columnIndex == pressed.column)
-                    }
-                }
-            }
-        }
-        .padding(10)
-        .background { theme.boardBackground }
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-        .padding(.vertical, 4)
-    }
-
-    private func key(_ letter: String, isPressed: Bool) -> some View {
-        ZStack {
-            (isPressed ? theme.keyColorActive : theme.keyColor)
-                .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: theme.cornerRadius)
-                        .strokeBorder(theme.keyBorder ?? .clear, lineWidth: theme.keyBorderWidth)
-                )
-
-            Text(verbatim: letter)
-                .font(.system(size: 22, weight: .semibold, design: .rounded))
-                .foregroundStyle(theme.mainLabel)
-
-            // Corner hints preview the hint roles.
-            Text(verbatim: "+")
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundStyle(theme.hintLetter)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            Text(verbatim: "!")
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundStyle(theme.hintSymbol)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-        }
-        .frame(width: 52, height: 52)
-    }
-}
-
 #Preview {
     ThemeEditorView(
         theme: {
@@ -223,6 +276,7 @@ struct ThemePreviewGrid: View {
             copy.name = "My Theme"
             return copy
         }(),
+        isNewTheme: false,
         onSave: { _ in },
         onDelete: { _ in }
     )

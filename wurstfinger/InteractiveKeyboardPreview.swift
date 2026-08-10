@@ -52,6 +52,11 @@ struct InteractiveKeyboardPreview: View {
     /// setting). `nil` follows the system.
     var appearanceOverride: ColorScheme?
 
+    /// Renders with an explicit theme instead of the stored selection, so the
+    /// theme editor can preview unsaved edits through the real keyboard
+    /// instead of a second, drift-prone mock renderer.
+    var themeOverride: KeyboardThemeDefinition?
+
     @StateObject private var previewViewModel = KeyboardViewModel(shouldPersistSettings: false)
     @StateObject private var previewTarget = PreviewTextTarget()
     @Environment(\.colorScheme) private var systemColorScheme
@@ -60,12 +65,14 @@ struct InteractiveKeyboardPreview: View {
         aspectRatio: Binding<Double> = .constant(1.0),
         width: Binding<Double> = .constant(DeviceLayout.defaultKeyboardWidth),
         position: Binding<Double> = .constant(0.5),
-        appearanceOverride: ColorScheme? = nil
+        appearanceOverride: ColorScheme? = nil,
+        themeOverride: KeyboardThemeDefinition? = nil
     ) {
         _aspectRatio = aspectRatio
         _width = width
         _position = position
         self.appearanceOverride = appearanceOverride
+        self.themeOverride = themeOverride
     }
 
     private var previewHeight: CGFloat {
@@ -116,28 +123,32 @@ struct InteractiveKeyboardPreview: View {
                     // The proxy width makes the preview lay out against its
                     // real container instead of the full screen width, so the
                     // fit-clamp and horizontal position match the extension.
-                    DataDrivenKeyboardRootView(viewModel: previewViewModel, overrideWidth: proxy.size.width)
-                        .onChange(of: aspectRatio) { _, newValue in
-                            previewViewModel.keyAspectRatio = newValue
-                        }
-                        .onChange(of: width) { _, newValue in
-                            previewViewModel.keyboardWidth = newValue
-                        }
-                        .onChange(of: position) { _, newValue in
-                            previewViewModel.keyboardHorizontalPosition = newValue
-                        }
-                        .onAppear {
-                            previewViewModel.keyAspectRatio = aspectRatio
-                            previewViewModel.keyboardWidth = width
-                            previewViewModel.keyboardHorizontalPosition = position
+                    DataDrivenKeyboardRootView(
+                        viewModel: previewViewModel,
+                        overrideWidth: proxy.size.width,
+                        themeOverride: themeOverride
+                    )
+                    .onChange(of: aspectRatio) { _, newValue in
+                        previewViewModel.keyAspectRatio = newValue
+                    }
+                    .onChange(of: width) { _, newValue in
+                        previewViewModel.keyboardWidth = newValue
+                    }
+                    .onChange(of: position) { _, newValue in
+                        previewViewModel.keyboardHorizontalPosition = newValue
+                    }
+                    .onAppear {
+                        previewViewModel.keyAspectRatio = aspectRatio
+                        previewViewModel.keyboardWidth = width
+                        previewViewModel.keyboardHorizontalPosition = position
 
-                            // Wire up preview text target and load definition
-                            previewViewModel.bindTextInputTarget(previewTarget)
-                            let languageId = SharedDefaults.store.string(
-                                forKey: SettingsKey.selectedLanguageId.rawValue
-                            ) ?? LanguageSettings.detectSystemLanguage()
-                            previewViewModel.loadDefinition(for: languageId)
-                        }
+                        // Wire up preview text target and load definition
+                        previewViewModel.bindTextInputTarget(previewTarget)
+                        let languageId = SharedDefaults.store.string(
+                            forKey: SettingsKey.selectedLanguageId.rawValue
+                        ) ?? LanguageSettings.detectSystemLanguage()
+                        previewViewModel.loadDefinition(for: languageId)
+                    }
                 }
             }
             .frame(height: previewHeight)
