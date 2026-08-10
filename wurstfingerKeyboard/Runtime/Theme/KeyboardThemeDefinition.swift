@@ -58,9 +58,11 @@ struct KeyboardThemeDefinition: Identifiable, Equatable {
 }
 
 /// Tolerant, stable persistence: explicit keys, and every field except
-/// id/name and the optional `keyBorder` falls back to its Classic value, so
-/// themes written by newer app versions (with additional fields) still decode.
-/// `keyBorder` is optional — an absent key means "no border", matching Classic.
+/// id/name and the optional `keyBorder` falls back to its Classic value, so a
+/// theme written by another app version — with additional fields, unknown enum
+/// cases, or a role it stores differently — still decodes.
+/// `keyBorder` is optional — an absent or unreadable value means "no border",
+/// which is Classic's value for that role.
 extension KeyboardThemeDefinition: Codable {
     private enum CodingKeys: String, CodingKey {
         case id, name
@@ -75,36 +77,116 @@ extension KeyboardThemeDefinition: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let fallback = BuiltInThemes.classic
+        let legacy = LegacySurfaces(decoder: decoder)
+        // Only id and name may fail the decode. Everything else reads through
+        // `decodeIfReadable`, which degrades a malformed value the same way a
+        // missing one degrades: `ThemeStore.Archive.FailableTheme` turns any
+        // throw in here into the loss of the whole theme, and the next
+        // save/delete rewrites the archive from that lossy read — so one
+        // unreadable field would cost the user every color in the theme,
+        // permanently.
         id = try container.decode(String.self, forKey: .id)
         name = try container.decode(String.self, forKey: .name)
-        // Surface styles decode through their raw string rather than through
-        // the enum: `decodeIfPresent(BoardSurfaceStyle.self)` *throws* on an
-        // unknown value, and `ThemeStore.Archive.FailableTheme` swallows that
-        // throw by discarding the whole theme — one unreadable field would cost
-        // the user every color in it, contradicting the tolerance the rest of
-        // this initializer promises.
-        let boardRaw = (try? container.decodeIfPresent(String.self, forKey: .boardSurface)) ?? nil
-        boardSurface = boardRaw.flatMap(BoardSurfaceStyle.init(rawValue:)) ?? fallback.boardSurface
-        let keyRaw = (try? container.decodeIfPresent(String.self, forKey: .keySurface)) ?? nil
-        keySurface = keyRaw.flatMap(KeySurfaceStyle.init(rawValue:)) ?? fallback.keySurface
-        boardColor = try container.decodeIfPresent(ThemeColor.self, forKey: .boardColor) ?? fallback.boardColor
-        keyColor = try container.decodeIfPresent(ThemeColor.self, forKey: .keyColor) ?? fallback.keyColor
-        keyColorActive = try container.decodeIfPresent(ThemeColor.self, forKey: .keyColorActive)
-            ?? fallback.keyColorActive
-        keyBorder = try container.decodeIfPresent(ThemeColor.self, forKey: .keyBorder)
-        keyBorderWidth = try container.decodeIfPresent(Double.self, forKey: .keyBorderWidth)
-            ?? fallback.keyBorderWidth
-        cornerRadius = try container.decodeIfPresent(Double.self, forKey: .cornerRadius) ?? fallback.cornerRadius
-        mainLabel = try container.decodeIfPresent(ThemeColor.self, forKey: .mainLabel) ?? fallback.mainLabel
-        utilityLabel = try container.decodeIfPresent(ThemeColor.self, forKey: .utilityLabel)
-            ?? fallback.utilityLabel
-        hintLetter = try container.decodeIfPresent(ThemeColor.self, forKey: .hintLetter) ?? fallback.hintLetter
-        hintSymbol = try container.decodeIfPresent(ThemeColor.self, forKey: .hintSymbol) ?? fallback.hintSymbol
-        hintIconProminent = try container.decodeIfPresent(ThemeColor.self, forKey: .hintIconProminent)
+        boardSurface = container.decodeIfReadable(BoardSurfaceStyle.self, forKey: .boardSurface)
+            ?? legacy.boardSurface ?? fallback.boardSurface
+        boardColor = container.decodeIfReadable(ThemeColor.self, forKey: .boardColor)
+            ?? legacy.boardColor ?? fallback.boardColor
+        keySurface = container.decodeIfReadable(KeySurfaceStyle.self, forKey: .keySurface)
+            ?? legacy.keySurface ?? fallback.keySurface
+        keyColor = container.decodeIfReadable(ThemeColor.self, forKey: .keyColor)
+            ?? legacy.keyColor ?? fallback.keyColor
+        keyColorActive = container.decodeIfReadable(ThemeColor.self, forKey: .keyColorActive)
+            ?? legacy.keyColorActive ?? fallback.keyColorActive
+        keyBorder = container.decodeIfReadable(ThemeColor.self, forKey: .keyBorder)
+        keyBorderWidth = container.decodeIfReadable(Double.self, forKey: .keyBorderWidth) ?? fallback.keyBorderWidth
+        cornerRadius = container.decodeIfReadable(Double.self, forKey: .cornerRadius) ?? fallback.cornerRadius
+        mainLabel = container.decodeIfReadable(ThemeColor.self, forKey: .mainLabel) ?? fallback.mainLabel
+        utilityLabel = container.decodeIfReadable(ThemeColor.self, forKey: .utilityLabel) ?? fallback.utilityLabel
+        hintLetter = container.decodeIfReadable(ThemeColor.self, forKey: .hintLetter) ?? fallback.hintLetter
+        hintSymbol = container.decodeIfReadable(ThemeColor.self, forKey: .hintSymbol) ?? fallback.hintSymbol
+        hintIconProminent = container.decodeIfReadable(ThemeColor.self, forKey: .hintIconProminent)
             ?? fallback.hintIconProminent
-        hintIconSubtle = try container.decodeIfPresent(ThemeColor.self, forKey: .hintIconSubtle)
+        hintIconSubtle = container.decodeIfReadable(ThemeColor.self, forKey: .hintIconSubtle)
             ?? fallback.hintIconSubtle
-        gestureTrail = try container.decodeIfPresent(ThemeColor.self, forKey: .gestureTrail)
-            ?? fallback.gestureTrail
+        gestureTrail = container.decodeIfReadable(ThemeColor.self, forKey: .gestureTrail) ?? fallback.gestureTrail
+    }
+}
+
+extension KeyedDecodingContainer {
+    /// The value for `key`, or nil when the key is absent **or its value is
+    /// unreadable**. `decodeIfPresent` only tolerates the first of those; in
+    /// the theme model both have to degrade the same way, because a throw
+    /// discards the whole theme (see `KeyboardThemeDefinition.init(from:)`).
+    fileprivate func decodeIfReadable<Value: Decodable>(_ type: Value.Type, forKey key: Key) -> Value? {
+        (try? decodeIfPresent(type, forKey: key)) ?? nil
+    }
+}
+
+// MARK: - Pre-Rework Surface Keys
+
+/// The surfaces as unreleased dev builds (M2/M3) persisted them: one
+/// `ThemeFill` union per surface under `boardBackground` / `keyFill` /
+/// `keyFillActive`, encoded as `{"type": "color", "color": …}` or
+/// `{"type": "material"}`.
+///
+/// Read as a last-resort fallback before Classic. Ignoring these keys is not a
+/// clean degradation: the label roles decode fine, so an old Dark Gold copy
+/// would come back as gold labels on Classic's near-white key — about 2.2:1 —
+/// and the next save would persist that. Deliberately absent from
+/// `KeyboardThemeDefinition.CodingKeys`, so nothing ever writes the shape back.
+/// Delete once no dev install predates the surface rework.
+private struct LegacySurfaces {
+    private enum CodingKeys: String, CodingKey {
+        case boardBackground, keyFill, keyFillActive
+    }
+
+    private enum FillKeys: String, CodingKey {
+        case type, color
+    }
+
+    /// One legacy fill: the color it carried, if any, and whether it asked for
+    /// the material — which the rework turned into the `glass` surface style.
+    private struct Fill {
+        var isMaterial: Bool
+        var color: ThemeColor?
+    }
+
+    private var board: Fill?
+    private var key: Fill?
+    private var keyActive: Fill?
+
+    init(decoder: Decoder) {
+        guard let container = try? decoder.container(keyedBy: CodingKeys.self) else { return }
+        board = Self.fill(in: container, forKey: .boardBackground)
+        key = Self.fill(in: container, forKey: .keyFill)
+        keyActive = Self.fill(in: container, forKey: .keyFillActive)
+    }
+
+    var boardSurface: BoardSurfaceStyle? {
+        board.map { $0.isMaterial ? .glass : .color }
+    }
+
+    var boardColor: ThemeColor? {
+        board?.color
+    }
+
+    var keySurface: KeySurfaceStyle? {
+        key.map { $0.isMaterial ? .glass : .color }
+    }
+
+    var keyColor: ThemeColor? {
+        key?.color
+    }
+
+    var keyColorActive: ThemeColor? {
+        keyActive?.color
+    }
+
+    private static func fill(in container: KeyedDecodingContainer<CodingKeys>, forKey key: CodingKeys) -> Fill? {
+        guard let fill = try? container.nestedContainer(keyedBy: FillKeys.self, forKey: key) else { return nil }
+        return Fill(
+            isMaterial: fill.decodeIfReadable(String.self, forKey: .type) == "material",
+            color: fill.decodeIfReadable(ThemeColor.self, forKey: .color)
+        )
     }
 }

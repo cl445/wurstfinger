@@ -26,6 +26,12 @@ enum ThemeStore {
         static let currentSchemaVersion = 1
     }
 
+    /// Just the envelope of a stored archive, so the write guard can read the
+    /// schema version without decoding — and thereby discarding — the themes.
+    private struct SchemaEnvelope: Decodable {
+        var schemaVersion: Int?
+    }
+
     /// Decodes the archive from defaults. Lossy on purpose: a corrupt entry
     /// is skipped instead of destroying all user themes, and entries claiming
     /// a built-in id are dropped (built-in status is derived, never trusted).
@@ -37,12 +43,27 @@ enum ThemeStore {
         return archive?.themes ?? []
     }
 
+    /// Writes the archive — unless defaults already hold one from a schema
+    /// this build does not understand. Such a blob reads as "no themes"
+    /// (`Archive.init(from:)`), so writing this build's list over it would
+    /// delete exactly the themes that read-side guard is protecting. The two
+    /// guards only work as a pair.
     static func writeUserThemes(_ themes: [KeyboardThemeDefinition], defaults: UserDefaults = SharedDefaults.store) {
+        guard !storedArchiveIsFromANewerSchema(defaults: defaults) else { return }
         let archive = Archive(schemaVersion: Archive.currentSchemaVersion, themes: themes)
         let encoder = JSONEncoder()
         encoder.outputFormatting = .sortedKeys
         guard let data = try? encoder.encode(archive) else { return }
         defaults.set(data, forKey: SettingsKey.userThemes.rawValue)
+    }
+
+    private static func storedArchiveIsFromANewerSchema(defaults: UserDefaults) -> Bool {
+        guard let data = defaults.data(forKey: SettingsKey.userThemes.rawValue),
+              let envelope = try? JSONDecoder().decode(SchemaEnvelope.self, from: data),
+              let version = envelope.schemaVersion else {
+            return false
+        }
+        return version > Archive.currentSchemaVersion
     }
 
     // MARK: - Lookup
@@ -193,8 +214,10 @@ extension ThemeStore.Archive: Codable {
             ?? Self.currentSchemaVersion
         // A blob from a future schema may give the same field names different
         // meanings. Decoding it field by field would yield a plausible but
-        // wrong theme, and the next save would write that back over the
-        // original — so drop the themes wholesale instead.
+        // wrong theme, so drop the themes wholesale instead. What keeps the
+        // originals safe is the matching write guard in
+        // `ThemeStore.writeUserThemes`, which refuses to overwrite the blob;
+        // dropping them here alone would only hide them until the next save.
         guard schemaVersion <= Self.currentSchemaVersion else {
             themes = []
             return

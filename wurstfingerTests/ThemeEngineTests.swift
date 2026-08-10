@@ -65,6 +65,22 @@ struct ThemeCodableTests {
         #expect(try roundTrip(theme) == theme)
     }
 
+    @Test func roundTripPreservesTheTrailAndBothSurfaces() throws {
+        // On Classic these three roles happen to equal the decode fallbacks,
+        // so a dropped key would round-trip green there. Pick values that
+        // differ from Classic's, and the round trip has to carry them.
+        var theme = BuiltInThemes.classic
+        theme.id = "user-distinct"
+        theme.boardSurface = .glass
+        theme.keySurface = .glass
+        theme.gestureTrail = .fixed(hex: "#FF00FFAA")
+        let decoded = try roundTrip(theme)
+        #expect(decoded.boardSurface == .glass)
+        #expect(decoded.keySurface == .glass)
+        #expect(decoded.gestureTrail == .fixed(hex: "#FF00FFAA"))
+        #expect(decoded == theme)
+    }
+
     @Test func missingFieldsDecodeToClassicDefaults() throws {
         let json = Data(#"{"id": "abc", "name": "Sparse"}"#.utf8)
         let decoded = try JSONDecoder().decode(KeyboardThemeDefinition.self, from: json)
@@ -85,6 +101,116 @@ struct ThemeCodableTests {
         #expect(decoded.boardSurface == .color)
         #expect(decoded.keySurface == .color)
         #expect(decoded.mainLabel == .fixed(hex: "#D1AA05"))
+    }
+
+    /// A color role a later version writes differently, an unknown token, a
+    /// truncated payload, and a bare string where an object belongs.
+    @Test(arguments: [
+        ##"{"type": "gradient", "from": "#000000", "to": "#FFFFFF"}"##,
+        ##"{"type": "semantic", "token": "quaternaryLabel"}"##,
+        ##"{"type": "fixed"}"##,
+        ##""#FFFFFF""##,
+    ])
+    func aMalformedColorRoleDegradesToClassic(payload: String) throws {
+        // Only the one role degrades — throwing would cost the whole theme.
+        let json = Data(#"""
+        {"id": "abc", "name": "Mine", "keyColor": \#(payload),
+         "mainLabel": {"type": "fixed", "hex": "#D1AA05"}}
+        """#.utf8)
+        let decoded = try JSONDecoder().decode(KeyboardThemeDefinition.self, from: json)
+        #expect(decoded.keyColor == BuiltInThemes.classic.keyColor)
+        #expect(decoded.name == "Mine")
+        #expect(decoded.mainLabel == .fixed(hex: "#D1AA05"))
+    }
+
+    @Test func aMalformedNumberDegradesToClassic() throws {
+        let json = Data(#"""
+        {"id": "abc", "name": "Mine", "keyBorderWidth": "0.5", "cornerRadius": "big",
+         "mainLabel": {"type": "fixed", "hex": "#D1AA05"}}
+        """#.utf8)
+        let decoded = try JSONDecoder().decode(KeyboardThemeDefinition.self, from: json)
+        #expect(decoded.keyBorderWidth == BuiltInThemes.classic.keyBorderWidth)
+        #expect(decoded.cornerRadius == BuiltInThemes.classic.cornerRadius)
+        #expect(decoded.mainLabel == .fixed(hex: "#D1AA05"))
+    }
+
+    @Test func aMalformedKeyBorderBecomesNoBorder() throws {
+        // Classic's value for this role is "no border"; inventing one would
+        // stroke every key with something the user never picked.
+        let json = Data(#"""
+        {"id": "abc", "name": "Mine", "keyBorder": {"type": "fixed"}, "keyBorderWidth": 2}
+        """#.utf8)
+        let decoded = try JSONDecoder().decode(KeyboardThemeDefinition.self, from: json)
+        #expect(decoded.keyBorder == nil)
+        #expect(decoded.keyBorderWidth == 2)
+    }
+
+    @Test func aThemeWithOneMalformedFieldSurvivesTheArchive() throws {
+        // The damage path in full: `FailableTheme` would drop the theme, and
+        // the next save would write that loss back over the original.
+        let json = Data("""
+        {"schemaVersion": 1, "themes": [{"id": "user-1", "name": "Mine", "cornerRadius": "big"}]}
+        """.utf8)
+        let archive = try JSONDecoder().decode(ThemeStore.Archive.self, from: json)
+        #expect(archive.themes.map(\.id) == ["user-1"])
+    }
+
+    @Test func preReworkFillsKeepTheirColors() throws {
+        // Unreleased M2/M3 dev builds stored one `ThemeFill` per surface. The
+        // label roles still decode, so ignoring these keys would leave gold
+        // labels on Classic's near-white key (~2.2:1) — and persist it.
+        let json = Data(#"""
+        {"id": "user-1", "name": "Old Gold",
+         "boardBackground": {"type": "color", "color": {"type": "fixed", "hex": "#252A34"}},
+         "keyFill": {"type": "color", "color": {"type": "fixed", "hex": "#333A48"}},
+         "keyFillActive": {"type": "color", "color": {"type": "fixed", "hex": "#4A5468"}},
+         "keyBorder": {"type": "fixed", "hex": "#FFFFFF1F"}, "keyBorderWidth": 0.5,
+         "mainLabel": {"type": "fixed", "hex": "#D1AA05"}}
+        """#.utf8)
+        let decoded = try JSONDecoder().decode(KeyboardThemeDefinition.self, from: json)
+        #expect(decoded.boardSurface == .color)
+        #expect(decoded.boardColor == .fixed(hex: "#252A34"))
+        #expect(decoded.keySurface == .color)
+        #expect(decoded.keyColor == .fixed(hex: "#333A48"))
+        #expect(decoded.keyColorActive == .fixed(hex: "#4A5468"))
+        #expect(decoded.keyBorder == .fixed(hex: "#FFFFFF1F"))
+        #expect(decoded.mainLabel == .fixed(hex: "#D1AA05"))
+    }
+
+    @Test func preReworkMaterialFillsBecomeGlassSurfaces() throws {
+        let json = Data(#"""
+        {"id": "user-2", "name": "Old Glass",
+         "boardBackground": {"type": "material"},
+         "keyFill": {"type": "material"},
+         "keyFillActive": {"type": "material"}}
+        """#.utf8)
+        let decoded = try JSONDecoder().decode(KeyboardThemeDefinition.self, from: json)
+        #expect(decoded.boardSurface == .glass)
+        #expect(decoded.keySurface == .glass)
+        // A material carried no color, so the colors behind the glass stay
+        // Classic's — switching a surface back to `.color` must still render.
+        #expect(decoded.keyColor == BuiltInThemes.classic.keyColor)
+        #expect(decoded.boardColor == BuiltInThemes.classic.boardColor)
+    }
+
+    @Test func currentKeysWinOverPreReworkKeys() throws {
+        let json = Data(#"""
+        {"id": "user-3", "name": "Both Shapes",
+         "keySurface": "color", "keyColor": {"type": "fixed", "hex": "#111111"},
+         "keyFill": {"type": "material"}}
+        """#.utf8)
+        let decoded = try JSONDecoder().decode(KeyboardThemeDefinition.self, from: json)
+        #expect(decoded.keySurface == .color)
+        #expect(decoded.keyColor == .fixed(hex: "#111111"))
+    }
+
+    @Test func encodingNeverWritesThePreReworkShape() throws {
+        var theme = BuiltInThemes.darkGold
+        theme.id = "user-4"
+        let json = try #require(String(data: JSONEncoder().encode(theme), encoding: .utf8))
+        for legacyKey in ["boardBackground", "keyFill", "keyFillActive"] {
+            #expect(!json.contains(legacyKey), "encoder wrote the pre-rework key \(legacyKey)")
+        }
     }
 
     @Test func archiveFromANewerSchemaYieldsNoThemes() throws {
@@ -160,11 +286,15 @@ struct BuiltInThemeTests {
     }
 
     @Test func resolvingIsStable() {
-        // An `.adaptive` color in a built-in would break this: every
-        // `resolvedColor()` mints a fresh dynamic UIColor and two are never
-        // equal, so the resolved theme would compare unequal to itself and
-        // invalidate the grid plus every key on each root body evaluation.
         #expect(BuiltInThemes.all.allSatisfy { $0.resolved() == $0.resolved() })
+        // The loop above cannot fail for the reason that matters: no built-in
+        // uses `.adaptive`, the one case that resolves through a fresh dynamic
+        // UIColor per call — and two of those never compare equal, so the
+        // resolved theme would differ from itself and invalidate the grid plus
+        // every key on each root body evaluation.
+        var adaptive = BuiltInThemes.classic
+        adaptive.mainLabel = .adaptive(light: "#111111", dark: "#EEEEEE")
+        #expect(adaptive.resolved() == adaptive.resolved())
     }
 }
 
@@ -394,6 +524,22 @@ struct ThemeEditingTests {
         #expect(ThemeStore.userThemes(defaults: defaults).isEmpty)
         #expect(defaults.string(forKey: SettingsKey.selectedThemeLight.rawValue) == BuiltInThemes.classic.id)
         #expect(defaults.string(forKey: SettingsKey.selectedThemeDark.rawValue) == BuiltInThemes.classic.id)
+    }
+
+    @Test func writingDoesNotClobberANewerSchemaArchive() throws {
+        let defaults = try isolatedDefaults()
+        let stored = Data("""
+        {"schemaVersion": 2, "themes": [{"id": "future-1", "name": "From The Future"}]}
+        """.utf8)
+        defaults.set(stored, forKey: SettingsKey.userThemes.rawValue)
+
+        var theme = BuiltInThemes.darkGold
+        theme.id = "user-new"
+        ThemeStore.saveUserTheme(theme, defaults: defaults)
+
+        // A newer archive reads as "no themes" on purpose; writing this
+        // build's list over it would delete every theme that guard protects.
+        #expect(defaults.data(forKey: SettingsKey.userThemes.rawValue) == stored)
     }
 
     @Test func deleteLeavesUnrelatedSelectionUntouched() throws {

@@ -60,13 +60,8 @@ enum ThemeColor: Equatable {
         case let .fixed(hex):
             return HexColor.color(from: hex)
         case let .adaptive(light, dark):
-            guard let lightComponents = HexColor.parse(light),
-                  let darkComponents = HexColor.parse(dark) else { return nil }
-            return Color(UIColor { traits in
-                traits.userInterfaceStyle == .dark
-                    ? HexColor.uiColor(from: darkComponents)
-                    : HexColor.uiColor(from: lightComponents)
-            })
+            guard let color = AdaptiveColors.color(light: light, dark: dark) else { return nil }
+            return Color(color)
         }
     }
 
@@ -94,6 +89,51 @@ enum ThemeColor: Equatable {
             }
             return .adaptive(light: raise(light), dark: raise(dark))
         }
+    }
+}
+
+// MARK: - Adaptive Colors
+
+/// The trait-dynamic colors behind `ThemeColor.adaptive`, one per light/dark
+/// hex pair.
+///
+/// They have to be shared rather than rebuilt: `UIColor(dynamicProvider:)`
+/// hands back a fresh object every call and two of those never compare equal,
+/// so resolving one theme twice would yield two unequal `ResolvedTheme`s —
+/// every root body evaluation would then read as a theme change and invalidate
+/// the grid plus every key in it.
+///
+/// A color is fully determined by its pair, so entries never go stale and the
+/// table only grows with the number of distinct pairs across the user's themes
+/// (no UI writes adaptive colors today). Host app and extension are separate
+/// processes with their own table; the lock guards against resolution off the
+/// main thread.
+private enum AdaptiveColors {
+    private struct Pair: Hashable {
+        var light: String
+        var dark: String
+    }
+
+    private static let lock = NSLock()
+    private nonisolated(unsafe) static var colors: [Pair: UIColor] = [:]
+
+    /// The dynamic color for a hex pair, or nil when either hex is unparsable.
+    static func color(light: String, dark: String) -> UIColor? {
+        let pair = Pair(light: light, dark: dark)
+        lock.lock()
+        defer { lock.unlock() }
+        if let cached = colors[pair] {
+            return cached
+        }
+        guard let lightComponents = HexColor.parse(light),
+              let darkComponents = HexColor.parse(dark) else { return nil }
+        let color = UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? HexColor.uiColor(from: darkComponents)
+                : HexColor.uiColor(from: lightComponents)
+        }
+        colors[pair] = color
+        return color
     }
 }
 
