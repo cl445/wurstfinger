@@ -40,11 +40,11 @@ struct KeyboardHealthLogTests {
     /// `recordDeferred` derives its discard window from the fire delay
     /// (`discardAfter = deadline + delay`), so the delay is also the budget a
     /// loaded runner has for getting the utility-QoS block onto the io queue.
-    /// At the 200 ms these tests used to pass, a runner 400 ms behind turned a
-    /// correct implementation red — never green, the direction is safe, but
-    /// `recordDeferredWithoutAFileIsANoOp` had already flaked that way on CI.
-    /// One second buys a full second of slack for one second of runtime per
-    /// test.
+    /// A 200 ms delay therefore leaves 200 ms of budget, and a runner that far
+    /// behind turns a correct implementation red — never green, the direction
+    /// is safe, but `recordDeferredWithoutAFileIsANoOp` has flaked that way on
+    /// CI. One second buys a full second of slack for one second of runtime
+    /// per test.
     ///
     /// Raising the delay is deliberately preferred over handing
     /// `recordDeferred` an explicit discard-window parameter: the window is
