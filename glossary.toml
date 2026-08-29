@@ -1,0 +1,213 @@
+# Wurstfinger: domain vocabulary.
+#
+# One term per concept, together with the spellings that term replaces. This
+# file is the vocabulary: look a concept up here before inventing a name for
+# it. `scripts/check_naming.py` reads the same file and reports every rejected
+# spelling that is still used as an identifier.
+#
+#     python3 scripts/check_naming.py list <path>   # what a file carries
+#     python3 scripts/check_naming.py check         # what CI runs
+#     python3 scripts/check_naming.py update        # record a rename
+#
+# The prose convention — the ambiguity traps, the suffix and verb rules, the
+# reasoning — lives in `docs/GLOSSARY.md`. This file holds only what a machine
+# can check. Sections 6 and 7 of that document are generated from here.
+#
+# `zone` says who owns the name and therefore what a rename costs:
+#
+#     A  internal identifier. Renaming is pure refactoring.
+#     B  persisted key. Renaming needs the old spelling pinned as a rawValue,
+#        or a migration.
+#     C  user-facing or cross-tool contract. Renaming breaks translations,
+#        UI tests, or the release tooling.
+#
+# Adding a term is a normal pull request. Lowering a count in
+# `.naming-budget.json` is what a rename delivers; raising one needs a reason.
+
+# ---------------------------------------------------------------------------
+# The five ambiguity traps
+#
+# These are the concepts where two words are in circulation for one thing, and
+# where picking the wrong one has produced wrong code. `docs/GLOSSARY.md` §1
+# explains each; the entries here are what the checker enforces.
+# ---------------------------------------------------------------------------
+
+[[term]]
+name = "mode"
+zone = "A"
+definition = "One keyboard state with its own key set and arrangement: main, shifted, capsLock, numeric, symbols, emoji. The type is `KeyboardMode`, the action is `.switchMode(name)`."
+rejected = []
+note = "\"Layer\" means the same thing and is rejected everywhere — see the `layer_word` pattern. The screenshot tooling still passes `FORCE_LAYER` as an environment variable; that is a zone C name shared with `scripts/generate-screenshots.sh` and the workflows, so it moves with them, not before."
+
+[[term]]
+name = "keyId"
+zone = "A"
+definition = "The string identifying a key. Same value as the slot name: `KeyConfig.id` is the semantic slot, `KeyPlacement.keyId` references it."
+rejected = ["slotId"]
+note = "`keyId` is the established API surface — `GestureResolver.resolve(keyId:gesture:in:)`. Say \"slot\" for the position, \"key\" for the thing bound to it."
+
+[[term]]
+name = "return swipe"
+zone = "A"
+definition = "The gesture that swipes out and back to the start position, firing `KeyBinding.returnAction`. Always two words in prose."
+rejected = []
+note = "\"Return\" alone is ambiguous between the Return key (`UtilitySlot.return`, `KeyAction.newline`), the return-swipe gesture, and the Swift keyword. Never abbreviate the gesture to \"return\"."
+
+[[term]]
+name = "slide"
+zone = "A"
+definition = "A sustained drag on a held key, typed as `SlideType` and phased as `SlidePhase`. Space bar cursor movement and progressive delete are slides."
+rejected = []
+note = "A slide is not a swipe. \"Swipe\" is the directional gesture from the key centre; using it for a held drag is the mistake this term prevents."
+
+[[term]]
+name = "KeyCategory"
+zone = "A"
+definition = "Classification by runtime behaviour: auto-shift, haptics, hint styling."
+rejected = []
+note = "Not to be confused with `LabelCategory`, which classifies the same keys by render-time visibility. The vocabulary clash is real: the same concept is `digit` in one and `number` in the other. A new classification enum must name its axis, not just say \"category\"."
+
+# ---------------------------------------------------------------------------
+# Declarative model
+# ---------------------------------------------------------------------------
+
+[[term]]
+name = "KeyDefinition"
+zone = "A"
+definition = "The complete declarative description of one key: id, bindings, swipe mode, slide type, style, tap-cycle actions."
+rejected = ["KeyConfig"]
+note = "Its own doc comment already reads \"Complete definition of a single key\"; the name never followed. `…Definition` is reserved for complete declarative data, and this pairs with `KeyboardDefinition` — whole keyboard, one key. Bare `Key` was considered and rejected: `keys: [String: Key]` reads as though `String` were not the key, and `Dictionary.Key`, `SettingsKey` and `CodingKeys` already claim the bare word."
+
+[[term]]
+name = "LanguageDescriptor"
+zone = "A"
+definition = "The lazy handle to one language: id, title, locale identifier, plus a builder that materialises the definition on demand."
+rejected = ["LanguageConfig", "KeyboardInfo"]
+note = "Three types describe one concept today, and their fields disagree across the boundary — `LanguageConfig.name` versus `LanguageDescriptor.title`, `locale: Locale` versus `localeIdentifier: String`. That is a merge, not a rename, and it is the one item on this list that can produce a wrong value rather than only an ugly one."
+
+[[term]]
+name = "GesturePreprocessorConfiguration"
+zone = "A"
+definition = "The injected tuning parameters of `GesturePreprocessor`."
+rejected = ["GesturePreprocessorConfig"]
+note = "`…Configuration` is for injected runtime parameters, `…Definition` for declarative data. The two `…Config` types in the tree take different suffixes for that reason."
+
+[[term]]
+name = "ScreenshotConfiguration"
+zone = "A"
+definition = "The injected parameters of the screenshot-generating views."
+rejected = ["ScreenshotConfig"]
+
+# ---------------------------------------------------------------------------
+# Settings
+#
+# Every name here is read back from `UserDefaults`, so the Swift spelling and
+# the persisted spelling are two different names with two different owners. A
+# renamed property keeps its stored key by pinning it as an explicit rawValue.
+# ---------------------------------------------------------------------------
+
+[[term]]
+name = "SettingsKey"
+zone = "B"
+definition = "The enum whose rawValues are the persisted UserDefaults keys. A case may be renamed only together with an explicit rawValue that keeps the old string."
+rejected = []
+note = "Phase 1 already relies on this: the type is `NumpadType` while the stored key stays `numpadStyle`. That divergence is correct, not drift."
+
+[[term]]
+name = "areLetterLabelsHidden"
+zone = "B"
+definition = "Whether letter labels are hidden on the keys."
+rejected = ["hideLetters"]
+note = "A settings flag is an assertion, not a command. Renaming the property needs `case areLetterLabelsHidden = \"hideLetters\"` so the stored key survives."
+
+[[term]]
+name = "areStandardSymbolLabelsHidden"
+zone = "B"
+definition = "Whether the standard symbol labels are hidden on the keys."
+rejected = ["hideStandardSymbols"]
+
+[[term]]
+name = "areExtraSymbolLabelsHidden"
+zone = "B"
+definition = "Whether the extra symbol labels are hidden on the keys."
+rejected = ["hideExtraSymbols"]
+
+[[term]]
+name = "isLongPressDigitEnabled"
+zone = "B"
+definition = "Whether holding a letter key types the digit that key carries on the numeric mode."
+rejected = ["longPressNumbersEnabled"]
+note = "Also fixes the vocabulary: the keys carry digits, not numbers."
+
+[[term]]
+name = "isLanguageLabelShown"
+zone = "A"
+definition = "Whether the space bar shows the active language."
+rejected = ["showLanguageLabel"]
+
+[[term]]
+name = "gesture tuning key"
+zone = "B"
+definition = "The `gesture.*` UserDefaults keys the expert settings write (`gesture.jitterThreshold`, `gesture.minSwipeLength`, …). String literals, read by both targets."
+rejected = []
+
+[[term]]
+name = "shared defaults suite"
+zone = "C"
+definition = "`group.de.akator.wurstfinger.shared` — the app-group suite bridging host app and extension. Renaming it orphans every setting on every installed device."
+rejected = []
+
+# ---------------------------------------------------------------------------
+# Contract names: not ours to rename freely
+# ---------------------------------------------------------------------------
+
+[[term]]
+name = "string catalog key"
+zone = "C"
+definition = "In `Localizable.xcstrings` the English source string is itself the key. Rewording a UI string re-keys the entry and drops its translations in all other languages."
+rejected = []
+note = "156 keys across 22 languages. A case-only difference is a separate key and has already collided once (`Switch Keyboard` versus `Switch keyboard`)."
+
+[[term]]
+name = "accessibilityIdentifier"
+zone = "C"
+definition = "The stable per-key identifier the UI tests query; it is the key id. Renaming a slot renames the test hook with it."
+rejected = []
+
+# ---------------------------------------------------------------------------
+# Shape rules: what a name must look like, including names nobody has written
+# yet. Terms catch today's spellings; these catch tomorrow's.
+# ---------------------------------------------------------------------------
+
+[[pattern]]
+id = "layer_word"
+regex = "\\b[A-Za-z]*(?<![Pp])[Ll]ayer[A-Za-z]*\\b"
+replacement = "`mode`"
+rationale = "\"Layer\" is not canonical for a keyboard state."
+allowed = ["CAGradientLayer", "CALayer", "CAShapeLayer", "layer"]
+
+[[pattern]]
+id = "config_suffix"
+regex = "\\b[A-Za-z]*Config\\b"
+replacement = "`…Configuration` for injected runtime parameters, `…Definition` for declarative data"
+rationale = "Suffixes are spelled out; Apple's own APIs are consistent about this."
+
+[[pattern]]
+id = "kind_suffix"
+regex = "\\b[A-Za-z]*Kind\\b"
+replacement = "`…Type`"
+rationale = "A closed set of behavioural variants carries `…Type`."
+
+[[pattern]]
+id = "vague_type_suffix"
+regex = "\\b[A-Za-z]*(Manager|Helper|Helpers|Utils|Util)\\b"
+replacement = "a name that says what the type does"
+rationale = "`…Manager`, `…Helper` and `…Utils` describe no responsibility."
+allowed = ["FileManager", "fileManager"]
+applies_to = ["identifier", "filename"]
+
+[[pattern]]
+id = "create_prefix"
+regex = "\\bcreate[A-Z][A-Za-z]*\\b"
+replacement = "`make…`"
+rationale = "`make…` is the factory verb; a second one alongside it splits the vocabulary."
