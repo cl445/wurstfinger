@@ -336,6 +336,11 @@ private enum PasteboardWarmUp {
     ///
     /// The restore is inside the probe because nothing else can do it: the
     /// suite's own capture/restore only runs once this has resolved.
+    ///
+    /// The probe's own write resolves during trait evaluation, outside the
+    /// serialized suite and therefore possibly while other suites run — it is
+    /// covered by the same invariant as the tests below: nothing else in the
+    /// target touches `UIPasteboard.general`.
     static let didAnswer: Bool = {
         let answered = DispatchSemaphore(value: 0)
         // Detached on purpose: a stuck call owns its thread until the service
@@ -379,6 +384,17 @@ struct PasteboardEnvironmentTests {
 // instance is created per test, so capturing the pasteboard in `init` and
 // restoring it in `deinit` reverts any clipboard writes and prevents leaking
 // process-global state into later tests.
+//
+// `.serialized` only orders this suite against itself, so the capture/restore
+// holds exactly as long as this stays the **only** place in the target that
+// touches `UIPasteboard.general` — every other suite runs in parallel with it
+// and would read or clobber a value mid-test. The invariant holds today:
+// `CircularCutAllBindingTests` is the one other suite that could dispatch
+// cut-all, and it deliberately asserts on the definition instead of running the
+// action (see the comment on that struct). Re-verify with
+// `grep -rn UIPasteboard wurstfingerTests` — the only other hit must be that
+// comment. A new test that needs the real pasteboard belongs in this suite, not
+// beside it.
 //
 // Gated on the warm-up rather than warmed up inside `init`, because a condition
 // trait is the only hook that can still *decline* to run: once the daemon has

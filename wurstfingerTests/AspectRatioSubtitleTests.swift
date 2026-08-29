@@ -29,6 +29,16 @@ import Testing
 private let aspectRatioKey = "Current: %@:1"
 
 /// Repo root: this file lives in `wurstfingerTests/`, so go up two levels.
+///
+/// Two of the tests below read `Localizable.xcstrings` and `SettingsView.swift`
+/// as source files rather than as bundled resources, because the contract they
+/// pin (a translation glues `:1` to the placeholder; `SettingsView` looks the
+/// subtitle up under this key) exists in the checkout, not in the built product.
+/// `#filePath` is baked in at compile time, so this assumes the tests run from
+/// the tree they were compiled in — true for `xcodebuild test`, the only
+/// supported path; re-running built products against a moved or absent source
+/// tree fails these two with a file-not-found error, loudly and in the safe
+/// direction.
 private func projectDir(file: String = #filePath) -> URL {
     URL(fileURLWithPath: file)
         .deletingLastPathComponent()
@@ -119,9 +129,20 @@ struct AspectRatioSubtitleTests {
             }
             let suffix = Array(value[placeholder.upperBound...])
             #expect(suffix.first == ":", "\(language): '\(value)' must continue with ':' right after %@")
-            // The `1` of the ratio may be written in the local digit shapes
-            // (Persian uses ۱), which resolve as a number just like ASCII.
-            #expect(suffix.dropFirst().first?.isNumber == true, "\(language): '\(value)' must end in ':<digit>'")
+            // The `1` is a literal, not a localizable digit, and it stays ASCII
+            // in all 22 translations — which is what the fix restored. `%@`
+            // always receives ASCII digits (`String(format: "%.2f")`), and the
+            // bidi algorithm only folds the `:` between them into one number
+            // run while both sides resolve to the same numeric class (rule W4).
+            // A local digit shape does not: U+06F1 (۱) is class EN but resolves
+            // to AN beside Arabic-script letters (rule W2), U+0661 (١) is AN
+            // outright — and the mismatch splits the ratio apart again into the
+            // `1:1.00` rendering. Not a blanket ban on local digits: the Persian
+            // numpad-type labels in Settings (`تلفن (⁦۱-۲-۳⁩)`) carry them
+            // legitimately, because they wrap the digit run in LRI/PDI — an
+            // isolate this subtitle cannot use without splitting the very run
+            // it exists to glue.
+            #expect(suffix.dropFirst().first == "1", "\(language): '\(value)' must end in the ASCII ':1'")
         }
     }
 }
