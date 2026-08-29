@@ -8,6 +8,17 @@
 //  sector), and a glitch is never promoted (a teleport sample changes no
 //  classification, in whatever direction it points).
 //
+//  Both halves of the admission rule are swept, because they fail
+//  independently. The glitch families whose jumps are large sweep the
+//  magnitude ceiling: they would be rejected on length alone, so they pass
+//  under a direction test of any width — including the half-plane the 45°
+//  cone replaced. `aDirectionAdversarialGlitchNeverChangesTheClassification`
+//  is the family that needs the cone: its glitches stay inside the velocity
+//  budget and are rejected only because they turn too far, so weakening
+//  `isSameMovement` back towards a half-plane or a magnitude-only test fails
+//  it (measured: 29 and 48 of its 768 shapes reclassify) while every other
+//  family here stays green.
+//
 //  The parameters of the velocity rule were originally chosen against an
 //  ad-hoc sweep of ~600k synthetic paths that compared three compiled
 //  variants of the filter; that harness was never part of the repo, so its
@@ -156,6 +167,50 @@ struct GesturePreprocessorSweepTests {
             }
         }
         #expect(mismatches.isEmpty, "\(mismatches.count) of \(count) glitched paths reclassified: \(mismatches.prefix(5))")
+    }
+
+    /// A glitch that stays *inside* the velocity budget and is rejected only
+    /// because it turns too far — the property the direction cone exists for,
+    /// and the one no other family here sweeps.
+    ///
+    /// The base swipes travel 40 or 50 pt per sample, so the budget is 120 or
+    /// 150 pt (three times the reference step, itself capped at
+    /// `maxJumpDistance`); every glitch is 60–110 pt, i.e. beyond
+    /// `maxJumpDistance` — so it reaches the velocity rule at all — and inside
+    /// that budget. What has to reject it is the 45° cone, at turns from 50°
+    /// (just outside it) to 300°. Swept in both positions, because the
+    /// reference differs: a trailing glitch is judged against the step the
+    /// accepted path established, a mid-path one against the longer of that
+    /// and the raw step leading back to the path.
+    @Test func aDirectionAdversarialGlitchNeverChangesTheClassification() {
+        var mismatches: [String] = []
+        var count = 0
+        for degrees in stride(from: CGFloat(0), to: 360, by: 45) {
+            let expected = KeyGestureRecognizer.gestureType(forDegrees: degrees)
+            for gait: CGFloat in [40, 50] {
+                let base = straightPath(degrees: degrees, step: gait, samples: 5)
+                for jump: CGFloat in [60, 90, 110] {
+                    for turn: CGFloat in [50, 60, 75, 90, 120, 180, 240, 300] {
+                        let offset = unit(degrees + turn)
+                        let displaced = { (anchor: CGPoint) in
+                            CGPoint(x: anchor.x + offset.dx * jump, y: anchor.y + offset.dy * jump)
+                        }
+                        var midPath = base
+                        midPath.insert(displaced(base[2]), at: 3)
+                        let shapes = [("trailing", base + [displaced(base[4])]), ("mid-path", midPath)]
+                        for (position, points) in shapes {
+                            count += 1
+                            let actual = classify(points)
+                            if actual != expected {
+                                let shape = "\(Int(degrees))° gait \(Int(gait)) \(position)"
+                                mismatches.append("\(shape) \(Int(jump))pt@+\(Int(turn))°: \(actual) ≠ \(expected)")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        #expect(mismatches.isEmpty, "\(mismatches.count) of \(count) in-budget turns reclassified: \(mismatches.prefix(5))")
     }
 
     /// A teleport sample in the middle of an ordinary swipe — interference
