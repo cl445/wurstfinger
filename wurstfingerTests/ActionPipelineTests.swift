@@ -486,7 +486,7 @@ struct SequentialCompositionCombineTests {
 
 // MARK: - TextInputMiddleware
 
-// These tests use the shared `MockTextTarget` (TestHelpers.swift). A private
+// These tests use the shared `MockTextTarget` (TestDoubles.swift). A private
 // event-only mock used to live here; it drifted from the shared one (no
 // document context / UTF-16 semantics), so it was removed (review M12).
 

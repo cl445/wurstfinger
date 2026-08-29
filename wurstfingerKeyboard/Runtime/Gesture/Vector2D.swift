@@ -157,7 +157,7 @@ extension Vector2D {
     }
 }
 
-// Note: CGPoint extensions (asVector, vector(to:)) are now in GeometryUtils.swift
+// Note: CGPoint extensions (asVector, vector(to:)) are now in GeometryExtensions.swift
 
 // MARK: - CustomStringConvertible
 

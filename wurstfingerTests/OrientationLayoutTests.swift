@@ -55,7 +55,7 @@ struct OrientationLayoutTests {
     // MARK: - Window bounds (Split View / Stage Manager, issue #116)
 
     private var screenShortestSide: CGFloat {
-        min(DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height)
+        min(DeviceLayout.screenBounds.width, DeviceLayout.screenBounds.height)
     }
 
     @Test("Keyboard-sized window keeps the screen's portrait width")
@@ -66,14 +66,14 @@ struct OrientationLayoutTests {
         // (issue behind #219's regression): its height must never cap the
         // width. Portrait: window spans the screen width, keyboard-height tall.
         viewModel.updateWindowBounds(
-            CGRect(x: 0, y: 0, width: DeviceLayoutUtils.screenBounds.width, height: 300)
+            CGRect(x: 0, y: 0, width: DeviceLayout.screenBounds.width, height: 300)
         )
         #expect(viewModel.keyboardWidthCap == screenShortestSide)
 
         // Landscape: window is screen-height wide; the screen's shortest
         // side still caps the keyboard at its portrait width.
         viewModel.updateWindowBounds(
-            CGRect(x: 0, y: 0, width: DeviceLayoutUtils.screenBounds.height, height: 250)
+            CGRect(x: 0, y: 0, width: DeviceLayout.screenBounds.height, height: 250)
         )
         #expect(viewModel.keyboardWidthCap == screenShortestSide)
     }
@@ -127,7 +127,7 @@ struct OrientationLayoutTests {
 
         // Landscape: the view spans the long side, the window caps at the
         // screen's shortest side.
-        let longSide = max(DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height)
+        let longSide = max(DeviceLayout.screenBounds.width, DeviceLayout.screenBounds.height)
         viewModel.updateViewWidth(longSide)
         viewModel.updateWindowBounds(CGRect(x: 0, y: 0, width: longSide, height: 300))
 

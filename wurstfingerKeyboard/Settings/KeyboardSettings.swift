@@ -43,8 +43,8 @@ enum SettingsKey: String, CaseIterable {
     case hideLetters
     case hideStandardSymbols
     case hideExtraSymbols
-    /// Holding a letter key types the digit that key carries on the
-    /// numeric layer, without switching modes.
+    /// Holding a letter key types the digit that key carries in numeric
+    /// mode, without switching to it.
     case longPressNumbersEnabled
     /// Typing a second consecutive space inserts a period followed by a
     /// space (the iOS "." Shortcut), when the character before the pending
@@ -217,13 +217,13 @@ final class LayoutSettings: ObservableObject {
         utilityColumnLeading = defaults.object(forKey: SettingsKey.utilityColumnLeading.rawValue) as? Bool ?? false
 
         let savedRatio = defaults.object(forKey: SettingsKey.keyAspectRatio.rawValue) as? Double
-            ?? DeviceLayoutUtils.defaultKeyAspectRatio
+            ?? DeviceLayout.defaultKeyAspectRatio
         keyAspectRatio = Self.clampAspectRatio(savedRatio)
 
         keyboardWidth = Self.loadWishWidth(from: defaults, shouldPersist: shouldPersist)
 
         let savedPosition = defaults.object(forKey: SettingsKey.keyboardHorizontalPosition.rawValue) as? Double
-            ?? DeviceLayoutUtils.defaultKeyboardPosition
+            ?? DeviceLayout.defaultKeyboardPosition
         keyboardHorizontalPosition = Self.clampPosition(savedPosition)
     }
 
@@ -233,7 +233,7 @@ final class LayoutSettings: ObservableObject {
         if utilityColumnLeading != newUtility { utilityColumnLeading = newUtility }
 
         let savedRatio = defaults.object(forKey: SettingsKey.keyAspectRatio.rawValue) as? Double
-            ?? DeviceLayoutUtils.defaultKeyAspectRatio
+            ?? DeviceLayout.defaultKeyAspectRatio
         let newRatio = Self.clampAspectRatio(savedRatio)
         if keyAspectRatio != newRatio { keyAspectRatio = newRatio }
 
@@ -241,7 +241,7 @@ final class LayoutSettings: ObservableObject {
         if keyboardWidth != newWidth { keyboardWidth = newWidth }
 
         let savedPosition = defaults.object(forKey: SettingsKey.keyboardHorizontalPosition.rawValue) as? Double
-            ?? DeviceLayoutUtils.defaultKeyboardPosition
+            ?? DeviceLayout.defaultKeyboardPosition
         let newPosition = Self.clampPosition(savedPosition)
         if keyboardHorizontalPosition != newPosition { keyboardHorizontalPosition = newPosition }
     }
@@ -293,7 +293,7 @@ final class LayoutSettings: ObservableObject {
             return clampWidth(stored)
         }
         if let legacyScale = defaults.object(forKey: SettingsKey.keyboardScale.rawValue) as? Double {
-            let bounds = DeviceLayoutUtils.screenBounds
+            let bounds = DeviceLayout.screenBounds
             let shortestSide = min(bounds.width, bounds.height)
             let clampedScale = min(1.0, max(0.25, legacyScale))
             let width = clampWidth(clampedScale * shortestSide)
@@ -302,7 +302,7 @@ final class LayoutSettings: ObservableObject {
             }
             return width
         }
-        return DeviceLayoutUtils.defaultKeyboardWidth
+        return DeviceLayout.defaultKeyboardWidth
     }
 
     // MARK: - Private Helpers

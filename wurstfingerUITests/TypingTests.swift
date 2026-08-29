@@ -198,7 +198,7 @@ final class TypingTests: XCTestCase {
     @MainActor
     func testComposeAcuteAccentProducesAccentedLetter() {
         let base = tapKey("topLeft") // "a" in de_DE
-        XCTAssertEqual(base, "a", "Test assumes topLeft is 'a' on the de_DE lower layer")
+        XCTAssertEqual(base, "a", "Test assumes topLeft is 'a' in the de_DE main mode")
         assertTypedText(equals: "a")
 
         // Swipe up-right on topCenter → emits .compose(trigger: "´").
@@ -239,7 +239,7 @@ final class TypingTests: XCTestCase {
         }
     }
 
-    /// Swiping up on the shift key (midRight) switches to the shifted layer,
+    /// Swiping up on the shift key (midRight) switches to the shifted mode,
     /// so the next letter is uppercase.
     @MainActor
     func testShiftSwipeProducesUppercaseLetter() {
@@ -248,7 +248,7 @@ final class TypingTests: XCTestCase {
         let typed = tapKey("topLeft")
         assertTypedText(equals: typed)
         XCTAssertFalse(typed.isEmpty)
-        XCTAssertEqual(typed, typed.uppercased(), "Shifted layer should produce an uppercase letter")
+        XCTAssertEqual(typed, typed.uppercased(), "Shifted mode should produce an uppercase letter")
     }
 
     /// A double swipe-up on the shift key engages caps-lock, so several
@@ -287,20 +287,20 @@ final class TypingTests: XCTestCase {
         )
     }
 
-    /// Switching to the numeric layer via the symbols key lets digits be typed.
+    /// Switching to numeric mode via the symbols key lets digits be typed.
     @MainActor
-    func testLayerSwitchToNumbersTypesDigit() {
+    func testModeSwitchToNumbersTypesDigit() {
         tapKey("symbols")
 
-        // After switching, the center key carries a numeric-layer character.
+        // After switching, the center key carries a numeric-mode character.
         let center = key("center")
-        XCTAssertTrue(center.waitForExistence(timeout: 2), "Center key missing after layer switch")
+        XCTAssertTrue(center.waitForExistence(timeout: 2), "Center key missing after mode switch")
         let label = center.label
-        // Verify the switch actually landed on the numeric layer (a digit),
-        // not just any echoable key (e.g. a punctuation/symbols layer).
+        // Verify the switch actually landed in numeric mode (a digit),
+        // not just any echoable key (e.g. a punctuation/symbols mode).
         XCTAssertTrue(
             !label.isEmpty && label.allSatisfy(\.isNumber),
-            "Expected a digit on the numeric layer after the symbols key, got '\(label)'"
+            "Expected a digit in numeric mode after the symbols key, got '\(label)'"
         )
         center.tap()
 

@@ -52,7 +52,7 @@ struct InteractiveKeyboardPreview: View {
 
     init(
         aspectRatio: Binding<Double> = .constant(1.0),
-        width: Binding<Double> = .constant(DeviceLayoutUtils.defaultKeyboardWidth),
+        width: Binding<Double> = .constant(DeviceLayout.defaultKeyboardWidth),
         position: Binding<Double> = .constant(0.5)
     ) {
         _aspectRatio = aspectRatio
@@ -64,7 +64,7 @@ struct InteractiveKeyboardPreview: View {
         // Same metrics the keyboard itself renders from, resolved against
         // the preview's container (the parents inset it 16 pt per side), so
         // the frame height always matches the rendered content height.
-        let containerWidth = DeviceLayoutUtils.screenBounds.width - 32
+        let containerWidth = DeviceLayout.screenBounds.width - 32
         let metrics = previewViewModel.layoutMetrics(forContainerWidth: containerWidth)
         return KeyboardConstants.Preview.frameHeight(forContentHeight: metrics.totalHeight)
     }

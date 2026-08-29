@@ -167,11 +167,11 @@ struct KeyboardDefinitionTests {
     }
 }
 
-// MARK: - Native Digit Layer Tests
+// MARK: - Native Digit Mode Tests
 
 /// Covers the per-language numeric digit set (Arabic-Indic / Persian) plumbed
 /// through `NumericLayouts`, `GridKeyboardFactory`, and `KeyboardDefinition`.
-struct NativeDigitLayerTests {
+struct NativeDigitModeTests {
     /// Reads the tap output of a numeric-mode key.
     private func digitTap(_ mode: KeyboardMode?, _ slot: String) -> String? {
         guard case let .commitText(text)? = mode?.keys[slot]?.bindings[.tap]?.action else { return nil }
@@ -263,7 +263,7 @@ struct NativeDigitLayerTests {
         #expect(hira.combineRuleSet?.rules["゛"]?["は"] == "ば")
         let kata = LanguageDefinitions.katakana.makeDefinition().settings
         #expect(kata.combineRuleSet?.rules["゛"]?["カ"] == "ガ")
-        // Japanese kana keeps Western digits (no native digit layer).
+        // Japanese kana keeps Western digits (no native digit mode).
         #expect(LanguageDefinitions.hiragana.makeDefinition().numericDigits == NumericLayouts.westernDigits)
     }
 }

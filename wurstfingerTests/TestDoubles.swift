@@ -1,9 +1,10 @@
 //
-//  TestHelpers.swift
+//  TestDoubles.swift
 //  WurstfingerTests
 //
-//  Shared test helpers for the data-driven pipeline tests.
-//  MockTextTarget and makeViewModel are used across multiple test files.
+//  Stand-ins for the collaborators the pipeline talks to: the text target it
+//  writes through, and the defaults store it reads settings from. Both record
+//  or hold state in memory so a test can assert on it without a simulator.
 //
 
 import Foundation
@@ -145,29 +146,4 @@ class InMemoryUserDefaults: UserDefaults {
     override func float(forKey defaultName: String) -> Float {
         (object(forKey: defaultName) as? NSNumber)?.floatValue ?? 0
     }
-}
-
-/// Language ids whose script is caseless. These layouts have no shift
-/// affordance (no shifted/capsLock modes, no shift binding) and
-/// auto-capitalization disabled in their definition settings.
-enum CaselessLanguages {
-    static let ids: Set<String> = ["he_IL", "ar", "fa_IR", "ur", "th_TH", "hi_IN", "ja_JP", "ja_JP_katakana", "ko_KR"]
-}
-
-/// Creates a KeyboardViewModel wired to a MockTextTarget for testing.
-func makeViewModel(
-    languageId: String = "de_DE",
-    advanceToNextInputMode: @escaping () -> Void = {},
-    dismissKeyboard: @escaping () -> Void = {}
-) -> (KeyboardViewModel, MockTextTarget) {
-    let defaults = InMemoryUserDefaults()
-    let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
-    let target = MockTextTarget()
-    vm.bindTextInputTarget(target)
-    vm.bindViewControllerActions(
-        advanceToNextInputMode: advanceToNextInputMode,
-        dismissKeyboard: dismissKeyboard
-    )
-    vm.loadDefinition(for: languageId)
-    return (vm, target)
 }

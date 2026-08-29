@@ -11,9 +11,9 @@ import SwiftUI
 struct wurstfingerApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
-    private let screenshotMode: ScreenshotMode
+    private let screenshotType: ScreenshotType
 
-    private enum ScreenshotMode {
+    private enum ScreenshotType {
         case none
         case keyboardOnly // SCREENSHOT_MODE - keyboard showcase only
         case appStore // APPSTORE_SCREENSHOT_MODE - keyboard with chat UI
@@ -31,27 +31,27 @@ struct wurstfingerApp: App {
         OnboardingProgress.migrateFromSharedStoreIfNeeded()
 
         let defaults: [String: Any] = [
-            SettingsKey.keyAspectRatio.rawValue: DeviceLayoutUtils.defaultKeyAspectRatio,
-            SettingsKey.keyboardWidthPoints.rawValue: DeviceLayoutUtils.defaultKeyboardWidth,
-            SettingsKey.keyboardHorizontalPosition.rawValue: DeviceLayoutUtils.defaultKeyboardPosition
+            SettingsKey.keyAspectRatio.rawValue: DeviceLayout.defaultKeyAspectRatio,
+            SettingsKey.keyboardWidthPoints.rawValue: DeviceLayout.defaultKeyboardWidth,
+            SettingsKey.keyboardHorizontalPosition.rawValue: DeviceLayout.defaultKeyboardPosition
         ]
         SharedDefaults.store.register(defaults: defaults)
 
         // Determine screenshot mode from launch arguments
         let args = ProcessInfo.processInfo.arguments
         if args.contains("APPSTORE_SCREENSHOT_MODE") {
-            screenshotMode = .appStore
+            screenshotType = .appStore
         } else if args.contains("SCREENSHOT_MODE") {
-            screenshotMode = .keyboardOnly
+            screenshotType = .keyboardOnly
         } else {
-            screenshotMode = .none
+            screenshotType = .none
         }
     }
 
     var body: some Scene {
         WindowGroup {
             Group {
-                switch screenshotMode {
+                switch screenshotType {
                 case .appStore:
                     AppStoreScreenshotView()
                 case .keyboardOnly:

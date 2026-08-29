@@ -224,7 +224,7 @@ struct DoubleSpacePeriodMiddlewareTests {
         viewModel.dispatchAction(.space)
         viewModel.dispatchAction(.space)
         #expect(target.documentContextBeforeInput == "hi. ")
-        // ". " is a sentence boundary, so the shifted layer engages for the
+        // ". " is a sentence boundary, so the shifted mode engages for the
         // next letter without any extra wiring in this middleware.
         #expect(viewModel.activeModeName == ModeNames.shifted)
     }

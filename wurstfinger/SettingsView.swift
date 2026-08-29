@@ -14,13 +14,13 @@ struct SettingsView: View {
     private var utilityColumnLeading = false
 
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
-    private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
+    private var keyAspectRatio = DeviceLayout.defaultKeyAspectRatio
 
     @AppStorage(SettingsKey.keyboardWidthPoints.rawValue, store: SharedDefaults.store)
-    private var keyboardWidth = DeviceLayoutUtils.defaultKeyboardWidth
+    private var keyboardWidth = DeviceLayout.defaultKeyboardWidth
 
     @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
-    private var keyboardHorizontalPosition = DeviceLayoutUtils.defaultKeyboardPosition
+    private var keyboardHorizontalPosition = DeviceLayout.defaultKeyboardPosition
 
     @AppStorage(SettingsKey.hapticIntensityTap.rawValue, store: SharedDefaults.store)
     private var hapticTapIntensity = Double(HapticSettings.defaultTapIntensity)
@@ -327,8 +327,8 @@ struct SettingsView: View {
 
     private var sizePositionDescription: String {
         // Percent relative to the device-class default width (the wish is
-        // stored in points; 100 % == DeviceLayoutUtils.defaultKeyboardWidth).
-        let percent = Int((keyboardWidth / DeviceLayoutUtils.defaultKeyboardWidth * 100).rounded())
+        // stored in points; 100 % == DeviceLayout.defaultKeyboardWidth).
+        let percent = Int((keyboardWidth / DeviceLayout.defaultKeyboardWidth * 100).rounded())
         let scale = "\(percent)%"
         return String(localized: "Scale: \(scale), Position: \(positionLabel(for: keyboardHorizontalPosition))")
     }

@@ -12,7 +12,7 @@ import SwiftUI
 /// `DataDrivenKeyboardRootView` and passed down by value.
 ///
 /// The whole keyboard holds one defaults observation per setting, and the
-/// ~100 key views a layer builds hold none: the root re-renders when a
+/// ~100 key views a mode builds hold none: the root re-renders when a
 /// setting changes and hands every key the fresh values.
 struct KeyRenderSettings: Equatable {
     var keyboardStyle: KeyboardStyle = .classic
@@ -81,7 +81,7 @@ struct KeyView: View {
     /// defaults, so the hint stays correct even when startup loads a pinned
     /// language whose id differs from the stored selection.
     var languageLabel: String = ""
-    var showLanguageLabel: Bool = false
+    var isLanguageLabelShown: Bool = false
 
     /// Whether the label of `binding` should be drawn, honouring the user's
     /// label-visibility toggles (numbers and functional keys always show).
@@ -404,7 +404,7 @@ struct KeyView: View {
                 if let binding = key.bindings[gesture],
                    let alignment = Self.hintAlignments[gesture] {
                     if binding.action == .switchToNextLanguage {
-                        if showLanguageLabel {
+                        if isLanguageLabelShown {
                             Text(languageLabel)
                                 .font(.system(size: scaledHintFontSize * 0.75, weight: .semibold, design: .rounded))
                                 .foregroundStyle(Color.primary.opacity(0.5))

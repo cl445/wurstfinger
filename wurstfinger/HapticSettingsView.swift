@@ -17,13 +17,13 @@ struct HapticSettingsView: View {
     }
 
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
-    private var previewAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
+    private var previewAspectRatio = DeviceLayout.defaultKeyAspectRatio
 
     @AppStorage(SettingsKey.keyboardWidthPoints.rawValue, store: SharedDefaults.store)
-    private var previewWidth = DeviceLayoutUtils.defaultKeyboardWidth
+    private var previewWidth = DeviceLayout.defaultKeyboardWidth
 
     @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
-    private var previewPosition = DeviceLayoutUtils.defaultKeyboardPosition
+    private var previewPosition = DeviceLayout.defaultKeyboardPosition
 
     var body: some View {
         VStack(spacing: 20) {

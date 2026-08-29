@@ -88,9 +88,9 @@ final class KeyboardViewController: UIInputViewController {
         // of a "system keyboard showed instead" incident proves iOS never
         // launched the extension (as opposed to the extension failing).
         KeyboardHealthLog.shared.record("viewWillAppear")
-        // Reopen on the default (letters) layer: a keyboard dismissed on the
-        // numeric or shifted layer must not resurface there.
-        refreshForAppearance(resettingLayer: true)
+        // Reopen in the default (letters) mode: a keyboard dismissed in
+        // numeric or shifted mode must not resurface there.
+        refreshForAppearance(resettingMode: true)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -105,23 +105,23 @@ final class KeyboardViewController: UIInputViewController {
 
     /// The complete refresh an appearance owes the keyboard, in the order the
     /// steps depend on each other: shared state first (it can swap the whole
-    /// definition), then the layer, then the height — `layoutMetrics` reads
+    /// definition), then the mode, then the height — `layoutMetrics` reads
     /// the *active* mode's arrangement — then the shift state.
     ///
     /// Both paths that resurface a keyboard — `viewWillAppear` and the
     /// host-foreground return — go through here, so neither can drift out of
-    /// sync with the other and resurface on stale state. `resettingLayer` is
+    /// sync with the other and resurface on stale state. `resettingMode` is
     /// the single deliberate difference: an appearance reopens on letters, a
-    /// foreground return keeps the layer because the user comes back to the
+    /// foreground return keeps the mode because the user comes back to the
     /// same field mid-typing.
-    private func refreshForAppearance(resettingLayer: Bool) {
+    private func refreshForAppearance(resettingMode: Bool) {
         refreshFromSharedState()
         // Rebuild the SwiftUI host if it was torn down before suspension (see
         // `shedMemoryBeforeSuspension`). Idempotent, so the first appearance —
         // where `viewDidLoad` already built it — is a no-op. Rebuild before the
         // height constraint update below so the content exists first.
         configureHosting()
-        if resettingLayer {
+        if resettingMode {
             viewModel.resetToDefaultMode()
         }
         updateKeyboardHeight()
@@ -330,7 +330,7 @@ final class KeyboardViewController: UIInputViewController {
     /// - Shedding is covered either way; there the `viewDidDisappear` path
     ///   does it, so nothing leaks by these blocks not running.
     /// - The one deliberate difference of the foreground path — keeping the
-    ///   active mode (`resettingLayer: false`) because the user comes back to
+    ///   active mode (`resettingMode: false`) because the user comes back to
     ///   the same field mid-typing — never takes effect there: the rebuild
     ///   goes through `viewWillAppear` and reopens on the default mode.
     /// - No `hostDidEnterBackground`/`hostWillEnterForeground` entry appeared
@@ -369,11 +369,11 @@ final class KeyboardViewController: UIInputViewController {
             // hosting rebuild — the biggest allocation — in the resume
             // moment, where the jetsam limit is enforced; `viewWillAppear`
             // covers that case when the keyboard is next shown. The active
-            // layer is deliberately kept: the user returns to the same field
+            // mode is deliberately kept: the user returns to the same field
             // mid-typing. (A definition reload inside the refresh still
             // resets it — a new language's layout cannot keep the old mode.)
             if viewIfLoaded?.window != nil {
-                refreshForAppearance(resettingLayer: false)
+                refreshForAppearance(resettingMode: false)
             }
             KeyboardHealthLog.shared.record("hostWillEnterForeground")
         })

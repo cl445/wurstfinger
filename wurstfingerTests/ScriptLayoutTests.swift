@@ -159,10 +159,10 @@ struct KanaLayoutTests {
     }
 
     /// The ellipsis that 。 displaced from the full stop's return swipe stays
-    /// reachable on the numeric layer, which inherits the Latin punctuation
+    /// reachable in numeric mode, which inherits the Latin punctuation
     /// bindings unchanged.
     @Test(arguments: ["ja_JP", "ja_JP_katakana"])
-    func ellipsisStaysOnTheNumericLayerReturnSwipe(id: String) {
+    func ellipsisStaysOnTheNumericModeReturnSwipe(id: String) {
         let (vm, target) = makeViewModel(languageId: id)
 
         vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
@@ -208,16 +208,16 @@ struct ArabicScriptLayoutTests {
     }
 
     /// The dagger that ٭ displaced from the asterisk's return swipe (the
-    /// reference keeps ٭ → † on the letter layer) stays reachable on the
-    /// numeric layer, which inherits the Latin punctuation bindings unchanged.
+    /// reference keeps ٭ → † in the letter modes) stays reachable in numeric
+    /// mode, which inherits the Latin punctuation bindings unchanged.
     @Test(arguments: ArabicScriptLayoutTests.ids)
-    func daggerStaysOnTheNumericLayerReturnSwipe(id: String) {
+    func daggerStaysOnTheNumericModeReturnSwipe(id: String) {
         let (vm, target) = makeViewModel(languageId: id)
 
         vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
         vm.handleGesture(.swipeRight, keyId: GridSlot.bottomLeft, isReturn: true)
 
-        #expect(inserts(target) == ["†"], "[\(id)] † lost with the letter-layer asterisk")
+        #expect(inserts(target) == ["†"], "[\(id)] † lost with the letter-mode asterisk")
     }
 
     /// The three layouts share one punctuation table, so they cannot drift.

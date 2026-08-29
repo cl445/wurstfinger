@@ -11,14 +11,14 @@ import Testing
 
 struct HapticSettingsTests {
     // Helper to create isolated UserDefaults for testing
-    private func createTestDefaults() -> UserDefaults {
+    private func makeTestDefaults() -> UserDefaults {
         InMemoryUserDefaults()
     }
 
     // MARK: - Initialization Tests
 
     @Test func initWithDefaultValues() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
         #expect(settings.tapIntensity == HapticSettings.defaultTapIntensity)
@@ -26,7 +26,7 @@ struct HapticSettingsTests {
     }
 
     @Test func initLoadsPersistedValues() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
 
         // Pre-populate UserDefaults
         defaults.set(0.3, forKey: SettingsKey.hapticIntensityTap.rawValue)
@@ -41,7 +41,7 @@ struct HapticSettingsTests {
     // MARK: - Legacy Master Toggle Migration
 
     @Test func legacyDisabledToggleMigratesToOffLevels() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         defaults.set(false, forKey: SettingsKey.hapticEnabled.rawValue)
         defaults.set(0.5, forKey: SettingsKey.hapticIntensityTap.rawValue)
         defaults.set(0.9, forKey: SettingsKey.hapticIntensityDrag.rawValue)
@@ -55,7 +55,7 @@ struct HapticSettingsTests {
     }
 
     @Test func legacyEnabledToggleKeepsIntensities() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         defaults.set(true, forKey: SettingsKey.hapticEnabled.rawValue)
         defaults.set(0.5, forKey: SettingsKey.hapticIntensityTap.rawValue)
 
@@ -66,7 +66,7 @@ struct HapticSettingsTests {
     }
 
     @Test func migrationDoesNotPersistWhenPersistenceDisabled() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         defaults.set(false, forKey: SettingsKey.hapticEnabled.rawValue)
 
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
@@ -78,7 +78,7 @@ struct HapticSettingsTests {
     // MARK: - Clamping Tests
 
     @Test func intensityClampedToValidRange() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
         settings.tapIntensity = 1.5 // above max
@@ -94,7 +94,7 @@ struct HapticSettingsTests {
     // MARK: - Persistence Tests
 
     @Test func changesPersistToUserDefaults() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = HapticSettings(defaults: defaults, shouldPersist: true)
 
         settings.tapIntensity = 0.7
@@ -106,7 +106,7 @@ struct HapticSettingsTests {
     }
 
     @Test func changesNotPersistedWhenDisabled() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
         settings.tapIntensity = 0.8
@@ -119,7 +119,7 @@ struct HapticSettingsTests {
     // MARK: - Reload Tests
 
     @Test func reloadUpdatesFromUserDefaults() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
         // Externally change UserDefaults
@@ -133,7 +133,7 @@ struct HapticSettingsTests {
     // MARK: - Non-numeric Defaults Safety Tests
 
     @Test func nonNumericDefaultsFallBackToDefaults() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
 
         // Store non-numeric values that could corrupt settings
         defaults.set("not_a_number", forKey: SettingsKey.hapticIntensityTap.rawValue)
@@ -145,7 +145,7 @@ struct HapticSettingsTests {
     }
 
     @Test func missingDefaultsFallBackCorrectly() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         // Don't set any values — all should be defaults
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
@@ -156,7 +156,7 @@ struct HapticSettingsTests {
     // MARK: - Intensity For Event Tests
 
     @Test func intensityForEventReturnsCorrectValue() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = HapticSettings(defaults: defaults, shouldPersist: false)
 
         settings.tapIntensity = 0.3
@@ -168,24 +168,24 @@ struct HapticSettingsTests {
 }
 
 struct LayoutSettingsTests {
-    private func createTestDefaults() -> UserDefaults {
+    private func makeTestDefaults() -> UserDefaults {
         InMemoryUserDefaults()
     }
 
     // MARK: - Initialization Tests
 
     @Test func initWithDefaultValues() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
         #expect(settings.utilityColumnLeading == false)
         // The width default is a device-class constant, deliberately not
         // derived from (orientation-dependent) screen bounds.
-        #expect(settings.keyboardWidth == DeviceLayoutUtils.defaultKeyboardWidth)
+        #expect(settings.keyboardWidth == DeviceLayout.defaultKeyboardWidth)
     }
 
     @Test func initLoadsPersistedValues() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
 
         defaults.set(true, forKey: SettingsKey.utilityColumnLeading.rawValue)
         defaults.set(1.3, forKey: SettingsKey.keyAspectRatio.rawValue)
@@ -203,7 +203,7 @@ struct LayoutSettingsTests {
     // MARK: - Clamping Tests
 
     @Test func aspectRatioClampedToValidRange() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
         settings.keyAspectRatio = 2.0 // above max (1.62)
@@ -214,7 +214,7 @@ struct LayoutSettingsTests {
     }
 
     @Test func widthClampedToValidRange() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
         settings.keyboardWidth = 10000 // above max (600)
@@ -225,7 +225,7 @@ struct LayoutSettingsTests {
     }
 
     @Test func widthClampedOnLoad() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         defaults.set(10000.0, forKey: SettingsKey.keyboardWidthPoints.rawValue)
 
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
@@ -234,7 +234,7 @@ struct LayoutSettingsTests {
     }
 
     @Test func positionClampedToValidRange() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
         settings.keyboardHorizontalPosition = 1.5 // above max (1.0)
@@ -247,7 +247,7 @@ struct LayoutSettingsTests {
     // MARK: - Persistence Tests
 
     @Test func changesPersistToUserDefaults() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = LayoutSettings(defaults: defaults, shouldPersist: true)
 
         settings.utilityColumnLeading = true
@@ -263,7 +263,7 @@ struct LayoutSettingsTests {
     // MARK: - Reload Tests
 
     @Test func reloadUpdatesFromUserDefaults() {
-        let defaults = createTestDefaults()
+        let defaults = makeTestDefaults()
         let settings = LayoutSettings(defaults: defaults, shouldPersist: false)
 
         defaults.set(true, forKey: SettingsKey.utilityColumnLeading.rawValue)
@@ -280,7 +280,7 @@ struct LayoutSettingsTests {
 
 struct LayoutSettingsMigrationTests {
     private var shortestScreenSide: Double {
-        Double(min(DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height))
+        Double(min(DeviceLayout.screenBounds.width, DeviceLayout.screenBounds.height))
     }
 
     @Test func legacyScaleMigratesToWidthAndPersistsOnce() {
@@ -320,7 +320,7 @@ struct LayoutSettingsMigrationTests {
 
         let settings = LayoutSettings(defaults: defaults, shouldPersist: true)
 
-        #expect(settings.keyboardWidth == DeviceLayoutUtils.defaultKeyboardWidth)
+        #expect(settings.keyboardWidth == DeviceLayout.defaultKeyboardWidth)
         // The default is a fallback, never written (consistent with the
         // registered-defaults behavior of the other layout settings).
         #expect(defaults.object(forKey: SettingsKey.keyboardWidthPoints.rawValue) == nil)

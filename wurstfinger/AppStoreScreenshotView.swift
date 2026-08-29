@@ -185,8 +185,8 @@ struct AppStoreScreenshotView: View {
         )
 
         // Set keyboard mode
-        if let forcedLayer = env["FORCE_LAYER"] {
-            switch forcedLayer {
+        if let forcedMode = env["FORCE_LAYER"] {
+            switch forcedMode {
             case "numbers":
                 viewModel.switchToMode(ModeNames.numeric)
             case "symbols":

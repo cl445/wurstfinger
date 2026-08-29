@@ -1,8 +1,8 @@
 //
-//  GeometryUtilsTests.swift
+//  GeometryExtensionsTests.swift
 //  wurstfingerTests
 //
-//  Tests for CGPoint, CGSize, and CGRect extensions in GeometryUtils
+//  Tests for CGPoint, CGSize, and CGRect extensions in GeometryExtensions
 //
 
 import Foundation

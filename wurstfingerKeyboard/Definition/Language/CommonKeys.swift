@@ -112,7 +112,7 @@ enum CommonKeys {
                     returnAction: nil, accessibilityLabel: String(localized: "Space")
                 ),
                 // The hold-for-digit feature pairs 0 with the space bar (no
-                // letter-layer slot maps to 0 otherwise). Long presses
+                // letter-mode slot maps to 0 otherwise). Long presses
                 // only occur with the opt-in setting enabled, so this is inert by
                 // default; .longPress has no hint alignment, so nothing renders.
                 .longPress: KeyBinding(

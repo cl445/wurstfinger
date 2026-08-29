@@ -22,7 +22,7 @@ enum KeyboardConstants {
 
         /// Reference key aspect ratio (width/height) at which `height` is defined.
         /// Used only as the baseline of `Calculations.screenshotCellSize`; it is NOT
-        /// the user-facing default setting (that is `DeviceLayoutUtils.defaultKeyAspectRatio`).
+        /// the user-facing default setting (that is `DeviceLayout.defaultKeyAspectRatio`).
         static let referenceAspectRatio: CGFloat = 1.5
 
         /// Total number of rows in the keyboard layout.

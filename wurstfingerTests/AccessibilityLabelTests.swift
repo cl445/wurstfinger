@@ -107,7 +107,7 @@ struct AccessibilityLabelTests {
 
     /// VoiceOver activates a key by synthesizing a tap, so a key whose tap is
     /// inert is unreachable unless it declares a substitute gesture. Also the
-    /// guard for the derived layers: shifted/capsLock keys are made by copying,
+    /// guard for the derived modes: shifted/capsLock keys are made by copying,
     /// so a copy site that drops the declaration fails here.
     @Test func everyKeyIsOperableWithoutGestures() throws {
         for def in try loadedDefinitions() {

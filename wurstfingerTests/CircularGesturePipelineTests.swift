@@ -51,7 +51,7 @@ struct CircularGesturePipelineTests {
         #expect(target.events.contains(.insertText(letter.uppercased(with: vm.pipelineLocale ?? .current))))
     }
 
-    /// Path 1: numeric layer keys carry an explicit circular binding
+    /// Path 1: numeric-mode keys carry an explicit circular binding
     /// (superscripts / math symbols) which takes precedence over uppercasing.
     @Test func circularInNumericModeDispatchesExplicitBinding() {
         let (vm, target) = makeViewModel(languageId: "de_DE")
@@ -83,7 +83,7 @@ struct CircularGesturePipelineTests {
     /// The uppercase fallback must route through `keyboardUppercased` so a
     /// layout with ß on a tap position yields the capital sharp S (ẞ) instead
     /// of the plain-`uppercased` two-letter "SS" expansion — matching the
-    /// shifted-layer generation in the definition layer. No shipped layout
+    /// shifted-mode generation in the definition layer. No shipped layout
     /// carries ß on tap today, so the definition is injected directly.
     @Test func circularOnSharpSKeyInsertsCapitalSharpS() {
         let (vm, target) = makeViewModel(languageId: "de_DE")
@@ -154,7 +154,7 @@ struct CircularCutAllBindingTests {
         #expect(key.bindings[.circularCounterclockwise]?.action == .cutAll)
     }
 
-    /// The numeric layer's back-to-main key shares the same clipboard bindings.
+    /// The numeric mode's back-to-main key shares the same clipboard bindings.
     @Test func numericBackKeyBindsBothCircleDirectionsToCutAll() {
         let (vm, _) = makeViewModel(languageId: "de_DE")
 

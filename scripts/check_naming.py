@@ -596,10 +596,12 @@ def mode_update(glossary: Glossary, allow_raise: bool) -> int:
 
     BUDGET_FILE.write_text(json.dumps(actual, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     removed = sorted(set(previous) - set(actual))
-    shrunk = sum(previous.get(path, 0) - count for path, count in actual.items() if count < previous.get(path, 0))
+    delta = sum(previous.values()) - sum(actual.values())
     print(f"Recorded {sum(actual.values())} rejected names in {len(actual)} files.")
-    if shrunk or removed:
-        print(f"  {shrunk} fewer than before; {len(removed)} file(s) now clean.")
+    if delta > 0:
+        print(f"  {delta} fewer than before; {len(removed)} file(s) now clean.")
+    elif delta < 0:
+        print(f"  {-delta} more than before.")
     return 0
 
 

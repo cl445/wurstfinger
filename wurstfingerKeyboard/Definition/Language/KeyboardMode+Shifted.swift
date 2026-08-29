@@ -2,17 +2,17 @@
 //  KeyboardMode+Shifted.swift
 //  Wurstfinger
 //
-//  Automatic shifted layer generation from a main mode.
+//  Automatic generation of the shifted mode from a main mode.
 //
 
 import Foundation
 
 extension String {
-    /// Uppercases key text for the shifted layer.
+    /// Uppercases key text for the shifted mode.
     ///
     /// Unlike `uppercased(with:)`, this preserves the German capital sharp S
     /// (ß → ẞ, U+1E9E) instead of expanding to the two-letter "SS", so a single
-    /// ß key maps to a single ẞ. Shared by both the shifted-layer generation
+    /// ß key maps to a single ẞ. Shared by both the shifted-mode generation
     /// (`KeyConfig.autoShifted`) and the directional-override return actions in
     /// `GridKeyboardFactory`, so the two stay consistent.
     func keyboardUppercased(with locale: Locale) -> String {
@@ -22,7 +22,7 @@ extension String {
 }
 
 extension KeyboardMode {
-    /// Generates the shifted layer from this mode.
+    /// Generates the shifted mode from this one.
     /// - Letter bindings are uppercased using the given locale
     /// - Arrangements are reused as-is (same key IDs)
     /// - Overrides allow manual corrections (e.g. ß → ẞ)

@@ -1,5 +1,5 @@
 //
-//  GeometryUtils.swift
+//  GeometryExtensions.swift
 //  Wurstfinger
 //
 //  Central location for CGPoint and geometry-related extensions.

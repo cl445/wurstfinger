@@ -13,7 +13,7 @@ import UIKit
 enum KeyboardHapticEvent {
     case tap
     case drag
-    /// Layer/language changes and system actions (globe, dismiss, clipboard)
+    /// Mode/language changes and system actions (globe, dismiss, clipboard)
     case stateChange
 
     /// Feedback for an action flowing through the pipeline, or `nil` for
@@ -35,7 +35,7 @@ enum KeyboardHapticEvent {
     }
 }
 
-struct DeviceLayoutUtils {
+struct DeviceLayout {
     /// Returns screen bounds for layout calculations.
     /// UIScreen.main is deprecated in iOS 16+ but UIApplication.shared is unavailable in app extensions,
     /// so UIScreen.main remains the pragmatic choice for keyboard extensions.
@@ -73,7 +73,7 @@ final class KeyboardViewModel: ObservableObject {
     /// keeps landscape at the portrait width. Falls back to the screen until
     /// a window is attached.
     @Published private(set) var keyboardWidthCap: CGFloat = min(
-        DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height
+        DeviceLayout.screenBounds.width, DeviceLayout.screenBounds.height
     )
     /// Name of the currently active mode in the data-driven definition.
     @Published var activeModeName: String = ModeNames.main
@@ -229,7 +229,7 @@ final class KeyboardViewModel: ObservableObject {
     /// the height constraint stays — visibly breaking the key aspect ratio.
     func updateWindowBounds(_ bounds: CGRect?) {
         let screenShortestSide = min(
-            DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height
+            DeviceLayout.screenBounds.width, DeviceLayout.screenBounds.height
         )
         let cap = bounds.map { min($0.width, screenShortestSide) } ?? screenShortestSide
         guard cap > 0, cap != keyboardWidthCap else { return }
@@ -258,7 +258,7 @@ final class KeyboardViewModel: ObservableObject {
     /// The active mode resolved from the current definition and mode name.
     /// The one place the mode is resolved: the grid renders from it and
     /// `currentArrangement` sizes the keyboard from it, so a height computed
-    /// for a different layer than the one on screen cannot happen.
+    /// for a different mode than the one on screen cannot happen.
     var activeModeFromDefinition: KeyboardMode? {
         currentDefinition?.mode(activeModeName)
     }
@@ -283,7 +283,7 @@ final class KeyboardViewModel: ObservableObject {
             columns: currentArrangement?.columns ?? 4,
             rows: currentArrangement?.rows.count ?? KeyboardConstants.KeyDimensions.totalRows,
             availableWidth: width > 0 ? min(width, keyboardWidthCap) : keyboardWidthCap,
-            screenHeight: DeviceLayoutUtils.screenBounds.height
+            screenHeight: DeviceLayout.screenBounds.height
         )
     }
 
@@ -349,7 +349,7 @@ final class KeyboardViewModel: ObservableObject {
         hapticPlayer.drag()
     }
 
-    /// Confirmation tick for explicit layer/language switches.
+    /// Confirmation tick for explicit mode/language switches.
     func feedbackStateChange() {
         hapticPlayer.stateChange()
     }

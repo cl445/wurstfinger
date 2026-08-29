@@ -47,9 +47,9 @@ struct ReturnSwipeLanguageTests {
             }
             let locale = definition.locale
 
-            for slotId in GridSlot.allSlots.flatMap(\.self) {
-                guard let key = mainMode.key(for: slotId) else {
-                    Issue.record("[\(info.id)] no key for slot \(slotId)")
+            for keyId in GridSlot.allSlots.flatMap(\.self) {
+                guard let key = mainMode.key(for: keyId) else {
+                    Issue.record("[\(info.id)] no key for slot \(keyId)")
                     continue
                 }
                 for gesture in swipeGestures {
@@ -66,12 +66,12 @@ struct ReturnSwipeLanguageTests {
                     if expected == swipeText {
                         #expect(
                             returnText != swipeText,
-                            "[\(info.id)] \(slotId) \(gesture): return swipe silently repeats '\(swipeText)'"
+                            "[\(info.id)] \(keyId) \(gesture): return swipe silently repeats '\(swipeText)'"
                         )
                     } else {
                         #expect(
                             returnText == expected,
-                            "[\(info.id)] \(slotId) \(gesture): expected '\(expected)', got '\(returnText)'"
+                            "[\(info.id)] \(keyId) \(gesture): expected '\(expected)', got '\(returnText)'"
                         )
                     }
                 }

@@ -12,7 +12,7 @@ import Foundation
 import Testing
 @testable import WurstfingerApp
 
-// Helpers (MockTextTarget, makeViewModel) are in TestHelpers.swift
+// MockTextTarget lives in TestDoubles.swift, makeViewModel in TestFixtures.swift
 
 // MARK: - Tap → commitText
 

@@ -290,12 +290,12 @@ struct GhostKeyResolverTests {
         #expect(GhostKeyResolver(fallbackMode: fallback).resolve(keyId: "a", gesture: .tap, in: primary) == nil)
     }
 
-    // MARK: Long-press → fallback digit tap (numeric-layer mirror removed)
+    // MARK: Long-press → fallback digit tap (numeric-mode mirror removed)
 
     @Test func longPressMapsToFallbackDigitTap() {
         // The letter key has no long-press binding; the fallback (numeric)
         // key exposes only a `.digit` tap. A hold must surface that digit
-        // without the numeric layer mirroring the tap as an explicit
+        // without the numeric mode mirroring the tap as an explicit
         // `.longPress` binding.
         let primary = Fixtures.mode(name: "main", keys: [
             Fixtures.key(id: "a", bindings: [.tap: Fixtures.binding(action: .commitText("a"))]),

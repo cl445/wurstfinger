@@ -11,10 +11,10 @@ struct AspectRatioSettingsView: View {
     @Binding var aspectRatio: Double
 
     @AppStorage(SettingsKey.keyboardWidthPoints.rawValue, store: SharedDefaults.store)
-    private var keyboardWidth = DeviceLayoutUtils.defaultKeyboardWidth
+    private var keyboardWidth = DeviceLayout.defaultKeyboardWidth
 
     @AppStorage(SettingsKey.keyboardHorizontalPosition.rawValue, store: SharedDefaults.store)
-    private var keyboardHorizontalPosition = DeviceLayoutUtils.defaultKeyboardPosition
+    private var keyboardHorizontalPosition = DeviceLayout.defaultKeyboardPosition
 
     var body: some View {
         VStack(spacing: 20) {
@@ -81,7 +81,7 @@ struct AspectRatioSettingsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Reset") {
-                    aspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
+                    aspectRatio = DeviceLayout.defaultKeyAspectRatio
                 }
             }
         }

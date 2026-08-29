@@ -56,10 +56,10 @@ struct ExpertSettingsView: View {
     // MARK: - Layout Settings (read-only, for the key-height indicator)
 
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
-    private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
+    private var keyAspectRatio = DeviceLayout.defaultKeyAspectRatio
 
     @AppStorage(SettingsKey.keyboardWidthPoints.rawValue, store: SharedDefaults.store)
-    private var keyboardWidth = DeviceLayoutUtils.defaultKeyboardWidth
+    private var keyboardWidth = DeviceLayout.defaultKeyboardWidth
 
     /// The key height the user actually sees, derived from the shared layout
     /// metrics resolved from the stored width + aspect-ratio wish. Resolved

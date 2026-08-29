@@ -139,8 +139,8 @@ struct KeyboardShowcaseView: View {
             viewModel.loadDefinition(for: languageId)
 
             // Set keyboard mode from environment if specified (for UI tests)
-            if let forcedLayer = ProcessInfo.processInfo.environment["FORCE_LAYER"] {
-                switch forcedLayer {
+            if let forcedMode = ProcessInfo.processInfo.environment["FORCE_LAYER"] {
+                switch forcedMode {
                 case "numbers":
                     viewModel.switchToMode(ModeNames.numeric)
                 case "symbols":

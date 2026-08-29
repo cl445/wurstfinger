@@ -17,7 +17,7 @@ enum ScriptPunctuation {
     ///
     /// The Latin `? , ; *` render with the wrong directionality and spacing
     /// inside right-to-left text. They stay one return swipe away (see
-    /// `arabicScriptReturns`) and keep their positions on the numeric layer.
+    /// `arabicScriptReturns`) and keep their positions in numeric mode.
     static func arabicScript(
         adding own: [String: [GestureType: String]]
     ) -> [String: [GestureType: String]] {
