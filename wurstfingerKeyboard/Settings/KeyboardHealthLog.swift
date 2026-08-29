@@ -69,6 +69,13 @@ struct KeyboardHealthLog {
 
     static let fileName = "keyboard-health-log.json"
 
+    /// Label of the tombstone entry `clear()` leaves behind — see there for
+    /// why a cleared log is not simply an empty one. Consumers key off this
+    /// constant rather than the literal: `KeyboardHealthView` folds the
+    /// tombstone away while it is the only entry, and keeps it out of the
+    /// summary figures.
+    static let clearedLabel = "logCleared"
+
     /// Shared instance persisting into the app group container. The
     /// `containerURL(...)` lookup is out-of-process IPC; it is deferred into a
     /// provider closure so it runs lazily inside the `ioQueue` on first file
@@ -197,6 +204,15 @@ struct KeyboardHealthLog {
         return entry
     }
 
+    /// The tombstone `clear()` leaves behind: the clear's own timestamp, no
+    /// footprint. Deliberately not `makeEntry`, which would sample the host
+    /// app's memory here — a figure that belongs to no keyboard cycle and
+    /// would still be compared against the extension's budget by every
+    /// consumer of this log.
+    private func makeClearedEntry() -> Entry {
+        Entry(id: UUID(), date: Date(), label: Self.clearedLabel, usedMB: 0, availableMB: 0)
+    }
+
     /// All recorded entries, oldest first, capped at `maxEntries`. Empty when
     /// the file is missing or unreadable (corruption is silently discarded —
     /// this is diagnostics, it must never take the keyboard down).
@@ -210,11 +226,30 @@ struct KeyboardHealthLog {
         }
     }
 
-    /// Removes all recorded entries.
+    /// Removes all recorded entries and stamps a tombstone in their place, so
+    /// that an entry arriving afterwards reads as the first event *after* the
+    /// clear instead of as a clear that did not take.
+    ///
+    /// The tombstone is not bookkeeping for its own sake. `clear()` is invoked
+    /// from the **host app**, while the deferred `postShedSettled` sample is
+    /// queued in the **extension process** two seconds before it writes (see
+    /// `KeyboardViewController.shedMemoryBeforeSuspension`). Clearing the log
+    /// shortly after a dismissal therefore reliably grows one entry in the
+    /// file that was just emptied, and no cancellation can prevent it: the
+    /// pending work item lives in another process, and the log has no channel
+    /// to reach across. Marking where the clear happened is the honest fix;
+    /// cancelling in-process would only look like one.
+    ///
+    /// The tombstone deliberately carries no memory figures. It is stamped by
+    /// the host app, whose footprint says nothing about the extension's jetsam
+    /// budget, and a host-sized number in that column would skew the peak.
+    /// `KeyboardHealthView` folds it away while it is the only entry, so a
+    /// cleared log still reads as empty.
     func clear() {
         Self.ioQueue.sync {
             guard let fileURL = fileURLProvider() else { return }
             try? FileManager.default.removeItem(at: fileURL)
+            appendEntry(makeClearedEntry())
         }
     }
 

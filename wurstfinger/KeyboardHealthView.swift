@@ -14,9 +14,20 @@ import SwiftUI
 struct KeyboardHealthView: View {
     @State private var entries: [KeyboardHealthLog.Entry] = []
 
+    /// Everything the keyboard process itself recorded — the log minus the
+    /// tombstone `KeyboardHealthLog.clear()` leaves behind. That tombstone
+    /// exists to date the entries around it, not to be one: it carries no
+    /// footprint and describes no keyboard cycle, so the empty state, the
+    /// event count and the peak all ignore it and a freshly cleared log still
+    /// reads as empty. The rows below do show it — that is where it earns its
+    /// keep.
+    private var recordedEntries: [KeyboardHealthLog.Entry] {
+        entries.filter { $0.label != KeyboardHealthLog.clearedLabel }
+    }
+
     var body: some View {
         List {
-            if entries.isEmpty {
+            if recordedEntries.isEmpty {
                 emptySection
             } else {
                 summarySection
@@ -28,7 +39,7 @@ struct KeyboardHealthView: View {
         .onAppear(perform: reload)
         .refreshable { reload() }
         .toolbar {
-            if !entries.isEmpty {
+            if !recordedEntries.isEmpty {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Clear") {
                         KeyboardHealthLog.shared.clear()
@@ -51,11 +62,11 @@ struct KeyboardHealthView: View {
 
     private var summarySection: some View {
         Section {
-            LabeledContent("Events", value: "\(entries.count)")
-            if let peak = entries.max(by: { $0.usedMB < $1.usedMB }) {
+            LabeledContent("Events", value: "\(recordedEntries.count)")
+            if let peak = recordedEntries.max(by: { $0.usedMB < $1.usedMB }) {
                 LabeledContent("Peak memory", value: memoryText(for: peak))
             }
-            if let last = entries.last {
+            if let last = recordedEntries.last {
                 LabeledContent("Last event", value: last.date.formatted(date: .abbreviated, time: .standard))
             }
         } header: {
@@ -84,10 +95,14 @@ struct KeyboardHealthView: View {
                         Text(entry.label)
                             .font(.callout.monospaced())
                         Spacer()
-                        Text(memoryText(for: entry))
-                            .font(.callout)
-                            .monospacedDigit()
-                            .foregroundColor(memoryColor(for: entry))
+                        // The tombstone has no memory column: it was stamped
+                        // by this app, not by the keyboard process.
+                        if entry.label != KeyboardHealthLog.clearedLabel {
+                            Text(memoryText(for: entry))
+                                .font(.callout)
+                                .monospacedDigit()
+                                .foregroundColor(memoryColor(for: entry))
+                        }
                     }
                     Text(entry.date.formatted(date: .abbreviated, time: .standard))
                         .font(.caption)
@@ -121,6 +136,12 @@ struct KeyboardHealthView: View {
     hostDidEnterBackground and hostWillEnterForeground did not appear in any \
     measured cycle on the iOS 26 Simulator; whether a real device delivers \
     them at all is unverified. Their absence says nothing either way.
+
+    logCleared is not a keyboard event: it marks where this screen wiped the \
+    log. An entry shown above it — a postShedSettled, typically — is a sample \
+    that a dismissal had already queued inside the keyboard process finally \
+    landing, not a clear that failed. Clearing runs here and cannot reach \
+    across into that process.
     """
 
     private func reload() {
