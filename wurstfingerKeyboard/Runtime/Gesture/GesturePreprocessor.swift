@@ -451,10 +451,9 @@ struct GesturePreprocessor {
     /// What the longer reference costs is that the origin's ambiguity now
     /// applies along the whole path rather than only at touch-down: two
     /// spurious samples travelling coherently at flick speed are
-    /// byte-identical to a finger accelerating into one, and mid-path the
-    /// established step used to refuse them. That refusal was never evidence —
-    /// a rolling start *is* a slow step followed by a fast one — so the two
-    /// cases cannot be told apart here either way. The shapes this filter was
+    /// byte-identical to a finger accelerating into one. The established step
+    /// is no evidence against them — a rolling start *is* a slow step followed
+    /// by a fast one — so the two cases cannot be told apart here. The shapes this filter was
     /// actually built against are unaffected: a ghost cluster's own step is a
     /// few points, so it establishes no reference to ride in on, and an
     /// out-and-back teleport is opposed to both candidate references and fails
