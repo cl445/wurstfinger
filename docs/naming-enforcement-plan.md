@@ -42,7 +42,7 @@ with SwiftLint's `match_kinds: [identifier]` to the site.
 
 ## 3. Findings
 
-**570 rejected names in 69 of the 188 Swift files**, concentrated in a handful of
+**587 rejected names in 69 of the 188 Swift files**, concentrated in a handful of
 families. Small enough to burn down in three changes rather than a campaign.
 
 | Legacy spelling | Sites | Files | Becomes |
@@ -54,15 +54,16 @@ families. Small enough to burn down in three changes rather than a campaign.
 | `LanguageConfig` | 53 | 11 | merged into `LanguageDescriptor` |
 | `hideLetters` / `hideStandardSymbols` / `hideExtraSymbols` | 109 | 10 | `are…LabelsHidden` |
 | `slotId` | 31 | 4 | `keyId` |
-| `layer` in identifiers | 15 | 9 | `mode` |
+| `layer` in identifiers | 30 | 10 | `mode` |
 | `longPressNumbersEnabled` | 13 | 5 | `isLongPressDigitEnabled` |
 | `KeyboardInfo` | 6 | 4 | merged into `LanguageDescriptor` |
 | `showLanguageLabel` | 6 | 3 | `isLanguageLabelShown` |
 | `ScreenshotConfig` | 3 | 1 | `ScreenshotConfiguration` |
+| `ScreenshotMode` | 2 | 1 | `ScreenshotType` |
 | `keyConfig` locals | 5 | 2 | follows its type |
 
-Plus ~85 comment lines still saying "layer", which the checker does not see and which come
-out together with the identifiers.
+Plus 88 comment and string lines across 32 files still saying "layer", which the checker
+does not see and which come out together with the identifiers.
 
 ### The one that is not cosmetic
 
@@ -78,6 +79,25 @@ The display name is `name` in one and `title` in the other two; the locale is a 
 in one and a `String` in the others. Everything else on this page is a name that reads
 badly. This one is a name that can be read wrongly — it is a merge, not a rename, and it
 is the reason the glossary exists rather than a style guide.
+
+### What the first audit changed
+
+Two findings are worth keeping, because both are failure modes of this kind of tooling
+rather than of this codebase:
+
+**An allow-list hid 15 real hits.** The `layer` rule allow-listed bare `layer` on the
+assumption that it would be UIKit's `CALayer` property. This codebase uses no UIKit
+layers at all, so the only bare `layer` is `ScreenshotConfig.layer` — the field that
+feeds `FORCE_LAYER`. A speculative allow-list entry is not free: it silently subtracts
+from the count everyone then trusts. Entries now name Apple types only, and only ones
+that would otherwise match.
+
+**The prose glossary was wrong in five places.** It said there were three `…Config` types
+(there are four — `ScreenshotConfig` was undocumented), that `slotId` lived "in a few
+factories" (it is also in two test files, 16 of its 31 sites), that `SlidePhase` has four
+cases (it has six), and it filed four types under the wrong directory. All corrected here.
+That is the argument for generating the machine-checkable sections: the hand-written ones
+had drifted within four months.
 
 ## 4. Decisions
 
@@ -106,7 +126,7 @@ stored key stays `numpadStyle`.
 
 | Step | Content | Depends on |
 | --- | --- | --- |
-| **G1** | `glossary.toml`, the checker, the budget frozen at 570, zones, generated §7–§9, CI and hook wiring | — |
+| **G1** | `glossary.toml`, the checker, the budget frozen at 587, zones, generated §7–§9, CI and hook wiring | — |
 | **G2** | SwiftLint `custom_rules` generated from the same file, so the rules fire in Xcode while typing | G1 |
 | **G3** | `slotId` → `keyId`, `layer` → `mode` (identifiers and comments), `create…` → `make…`, the vague type and file names | G1 |
 | **G4** | `KeyConfig` → `KeyDefinition`, `GesturePreprocessorConfig` → `…Configuration`, the `LanguageConfig` / `KeyboardInfo` merge, the settings booleans | G1; conflicts with the open PR stack |
@@ -126,7 +146,16 @@ both lists at once.
 This is not the same as excluding a file wholesale: the budget still refuses a second
 `slotId` in a file that carries one.
 
-## 6. What is still not covered
+## 6. Open naming questions
+
+`KeyboardDefinitionSettings` carries the `…Settings` suffix, which §4 reserves for
+user-changeable persisted state — but it is declarative per-language data on a
+`KeyboardDefinition`. The suffix is wrong and the right one is not obvious
+(`…Options`, `…Behaviour`, or folding the fields into the definition itself), so no
+canonical name is recorded for it yet. An alias pointing at the wrong target would be
+worse than none.
+
+## 7. What is still not covered
 
 - **Comments.** The checker reads identifiers only. Prose in comments follows §7's second
   table by review, not by rule.

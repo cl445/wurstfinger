@@ -93,6 +93,13 @@ rejected = ["GesturePreprocessorConfig"]
 note = "`…Configuration` is for injected runtime parameters, `…Definition` for declarative data. The two `…Config` types in the tree take different suffixes for that reason."
 
 [[term]]
+name = "ScreenshotType"
+zone = "A"
+definition = "Which screenshot run the host app was launched for: none, keyboard only, App Store."
+rejected = ["ScreenshotMode"]
+note = "`…Mode` is reserved for keyboard state. This is a closed set of behavioural variants, so it takes `…Type`."
+
+[[term]]
 name = "ScreenshotConfiguration"
 zone = "A"
 definition = "The injected parameters of the screenshot-generating views."
@@ -184,7 +191,9 @@ id = "layer_word"
 regex = "\\b[A-Za-z]*(?<![Pp])[Ll]ayer[A-Za-z]*\\b"
 replacement = "`mode`"
 rationale = "\"Layer\" is not canonical for a keyboard state."
-allowed = ["CAGradientLayer", "CALayer", "CAShapeLayer", "layer"]
+# Apple type names only. Bare `layer` is deliberately not allowed: this
+# codebase uses no UIKit layers, so every bare `layer` is ours.
+allowed = ["CAGradientLayer", "CALayer", "CAShapeLayer"]
 
 [[pattern]]
 id = "config_suffix"

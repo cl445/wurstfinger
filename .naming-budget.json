@@ -11,7 +11,7 @@
   "wurstfinger/LanguageSelectionView.swift": 2,
   "wurstfinger/SettingsView.swift": 16,
   "wurstfinger/StyleSettingsView.swift": 3,
-  "wurstfinger/wurstfingerApp.swift": 3,
+  "wurstfinger/wurstfingerApp.swift": 5,
   "wurstfingerKeyboard/Definition/Language/CommonKeys.swift": 8,
   "wurstfingerKeyboard/Definition/Language/GridKeyboardFactory.swift": 11,
   "wurstfingerKeyboard/Definition/Language/KeyboardInfo.swift": 1,
@@ -66,6 +66,6 @@
   "wurstfingerTests/TestHelpers.swift": 1,
   "wurstfingerTests/ViewModelPipelineTests.swift": 1,
   "wurstfingerTests/wurstfingerTests.swift": 4,
-  "wurstfingerUITests/ScreenshotTests.swift": 3,
+  "wurstfingerUITests/ScreenshotTests.swift": 18,
   "wurstfingerUITests/TypingTests.swift": 1
 }
