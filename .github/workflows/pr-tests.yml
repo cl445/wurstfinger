@@ -54,6 +54,11 @@ jobs:
       - name: Check the Generated Glossary Sections
         run: python3 scripts/check_naming.py render --check
 
+      # So are the glossary_* custom rules in .swiftlint.yml, including the
+      # per-rule exclusions that keep --strict green while a backlog remains.
+      - name: Check the Generated SwiftLint Rules
+        run: python3 scripts/check_naming.py sync-lint --check
+
   markdown:
     runs-on: ubuntu-latest
 

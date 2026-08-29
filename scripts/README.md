@@ -75,6 +75,7 @@ python3 scripts/check_naming.py list <path>      # the findings in one file or d
 python3 scripts/check_naming.py list --statistics # a tally per rejected spelling
 python3 scripts/check_naming.py update           # re-freeze the budget after a rename
 python3 scripts/check_naming.py render           # regenerate docs/GLOSSARY.md sections 7-9
+python3 scripts/check_naming.py sync-lint        # regenerate the glossary_* rules in .swiftlint.yml
 ```
 
 The backlog lives in `.naming-budget.json`: one entry per file, holding the number
@@ -82,6 +83,12 @@ of rejected names it carries today. A file may not exceed its entry, and a file
 without one may not carry a single rejected name — so the existing code is
 grandfathered while new code is not. `update` writes the current counts and
 refuses to record a number that grew, unless `--allow-raise` says why.
+
+`sync-lint` writes one SwiftLint custom rule per rejected spelling, so a
+violation shows up in Xcode while typing rather than only in CI. Each rule
+excludes the files that still carry a backlog for it — CI lints with `--strict`,
+and a warning in legacy code would block every commit — while the budget keeps
+those same files from growing.
 
 The vocabulary itself, the zones, and the reasoning are in
 [`docs/GLOSSARY.md`](../docs/GLOSSARY.md).

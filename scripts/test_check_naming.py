@@ -22,9 +22,14 @@ from check_naming import (  # noqa: E402
     budget_drift,
     Pattern,
     Term,
+    _lint_rules,
+    _pattern_carriers,
+    _rule_id,
     load_glossary,
+    mode_sync_lint,
     scan,
     strip_noncode,
+    swift_files,
 )
 
 
@@ -150,6 +155,43 @@ class MatchingTests(unittest.TestCase):
             file.write_text("let slotId = 1\n", encoding="utf-8")
             findings = scan(glossary, [file], root=root)
         self.assertEqual([finding.rejected for finding in findings], ["slotId"])
+
+
+class LintRuleTests(unittest.TestCase):
+    """The generated SwiftLint block, which CI lints with `--strict`."""
+
+    def test_every_rejected_spelling_gets_a_rule(self) -> None:
+        glossary = load_glossary()
+        rules = _lint_rules(glossary)
+        for term in glossary.terms:
+            for alias in term.rejected:
+                self.assertIn(f"glossary_{_rule_id(alias)}:", rules)
+        for pattern in glossary.patterns:
+            if pattern.checks_identifiers:
+                self.assertIn(f"glossary_{pattern.id}:", rules)
+
+    def test_pattern_exclusions_cover_the_aliases_it_also_matches(self) -> None:
+        """SwiftLint has no alias/pattern dedup, so the exclusions must.
+
+        `config_suffix` matches `KeyConfig` as well as `keyConfig`. If its
+        exclusions only listed the files this script attributes to the pattern,
+        `--strict` would fail in all 22 `KeyConfig` files.
+        """
+        glossary = load_glossary()
+        carriers = _pattern_carriers(glossary, swift_files())
+        alias_files = {
+            finding.path
+            for finding in scan(glossary, swift_files())
+            if finding.rejected in {"KeyConfig", "LanguageConfig", "GesturePreprocessorConfig"}
+        }
+        self.assertTrue(alias_files <= carriers["config_suffix"])
+
+    def test_rules_are_indented_for_the_custom_rules_block(self) -> None:
+        for line in _lint_rules(load_glossary()).splitlines():
+            self.assertTrue(line.startswith("  "), line)
+
+    def test_the_checked_in_block_is_current(self) -> None:
+        self.assertEqual(mode_sync_lint(load_glossary(), check_only=True), 0)
 
 
 class GlossaryFileTests(unittest.TestCase):
