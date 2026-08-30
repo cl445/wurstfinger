@@ -85,6 +85,15 @@ class StripNoncodeTests(unittest.TestCase):
     def test_nested_interpolation_is_kept(self) -> None:
         self.assertEqual(_scan('let a = "\\(map[slotId] ?? "x")"\n'), ["slotId"])
 
+    def test_comment_inside_an_interpolation_is_blanked(self) -> None:
+        self.assertEqual(_scan('let a = "\\(/* slotId */ value)"\n'), [])
+
+    def test_nested_literal_inside_an_interpolation_is_blanked(self) -> None:
+        self.assertEqual(_scan('let a = "\\(map["slotId"] ?? "")"\n'), [])
+
+    def test_an_identifier_beside_a_nested_literal_still_counts(self) -> None:
+        self.assertEqual(_scan('let a = "\\(map["x"] ?? slotId)"\n'), ["slotId"])
+
     def test_line_numbers_survive_stripping(self) -> None:
         source = '// slotId\n/* two\nlines */\nlet a = slotId\n'
         with tempfile.TemporaryDirectory() as directory:

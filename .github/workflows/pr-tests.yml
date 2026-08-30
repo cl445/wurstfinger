@@ -4,6 +4,13 @@ on:
   pull_request:
     branches: [ "develop" ]
 
+# Nothing here writes to the repository: every job reads the tree, builds it
+# and reports. Declaring it keeps a same-repository pull request from running
+# with whatever the repository default happens to be — fork runs are already
+# read-only.
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: macos-latest
@@ -26,7 +33,11 @@ jobs:
 
     steps:
       - name: Checkout
+        # This job runs Python out of the pull request's own tree, so it does
+        # not get the checkout token left behind in .git/config.
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       # A miscount would be written straight into the budget, so the counting
       # itself is tested: comments and strings must not count, interpolations must.

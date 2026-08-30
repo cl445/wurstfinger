@@ -11,7 +11,7 @@
 #
 # The prose convention — the ambiguity traps, the suffix and verb rules, the
 # reasoning — lives in `docs/GLOSSARY.md`. This file holds only what a machine
-# can check. Sections 6 and 7 of that document are generated from here.
+# can check. Sections 7, 8 and 9 of that document are generated from here.
 #
 # `zone` says who owns the name and therefore what a rename costs:
 #

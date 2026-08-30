@@ -289,6 +289,8 @@ def _read_string(source: str, start: int, hashes: int) -> tuple[int, str]:
 
     The replacement blanks the literal but keeps interpolated expressions and
     every newline, so both line numbers and interpolated identifiers survive.
+    An interpolated expression is stripped in turn, so a comment or a nested
+    literal inside it does not re-enter the scan as code.
     """
     fence = "#" * hashes
     triple = source.startswith('"""', start + hashes)
@@ -312,7 +314,11 @@ def _read_string(source: str, start: int, hashes: int) -> tuple[int, str]:
                     depth -= 1
                 cursor += 1
             pieces.append(" " * (len(escape) + 1))
-            pieces.append(source[index + len(escape) + 1 : cursor - 1])
+            # The expression is code, but it can carry non-code of its own: a
+            # comment, or a nested literal whose *contents* are prose again.
+            # Stripping it recursively keeps the identifiers and drops the
+            # rest; `strip_noncode` preserves length, so offsets still line up.
+            pieces.append(strip_noncode(source[index + len(escape) + 1 : cursor - 1]))
             pieces.append(" ")
             index = cursor
             continue
@@ -551,7 +557,7 @@ def mode_update(glossary: Glossary, allow_raise: bool) -> int:
 
 
 def _render_rejected(glossary: Glossary) -> str:
-    """Return the Markdown table for GLOSSARY.md §6."""
+    """Return the Markdown table for GLOSSARY.md §7."""
     rows = [(f"`{alias}`", f"`{term.name}`") for term in glossary.terms for alias in term.rejected]
     rows += [(pattern.id.replace("_", " "), pattern.replacement) for pattern in glossary.patterns]
     lines = ["| Avoid | Write instead |", "| --- | --- |"]
@@ -561,7 +567,7 @@ def _render_rejected(glossary: Glossary) -> str:
 
 
 def _render_backlog(glossary: Glossary) -> str:
-    """Return the Markdown table for GLOSSARY.md §7.
+    """Return the Markdown table for GLOSSARY.md §8.
 
     Generated from the budget rather than hand-listed, so the section is
     exhaustive by construction instead of ending in "not exhaustive".
