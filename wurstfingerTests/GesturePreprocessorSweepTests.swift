@@ -182,9 +182,26 @@ struct GesturePreprocessorSweepTests {
     /// reference differs: a trailing glitch is judged against the step the
     /// accepted path established, a mid-path one against the longer of that
     /// and the raw step leading back to the path.
+    ///
+    /// Two assertions, because the classification alone is the weaker one: a
+    /// glitch can be admitted and still leave the sector intact. The sweep
+    /// therefore also requires the filter to *drop* the sample, which is the
+    /// cone's property directly.
+    ///
+    /// A mid-path glitch only reaches the cone while both its raw neighbours
+    /// are farther than `maxJumpDistance`. Closer than that, `filterOutliers`
+    /// admits it through `nearRawNext` before direction is ever consulted —
+    /// a different rule, deliberately, and one the dropped-frame families
+    /// sweep. Those shapes would pin nothing here, so they are skipped by
+    /// construction rather than silently passing; `skipped` counts them and
+    /// the expectations name the number.
     @Test func aDirectionAdversarialGlitchNeverChangesTheClassification() {
+        let maxJump = GesturePreprocessorConfig.default.maxJumpDistance
+        let preprocessor = GesturePreprocessor(config: .default)
         var mismatches: [String] = []
+        var survivors: [String] = []
         var count = 0
+        var skipped = 0
         for degrees in stride(from: CGFloat(0), to: 360, by: 45) {
             let expected = KeyGestureRecognizer.gestureType(forDegrees: degrees)
             for gait: CGFloat in [40, 50] {
@@ -195,22 +212,41 @@ struct GesturePreprocessorSweepTests {
                         let displaced = { (anchor: CGPoint) in
                             CGPoint(x: anchor.x + offset.dx * jump, y: anchor.y + offset.dy * jump)
                         }
-                        var midPath = base
-                        midPath.insert(displaced(base[2]), at: 3)
-                        let shapes = [("trailing", base + [displaced(base[4])]), ("mid-path", midPath)]
-                        for (position, points) in shapes {
+                        let midGlitch = displaced(base[2])
+                        var shapes = [("trailing", base + [displaced(base[4])], displaced(base[4]))]
+                        // Only the cone can reject this one; see the doc above.
+                        if hypot(midGlitch.x - base[3].x, midGlitch.y - base[3].y) > maxJump {
+                            var midPath = base
+                            midPath.insert(midGlitch, at: 3)
+                            shapes.append(("mid-path", midPath, midGlitch))
+                        } else {
+                            skipped += 1
+                        }
+                        for (position, points, glitch) in shapes {
                             count += 1
+                            let shape = "\(Int(degrees))° gait \(Int(gait)) \(position) "
+                                + "\(Int(jump))pt@+\(Int(turn))°"
                             let actual = classify(points)
                             if actual != expected {
-                                let shape = "\(Int(degrees))° gait \(Int(gait)) \(position)"
-                                mismatches.append("\(shape) \(Int(jump))pt@+\(Int(turn))°: \(actual) ≠ \(expected)")
+                                mismatches.append("\(shape): \(actual) ≠ \(expected)")
+                            }
+                            if preprocessor.filterOutliers(points).contains(glitch) {
+                                survivors.append(shape)
                             }
                         }
                     }
                 }
             }
         }
-        #expect(mismatches.isEmpty, "\(mismatches.count) of \(count) in-budget turns reclassified: \(mismatches.prefix(5))")
+        #expect(
+            mismatches.isEmpty,
+            "\(mismatches.count) of \(count) in-budget turns reclassified: \(mismatches.prefix(5))"
+        )
+        #expect(
+            survivors.isEmpty,
+            "\(survivors.count) of \(count) in-budget turns survived the filter: \(survivors.prefix(5))"
+        )
+        #expect(skipped == 16, "\(skipped) mid-path shapes are raw-neighbor admissible, expected 16")
     }
 
     /// A teleport sample in the middle of an ordinary swipe — interference
