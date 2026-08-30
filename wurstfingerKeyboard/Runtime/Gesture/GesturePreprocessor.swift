@@ -47,9 +47,10 @@
 //       gap cannot cascade and discard the rest of a genuine fast swipe
 //     - Velocity-aware: a jump that continues the movement the finger was
 //       already making — same direction to within 45°, at most three times
-//       the established step and never beyond 3x maxJumpDistance — is kept,
-//       so a flick covering more than maxJumpDistance per sample is not read
-//       as a teleport
+//       the reference step (the longer of the step the accepted path
+//       established and the raw step the jump leads into) and never beyond
+//       3x maxJumpDistance — is kept, so a flick covering more than
+//       maxJumpDistance per sample is not read as a teleport
 //
 //  3. **Aspect Ratio Normalization**: Divides X by aspect ratio
 //     - Makes horizontal and vertical movements comparable on non-square keys
@@ -280,18 +281,22 @@ struct GesturePreprocessor {
     /// Accepting a point moves the anchor onto it, so a glitch let in here is
     /// paid for twice: the genuine sample after it is then measured from the
     /// glitch and can fail every criterion. That is why `isSameMovement` is
-    /// deliberately narrow — a jump has to continue the established direction
-    /// to within 45° and stay inside three times the established step.
+    /// deliberately narrow — a jump has to continue the reference direction to
+    /// within 45° and stay inside three times the reference step.
     ///
-    /// The one shape it cannot resolve is a jump straight out of the origin.
-    /// How long the finger rested there would separate a tap from a launch,
-    /// but the jitter filter has already collapsed that dwell by the time this
-    /// filter runs, so a tap followed by two consistently-moving interference
-    /// samples arrives byte-identical to a finger that landed already flying.
-    /// Both are accepted; what bounds the damage is the magnitude ceiling in
-    /// `isSameMovement`, not the shape. Separating them needs the pipeline
-    /// order changed (or the trail clamped to post-filter samples), which is
-    /// the structural half of finding 3 and is not attempted here.
+    /// The one shape it cannot resolve is a burst of consistently-moving
+    /// interference: two samples travelling coherently at flick speed arrive
+    /// byte-identical to a finger that accelerated into a flick. How long the
+    /// finger rested first would separate them, but the jitter filter has
+    /// already collapsed that dwell by the time this filter runs. Because
+    /// `continuesEstablishedMotion` takes the longer of its two candidate
+    /// references, the ambiguity is uniform along the path instead of confined
+    /// to the origin — deliberately, since the established step is no evidence
+    /// against a real flick either. Both are accepted; what bounds the damage
+    /// is the magnitude ceiling and the direction cone in `isSameMovement`,
+    /// not the shape. Separating them needs the pipeline order changed (or the
+    /// trail clamped to post-filter samples), which is the structural half of
+    /// finding 3 and is not attempted here.
     func filterOutliers(_ points: [CGPoint]) -> [CGPoint] {
         guard points.count >= 2 else { return points }
 
@@ -384,28 +389,54 @@ struct GesturePreprocessor {
     /// for.
     private static let velocityToleranceFactor: CGFloat = 3
 
-    /// How far a jump may turn away from the established direction and still
-    /// count as the same movement, as a cosine: one swipe sector (45°).
+    /// How far a jump may turn away from the reference direction and still
+    /// count as the same movement, as a cosine: 45° of *raw* screen turn.
+    ///
+    /// That is one swipe sector only on square keys. This test runs before
+    /// `normalizeAspectRatio`, while the classifier's 45° sectors are measured
+    /// after it, so the widest admitted turn opens up with the key's aspect
+    /// ratio: 45° raw is 46.7° normalized at the 1.06:1 keys the extension
+    /// renders, 52.4° at 1.3:1 and 63.4° at 2:1. Testing direction
+    /// post-normalization would close that gap, but it is a behavior change
+    /// and not a comment fix, so the number stated here is the raw one.
     ///
     /// A finger that crosses a key in a single frame does not also change
     /// direction in it. The half-plane this replaced — any angle short of a
     /// right angle — admitted a near-perpendicular jump at three times the
-    /// established step, which flipped the committed direction of ordinary
-    /// fast swipes carrying one trailing glitch sample (review 2026-08-09).
+    /// reference step, which flipped the committed direction of ordinary fast
+    /// swipes carrying one trailing glitch sample (review 2026-08-09).
     private static let minimumDirectionCosine = CGFloat(cos(Double.pi / 4))
 
     /// Whether the jump onto `points[i]` continues the movement the finger was
     /// already making.
     ///
-    /// `previousStep` is the velocity the accepted path established, and it
-    /// wins whenever there is one. Before that — the first sample after
-    /// touch-down, where the whole accepted path is the origin — the only
-    /// available evidence is the step that *follows*: a finger that lands
+    /// Two steps can speak for the jump: the one the accepted path has
+    /// established (`previousStep`) and the raw one that leads away from
+    /// `points[i]`. The reference is whichever of the two is longer.
+    ///
+    /// Letting the established step win whenever it exists — the rule this
+    /// replaced — loses every flick that launches out of a rolling start, a
+    /// finger that settles on the key with a slow drift and only then flicks.
+    /// The drift establishes a step of a few points, the first fast sample is
+    /// more than three times it, and because a rejected sample leaves the
+    /// anchor and the reference alone, every sample after it fails the same
+    /// way: the classifier only ever sees the drift. Measured over three drift
+    /// samples followed by three 80 pt flick samples at the default config,
+    /// that starts at roughly 1 pt per sample of drift — below it the jitter
+    /// filter still collapses the drift — and never stops. What gets committed
+    /// is the key's center letter while the drift is shorter than
+    /// `minSwipeLength`, and from about 8 pt per sample a swipe in the
+    /// *drift's* direction: a drift running across the flick therefore types a
+    /// different letter than the one the finger drew, at any drift rate, since
+    /// the cone rejects the turn from drift into flick however fast the drift
+    /// was. Taking the longer step fixes the whole band — the flick's own
+    /// following step vouches for its first sample.
+    ///
+    /// Before there is an established step at all — the first sample after
+    /// touch-down, where the whole accepted path is the origin — the following
+    /// raw step is the only evidence there is anyway: a finger that lands
     /// already moving keeps moving at a comparable rate, whereas a glitch
-    /// lands once and stops. That premise is an assumption, and a glitch that
-    /// moves consistently for two samples defeats it — see `filterOutliers`
-    /// for why nothing available here can tell that case from a real launch,
-    /// and what bounds it instead.
+    /// lands once and stops.
     ///
     /// A trailing jump has no following step, so it is judged against
     /// `previousStep` alone, and only when the accepted path is still just the
@@ -416,14 +447,36 @@ struct GesturePreprocessor {
     /// `maxJumpDistance`. A finger already travelling `maxJumpDistance`/3 per
     /// sample does carry a trailing jump in — deliberately, since the last
     /// sample of a genuine flick is itself one.
+    ///
+    /// What the longer reference costs is that the origin's ambiguity now
+    /// applies along the whole path rather than only at touch-down: two
+    /// spurious samples travelling coherently at flick speed are
+    /// byte-identical to a finger accelerating into one. The established step
+    /// is no evidence against them — a rolling start *is* a slow step followed
+    /// by a fast one — so the two cases cannot be told apart here. The shapes this filter was
+    /// actually built against are unaffected: a ghost cluster's own step is a
+    /// few points, so it establishes no reference to ride in on, and an
+    /// out-and-back teleport is opposed to both candidate references and fails
+    /// the cone. See `filterOutliers` for what bounds the residue.
     private func continuesEstablishedMotion(
         _ step: CGVector,
         after previousStep: CGVector?,
         in points: [CGPoint],
         at i: Int
     ) -> Bool {
-        guard let reference = previousStep ?? followingRawStep(in: points, at: i) else { return false }
+        guard let reference = longerStep(previousStep, followingRawStep(in: points, at: i)) else {
+            return false
+        }
         return isSameMovement(reference, step)
+    }
+
+    /// Whichever of the two candidate references is longer, or the only one
+    /// that exists. Nil when neither does — a trailing sample on a path whose
+    /// accepted part is still just the origin.
+    private func longerStep(_ first: CGVector?, _ second: CGVector?) -> CGVector? {
+        guard let first else { return second }
+        guard let second else { return first }
+        return hypot(first.dx, first.dy) >= hypot(second.dx, second.dy) ? first : second
     }
 
     /// The raw step leading away from `points[i]`, or nil when it is the last
@@ -448,6 +501,20 @@ struct GesturePreprocessor {
     /// reference establishes no direction; the guard says so rather than
     /// leaning on the magnitude test, which happens to reject it too because a
     /// zero budget admits no step.
+    ///
+    /// The corroboration this asks for is the inverse of the rule it replaced,
+    /// and the trade is deliberate. The old filter wanted a raw neighbor
+    /// within `maxJumpDistance` and ignored direction; this one wants
+    /// direction and ignores neighbors, so a single sample inside the cone is
+    /// now trusted on its own evidence. That is what buys the flick rescue,
+    /// and it is paid for at the cone's edge: a fast swipe with a short prefix
+    /// carrying one trailing glitch just inside 45° commits the neighbouring
+    /// sector where the old filter kept the right one — measured at 3 of 960
+    /// swept shapes, e.g. two 45 pt steps followed by 120 pt at 40°, which
+    /// commits `swipeDownRight` instead of `swipeRight`. A tighter cone would
+    /// buy that class back and lose flick rescues in exchange, so the angle
+    /// stays where it is; this is a choice about `minimumDirectionCosine`, not
+    /// a defect to patch here.
     private func isSameMovement(_ reference: CGVector, _ step: CGVector) -> Bool {
         let referenceLength = hypot(reference.dx, reference.dy)
         let stepLength = hypot(step.dx, step.dy)

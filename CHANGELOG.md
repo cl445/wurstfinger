@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Flicks that launch out of a rolling start are recognized again. A flick that follows a slight drag — settling on the key, then flicking — lost every one of its fast samples, because the filter measured them against the drift and a drift is slow by definition. The letter that got committed came from the drift instead, which for a drift running across the flick is a neighbouring letter rather than the center one. A jump is now measured against the longer of the movement already established and the movement it leads into (#303)
+
 ## v1.4.1 — 2026-08-09
 
 ### Added
