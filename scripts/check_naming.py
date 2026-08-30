@@ -243,6 +243,7 @@ def strip_noncode(source: str) -> str:
     length = len(source)
 
     def keep_newlines(text: str) -> str:
+        """Blank `text` while keeping its newlines, so line numbers survive."""
         return "".join(character if character == "\n" else " " for character in text)
 
     while index < length:
