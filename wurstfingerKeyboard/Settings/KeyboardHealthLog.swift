@@ -109,9 +109,7 @@ struct KeyboardHealthLog {
         qos: .utility
     )
 
-    #if DEBUG
-        private static let logger = Logger(subsystem: "de.akator.wurstfinger", category: "memory")
-    #endif
+    private static let logger = Logger(subsystem: "de.akator.wurstfinger", category: "memory")
 
     init(fileURL: URL?, maxEntries: Int = KeyboardHealthLog.defaultMaxEntries) {
         self.init(fileURLProvider: { fileURL }, maxEntries: maxEntries)
@@ -259,8 +257,14 @@ struct KeyboardHealthLog {
     /// a `seekToEnd` + `write` — O(1), no full-file read on the hot path.
     /// Must only run on `ioQueue`.
     private func appendEntry(_ entry: Entry) {
-        guard let fileURL = fileURLProvider(),
-              let encoded = try? JSONEncoder().encode(entry) else { return }
+        guard let fileURL = fileURLProvider() else {
+            Self.recordFailure("no container URL")
+            return
+        }
+        guard let encoded = try? JSONEncoder().encode(entry) else {
+            Self.recordFailure("encode failed")
+            return
+        }
         if let handle = try? FileHandle(forWritingTo: fileURL) {
             defer { try? handle.close() }
             let end = (try? handle.seekToEnd()) ?? 0
@@ -268,15 +272,58 @@ struct KeyboardHealthLog {
             // Separate the new line from a prior line or legacy array bytes.
             if end > 0 { payload.append(0x0A) }
             payload.append(encoded)
-            try? handle.write(contentsOf: payload)
+            do {
+                try handle.write(contentsOf: payload)
+            } catch {
+                Self.recordFailure("append: \(error)")
+            }
         } else if !FileManager.default.fileExists(atPath: fileURL.path) {
             // First write only. A handle can also fail on an *existing* file
             // (an unwritable container while the device is locked), and
             // overwriting then would discard exactly the history a
             // resume-jetsam investigation needs — drop the entry instead.
-            try? encoded.write(to: fileURL, options: .atomic)
+            do {
+                try encoded.write(to: fileURL, options: .atomic)
+            } catch {
+                Self.recordFailure("create: \(error)")
+            }
+        } else {
+            // The file exists but could not be opened for writing. Silent
+            // before; counted now, because this is the branch that quietly
+            // turned the log off for six weeks.
+            Self.recordFailure("unwritable existing file")
         }
         compactIfNeeded(fileURL)
+    }
+
+    /// Why the log stopped writing, kept where a person can actually see it.
+    ///
+    /// Every write path above used to be a `try?`. The result was a diagnostic
+    /// tool that failed silently and stayed failed: on 2026-08-30 the device
+    /// carried no `keyboard-health-log.json` at all while `record` was
+    /// demonstrably being called — six weeks of incidents with no telemetry,
+    /// and no way to tell that apart from "nothing happened". A failure
+    /// counter is the minimum a self-reporting instrument owes its reader.
+    ///
+    /// Deliberately in `SharedDefaults` rather than in the log file: the file
+    /// is exactly what is unavailable when this matters.
+    private static func recordFailure(_ reason: String) {
+        let store = SharedDefaults.store
+        store.set(store.integer(forKey: failureCountKey) + 1, forKey: failureCountKey)
+        store.set(reason, forKey: lastFailureKey)
+        #if DEBUG
+            logger.error("health log write failed: \(reason, privacy: .public)")
+        #endif
+    }
+
+    static let failureCountKey = "healthLog.writeFailureCount"
+    static let lastFailureKey = "healthLog.lastWriteFailure"
+
+    /// Number of writes that never reached disk, and why the last one failed,
+    /// so an empty log is distinguishable from a broken one.
+    static var writeFailures: (count: Int, lastReason: String?) {
+        let store = SharedDefaults.store
+        return (store.integer(forKey: failureCountKey), store.string(forKey: lastFailureKey))
     }
 
     /// Physically rewrites the file to the last `maxEntries` entries once it

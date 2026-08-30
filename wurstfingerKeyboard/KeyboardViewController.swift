@@ -19,7 +19,7 @@ final class KeyboardViewController: UIInputViewController {
     /// while the host app is backgrounded (see `installSuspensionPlaceholder`).
     private var suspensionPlaceholder: UIView?
     /// System-keyboard backdrop behind the SwiftUI content
-    /// (see `installBackdropIfNeeded`). Outlives hosting teardowns.
+    /// (see `installBackdropIfNeeded`). Torn down with the hosting graph.
     private var backdropView: UIInputView?
 
     /// The language selected in the host app, normalised to an id that is
@@ -314,6 +314,20 @@ final class KeyboardViewController: UIInputViewController {
         controller.view.removeFromSuperview()
         controller.removeFromParent()
         hostingController = nil
+        // The backdrop goes with it. Loading it from a nib (see `makeBackdrop`)
+        // is not enough on its own: it is a subview of the controller's root
+        // view, and iOS keeps that view alive long after the controller itself
+        // is gone — measured on device as 25 root views created and none
+        // released. A subview cannot outlive its superview's grip, so the blur
+        // layer has to leave the hierarchy here to be freed at all.
+        // `installBackdropIfNeeded()` rebuilds it on the next appearance; it
+        // guards on nil, so nothing stacks.
+        //
+        // Cost: the app-switcher stand-in installed just above snapshots only
+        // the SwiftUI content, so a card taken after this point shows the keys
+        // without their blur backing. A frozen card is worth a released layer.
+        backdropView?.removeFromSuperview()
+        backdropView = nil
     }
 
     /// Covers the case where the host app itself backgrounds while the
@@ -492,18 +506,45 @@ final class KeyboardViewController: UIInputViewController {
     /// pixels, not over this UIKit backdrop behind them (see
     /// `ResolvedTheme.boardBackground` /
     /// `KeyboardThemeDefinition.minimumBoardOpacity` + #198). It is left
-    /// interactive only so it never swallows a stray touch itself; the SwiftUI
-    /// content above always wins the hit-test.
+    /// non-interactive so it can never take a touch off a key.
     ///
-    /// Installed once and kept across hosting teardowns: the suspension shedding
-    /// releases only the SwiftUI view graph, so rebuilding hosting must not
-    /// stack a second input view behind the keys on every resume.
+    /// Rebuilt per hosting cycle: `teardownHosting()` takes the backdrop out of
+    /// the view hierarchy so its blur layer can actually be released (see there
+    /// for why removal, not just deallocatability, is what frees it). The nil
+    /// guard is what keeps a resume from stacking a second input view behind
+    /// the keys.
+    ///
+    /// ## Why this comes from a nib
+    ///
+    /// A `UIInputView` created *programmatically* never deallocates:
+    /// `_InputViewContent` retains it and it retains `_InputViewContent` back.
+    /// One backdrop is built per host app, and this one spans the whole
+    /// keyboard with a blur layer, so the leak compounds with every app the
+    /// keyboard has ever been used in — measured on device as a permanent
+    /// ~4.5 MB per host generation, which is what walks the extension into the
+    /// per-process jetsam limit and makes the keyboard silently stop appearing.
+    /// Decoding the same view from a nib deallocates normally, which is the
+    /// workaround Apple's own forum thread arrives at.
+    ///
+    /// `inputViewStyle` is `readonly` and set by the designated initializer, so
+    /// a plainly decoded view comes back `.default` and draws nothing like the
+    /// system keyboard. `KeyboardBackdrop.xib` therefore carries a User Defined
+    /// Runtime Attribute that sets it via KVC after decoding. Both halves —
+    /// deallocation *and* the resulting style — are pinned by
+    /// `KeyboardBackdropTests`; do not "simplify" this back to an initializer
+    /// without running them.
+    ///
+    /// - Bug: Apple Developer Forums 807619 and 781520 (`UIInputView` is not
+    ///   deallocated). No Apple fix as of the date below.
+    /// - Last verified present: **2026-08-30** (Xcode 26.1, iOS 26.6).
+    ///   `KeyboardBackdropTests.programmaticInputViewStillLeaks` re-checks this
+    ///   on every test run and fails once Apple fixes it — at which point this
+    ///   whole detour, the nib, and that test should be deleted in favour of
+    ///   `UIInputView(frame:inputViewStyle:)`. Update the date when you confirm
+    ///   the bug still exists.
     private func installBackdropIfNeeded() {
         guard backdropView == nil else { return }
-        let backdrop = UIInputView(frame: .zero, inputViewStyle: .keyboard)
-        // Visual only. It spans the whole input view behind the SwiftUI
-        // content, and touch delivery in an extension is the fragile part
-        // (#198) — nothing here should be able to take a touch off a key.
+        let backdrop = Self.makeBackdrop()
         backdrop.isUserInteractionEnabled = false
         backdrop.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(backdrop)
@@ -514,5 +555,31 @@ final class KeyboardViewController: UIInputViewController {
             backdrop.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
         backdropView = backdrop
+    }
+
+    /// Name of the nib holding the keyboard-styled backdrop. Shared with the
+    /// tests so a rename cannot silently fall back to the leaking path.
+    static let backdropNibName = "KeyboardBackdrop"
+
+    /// Decodes the backdrop from `KeyboardBackdrop.xib`, falling back to the
+    /// leaking initializer if the nib is missing.
+    ///
+    /// The fallback is deliberate and deliberately *not* a `fatalError`: a
+    /// missing resource must degrade to a keyboard that leaks, never to one
+    /// that does not appear. `backdropComesFromNib` lets the tests assert the
+    /// fallback is not silently the normal path.
+    static func makeBackdrop() -> UIInputView {
+        if let view = Bundle(for: KeyboardViewController.self)
+            .loadNibNamed(backdropNibName, owner: nil)?
+            .compactMap({ $0 as? UIInputView })
+            .first {
+            return view
+        }
+        return UIInputView(frame: .zero, inputViewStyle: .keyboard)
+    }
+
+    /// Whether the nib actually resolved. Test seam for the fallback above.
+    static var backdropComesFromNib: Bool {
+        Bundle(for: KeyboardViewController.self).path(forResource: backdropNibName, ofType: "nib") != nil
     }
 }

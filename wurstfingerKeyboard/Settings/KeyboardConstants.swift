@@ -134,6 +134,14 @@ enum KeyboardConstants {
         /// painting its entire route.
         static let visibleDuration: TimeInterval = 0.55
 
+        /// Shortest gap between two rendered trail frames, i.e. a 60 Hz cap.
+        ///
+        /// `TimelineView(.animation)` on its own redraws at the display's rate,
+        /// which is 120 Hz on ProMotion hardware. The trail is a soft, wide
+        /// shape whose motion is not legible at that rate, so the second half
+        /// of those frames buys nothing and costs a full path rebuild each.
+        static let minimumFrameInterval: TimeInterval = 1.0 / 60.0
+
         /// How long the frozen trail takes to fade out after the finger lifts.
         /// Tuned on device: 0.22 read as an abrupt blink once the press dot
         /// made single keystrokes draw; the longer glow lets the mark register
