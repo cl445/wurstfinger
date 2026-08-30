@@ -127,8 +127,7 @@ struct AspectRatioSubtitleTests {
                 Issue.record("\(language): '\(value)' has no %@ placeholder")
                 continue
             }
-            let suffix = Array(value[placeholder.upperBound...])
-            #expect(suffix.first == ":", "\(language): '\(value)' must continue with ':' right after %@")
+            let suffix = String(value[placeholder.upperBound...])
             // The `1` is a literal, not a localizable digit, and it stays ASCII
             // in all 22 translations — which is what the fix restored. `%@`
             // always receives ASCII digits (`String(format: "%.2f")`), and the
@@ -142,7 +141,15 @@ struct AspectRatioSubtitleTests {
             // legitimately, because they wrap the digit run in LRI/PDI — an
             // isolate this subtitle cannot use without splitting the very run
             // it exists to glue.
-            #expect(suffix.dropFirst().first == "1", "\(language): '\(value)' must end in the ASCII ':1'")
+            //
+            // Asserted as the whole remainder rather than character by
+            // character: the ratio has to *end* at the `1`, so a trailing
+            // digit or a stray word after it would break the same rendering
+            // a wrong digit shape does.
+            #expect(
+                suffix == ":1",
+                "\(language): '\(value)' must continue with the ASCII ':1' right after %@ and end there"
+            )
         }
     }
 }

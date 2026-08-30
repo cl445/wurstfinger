@@ -392,9 +392,10 @@ struct PasteboardEnvironmentTests {
 // `CircularCutAllBindingTests` is the one other suite that could dispatch
 // cut-all, and it deliberately asserts on the definition instead of running the
 // action (see the comment on that struct). Re-verify with
-// `grep -rn UIPasteboard wurstfingerTests` — the only other hit must be that
-// comment. A new test that needs the real pasteboard belongs in this suite, not
-// beside it.
+// `grep -rn UIPasteboard wurstfingerTests --exclude=AdvancedTextMiddlewareTests.swift`
+// — this file is excluded because it is the one place allowed to match, and the
+// only remaining hit must be that comment in `CircularGesturePipelineTests.swift`.
+// A new test that needs the real pasteboard belongs in this suite, not beside it.
 //
 // Gated on the warm-up rather than warmed up inside `init`, because a condition
 // trait is the only hook that can still *decline* to run: once the daemon has
