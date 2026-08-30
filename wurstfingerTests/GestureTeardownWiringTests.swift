@@ -138,6 +138,14 @@ struct GestureTeardownWiringTests {
 
     /// A window of the host app's scene when there is one — a scene-less
     /// window does not reliably run SwiftUI's appearance callbacks.
+    ///
+    /// The fallback is therefore an environment in which these tests could
+    /// never pass, not merely a slower one: without a scene `onAppear` may
+    /// never fire, and `expectRanTeardown` then fails on "the hosted view never
+    /// rendered". It is unreachable while the target runs in the host app
+    /// (`xcodebuild test` with the app as test host always has a window scene);
+    /// a future host-less test configuration would have to skip this suite
+    /// rather than let the fallback run.
     private func makeWindow() -> UIWindow {
         let bounds = CGRect(x: 0, y: 0, width: 320, height: 240)
         guard let scene = UIApplication.shared.connectedScenes
@@ -154,6 +162,13 @@ struct GestureTeardownWiringTests {
     /// Drains the main runloop in short slices until `condition` holds or the
     /// deadline passes. Fast when SwiftUI delivers promptly, tolerant when a
     /// loaded CI runner delays a render pass.
+    ///
+    /// The 2 s deadline is the one wall-clock coupling in this suite: it is the
+    /// budget for SwiftUI to deliver an appearance callback, not for anything
+    /// the tests assert about. A machine loaded enough to blow it fails
+    /// `expectRanTeardown` — loudly, in the safe direction, and with a message
+    /// that names the environment rather than the wiring. Widen it before
+    /// suspecting the teardown when a run fails only under parallel load.
     private func drainRunLoop(deadline: TimeInterval = 2.0, until condition: () -> Bool) {
         let end = Date().addingTimeInterval(deadline)
         while !condition(), Date() < end {

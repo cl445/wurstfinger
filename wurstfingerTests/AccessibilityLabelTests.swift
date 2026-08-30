@@ -19,11 +19,34 @@ import Foundation
 import Testing
 @testable import WurstfingerApp
 
-struct AccessibilityLabelTests {
-    private var definitions: [KeyboardDefinition] {
-        KeyboardRegistry.available.compactMap { KeyboardRegistry.load(id: $0.id) }
+/// Every registered layout, loaded — with the count pinned to the registry.
+///
+/// A plain `compactMap` over `KeyboardRegistry.available` would let a layout
+/// whose `load` returns nil vanish from every pinning test in this file instead
+/// of failing one, and the tests would stay green while pinning less. Nothing
+/// can drop out today — `available` and the registry's descriptor index are both
+/// built from `LanguageDefinitions.all`, and `makeDefinition()` neither throws
+/// nor returns an optional — so this guards the silent-drop pattern against the
+/// day that stops being true, not a hole in today's suite.
+///
+/// Throwing (rather than a computed property) is what `#require` needs; every
+/// test in both suites below goes through here.
+private func loadedDefinitions() throws -> [KeyboardDefinition] {
+    let loaded = KeyboardRegistry.available.map {
+        (id: $0.id, definition: KeyboardRegistry.load(id: $0.id))
     }
+    let missing = loaded.filter { $0.definition == nil }.map(\.id).sorted()
+    try #require(
+        missing.isEmpty,
+        """
+        \(missing.count) of \(loaded.count) registered layouts do not load and would \
+        silently drop out of these tests: \(missing.joined(separator: ", "))
+        """
+    )
+    return loaded.compactMap(\.definition)
+}
 
+struct AccessibilityLabelTests {
     /// Mirrors KeyView's accessibility-label resolution
     /// (custom accessibility label → tap label → slot id fallback).
     private func accessibilityLabel(for key: KeyConfig) -> String {
@@ -33,12 +56,13 @@ struct AccessibilityLabelTests {
         return key.id
     }
 
-    @Test func definitionsLoad() {
+    @Test func definitionsLoad() throws {
+        let definitions = try loadedDefinitions()
         #expect(!definitions.isEmpty, "Expected registered languages to load")
     }
 
-    @Test func everyKeyHasATapBinding() {
-        for def in definitions {
+    @Test func everyKeyHasATapBinding() throws {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 for (keyId, key) in mode.keys {
                     #expect(
@@ -50,8 +74,8 @@ struct AccessibilityLabelTests {
         }
     }
 
-    @Test func everyKeyHasANonEmptyAccessibilityLabel() {
-        for def in definitions {
+    @Test func everyKeyHasANonEmptyAccessibilityLabel() throws {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 for (keyId, key) in mode.keys {
                     let label = accessibilityLabel(for: key)
@@ -64,9 +88,9 @@ struct AccessibilityLabelTests {
         }
     }
 
-    @Test func accessibilityLabelNeverFallsBackToSlotId() {
+    @Test func accessibilityLabelNeverFallsBackToSlotId() throws {
         let slotIds = Set(GridSlot.allSlots.flatMap(\.self))
-        for def in definitions {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 for (keyId, key) in mode.keys where slotIds.contains(keyId) {
                     let label = accessibilityLabel(for: key)
@@ -85,8 +109,8 @@ struct AccessibilityLabelTests {
     /// inert is unreachable unless it declares a substitute gesture. Also the
     /// guard for the derived layers: shifted/capsLock keys are made by copying,
     /// so a copy site that drops the declaration fails here.
-    @Test func everyKeyIsOperableWithoutGestures() {
-        for def in definitions {
+    @Test func everyKeyIsOperableWithoutGestures() throws {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 for (keyId, key) in mode.keys {
                     let tapAction: KeyAction = key.bindings[.tap]?.action ?? .none
@@ -99,8 +123,8 @@ struct AccessibilityLabelTests {
         }
     }
 
-    @Test func globeActivationAdvancesTheInputMode() {
-        for def in definitions {
+    @Test func globeActivationAdvancesTheInputMode() throws {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 guard let globe = mode.keys[UtilitySlot.globe] else { continue }
                 #expect(
@@ -115,8 +139,8 @@ struct AccessibilityLabelTests {
     /// Reachability is by name, not by gesture: bindings sharing a label
     /// collapse into one rotor entry, so the entry must dispatch the same
     /// action for every gesture that folded into it.
-    @Test func everyLabelledNonTapBindingIsReachableAsAnAction() {
-        for def in definitions {
+    @Test func everyLabelledNonTapBindingIsReachableAsAnAction() throws {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 for (keyId, key) in mode.keys {
                     let offered = Dictionary(
@@ -144,8 +168,8 @@ struct AccessibilityLabelTests {
 
     /// Cut-all is bound to both circle directions under one name; two
     /// identical rotor entries read as a bug.
-    @Test func accessibilityActionNamesAreUnique() {
-        for def in definitions {
+    @Test func accessibilityActionNamesAreUnique() throws {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 for (keyId, key) in mode.keys {
                     let names = key.accessibilityActions.map(\.name)
@@ -182,10 +206,6 @@ struct AccessibilityLabelTests {
 /// prevent). The reasoning behind the selection lives on
 /// `CommonKeys.defaultSlotBindings`.
 struct NamedAccessibilityBindingTests {
-    private var definitions: [KeyboardDefinition] {
-        KeyboardRegistry.available.compactMap { KeyboardRegistry.load(id: $0.id) }
-    }
-
     /// Every grid-key gesture allowed to carry a name. Letter gestures are
     /// absent on purpose: a key's own center letter is reachable by activating
     /// it, and naming the other eight on all nine keys is the flooding case.
@@ -229,8 +249,8 @@ struct NamedAccessibilityBindingTests {
         )
     }
 
-    @Test func noGridBindingIsNamedOutsideThePolicySet() {
-        for def in definitions {
+    @Test func noGridBindingIsNamedOutsideThePolicySet() throws {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 for (keyId, key) in mode.keys where Self.gridSlotIds.contains(keyId) {
                     let unexpected = namedGestures(of: key)
@@ -250,8 +270,8 @@ struct NamedAccessibilityBindingTests {
 
     /// The gap the review found: `, . ?` were swipe-only and had no name, so a
     /// VoiceOver user could not end a sentence at all.
-    @Test func sentencePunctuationIsNamedInEveryModeOfEveryLayout() {
-        for def in definitions {
+    @Test func sentencePunctuationIsNamedInEveryModeOfEveryLayout() throws {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 for (slot, gesture) in Self.sentencePunctuation {
                     // A layout is free to place a letter here instead; only the
@@ -273,8 +293,8 @@ struct NamedAccessibilityBindingTests {
     ///
     /// A binding that switches to the mode it already lives in is the one
     /// exception, pinned separately below.
-    @Test func theShiftAffordanceIsNamedWhereverItExists() {
-        for def in definitions {
+    @Test func theShiftAffordanceIsNamedWhereverItExists() throws {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 for gesture in [GestureType.swipeUp, .swipeDown] {
                     guard let binding = mode.keys[GridSlot.midRight]?.bindings[gesture],
@@ -294,8 +314,8 @@ struct NamedAccessibilityBindingTests {
     /// binding that switches to the mode it is invoked from must stay unnamed.
     /// The caps-lock `⇪` is the only one — activating it would return the
     /// VoiceOver user exactly where they were.
-    @Test func aModeSwitchOntoItsOwnModeOffersNoAction() {
-        for def in definitions {
+    @Test func aModeSwitchOntoItsOwnModeOffersNoAction() throws {
+        for def in try loadedDefinitions() {
             for (modeName, mode) in def.modes {
                 for (gesture, binding) in mode.keys[GridSlot.midRight]?.bindings ?? [:] {
                     guard case let .switchMode(target) = binding.action, target == modeName
@@ -313,7 +333,7 @@ struct NamedAccessibilityBindingTests {
     /// switches to the mode it is already in, so `⇩` is the only way out. Naming
     /// only `⇧` would hand VoiceOver users a one-way door into caps lock.
     @Test func capsLockIsNotAOneWayDoorForVoiceOver() throws {
-        for def in definitions {
+        for def in try loadedDefinitions() {
             guard let capsLock = def.modes[ModeNames.capsLock] else { continue }
             let midRight = try #require(
                 capsLock.keys[GridSlot.midRight], "\(def.id) caps lock has no midRight key"
@@ -331,7 +351,7 @@ struct NamedAccessibilityBindingTests {
     /// Finding 11: VoiceOver read "123" as the number one hundred twenty-three
     /// and "abc"/"абв"/"कखग" as a word, instead of naming what the key does.
     @Test func theModeSwitchKeysAreNamedSemantically() throws {
-        for def in definitions {
+        for def in try loadedDefinitions() {
             let toNumeric = try requireBinding(def.id, ModeNames.main, UtilitySlot.symbols, .tap)
             let toLetters = try requireBinding(def.id, ModeNames.numeric, UtilitySlot.symbols, .tap)
             for (key, mode) in [(toNumeric, ModeNames.main), (toLetters, ModeNames.numeric)] {
