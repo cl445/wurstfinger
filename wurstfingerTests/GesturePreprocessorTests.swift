@@ -298,20 +298,20 @@ struct GesturePreprocessorTests {
         #expect(filtered == Array(points.prefix(4)))
     }
 
+    /// The two candidate references disagree: the 12pt step the accepted
+    /// path established refuses the 120pt jump, the 60pt step the jump
+    /// leads into carries it. The longer one wins. Preferring the
+    /// established step reads as the safer choice and is not: a slow step
+    /// is no evidence against acceleration, since a flick launching out of
+    /// a rolling start is exactly a slow step followed by a fast one, and
+    /// preferring the established step lost every one of those (review
+    /// 2026-08-29, finding 1). What still separates a glitch from a launch
+    /// is the direction cone and the magnitude ceiling, pinned by the
+    /// tests around this one.
     @Test func outlierFilterMeasuresAJumpAgainstTheLongerCandidateStep() {
         let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
-        // The two candidate references disagree: the 12pt step the accepted
-        // path established refuses the 120pt jump, the 60pt step the jump
-        // leads into carries it. The longer one wins. Preferring the
-        // established step reads as the safer choice and is not: a slow step
-        // is no evidence against acceleration, since a flick launching out of
-        // a rolling start is exactly a slow step followed by a fast one, and
-        // preferring the established step lost every one of those (review
-        // 2026-08-29, finding 1). What still separates a glitch from a launch
-        // is the direction cone and the magnitude ceiling, pinned by the
-        // tests around this one.
         let points: [CGPoint] = [
             CGPoint(x: 0, y: 0),
             CGPoint(x: 12, y: 0),
@@ -325,16 +325,16 @@ struct GesturePreprocessorTests {
         #expect(filtered == points)
     }
 
+    /// A finger that settles on the key with a slow drift and only then
+    /// flicks. The drift establishes a 5pt step, so measuring the first
+    /// 80pt sample against it rejects the jump — and since a rejection
+    /// leaves both the anchor and the established step alone, every later
+    /// flick sample fails the same way and the classifier only ever saw
+    /// the drift. The flick's own following step is what vouches for it.
     @Test func outlierFilterKeepsAFlickThatLaunchesOutOfARollingStart() {
         let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
-        // A finger that settles on the key with a slow drift and only then
-        // flicks. The drift establishes a 5pt step, so measuring the first
-        // 80pt sample against it rejects the jump — and since a rejection
-        // leaves both the anchor and the established step alone, every later
-        // flick sample fails the same way and the classifier only ever saw
-        // the drift. The flick's own following step is what vouches for it.
         let points: [CGPoint] = [
             CGPoint(x: 0, y: 0),
             CGPoint(x: 5, y: 0), // drift…
@@ -349,17 +349,17 @@ struct GesturePreprocessorTests {
         #expect(filtered == points)
     }
 
+    /// The out-and-back shape with the excursion in the middle of the path
+    /// rather than on the first sample. This is the position where taking
+    /// the longer candidate step changes the reference: the 138pt step
+    /// leading back to the finger outweighs the 12pt gait, so magnitude
+    /// alone would admit the teleport. It is opposed to that reference, so
+    /// the direction cone rejects it — the criterion the mid-path case
+    /// rests on entirely.
     @Test func outlierFilterRejectsAMidPathTeleportThatReturnsToThePath() {
         let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
-        // The out-and-back shape with the excursion in the middle of the path
-        // rather than on the first sample. This is the position where taking
-        // the longer candidate step changes the reference: the 138pt step
-        // leading back to the finger outweighs the 12pt gait, so magnitude
-        // alone would admit the teleport. It is opposed to that reference, so
-        // the direction cone rejects it — the criterion the mid-path case
-        // rests on entirely.
         let points: [CGPoint] = [
             CGPoint(x: 0, y: 0),
             CGPoint(x: 12, y: 0),
@@ -374,17 +374,17 @@ struct GesturePreprocessorTests {
         #expect(filtered == [points[0], points[1], points[2], points[4], points[5]])
     }
 
+    /// Two ghost samples far off the path, each far enough from its
+    /// neighbors that raw-neighbor support cannot admit them, and moving
+    /// fast enough that magnitude alone would. They do not travel
+    /// together: the 100pt step between them is perpendicular to the 200pt
+    /// jump onto the first, so the reference the first would ride in on
+    /// does not point its way, and the second is past the ceiling by the
+    /// time the first is refused.
     @Test func outlierFilterRejectsAGhostBurstThatTurnsBetweenItsSamples() {
         let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
-        // Two ghost samples far off the path, each far enough from its
-        // neighbors that raw-neighbor support cannot admit them, and moving
-        // fast enough that magnitude alone would. They do not travel
-        // together: the 100pt step between them is perpendicular to the 200pt
-        // jump onto the first, so the reference the first would ride in on
-        // does not point its way, and the second is past the ceiling by the
-        // time the first is refused.
         let points: [CGPoint] = [
             CGPoint(x: 0, y: 0),
             CGPoint(x: 12, y: 0),
@@ -409,6 +409,8 @@ struct GesturePreprocessorTests {
     /// where the drift is itself long enough to classify.
     private static let rollingStartDriftRates: [CGFloat] = [1, 2, 3, 5, 8, 12, 20, 26]
 
+    /// That shape for one drift direction and rate: three drift samples,
+    /// then three 80 pt flick samples leaving the last of them.
     private func rollingStartPath(driftDegrees: CGFloat, driftRate: CGFloat) -> [CGPoint] {
         let drift = CGVector(dx: cos(driftDegrees * .pi / 180), dy: sin(driftDegrees * .pi / 180))
         var points: [CGPoint] = [.zero]
@@ -426,10 +428,19 @@ struct GesturePreprocessorTests {
         return points
     }
 
+    /// The gesture the recognizer commits for a raw path, production config.
     private func classify(_ points: [CGPoint]) -> GestureType {
         KeyGestureRecognizer.classify(positions: points, config: .default, thresholds: .default).gesture
     }
 
+    /// A flick launching out of a drift that runs *along* it commits the
+    /// flick's direction at every drift rate the sweep covers.
+    ///
+    /// Taken alone this direction looks healthy whether the flick survives or
+    /// not: a lost flick below 5 pt per sample leaves a drift shorter than
+    /// `minSwipeLength`, so the key commits its center letter, and from 8 pt
+    /// the drift itself classifies — as a swipe that happens to point the
+    /// right way. The across-drift case is what tells the two apart.
     @Test func aFlickOutOfADriftAlongItCommitsTheFlickDirection() {
         var mismatches: [String] = []
         for rate in Self.rollingStartDriftRates {
@@ -437,14 +448,16 @@ struct GesturePreprocessorTests {
             if actual != .swipeRight { mismatches.append("drift \(rate)pt: \(actual)") }
         }
 
-        // Before the fix every rate here lost the flick: up to 5pt per sample
-        // the drift was shorter than minSwipeLength and the key committed its
-        // center letter, from 8pt the drift itself classified — as a swipe
-        // that happens to point the right way, which is why this direction
-        // alone would look healthy.
         #expect(mismatches.isEmpty, "flick lost at: \(mismatches)")
     }
 
+    /// A flick launching out of a drift that runs *across* it commits the
+    /// flick's direction, not the drift's.
+    ///
+    /// This is the case that types a *different* letter rather than the
+    /// center one: a drift that survives at 8 pt per sample or more
+    /// classifies as `swipeDown`, and no drift rate is fast enough to carry
+    /// the turn into the flick through the 45° cone.
     @Test func aFlickOutOfADriftAcrossItCommitsTheFlickDirection() {
         var mismatches: [String] = []
         for rate in Self.rollingStartDriftRates {
@@ -452,11 +465,6 @@ struct GesturePreprocessorTests {
             if actual != .swipeRight { mismatches.append("drift \(rate)pt: \(actual)") }
         }
 
-        // The case that types a *different* letter rather than the center
-        // one: with the drift running across the flick, the surviving drift
-        // classified as swipeDown from 8pt per sample upwards, at any rate —
-        // no drift is ever fast enough to carry the turn into the flick
-        // through the 45° cone.
         #expect(mismatches.isEmpty, "flick lost at: \(mismatches)")
     }
 
