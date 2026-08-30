@@ -25,6 +25,12 @@ struct KeyboardHealthView: View {
         entries.filter { $0.label != KeyboardHealthLog.clearedLabel }
     }
 
+    /// Two different lists, deliberately: the empty state and the summary
+    /// key off `recordedEntries`, the rows off `entries`. A log holding
+    /// nothing but the tombstone is therefore *empty* here — the clear did
+    /// take, and saying otherwise would undo what the tombstone is for. The
+    /// tombstone becomes visible at the moment it explains something: once a
+    /// sample queued before the clear lands behind it, the rows show both.
     var body: some View {
         List {
             if recordedEntries.isEmpty {
@@ -60,6 +66,9 @@ struct KeyboardHealthView: View {
         }
     }
 
+    /// Counts and peak over the keyboard's own events only. The tombstone
+    /// carries no footprint, so including it would report an event that never
+    /// happened and a 0 MB peak.
     private var summarySection: some View {
         Section {
             LabeledContent("Events", value: "\(recordedEntries.count)")
@@ -79,6 +88,8 @@ struct KeyboardHealthView: View {
         }
     }
 
+    /// The rows, newest first — over `entries`, so the tombstone appears
+    /// among them and dates the entries on either side of it.
     private var entriesSection: some View {
         Section {
             // The legend sits above the rows, not in the section footer: the
