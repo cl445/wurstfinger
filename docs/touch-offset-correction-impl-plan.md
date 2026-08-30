@@ -27,8 +27,9 @@ SwiftFormat/SwiftLint `--strict` lint-clean halten.
 ## Komponenten-Inventar
 
 **Neu** (`wurstfingerKeyboard/Runtime/TouchModel/`):
+
 | Datei | Inhalt | Spec |
-|---|---|---|
+| --- | --- | --- |
 | `TouchRegime.swift` | Regime-Typ + `PostureClass(settingValue:)` (explizite Wahl) + Orientierung | §3.1 |
 | `ReachSurface.swift` | Ridge-WLS-Fit (bilinear/linear), Auswertung, Rang-Guard | §3.2, §4.2-S2 |
 | `TouchOffsetModel.swift` | Per-Taste `{m_k,n_k,s_k}`, Update (Huber/Running-Mean/EW-MAD), Shrinkage+Clamp → Offset | §4.2 |
@@ -38,8 +39,9 @@ SwiftFormat/SwiftLint `--strict` lint-clean halten.
 | `TouchLearningMiddleware.swift` | Pipeline-Sink: Acceptance + Offset-Sampling + Telemetrie | §5, §4.1, §13 |
 
 **Geändert:**
+
 | Datei | Änderung | Spec |
-|---|---|---|
+| --- | --- | --- |
 | `Runtime/Gesture/KeyGestureRecognizer.swift` | `startLocation` erfassen; Feature-Vektor mitliefern | §5, §13 |
 | `Runtime/Gesture/GesturePreprocessor.swift` | Features in `GestureClassification` exponieren | §13 |
 | `Runtime/View/KeyView.swift` | `onGesture`-Signatur (+ Touchdown) | §5 |
@@ -51,13 +53,14 @@ SwiftFormat/SwiftLint `--strict` lint-clean halten.
 
 ## Abhängigkeitsgraph
 
-```
+```text
 P1 Regime ─┐
 P2 Modell ─┼─→ P5 Lern-Middleware ─→ P7 Resizing-Anwendung ─→ P8 UI ─→ P9 Validierung
 P3 Persist ┘        ↑                        ↑
 P4 Plumbing ────────┴────────────────────────┘
 P6 Telemetrie ──────┘
 ```
+
 P1–P3 (reiner Kern) sind unabhängig von P4 (Plumbing) → parallelisierbar. P5 braucht P2/P3/P4.
 P7 braucht P2/P4. P6 braucht P4.
 
@@ -66,10 +69,12 @@ P7 braucht P2/P4. P6 braucht P4.
 ## Phasen
 
 ### P0 — Scaffolding (S)
+
 Worktree, Verzeichnis, `SettingsKey.touchOffsetEnabled` + `touchModelSchemaVersion`, leere
 Modul-Dateien mit Doc-Headern. **Exit:** Build grün, Toggle-Key existiert (noch ohne Wirkung).
 
 ### P1 — Regime-Auflösung (S, rein)
+
 `TouchRegime` + explizite Posture-Wahl `PostureClass(settingValue:)` (§3.1/§6.3); Default
 `oneThumbRight`, Fallback bei fehlendem/unbekanntem Wert. Floating = keine v1-Klasse.
 **Tests:** Setting-Mapping (Default/Fallback/Round-Trip), Split-Flag, stabiler Regime-Key.
@@ -78,6 +83,7 @@ fehlklassifiziert, 11.1.)*
 **Exit:** `(orientation, scale, position) → Regime` deterministisch, 100 % getestet.
 
 ### P2 — TouchOffsetModel-Kern (L, rein) — *algorithmisches Herz*
+
 - State + Initialzustand (`m=0,n=0,s=s_prior≈0,10`, §4.2).
 - Update: absolutes Dwell-Gate-Hook, Outlier-Gate (nach `warmup`), **Huber-Clip**, Running-Mean,
   EW-MAD, `n_max`-Deckel (§4.2-S1).
@@ -90,6 +96,7 @@ Rang-Guard (<3 Tasten → Fläche≈0); Zwei-Hälften-Split; Clamp; **Feedback-S
 **Exit:** Modell rein, deterministisch, alle Robustheits-Szenarien grün.
 
 ### P3 — Persistenz (M)
+
 `Codable`-Schema, `SharedDefaults` (App-Group), Schema-Version + **partielle Invalidierung** bei
 Layout-Änderung (stabile `keyId`s), Reset (alles / pro Regime), **debounced/periodischer Write**.
 **Tests:** Round-Trip; Version-Bump invalidiert; partielle Invalidierung erhält gültige Keys;
@@ -97,12 +104,14 @@ Reset nullt korrekt.
 **Exit:** Modell überlebt Neustart; Reset + Migration getestet.
 
 ### P3.5 — De-Risking-Slice (S) — *früh, optional aber empfohlen*
+
 Dünner vertikaler Schnitt **vor** dem vollen Lernen: ein **hartkodierter** Konstant-Offset für eine
 Taste → durch `cellFrames`-Resizing (Vorgriff auf P7) → am **Gerät** verifizieren, dass sich die
 Tastenauswahl an der Grenze messbar verschiebt und der sichtbare Key stehen bleibt. Bestätigt den
 §11.6-Redirect (Key-Target-Resizing) praktisch, bevor viel gebaut wird. Danach zurückbauen.
 
 ### P4 — Touchdown- & Feature-Plumbing (M) — *Eingriff in Bestandscode*
+
 - `KeyGestureRecognizer`: `value.startLocation` erfassen → key-lokaler Touchdown → an `onGesture`.
 - `GestureClassification` um optionalen **Feature-Vektor** erweitern (native Einheit, §13-A).
 - `onGesture`-/`handleGesture`-Signatur erweitern (Touchdown + Features); `ActionContext` bzw.
@@ -112,6 +121,7 @@ Keyboard-Koordinaten; Features korrekt durchgereicht.
 **Exit:** bestehende Gesten-Tests grün; neue Daten kommen an, noch ohne Konsument.
 
 ### P5 — Lern-Middleware (M)
+
 - `AcceptanceTracker`: Ring-Puffer (Tap → `keyId`, Touchdown, Zeichen-Span), **Burst-Veto über
   alle gelöschten Taps**, **Span-Alignment** (nicht 1:1), Trigger auf `.deleteBackward`-**Action**
   (nicht Target!), Slide-Delete abdecken (§4.1).
@@ -123,12 +133,14 @@ zählen **nicht**; Interior-Gate; Anti-Drift (Lernen nur interior).
 **Exit:** Modell + Telemetrie füllen sich aus echten Pipeline-Events.
 
 ### P6 — GestureTelemetryModel (M)
+
 Welford-Stats je `(Regime, Klasse[, Richtung])` (Richtung nur Swipe/Circle, §13-C), Korrektur-
 Zähler, grobe Histogramme (Bins um Default-Schwelle), Persistenz (§13), Gating (§13-D).
 **Tests:** Stats korrekt; Richtungs-Keying; Korrektur-Zähler; Round-Trip.
 **Exit:** Telemetrie erhoben + persistiert (noch ohne Anzeige).
 
 ### P7 — Key-Target-Resizing-Anwendung (M) — *der „es wirkt"-Schritt*
+
 - `KeyboardGridLayout.cellFrames` offset-bewusst: geteilte Grenzen verschieben nach §5.4 (innere
   V/H-Kanten `+= (o_A+o_B)/2`, Rand fix, eine-Kante-ein-Wert, Nicht-Degeneriertheit per Clamp).
 - `KeyboardGridView`: **asymmetrischer** `visualInset` kompensiert → sichtbarer Key unverändert (§5.5).
@@ -139,6 +151,7 @@ Zähler, grobe Histogramme (Bins um Default-Schwelle), Persistenz (§13), Gating
 **Exit:** Korrektur wirkt auf die Tastenauswahl; Layout bleibt valide.
 
 ### P8 — UI (L)
+
 - **Toggle** + Datenschutz-Hinweis + Status (§6.1).
 - **Settings-Viz** (`SharedDefaults`-Snapshot): Tastatur-Rendering wiederverwenden, Offset-**Pfeile**
   (wahres Zentrum → gelernt) + Konfidenz-Deckkraft; **Regime-Selektor** (§6.2/6.3).
@@ -149,6 +162,7 @@ Zähler, grobe Histogramme (Bins um Default-Schwelle), Persistenz (§13), Gating
 **Exit:** Nutzer kann aktivieren, sehen, zurücksetzen; Autor kann debuggen.
 
 ### P9 — Validierung & Abnahme (M)
+
 Lokale **kontrafaktische** Nutzen-Metrik (caught/caused/net aus Flip-Erkennung, self-populating —
 kein Toggle-A/B, das die Aus-Gruppe nie füllt) + per-Klasse-Korrekturraten (§8/§13). Abnahme:
 `net` positiv **ohne** Anstieg der Korrekturrate in irgendeinem Regime → erst dann Default-an erwägen.
@@ -158,16 +172,19 @@ Default-Entscheidung.
 ---
 
 ## Test-Strategie (quer)
+
 Apple `Testing`-Framework, co-loziert. Schwerpunkt **reine Unit-Tests** ohne Simulator (P1/P2/P3/P5/P6
 mit Mock-`TextInputTarget`). Layout-Coverage-Tests für P7. UI-Tests (stabile Slot-Ids) für P8.
 Robustheits-Szenarien (Wasser, Feedback-Schleife, Zensierungs-Bias) als explizite Tests (§12).
 
 ## Reihenfolge-Empfehlung (solo)
+
 `P0 → P1 ∥ P2 ∥ P3 → P3.5 (Spike) → P4 → P5 → P6 → P7 → P8 → P9`.
 Mergebare Schnitte: nach P3 (Kern), nach P5 (Lernen), nach P7 (Anwendung), nach P8 (UI). Jeder
 Schnitt ist hinter dem Toggle inert, also gefahrlos in `develop` integrierbar.
 
 ## Risiken / Checkpoints
+
 - **P3.5-Spike** klärt das einzige verbliebene praktische Risiko (Resizing am Gerät) früh.
 - **P4** ist der Bestandscode-Eingriff → Regressionsschutz der Gesten-Tests ist Pflicht.
 - **P7** muss die lückenlose Kachelung (#198) wahren → Coverage-Tests sind das Sicherheitsnetz.
@@ -175,6 +192,7 @@ Schnitt ist hinter dem Toggle inert, also gefahrlos in `develop` integrierbar.
   in P5–P9 am Gerät, nicht vorab (§10).
 
 ## Nicht in v1 (Verweise)
+
 Per-Geste-*räumliches* Residuum, stetige Größen/Aspect-Interpolation, Live-Extension-Overlay,
 Gegenhand-Spiegelung, quadratische Fläche (alle **v2**); Negativ-Signal/Relabeln (**v3**, §9);
 **Adaption** der Gestenparameter (separater Track — v1 nur Erhebung, §13).

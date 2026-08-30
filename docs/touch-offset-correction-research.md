@@ -19,6 +19,7 @@ LM-gestütztes Self-Labeling.
 ## Was validiert ist
 
 ### 1. Modellklasse & Online-Schätzer
+
 - **Gauß pro Taste, Running-Mean + Reifezähler + Backoff.** Yin & Partridge (CHI 2013, MIT+Google):
   „Updating the Gaussian model involves computing the running average of the (x, y) offsets from the
   center of the key … The counter for the number of points … so that we know when a particular
@@ -33,6 +34,7 @@ LM-gestütztes Self-Labeling.
   [dl.acm.org/doi/10.1145/2470654.2481384]
 
 ### 2. Offsets sind systematisch, lernbar, per-User
+
 - **Holz & Baudisch (CHI 2010), „Generalized Perceived Input Point":** „the perceived input point
   is a systematic effect. This allows compensating … by applying an inverse offset." Das
   generalisierte Modell erklärt **67 %** der zuvor dem „Fat Finger" zugeschriebenen Ungenauigkeit;
@@ -42,6 +44,7 @@ LM-gestütztes Self-Labeling.
   fallen auf Phone-Größe neben die Zieltaste.
 
 ### 3. Positions-/Reach-Abhängigkeit (stützt die Reach-Fläche)
+
 - **Henze et al. (MobileHCI 2011, ~120M Touches):** Touch-Positionen systematisch **nach
   unten-rechts** verschoben, konsistent über 4 Phones. Rein populationsbasierte Kompensation:
   **−7,79 %** Fehlerrate im Feld.
@@ -55,6 +58,7 @@ LM-gestütztes Self-Labeling.
   iOS nicht sensierbar.** → Reach-Fläche muss **gelernt**, nicht analytisch berechnet werden.
 
 ### 4. Quantifizierter Nutzen (Erwartungshaltung)
+
 - Gboard/Yin (CHI 2013): Posture+User+Key-Adaption **−13,2 %** CER über nicht-adaptive Baseline
   (8,64 → 7,50 %, p=0,015); theoretische Obergrenze ~14 %.
 - Weir GPType (CHI 2014): **−5 bis −7,6 %** über Baseline; **+~1–1,3 %** über SwiftKey. „GP Only"
@@ -68,6 +72,7 @@ LM-gestütztes Self-Labeling.
 ## Die drei Korrekturen
 
 ### A. Schätzer: Running-Mean, nicht konstante EMA
+
 Die Quellen belegen einen **kumulativen Running-Average** (alle Samples gleich gewichtet) mit
 count-basiertem Backoff — **keine** EMA mit konstantem Forgetting-Factor. Folge: ein Running-Mean
 **konvergiert unverzerrt** auf den wahren Mittelwert; unsere ursprüngliche „EMA + konstantes Decay"
@@ -79,6 +84,7 @@ literatur-belegte reife-gegatete Backoff ab. Ein *kleines, separates* Forgetting
 Plastizität (Drift über Zeit) gewünscht ist — bewusst getrennt vom Shrinkage.
 
 ### B. Varianz-Boden ≠ Mittel-Offset (sauber trennen)
+
 **FFitts (Bi/Li/Zhai, CHI 2013):** Endpunkt = Summe zweier Normalverteilungen,
 `σ² = σ_r² + σ_a²`; **`σ_a ≈ 1,5 mm` ist irreduzibel** (absolute Fingerpräzision, distanz-/
 größenunabhängig). Wichtig: `σ_a` rechtfertigt eine **Reach-/Toleranzfläche (Streuung)**, aber
@@ -90,6 +96,7 @@ separates Faktum: selbst perfekte Korrektur lässt irreduzibles Streurauschen �
 Nutzen moderat bleibt, und motiviert (v2/v3) das Mitlernen der **Kovarianz** pro Taste.
 
 ### C. Positiv-only ist nicht SOTA — Self-Labeling ist es
+
 **Baldwin (2012):** Lernen nur aus Korrektur-Events verzerrt zu Fehlerfällen
 („skewing the data towards erroneous cases") → der von uns vermutete Zensierungs-Bias ist
 **dokumentiert bestätigt**. Aber deployte Systeme umgehen ihn **nicht** per Acceptance-only,
@@ -97,6 +104,7 @@ sondern per **Self-Labeling**: Yin & Partridge ordnen jedem Touch **probabilisti
 wahrscheinlichste Taste** zu (via Spatial+Language-Model), „without relying on the hidden identity
 of the true intended key". Ein echtes Negativ-Signal/EM wird im Gboard-Ansatz nicht genutzt.
 → **Design-Konsequenz:**
+
 - Unser „positiv-only" präziser als **„Self-Labeling auf konfidenten (interioren) Taps"**
   reframen — bei großen Grid-Tasten sind die meisten Taps eindeutig, also *ist* das eine
   degradierte Self-Labeling-Variante. Die zensierten Fälle sind genau die Grenz-Taps.
@@ -142,17 +150,19 @@ Acceptance-Filters (§4.1 der Spec).
 
 Zusätzliche Quellen: Soukoreff & MacKenzie, *Metrics for text entry research* (CHI 2003,
 yorku.ca/mack/chi03.html) · Baldwin, *Online Adaptation … Text Input Personalization* (PhD MSU 2012)
-+ Baldwin & Chai (IUI 2012) · Fowler et al., *Effects of Language Modeling …* (CHI 2015) · Shi et
+· Baldwin & Chai (IUI 2012) · Fowler et al., *Effects of Language Modeling …* (CHI 2015) · Shi et
 al., *Simulating Errors in Touchscreen Typing* (CHI 2025, arXiv:2502.03560) · Palin et al.,
 *Typing37K* (MobileHCI 2019) · Gboard „Undo auto-correct on backspace" (support.google.com).
 
 ## Nicht von der Literatur gedeckt (eigene Engineering-Erweiterungen)
+
 - **Schutz gegen transiente Störungen** (Wasser, Ausreißer-Clamp, robuste Schätzer/Median,
   Kontaktradius-Gating): in den verifizierten Quellen **nicht** adressiert — dort beschränkt sich
   Robustheit auf Backoff/Konservatismus/Reife-Gating. Unsere Clamp- und Gating-Mechanismen sind
   sinnvolle, aber **nicht belegte** Ergänzungen. Als solche kennzeichnen.
 
 ## Evidenzlücke (ehrlich)
+
 Es gibt **praktisch keine** peer-reviewte Arbeit zu Grid-/Gesten-/Swipe-Keyboards mit
 gelernter Offset-Korrektur. Alle Evidenz stammt von **QWERTY-Tap** und diskreter Zielauswahl. Die
 biomechanischen Grundlagen (systematischer, posture-/positionsabhängiger Offset; Varianz-Boden) sind
@@ -162,6 +172,7 @@ belegt.** Offene Risiken: Könnte Offset-Korrektur die **8-Richtungs-Swipe-Klass
 Tasten-Besitz, was gewollt ist. Trotzdem als Validierungspunkt führen.)
 
 ## Quellen (Primär, verifiziert)
+
 - Yin, Ouyang, Partridge, Zhai — *Making Touchscreen Keyboards Adaptive … Hierarchical Spatial
   Backoff* (CHI 2013). research.google.com/pubs/archive/41930.pdf ·
   dl.acm.org/doi/10.1145/2470654.2481384
@@ -178,6 +189,7 @@ Tasten-Besitz, was gewollt ist. Trotzdem als Validierungspunkt führen.)
 - Gunawardana, Paek, Meek — *Usability-Guided Key-Target Resizing* (IUI 2010). microsoft.com/research
 
 ## Offene Fragen (aus dem Bericht)
+
 1. Überträgt sich die Gauß-/Backoff-Methodik quantitativ auf Gesten-Grid-Keyboards (Touchdown
    besitzt Taste **und** bestimmt Swipe-Richtung)? Stört Korrektur die Richtungsklassifikation?
 2. Existiert ein Online-Schätzer (Kalman/RLS/Bayes) mit explizitem Konfidenz-Decay, der unseren

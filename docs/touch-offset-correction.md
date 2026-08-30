@@ -1,7 +1,8 @@
 # Feature-Spezifikation: Lernende Touch-Offset-Korrektur
 
-> Status: Entwurf (Rev. 7, + Gestenparameter-Telemetrie §13) · Sprache: Deutsch · Scope: Keyboard-Extension
-> + Host-App-Settings · Forschungsbelege & -korrekturen: `touch-offset-correction-research.md`
+> Status: Entwurf (Rev. 7, + Gestenparameter-Telemetrie §13) · Sprache: Deutsch
+> Scope: Keyboard-Extension + Host-App-Settings
+> Forschungsbelege & -korrekturen: `touch-offset-correction-research.md`
 
 ## 1. Motivation & Ziel
 
@@ -45,6 +46,7 @@ die Tastatur aktiv schlechter und untergräbt das Vertrauen. Mehrere Designentsc
 ## 2. Ziele / Nicht-Ziele
 
 **Ziele**
+
 - Opt-in-Feature, das den Touchdown-Punkt vor der Klassifikation korrigiert.
 - Lernen aus der laufenden Nutzung, ohne expliziten Kalibrierungsmodus.
 - Robust gegen Degeneration (Feedback-Schleifen) und gegen Ausreißer (Wasser auf dem
@@ -54,6 +56,7 @@ die Tastatur aktiv schlechter und untergräbt das Vertrauen. Mehrere Designentsc
 - Visualisierung in den Settings zur Vertrauensbildung und zum Debuggen.
 
 **Nicht-Ziele (v1)**
+
 - Kein expliziter Kalibrierungs-/Trainingsbildschirm.
 - Keine sprachmodell-basierte Intent-Inferenz.
 - Keine Korrektur-Attribution über Backspace-Erkennung (Negativ-Signal) — v3.
@@ -87,7 +90,7 @@ Laufzeit **ohne Detektion** bekannt (siehe geklärtes Risiko 11.1):
   die Fehlklassifikation den Nutzen dort zerstört, wo Einhand-Reach ihn am dringendsten bräuchte,
   ist die Wahl eine **bewusste Entscheidung**:
 
-  ```
+  ```text
   postureClass ∈ {
     oneThumbRight   (eine Fläche, Pivot rechts)   — Default: Einhand ist der Normalfall,
                                                      rechts die häufigste Hand
@@ -95,6 +98,7 @@ Laufzeit **ohne Detektion** bekannt (siehe geklärtes Risiko 11.1):
     twoThumb        (Split-Fläche links/rechts, 3.2)
   }
   ```
+
   UI-Reihenfolge: **rechts → links → beide** (§6.3). **Floating (iPad)** ist in v1 **keine eigene
   Klasse**. Die Wahl liegt in `SharedDefaults`; die Extension liest sie **pro Geste frisch**
   (`currentTouchRegime`), ein Handwechsel in der App wirkt also ab dem nächsten Tap ohne
@@ -147,7 +151,7 @@ nicht identifizierbar). **Gespeichert wird aber nicht diese Zerlegung**, sondern
 Running-Mean `m_k` des Gesamt-Offsets; die Fläche wird daraus *abgeleitet*, die Per-Tasten-
 Abweichung ist *implizit* (siehe Algorithmus 4.2):
 
-```
+```text
 # Gespeichert pro (Regime R, Taste K, Achse):  m_k (Gesamt-Offset-Mittel), n_k, s_k
 # Abgeleitet:   reachSurface[R][H] = Ridge-WLS-Fit über die m_k   (H = Hälfte, nur twoThumb)
 # Angewandt:    Korrektur(K) = prior_k + (m_k − prior_k)·n_k/(n_k+κ),   prior_k = surface(pos_K)
@@ -211,6 +215,7 @@ Das ist Self-Labeling, beschränkt auf konfidente (interiore) Taps — kein naiv
 fürs Lernen, wenn der rohe Touchdown **mehr als `m_interior`** (Anteil des Tastenpitchs) vom
 nächsten Tastenrand entfernt liegt — grenznahe Taps werden vom *Lernen* ausgeschlossen (korrigiert
 werden trotzdem alle). `m_interior` ist **der zentrale Bias-Varianz-Knopf** (Tuning-Parameter §10):
+
 - **groß** (streng interior) → kaum Mislabeling, aber **maximaler Zensierungs-Bias** (die
   informativen Grenzfälle fehlen) → stärkere Unterkorrektur.
 - **klein** (auch grenznahe Taps) → weniger Bias, aber Risiko, falsch zugeordnete Grenz-Taps zu
@@ -235,6 +240,7 @@ zuletzt committeter Taps** (`keyId`, Touchdown) wird geführt; eine **Backspace-
 **alle dadurch gelöschten Taps** (nicht gelernt). Fenster über **Aktions-Zählung**, nicht über eine
 Uhr — die Literatur parametrisiert Korrektur durchweg über Edit-Struktur, nicht über ms (Baldwin
 2012; Gboard „Undo: before any other key"); eine ms-Latenz-Verteilung existiert nicht.
+
 - **Burst statt Einzel-Veto (Korrektur aus Literatur):** Bei *verzögerter* Korrektur löscht der
   Nutzer **durch korrekte Zeichen hindurch** bis zum Fehler (`peeple<<<<ople`). Nur den jüngsten Tap
   zu vetoen träfe oft einen korrekten statt des Mis-Hits → **alle vom Burst gelöschten Taps**
@@ -270,6 +276,7 @@ hält.
 Mit verschobenen Hit-Zellen (§5) droht eine konkrete Feedback-Schleife: eine vergrößerte Zelle fängt
 grenznahe Taps ein, die — gegen das *wahre* Zentrum gemessen — großen Offset haben; würden die
 gelernt, bliese sich `m_k` weiter auf → Zelle wächst → Drift. Bruch der Schleife, dreifach:
+
 - **`m_interior` gegen die *wahre* Geometrie:** gelernt wird nur aus Taps **interior zur echten
   (unverschobenen) Zelle** (`m_interior` vom *wahren* Tastenrand). Genau die aufgeblähten Grenz-Taps
   fallen damit raus → speisen die Schleife nicht. (`m_interior` ist doppelt load-bearing:
@@ -296,7 +303,7 @@ Mittelwert separabel ist); alle Größen in **Tastenpitch-Anteilen**.
 **Schritt 1 — Per-Tasten-Update (online, je akzeptiertem Tap).** `e = rohTouchdown − center(k)`,
 *nach* dem absoluten **Dwell-Gate** (Kontaktradius/Multitouch entfallen, 4.3/11.4):
 
-```
+```text
 if n_k ≥ warmup and |e − m_k| > k_gate · s_k:   skip      # Outlier-Gate (erst nach Warm-up)
 δ   = clip(e − m_k, ±c · s_k)                              # Huber: gekappter Einfluss
 n_k = min(n_k + 1, n_max)
@@ -313,7 +320,7 @@ ersetzt einen teuren Online-Median fast gratis.
 (bilinear, Einhand) bzw. `φ = [1, u, v]` (linear, twoThumb-Hälften); `W = diag(n_k)`,
 Ridge → 0:
 
-```
+```text
 β_surface = (Φᵀ W Φ + λ_ridge · I)⁻¹ Φᵀ W m              # gewichtetes Ridge-LS, m = Vektor der m_k
 surface(pos) = φ(pos) · β_surface
 ```
@@ -327,7 +334,7 @@ Konstanten-Term von `β_surface` ist der „globale" Offset (3.3).
 
 **Schritt 3 — Angewandte Korrektur (Shrinkage zum Flächen-Prior).**
 
-```
+```text
 prior_k = surface(pos_k)
 r_k     = prior_k + (m_k − prior_k) · n_k / (n_k + κ)     # Partial Pooling / James-Stein (je Achse)
 offset_k = clamp_betrag((r_kx, r_ky), ≤ 0,35 · pitch)    # euklid. Betrag des 2D-Vektors, in Punkte (4.3)
@@ -342,7 +349,7 @@ permanenten Schrumpf-Bias `α/(α+λ)·μ` hatte.
 **Warum diese Wahl (statt Alternativen):**
 
 | Wahl | statt | Grund |
-|---|---|---|
+| --- | --- | --- |
 | Running-Mean | konstante EMA | unverzerrt; EMA hatte permanenten Schrumpf-Bias |
 | count-gewichtetes Shrinkage (`κ`) | hartes Reife-Backoff | gleicher Effekt, aber stufenlos → kein Flackern an der Schwelle |
 | Closed-Form-WLS-Refit der Fläche | Backfitting / Online-RLS | nur ~9 Punkte → trivialer Solve; eliminiert Zwei-Zeitskalen-Tanz |
@@ -526,6 +533,7 @@ Taste"-Einwands:
 **Minimaler Eingriff — gespiegelte Frames offset-bewusst machen:** Heute leiten sich `cellFrames`
 (Touch-Frame, gewachsen) und `visualInset` (zieht den Key zurück) aus **derselben** `gapInsets`-
 Quelle ab und spiegeln sich. Key-Target-Resizing erweitert genau diese geteilte Rechnung:
+
 - Touch-Frame-Grenze verschiebt sich nach §5.4.
 - `visualInset` kompensiert um **denselben Betrag pro Kante** (jetzt **asymmetrisch**) → der
   gezeichnete Key bleibt **exakt** an seiner Stelle.
@@ -646,6 +654,7 @@ Echtes Live nur in der Extension möglich. Hinter Debug-Flag. **Speicher-Vorsich
 ## 9. Phasierung
 
 **v1 (schlank geschnitten)**
+
 - Regime: Orientierung × `touchOffsetPosture` — Orientierung deterministisch vom Controller,
   Posture explizit vom Nutzer gewählt (11.1).
 - Modell: Per-Taste `{m_k,n_k,s_k}`; Reach-Fläche abgeleitet (bilinear Einhand, linear je
@@ -662,6 +671,7 @@ Echtes Live nur in der Extension möglich. Hinter Debug-Flag. **Speicher-Vorsich
   Regime-Selektor, Reset (alles + pro Regime), User/Debug-Trennung.
 
 **v2**
+
 - Per-Geste-Residuum (per-Geste *räumlicher* Offset). Setzt voraus, dass v1 dafür Samples sammelt —
   tut es **nicht** (v1 lernt nur aus Taps, §4.1). Also erst, wenn v1 auf Swipe-Start-Sampling
   erweitert ist und dieses einen Gesten-spezifischen Bias belegt. (Nicht zu verwechseln mit der
@@ -673,6 +683,7 @@ Echtes Live nur in der Extension möglich. Hinter Debug-Flag. **Speicher-Vorsich
 - Ggf. quadratische Reach-Fläche, falls Residuen Krümmung belegen.
 
 **v3**
+
 - Negativ-Signal (Korrektur-Attribution via Backspace) → behebt den Zensierungs-Bias (4.1),
   ermöglicht volle statt konservativer Korrektur. **Konkrete Methode (Baldwin 2012, „Conservative"):**
   die nach der Löschung neu getippten Zeichen mit den gelöschten **alignen**; nur **relabeln**, wenn
@@ -786,6 +797,7 @@ daher **nicht** ändern — der ursprünglich in der Spec angenommene Wirkmechan
 
 **Redirect (kein Blocker, eher Vereinfachung):** Die Korrektur gehört ins zentrale, reine
 `KeyboardGridLayout.cellFrames` als **Key-Target-Resizing** (Grenzen verschieben, §5). Vorteile:
+
 - zentral & rein (eine Funktion besitzt alle Touch-Frames; bereits unit-getestet),
 - **Touch-Frame schon vom sichtbaren Key getrennt** (`visualInset`) → unsichtbares Resizing „for free",
 - literatur-kanonisch (Key-Target-Resizing, Gunawardana 2010), macht §1 wörtlich wahr,
@@ -825,6 +837,7 @@ SharedDefaults-Aggregate), werden die **dafür nötigen Daten gleich mit erhoben
 Retrofitting zu vermeiden. v1-Scope hier = **reine Erhebung + Debug-Diagnose, keine Anwendung.**
 
 ### Hintergrund (aus der Designdiskussion)
+
 Die 4 Gestenklassen — **Tap / Swipe / Swipe-Return / Circle** — werden über schwellenbasierte
 Features getrennt; die Defaults sind aktuell **geraten**, nicht datenkalibriert. Aus **akzeptierten
 (unkorrigierten)** Gesten lassen sich die **Cluster-Kerne** je Klasse robust schätzen → spätere
@@ -835,8 +848,10 @@ instabil). Zwei bekannte Grenzen: (a) **Klassen-Zensur** — eine systematisch v
 **Winkel-Offset** ist der sauberste erste Kandidat (direkt analog zum Spatial-Offset, §3).
 
 ### Was erhoben wird (nur Aggregate, nur aus akzeptierten Gesten)
+
 Pro `(Regime, Gestenklasse[, Richtung])` Running-Stats `{n, mean, M2→Streuung}` (Welford) der
 **diskriminierenden Features** — Namen wie in `GestureClassificationThresholds`:
+
 - `maxDisplacement` (Tap ↔ Swipe)
 - `returnRatio` (Swipe ↔ Swipe-Return)
 - `circularity`, `angularSpan`, `turnConsistency`, `orientedCompactness`, `pathSeparation` (Circle)
@@ -859,6 +874,7 @@ vergleichbar. Die Partition nach **Regime** hält die Geometrie ohnehin konstant
 (Datenschutz-Konsistenz — keine stille Hintergrund-Erfassung).
 
 Zusätzlich:
+
 - **grobe Histogramme** des Primärfeatures je Klasse (wenige feste Bins) — für die Randdichte-
   Diagnose („schneidet die Schwelle ins Cluster?"). *Bin-Range/-Anzahl: bei Implementierung
   festlegen* (z. B. um die jeweilige Default-Schwelle zentriert).
@@ -866,6 +882,7 @@ Zusätzlich:
   **Klassen-Zensur** sichtbar (versagende Klasse = hohe Korrekturrate + wenig Positive).
 
 ### Wo / Wie
+
 - **Quelle:** dieselbe **Lern-Middleware** (kennt Klassifikationsergebnis + Accepted/Corrected, §5).
 - **Plumbing:** der Klassifikator muss den **Feature-Vektor mitliefern** (heute gibt
   `GestureClassification` nur `gesture` + `isReturn` zurück) — kleiner Eingriff, analog zum
@@ -875,11 +892,13 @@ Zusätzlich:
   Schreibkadenz wie beim Offset-Modell (debounced/periodisch, §7).
 
 ### Nutzen *jetzt* (auch ohne Adaption)
+
 - **Diagnose im Debug-View** (6.5): Cluster-Kerne, Randdichte, Korrekturraten je Klasse.
 - Hilft, die **statischen** Default-Schwellen zu tunen (die ohnehin offene Schuld aus §10).
 - Zeigt **empirisch**, ob Per-Nutzer-Adaption lohnt und ob seltene Klassen (Circle) überhaupt genug
   Daten haben — *bevor* der Adaptions-Track gebaut wird.
 
 ### Scope-Grenze (klar)
+
 v1: **erheben + anzeigen**. **Keine** Schwellen-/Feature-Anpassung zur Laufzeit. Adaption (kern-
 verankert, geclampt, reversibel, default-aus; Winkel-Offset zuerst) ist ein eigener späterer Track.
