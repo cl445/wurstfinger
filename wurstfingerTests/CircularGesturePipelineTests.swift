@@ -88,7 +88,7 @@ struct CircularGesturePipelineTests {
     @Test func circularOnSharpSKeyInsertsCapitalSharpS() {
         let (vm, target) = makeViewModel(languageId: "de_DE")
 
-        let sharpSKey = KeyConfig(
+        let sharpSKey = KeyDefinition(
             id: "sz",
             bindings: [
                 .tap: KeyBinding(
@@ -136,7 +136,7 @@ struct CircularGesturePipelineTests {
 /// clipboard suite in `AdvancedTextMiddlewareTests`. The cut itself is covered
 /// there; what matters here is that both directions reach it.
 struct CircularCutAllBindingTests {
-    private func symbolsKey(_ vm: KeyboardViewModel) -> KeyConfig? {
+    private func symbolsKey(_ vm: KeyboardViewModel) -> KeyDefinition? {
         vm.activeModeFromDefinition?.key(for: UtilitySlot.symbols)
     }
 

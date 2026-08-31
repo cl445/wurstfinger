@@ -12,7 +12,7 @@ import Foundation
 enum CommonKeys {
     // MARK: - Utility Keys
 
-    static let globe: KeyConfig = {
+    static let globe: KeyDefinition = {
         var bindings: [GestureType: KeyBinding] = [:]
         // Tap is intentionally inert: switching the input method lives on the
         // swipe-left gesture below. The empty `.none` slot keeps the key's
@@ -39,7 +39,7 @@ enum CommonKeys {
             category: .utility, returnAction: nil,
             accessibilityLabel: String(localized: "Next language")
         )
-        return KeyConfig(
+        return KeyDefinition(
             id: UtilitySlot.globe, bindings: bindings,
             swipeMode: .fourWayCross, slideType: .none,
             style: .utility, tapCycleActions: nil,
@@ -47,13 +47,13 @@ enum CommonKeys {
         )
     }()
 
-    static let delete = KeyConfig.utility(
+    static let delete = KeyDefinition.utility(
         UtilitySlot.delete, label: "⌫", action: .deleteBackward,
         swipeMode: .twoWayHorizontal, slideType: .delete,
         accessibilityLabel: String(localized: "Delete")
     )
 
-    static let `return` = KeyConfig.utility(
+    static let `return` = KeyDefinition.utility(
         UtilitySlot.return, label: "↵", action: .newline,
         accessibilityLabel: String(localized: "New line")
     )
@@ -92,7 +92,7 @@ enum CommonKeys {
     /// which VoiceOver reads as the *number* one hundred twenty-three, so the
     /// tap carries a semantic name — as every neighbouring utility key does.
     /// Its counterpart is `NumericLayouts.backToMain`, named "Letters".
-    static let symbols = KeyConfig.utility(
+    static let symbols = KeyDefinition.utility(
         UtilitySlot.symbols, label: "123", action: .switchMode(ModeNames.numeric),
         swipeMode: .eightWay,
         swipes: clipboardBindings,
@@ -103,8 +103,8 @@ enum CommonKeys {
     /// each layout can emit its own native zero (e.g. Arabic ٠); it defaults to
     /// ASCII "0". `GridKeyboardFactory` and `NumericLayouts` pass the layout's
     /// first numeric digit.
-    static func spacebar(zeroDigit: String = "0") -> KeyConfig {
-        KeyConfig(
+    static func spacebar(zeroDigit: String = "0") -> KeyDefinition {
+        KeyDefinition(
             id: UtilitySlot.space,
             bindings: [
                 .tap: KeyBinding(
@@ -128,7 +128,7 @@ enum CommonKeys {
     }
 
     /// All utility keys as dictionary, mergeable with language keys.
-    static let allUtilityKeys: [String: KeyConfig] = [
+    static let allUtilityKeys: [String: KeyDefinition] = [
         UtilitySlot.globe: globe,
         UtilitySlot.delete: delete,
         UtilitySlot.return: `return`,
@@ -143,7 +143,7 @@ enum CommonKeys {
     /// Each KeyBinding includes both the primary action and an optional return-swipe action.
     ///
     /// **Which of these carry an `accessibilityLabel`, and why so few.** A label
-    /// is the opt-in for a VoiceOver custom action (`KeyConfig.accessibilityActions`)
+    /// is the opt-in for a VoiceOver custom action (`KeyDefinition.accessibilityActions`)
     /// and every named binding becomes a rotor entry on that key, so naming all
     /// eight directions would put eight to sixteen entries on every letter key —
     /// exactly what the opt-in exists to prevent. Until swipe outputs can be

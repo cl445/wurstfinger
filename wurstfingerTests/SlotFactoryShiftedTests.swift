@@ -2,7 +2,7 @@
 //  SlotFactoryShiftedTests.swift
 //  WurstfingerTests
 //
-//  Tests for GridSlot, UtilitySlot, KeyConfig factories,
+//  Tests for GridSlot, UtilitySlot, KeyDefinition factories,
 //  and shifted mode generation.
 //
 
@@ -57,11 +57,11 @@ struct UtilitySlotTests {
     }
 }
 
-// MARK: - KeyConfig.letter() Tests
+// MARK: - KeyDefinition.letter() Tests
 
-struct KeyConfigLetterFactoryTests {
+struct KeyDefinitionLetterFactoryTests {
     @Test func basicLetterKey() {
-        let key = KeyConfig.letter("center", tap: "d", swipes: [.swipeUp: "g"])
+        let key = KeyDefinition.letter("center", tap: "d", swipes: [.swipeUp: "g"])
         #expect(key.id == "center")
         #expect(key.style == .primary)
         #expect(key.swipeMode == .eightWay)
@@ -83,7 +83,7 @@ struct KeyConfigLetterFactoryTests {
     }
 
     @Test func letterKeyWithReturnSwipes() {
-        let key = KeyConfig.letter(
+        let key = KeyDefinition.letter(
             "topLeft", tap: "a",
             swipes: [.swipeUp: "v", .swipeRight: "x"],
             returnSwipes: [.swipeUp: "1"]
@@ -97,7 +97,7 @@ struct KeyConfigLetterFactoryTests {
     }
 
     @Test func letterKeyWithComposeSwipes() {
-        let key = KeyConfig.letter(
+        let key = KeyDefinition.letter(
             "center", tap: "d",
             composeSwipes: [.swipeDownLeft: (trigger: "¨", label: "¨")]
         )
@@ -108,16 +108,16 @@ struct KeyConfigLetterFactoryTests {
     }
 
     @Test func letterKeyOnlyContainsRequestedBindings() {
-        let key = KeyConfig.letter("topLeft", tap: "a", swipes: [.swipeUp: "v"])
+        let key = KeyDefinition.letter("topLeft", tap: "a", swipes: [.swipeUp: "v"])
         #expect(key.bindings.count == 2) // tap + swipeUp
     }
 }
 
-// MARK: - KeyConfig.utility() Tests
+// MARK: - KeyDefinition.utility() Tests
 
-struct KeyConfigUtilityFactoryTests {
+struct KeyDefinitionUtilityFactoryTests {
     @Test func basicUtilityKey() {
-        let key = KeyConfig.utility(
+        let key = KeyDefinition.utility(
             "delete",
             label: "⌫",
             action: .deleteBackward,
@@ -138,7 +138,7 @@ struct KeyConfigUtilityFactoryTests {
     }
 
     @Test func utilityKeyDefaults() {
-        let key = KeyConfig.utility("globe", label: "🌐", action: .advanceToNextInputMode)
+        let key = KeyDefinition.utility("globe", label: "🌐", action: .advanceToNextInputMode)
         #expect(key.swipeMode == .none)
         #expect(key.slideType == .none)
         #expect(key.bindings.count == 1)
@@ -149,7 +149,7 @@ struct KeyConfigUtilityFactoryTests {
             label: "→", action: .moveCursor(offset: 1),
             category: .utility, returnAction: nil, accessibilityLabel: nil
         )
-        let key = KeyConfig.utility(
+        let key = KeyDefinition.utility(
             "delete",
             label: "⌫",
             action: .deleteBackward,
@@ -160,12 +160,12 @@ struct KeyConfigUtilityFactoryTests {
     }
 }
 
-// MARK: - KeyConfig.autoShifted() Tests
+// MARK: - KeyDefinition.autoShifted() Tests
 
 struct AutoShiftedTests {
     @Test func autoShiftedUsesCommittedTextNotLabel() {
         // Label and committed text differ — shifted must uppercase each independently
-        let key = KeyConfig(
+        let key = KeyDefinition(
             id: "test",
             bindings: [
                 .tap: KeyBinding(
@@ -187,7 +187,7 @@ struct AutoShiftedTests {
     }
 
     @Test func autoShiftedGermanBasic() {
-        let key = KeyConfig.letter("center", tap: "d", swipes: [.swipeUp: "g"])
+        let key = KeyDefinition.letter("center", tap: "d", swipes: [.swipeUp: "g"])
         let shifted = key.autoShifted(locale: Locale(identifier: "de_DE"))
 
         #expect(shifted.id == "center")
@@ -198,7 +198,7 @@ struct AutoShiftedTests {
     }
 
     @Test func autoShiftedGermanEszett() {
-        let key = KeyConfig.letter("bottomLeft", tap: "ß")
+        let key = KeyDefinition.letter("bottomLeft", tap: "ß")
         let shifted = key.autoShifted(locale: Locale(identifier: "de_DE"))
 
         // German ß maps to the capital sharp S ẞ (U+1E9E), not the two-letter "SS".
@@ -207,7 +207,7 @@ struct AutoShiftedTests {
     }
 
     @Test func autoShiftedTurkishI() {
-        let key = KeyConfig.letter("center", tap: "i")
+        let key = KeyDefinition.letter("center", tap: "i")
         let shifted = key.autoShifted(locale: Locale(identifier: "tr_TR"))
 
         #expect(shifted.bindings[.tap]?.label == "İ")
@@ -215,7 +215,7 @@ struct AutoShiftedTests {
     }
 
     @Test func autoShiftedPreservesNonLetterBindings() {
-        let key = KeyConfig.letter(
+        let key = KeyDefinition.letter(
             "center", tap: "d",
             composeSwipes: [.swipeDownLeft: (trigger: "¨", label: "¨")]
         )
@@ -229,7 +229,7 @@ struct AutoShiftedTests {
     }
 
     @Test func autoShiftedPreservesReturnAction() {
-        let key = KeyConfig.letter(
+        let key = KeyDefinition.letter(
             "topLeft", tap: "a",
             swipes: [.swipeUp: "v"],
             returnSwipes: [.swipeUp: "1"]
@@ -240,7 +240,7 @@ struct AutoShiftedTests {
     }
 
     @Test func autoShiftedPreservesKeyProperties() {
-        let key = KeyConfig.letter("center", tap: "d")
+        let key = KeyDefinition.letter("center", tap: "d")
         let shifted = key.autoShifted(locale: Locale(identifier: "de_DE"))
 
         #expect(shifted.swipeMode == key.swipeMode)
@@ -250,7 +250,7 @@ struct AutoShiftedTests {
     }
 
     @Test func autoShiftedUtilityKeyUnchanged() {
-        let key = KeyConfig.utility("delete", label: "⌫", action: .deleteBackward)
+        let key = KeyDefinition.utility("delete", label: "⌫", action: .deleteBackward)
         let shifted = key.autoShifted(locale: Locale(identifier: "de_DE"))
 
         #expect(shifted.bindings[.tap]?.label == "⌫")
@@ -262,10 +262,10 @@ struct AutoShiftedTests {
 
 struct GenerateShiftedTests {
     private static func sampleMode() -> KeyboardMode {
-        let keys: [String: KeyConfig] = [
-            "a": KeyConfig.letter("a", tap: "a", swipes: [.swipeUp: "v"]),
-            "b": KeyConfig.letter("b", tap: "b"),
-            "shift": KeyConfig.utility("shift", label: "⇧", action: .switchMode(ModeNames.shifted)),
+        let keys: [String: KeyDefinition] = [
+            "a": KeyDefinition.letter("a", tap: "a", swipes: [.swipeUp: "v"]),
+            "b": KeyDefinition.letter("b", tap: "b"),
+            "shift": KeyDefinition.utility("shift", label: "⇧", action: .switchMode(ModeNames.shifted)),
         ]
         let arrangement = GridArrangement(columns: 3, rows: [
             [KeyPlacement(keyId: "a"), KeyPlacement(keyId: "b"), KeyPlacement(keyId: "shift")],
@@ -296,7 +296,7 @@ struct GenerateShiftedTests {
 
     @Test func generateShiftedWithOverrides() {
         let main = Self.sampleMode()
-        let overrideKey = KeyConfig.letter("a", tap: "Ä")
+        let overrideKey = KeyDefinition.letter("a", tap: "Ä")
         let shifted = main.generateShifted(
             locale: Locale(identifier: "de_DE"),
             overrides: ["a": overrideKey]

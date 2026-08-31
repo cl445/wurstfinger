@@ -714,8 +714,8 @@ def _lint_rules(glossary: Glossary) -> str:
     A pattern's exclusions are computed from its regex alone, not from this
     script's findings. `scan` reports a spelling that a term already rejects
     only once, under that term — but SwiftLint has no such rule, so
-    `config_suffix` sees every `KeyConfig` too, and would fire in all 22 of its
-    files if only the two `keyConfig` ones were excluded.
+    `config_suffix` sees every `LanguageConfig` too, and would fire in all 11 of
+    its files if only the pattern's own findings were excluded.
     """
     files = swift_files()
     carriers: dict[str, set[str]] = {}

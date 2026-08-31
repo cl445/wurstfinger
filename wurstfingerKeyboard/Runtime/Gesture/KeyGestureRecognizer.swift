@@ -291,7 +291,7 @@ struct KeyGestureRecognizer: ViewModifier {
     ) -> GestureClassification {
         classify(
             positions: positions,
-            config: GesturePreprocessorConfig.fromUserDefaults()
+            config: GesturePreprocessorConfiguration.fromUserDefaults()
                 .with(aspectRatio: aspectRatio),
             thresholds: GestureClassificationThresholds.fromUserDefaults()
         )
@@ -303,7 +303,7 @@ struct KeyGestureRecognizer: ViewModifier {
     /// any SwiftUI views and without depending on the shared defaults store.
     static func classify(
         positions: [CGPoint],
-        config: GesturePreprocessorConfig,
+        config: GesturePreprocessorConfiguration,
         thresholds: GestureClassificationThresholds
     ) -> GestureClassification {
         let preprocessor = GesturePreprocessor(config: config)

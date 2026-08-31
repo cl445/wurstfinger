@@ -382,7 +382,7 @@ extension KeyboardViewModel {
 
     /// Tries to insert the uppercase center character.
     @discardableResult
-    private func tryCircularUppercase(key: KeyConfig) -> Bool {
+    private func tryCircularUppercase(key: KeyDefinition) -> Bool {
         guard let tapBinding = key.bindings[.tap],
               case let .commitText(text) = tapBinding.action,
               text.first?.isLetter == true
@@ -425,7 +425,7 @@ extension KeyboardViewModel {
     // MARK: - Slide Gesture Handling
 
     /// Handles slide events from keys with `slideType != .none`.
-    func handleSlide(_ key: KeyConfig, phase: SlidePhase) {
+    func handleSlide(_ key: KeyDefinition, phase: SlidePhase) {
         switch key.slideType {
         case .moveCursor:
             handleSpaceSlide(phase: phase, key: key)
@@ -443,7 +443,7 @@ extension KeyboardViewModel {
         return raw.flatMap(CursorMovementType.init(rawValue:)) ?? .continuous
     }
 
-    func handleSpaceSlide(phase: SlidePhase, key: KeyConfig) {
+    func handleSpaceSlide(phase: SlidePhase, key: KeyDefinition) {
         switch phase {
         case .began:
             isSpaceDragging = true
@@ -645,7 +645,7 @@ extension KeyboardViewModel {
         return count
     }
 
-    func handleDeleteSlide(phase: SlidePhase, key: KeyConfig) {
+    func handleDeleteSlide(phase: SlidePhase, key: KeyDefinition) {
         switch phase {
         case .began:
             isDeleteDragging = true

@@ -13,7 +13,7 @@ extension String {
     /// Unlike `uppercased(with:)`, this preserves the German capital sharp S
     /// (ß → ẞ, U+1E9E) instead of expanding to the two-letter "SS", so a single
     /// ß key maps to a single ẞ. Shared by both the shifted-mode generation
-    /// (`KeyConfig.autoShifted`) and the directional-override return actions in
+    /// (`KeyDefinition.autoShifted`) and the directional-override return actions in
     /// `GridKeyboardFactory`, so the two stay consistent.
     func keyboardUppercased(with locale: Locale) -> String {
         if self == "ß" { return "ẞ" }
@@ -28,7 +28,7 @@ extension KeyboardMode {
     /// - Overrides allow manual corrections (e.g. ß → ẞ)
     func generateShifted(
         locale: Locale,
-        overrides: [String: KeyConfig] = [:]
+        overrides: [String: KeyDefinition] = [:]
     ) -> KeyboardMode {
         let shiftedKeys = keys.mapValues { key in
             overrides[key.id] ?? key.autoShifted(locale: locale)
@@ -42,10 +42,10 @@ extension KeyboardMode {
     }
 }
 
-extension KeyConfig {
+extension KeyDefinition {
     /// Creates an uppercase variant of this key.
     /// Only bindings with resolvedCategory == .letter are uppercased.
-    func autoShifted(locale: Locale) -> KeyConfig {
+    func autoShifted(locale: Locale) -> KeyDefinition {
         var shifted = self
         shifted.bindings = bindings.mapValues { binding -> KeyBinding in
             guard binding.resolvedCategory == .letter else { return binding }

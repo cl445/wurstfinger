@@ -38,7 +38,7 @@ struct LanguageDefinitionValidationTests {
         }
     }
 
-    @Test func allLanguagesAreResolvableViaLanguageConfig() {
+    @Test func allLanguagesAreResolvableById() {
         // LanguageConfig.allLanguages is now derived from KeyboardRegistry.available.
         // Verify every definition is resolvable via the lookup helper.
         for definition in LanguageDefinitions.all {

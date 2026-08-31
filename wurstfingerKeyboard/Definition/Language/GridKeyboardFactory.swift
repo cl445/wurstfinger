@@ -70,7 +70,7 @@ enum GridKeyboardFactory {
         let arrangements = StandardArrangements.grid3x3
 
         // 1. Build 9 letter keys from center characters + shared defaults + overrides
-        var letterKeys: [String: KeyConfig] = [:]
+        var letterKeys: [String: KeyDefinition] = [:]
         for (rowIdx, row) in centerCharacters.enumerated() {
             for (colIdx, char) in row.enumerated() {
                 let keyId = GridSlot.allSlots[rowIdx][colIdx]
@@ -145,7 +145,7 @@ enum GridKeyboardFactory {
                     bindings[.circularCounterclockwise] = circle
                 }
 
-                letterKeys[keyId] = KeyConfig(
+                letterKeys[keyId] = KeyDefinition(
                     id: keyId, bindings: bindings, swipeMode: .eightWay,
                     slideType: .none, style: .primary, tapCycleActions: nil
                 )

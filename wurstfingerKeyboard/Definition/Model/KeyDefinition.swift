@@ -1,5 +1,5 @@
 //
-//  KeyConfig.swift
+//  KeyDefinition.swift
 //  Wurstfinger
 //
 //  Complete definition of a single key (behavior, not layout).
@@ -8,7 +8,7 @@
 import Foundation
 
 /// Complete definition of a single key (behavior, not layout).
-struct KeyConfig: Codable, Equatable, Identifiable {
+struct KeyDefinition: Codable, Equatable, Identifiable {
     /// Semantic slot name (e.g. "topLeft", "center", "globe")
     let id: String
 

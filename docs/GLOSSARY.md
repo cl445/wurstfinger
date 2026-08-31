@@ -74,8 +74,8 @@ When writing prose, always say "return swipe" in full; never abbreviate it to "r
 ### slot id == key id — same string, two names
 
 A **slot** is a named position in the layout. A **key id** is the string identifying a
-`KeyConfig`. They are the same value: `KeyConfig.id` is documented as "Semantic slot name",
-and `KeyPlacement.keyId` references it.
+`KeyDefinition`. They are the same value: `KeyDefinition.id` is documented as "Semantic
+slot name", and `KeyPlacement.keyId` references it.
 
 - The **names** live in `GridSlot` (`topLeft` … `bottomRight`, `zero`) and `UtilitySlot`
   (`globe`, `delete`, `return`, `space`, `symbols`).
@@ -159,7 +159,7 @@ because no rule can catch it: it fails in the App Store, not in CI.
 | --- | --- | --- |
 | definition | `KeyboardDefinition` | the complete declarative description of one keyboard: all modes, keys, bindings, arrangements |
 | mode | `KeyboardMode` | one state of a definition (`main`, `shifted`, `numeric`, …) with its own keys + arrangement |
-| key | `KeyConfig` | one key: `id`, `bindings`, `swipeMode`, `slideType`, `style`, `tapCycleActions` |
+| key | `KeyDefinition` | one key: `id`, `bindings`, `swipeMode`, `slideType`, `style`, `tapCycleActions` |
 | binding | `KeyBinding` | what one gesture on one key does: `label`, `action`, `category`, `returnAction`, `accessibilityLabel` |
 | action | `KeyAction` | the command enum — `commitText`, `compose`, `cycleAccents`, `switchMode`, `capitalizeWord`, `advanceToNextInputMode`, `dismissKeyboard`, `switchToNextLanguage`, `deleteBackward`, `deleteForward`, `space`, `newline`, `moveCursor`, `copy`, `paste`, `cut`, `cutAll`, `none` |
 | label | `KeyBinding.label` | the text drawn on the key. May differ from the output (`"⇧"` for shift) and is empty for icon-driven utility keys |
@@ -228,7 +228,8 @@ because no rule can catch it: it fails in the App Store, not in CI.
 
 Spell suffixes out: `…Configuration`, not `…Config`. Apple's own APIs are consistent about
 this (`URLSessionConfiguration`, `WKWebViewConfiguration`), and the Swift API Design
-Guidelines rule out abbreviations. The three `…Config` types in the codebase are legacy.
+Guidelines rule out abbreviations. `LanguageConfig` is the last `…Config` type left, and it
+is legacy.
 
 Do not introduce `…Manager` or `…Helper`. Both describe no responsibility; name the type
 after what it actually does.
@@ -316,17 +317,13 @@ counts per file: they may shrink, never grow — and a shrink has to be recorded
 
 | Legacy spelling | Replacement | Sites | Files |
 | --- | --- | --- | --- |
-| `KeyConfig` | `KeyDefinition` | 98 | 22 |
-| `GesturePreprocessorConfig` | `GesturePreprocessorConfiguration` | 80 | 7 |
 | `LanguageConfig` | `LanguageDescriptor` | 53 | 11 |
 | `hideLetters` | `areLetterLabelsHidden` | 37 | 10 |
 | `hideStandardSymbols` | `areStandardSymbolLabelsHidden` | 37 | 10 |
 | `hideExtraSymbols` | `areExtraSymbolLabelsHidden` | 35 | 10 |
 | `longPressNumbersEnabled` | `isLongPressDigitEnabled` | 13 | 5 |
 | `KeyboardInfo` | `LanguageDescriptor` | 6 | 4 |
-| config suffix | `…Configuration` for injected runtime parameters, `…Definition` for declarative data | 5 | 2 |
-| `ScreenshotConfig` | `ScreenshotConfiguration` | 3 | 1 |
-| **total** | | **367** | **51** |
+| **total** | | **181** | **24** |
 
 <!-- /generated: backlog -->
 

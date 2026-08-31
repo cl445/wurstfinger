@@ -106,7 +106,7 @@ struct DiscreteCursorMovementTests {
         return (vm, target)
     }
 
-    private func spaceKey(_ vm: KeyboardViewModel) throws -> KeyConfig {
+    private func spaceKey(_ vm: KeyboardViewModel) throws -> KeyDefinition {
         try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))
     }
 

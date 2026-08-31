@@ -17,8 +17,8 @@ import SwiftUI
 /// with the gesture it declares. Both dispatch through the same `onGesture`
 /// callback as a real touch, so they share the resolver chain and pipeline.
 struct KeyAccessibilityActions: ViewModifier {
-    let key: KeyConfig
-    let onGesture: (KeyConfig, GestureType, Bool) -> Void
+    let key: KeyDefinition
+    let onGesture: (KeyDefinition, GestureType, Bool) -> Void
 
     func body(content: Content) -> some View {
         withActivation(content)

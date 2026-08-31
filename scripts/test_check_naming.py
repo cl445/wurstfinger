@@ -173,16 +173,17 @@ class LintRuleTests(unittest.TestCase):
     def test_pattern_exclusions_cover_the_aliases_it_also_matches(self) -> None:
         """SwiftLint has no alias/pattern dedup, so the exclusions must.
 
-        `config_suffix` matches `KeyConfig` as well as `keyConfig`. If its
-        exclusions only listed the files this script attributes to the pattern,
-        `--strict` would fail in all 22 `KeyConfig` files.
+        `config_suffix` matches `LanguageConfig`, which a term already rejects,
+        as well as spellings no term lists. If its exclusions only listed the
+        files this script attributes to the pattern, `--strict` would fail in
+        all 11 `LanguageConfig` files.
         """
         glossary = load_glossary()
         carriers = _pattern_carriers(glossary, swift_files())
         alias_files = {
             finding.path
             for finding in scan(glossary, swift_files())
-            if finding.rejected in {"KeyConfig", "LanguageConfig", "GesturePreprocessorConfig"}
+            if finding.rejected == "LanguageConfig"
         }
         self.assertTrue(alias_files <= carriers["config_suffix"])
 

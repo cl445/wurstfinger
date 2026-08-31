@@ -42,7 +42,7 @@ note = "\"Layer\" is the non-canonical spelling of a keyboard state, rejected as
 [[term]]
 name = "keyId"
 zone = "A"
-definition = "The string identifying a key. Same value as the slot name: `KeyConfig.id` is the semantic slot, `KeyPlacement.keyId` references it."
+definition = "The string identifying a key. Same value as the slot name: `KeyDefinition.id` is the semantic slot, `KeyPlacement.keyId` references it."
 rejected = ["slotId"]
 note = "`keyId` is the established API surface — `GestureResolver.resolve(keyId:gesture:in:)`. Say \"slot\" for the position, \"key\" for the thing bound to it."
 
@@ -90,7 +90,7 @@ name = "GesturePreprocessorConfiguration"
 zone = "A"
 definition = "The injected tuning parameters of `GesturePreprocessor`."
 rejected = ["GesturePreprocessorConfig"]
-note = "`…Configuration` is for injected runtime parameters, `…Definition` for declarative data. The two `…Config` types in the tree take different suffixes for that reason."
+note = "`…Configuration` is for injected runtime parameters, `…Definition` for declarative data. `GesturePreprocessorConfig` and `KeyConfig` were retired together and took different suffixes for that reason."
 
 [[term]]
 name = "ScreenshotType"

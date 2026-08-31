@@ -2,7 +2,7 @@
 //  KeyView.swift
 //  Wurstfinger
 //
-//  Generic key view that renders any KeyConfig with style-based appearance
+//  Generic key view that renders any KeyDefinition with style-based appearance
 //  and full gesture recognition.
 //
 
@@ -29,7 +29,7 @@ struct KeyRenderSettings: Equatable {
     static let stock = KeyRenderSettings()
 }
 
-/// Generic key view that renders any `KeyConfig`.
+/// Generic key view that renders any `KeyDefinition`.
 ///
 /// Visual appearance is driven by `key.style`. Hints derive directly from
 /// `key.bindings`, so only the gestures actually defined on a key are shown.
@@ -37,14 +37,14 @@ struct KeyRenderSettings: Equatable {
 /// continuous drag tracking. All other keys use `KeyGestureRecognizer` for
 /// swipe/tap/circular gesture classification.
 struct KeyView: View {
-    let key: KeyConfig
-    let onGesture: (KeyConfig, GestureType, Bool) -> Void
+    let key: KeyDefinition
+    let onGesture: (KeyDefinition, GestureType, Bool) -> Void
     var onTouchDown: (() -> Void)?
-    var onSlide: ((KeyConfig, SlidePhase) -> Void)?
+    var onSlide: ((KeyDefinition, SlidePhase) -> Void)?
     /// Handles a long press on this key; returns whether it dispatched an
     /// action (a handled long press consumes the touch). Long-press detection
     /// only runs when this is set and the user setting is enabled.
-    var onLongPress: ((KeyConfig) -> Bool)?
+    var onLongPress: ((KeyDefinition) -> Bool)?
     /// Shared swipe-trail collector, supplied by `KeyboardGridView`. Forwarded
     /// to whichever gesture modifier this key uses; nil means no trail
     /// (previews, tests).

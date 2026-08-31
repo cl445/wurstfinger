@@ -7,7 +7,7 @@
 
 import XCTest
 
-private struct ScreenshotConfig {
+private struct ScreenshotConfiguration {
     let mode: String
     let appearance: String
     let number: String
@@ -157,7 +157,7 @@ final class ScreenshotTests: XCTestCase {
             .lowercased()
 
         // Keyboard layouts to capture
-        let configurations: [ScreenshotConfig] = [
+        let configurations: [ScreenshotConfiguration] = [
             .init(mode: "lower", appearance: "light", number: "06"),
             .init(mode: "lower", appearance: "dark", number: "07"),
             .init(mode: "numbers", appearance: "light", number: "08"),
@@ -195,7 +195,7 @@ final class ScreenshotTests: XCTestCase {
             .replacingOccurrences(of: " ", with: "-")
             .lowercased()
 
-        let configurations: [ScreenshotConfig] = [
+        let configurations: [ScreenshotConfiguration] = [
             .init(
                 mode: "lower",
                 appearance: "light",

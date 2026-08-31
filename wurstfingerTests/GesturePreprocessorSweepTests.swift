@@ -196,7 +196,7 @@ struct GesturePreprocessorSweepTests {
     /// construction rather than silently passing; `skipped` counts them and
     /// the expectations name the number.
     @Test func aDirectionAdversarialGlitchNeverChangesTheClassification() {
-        let maxJump = GesturePreprocessorConfig.default.maxJumpDistance
+        let maxJump = GesturePreprocessorConfiguration.default.maxJumpDistance
         let preprocessor = GesturePreprocessor(config: .default)
         var mismatches: [String] = []
         var survivors: [String] = []

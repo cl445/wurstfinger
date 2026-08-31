@@ -15,7 +15,7 @@ struct KeyboardMode: Codable, Equatable {
     let name: String
 
     /// Pool of all keys in this mode, accessible by ID
-    let keys: [String: KeyConfig]
+    let keys: [String: KeyDefinition]
 
     /// Different grid arrangements for different contexts.
     /// At least `.portrait` must be present.
@@ -33,7 +33,7 @@ struct KeyboardMode: Codable, Equatable {
 
     // MARK: - Convenience
 
-    func key(for id: String) -> KeyConfig? {
+    func key(for id: String) -> KeyDefinition? {
         keys[id]
     }
 
@@ -87,7 +87,7 @@ struct KeyboardMode: Codable, Equatable {
     /// `accessibilityLabel` is passed rather than inherited because the two
     /// uses disagree about it: the shifted mode's binding still does
     /// something and deserves a name, the caps-lock one switches to the mode
-    /// it is already in and must stay unnamed, or `KeyConfig.accessibilityActions`
+    /// it is already in and must stay unnamed, or `KeyDefinition.accessibilityActions`
     /// would offer VoiceOver a rotor entry that does nothing.
     func replacingShiftUpBinding(
         label: String,

@@ -18,14 +18,14 @@ struct ExpertSettingsView: View {
 
     // MARK: - Preprocessing Settings
 
-    @AppStorage(GesturePreprocessorConfig.jitterThresholdKey, store: SharedDefaults.store)
-    private var jitterThreshold = Double(GesturePreprocessorConfig.defaultJitterThreshold)
+    @AppStorage(GesturePreprocessorConfiguration.jitterThresholdKey, store: SharedDefaults.store)
+    private var jitterThreshold = Double(GesturePreprocessorConfiguration.defaultJitterThreshold)
 
-    @AppStorage(GesturePreprocessorConfig.maxJumpDistanceKey, store: SharedDefaults.store)
-    private var maxJumpDistance = Double(GesturePreprocessorConfig.defaultMaxJumpDistance)
+    @AppStorage(GesturePreprocessorConfiguration.maxJumpDistanceKey, store: SharedDefaults.store)
+    private var maxJumpDistance = Double(GesturePreprocessorConfiguration.defaultMaxJumpDistance)
 
-    @AppStorage(GesturePreprocessorConfig.smoothingWindowKey, store: SharedDefaults.store)
-    private var smoothingWindow = GesturePreprocessorConfig.defaultSmoothingWindow
+    @AppStorage(GesturePreprocessorConfiguration.smoothingWindowKey, store: SharedDefaults.store)
+    private var smoothingWindow = GesturePreprocessorConfiguration.defaultSmoothingWindow
 
     // MARK: - Classification Settings
 
@@ -178,7 +178,7 @@ struct ExpertSettingsView: View {
             parameterSlider(
                 title: "Jitter Threshold",
                 value: $jitterThreshold,
-                range: GesturePreprocessorConfig.jitterThresholdRange,
+                range: GesturePreprocessorConfiguration.jitterThresholdRange,
                 step: 0.5,
                 unit: "pt",
                 description: "Points closer than this are merged. Removes finger micro-movements."
@@ -187,13 +187,13 @@ struct ExpertSettingsView: View {
             parameterSlider(
                 title: "Max Jump Distance",
                 value: $maxJumpDistance,
-                range: GesturePreprocessorConfig.maxJumpDistanceRange,
+                range: GesturePreprocessorConfiguration.maxJumpDistanceRange,
                 step: 5,
                 unit: "pt",
                 description: "Points further apart are removed as glitches."
             )
 
-            Stepper(value: $smoothingWindow, in: GesturePreprocessorConfig.smoothingWindowRange, step: 2) {
+            Stepper(value: $smoothingWindow, in: GesturePreprocessorConfiguration.smoothingWindowRange, step: 2) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text("Smoothing Window")
@@ -405,9 +405,9 @@ struct ExpertSettingsView: View {
 
     private func resetToDefaults() {
         // Preprocessing
-        jitterThreshold = Double(GesturePreprocessorConfig.defaultJitterThreshold)
-        maxJumpDistance = Double(GesturePreprocessorConfig.defaultMaxJumpDistance)
-        smoothingWindow = GesturePreprocessorConfig.defaultSmoothingWindow
+        jitterThreshold = Double(GesturePreprocessorConfiguration.defaultJitterThreshold)
+        maxJumpDistance = Double(GesturePreprocessorConfiguration.defaultMaxJumpDistance)
+        smoothingWindow = GesturePreprocessorConfiguration.defaultSmoothingWindow
 
         // Classification
         minSwipeLength = Double(GestureClassificationThresholds.defaultMinSwipeLength)

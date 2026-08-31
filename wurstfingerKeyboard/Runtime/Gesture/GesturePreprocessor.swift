@@ -95,7 +95,7 @@ import Foundation
 
 // MARK: - Configuration
 
-struct GesturePreprocessorConfig {
+struct GesturePreprocessorConfiguration {
     /// Minimum distance between consecutive points (jitter threshold)
     let jitterThreshold: CGFloat
     /// Maximum jump distance to consider valid (outlier threshold)
@@ -129,7 +129,7 @@ struct GesturePreprocessorConfig {
     static let maxJumpDistanceKey = "gesture.maxJumpDistance"
     static let smoothingWindowKey = "gesture.smoothingWindow"
 
-    static let `default` = GesturePreprocessorConfig(
+    static let `default` = GesturePreprocessorConfiguration(
         jitterThreshold: defaultJitterThreshold,
         maxJumpDistance: defaultMaxJumpDistance,
         smoothingWindow: defaultSmoothingWindow,
@@ -143,7 +143,7 @@ struct GesturePreprocessorConfig {
     /// Custom values only apply while expert mode is enabled; when it is off,
     /// the defaults are returned. The stored values are kept so they survive
     /// toggling expert mode off and on again.
-    static func fromUserDefaults(store: UserDefaults = SharedDefaults.store) -> GesturePreprocessorConfig {
+    static func fromUserDefaults(store: UserDefaults = SharedDefaults.store) -> GesturePreprocessorConfiguration {
         guard store.bool(forKey: SettingsKey.expertModeEnabled.rawValue) else { return .default }
         let jitter = clampedCGFloat(
             from: store, key: jitterThresholdKey,
@@ -153,7 +153,7 @@ struct GesturePreprocessorConfig {
             from: store, key: maxJumpDistanceKey,
             default: defaultMaxJumpDistance, range: maxJumpDistanceRange
         )
-        return GesturePreprocessorConfig(
+        return GesturePreprocessorConfiguration(
             jitterThreshold: jitter,
             maxJumpDistance: maxJump,
             smoothingWindow: validSmoothingWindow(from: store),
@@ -189,8 +189,8 @@ struct GesturePreprocessorConfig {
     /// `@AppStorage` read) fall back to 1.0 — `normalizeAspectRatio` divides
     /// by the ratio, and dividing by zero/NaN would poison the whole pipeline
     /// so that every gesture classifies as `.swipeRight`.
-    func with(aspectRatio: CGFloat) -> GesturePreprocessorConfig {
-        GesturePreprocessorConfig(
+    func with(aspectRatio: CGFloat) -> GesturePreprocessorConfiguration {
+        GesturePreprocessorConfiguration(
             jitterThreshold: jitterThreshold,
             maxJumpDistance: maxJumpDistance,
             smoothingWindow: smoothingWindow,
@@ -203,9 +203,9 @@ struct GesturePreprocessorConfig {
 // MARK: - Gesture Preprocessor
 
 struct GesturePreprocessor {
-    let config: GesturePreprocessorConfig
+    let config: GesturePreprocessorConfiguration
 
-    init(config: GesturePreprocessorConfig = .default) {
+    init(config: GesturePreprocessorConfiguration = .default) {
         self.config = config
     }
 

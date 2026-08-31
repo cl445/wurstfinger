@@ -54,7 +54,7 @@ struct KeyboardViewModelContextTests {
         )
         let mode = KeyboardMode(
             name: "test",
-            keys: ["a": KeyConfig(
+            keys: ["a": KeyDefinition(
                 id: "a",
                 bindings: [.tap: KeyBinding(
                     label: "a",
@@ -152,7 +152,7 @@ struct KeyViewStyleTests {
     @Test func primaryLabelFallsBackToKeyId() {
         // A key with no tap binding still has a stable label so it can
         // be debugged in previews.
-        let key = KeyConfig(
+        let key = KeyDefinition(
             id: "midLeft",
             bindings: [:],
             swipeMode: .eightWay,
@@ -171,7 +171,7 @@ struct KeyViewStyleTests {
     }
 
     @Test func primaryLabelUsesTapBindingLabel() {
-        let key = KeyConfig(
+        let key = KeyDefinition(
             id: "midLeft",
             bindings: [.tap: KeyBinding(
                 label: "d",
@@ -196,7 +196,7 @@ struct KeyViewStyleTests {
     }
 
     @Test func accessibilityLabelPrefersExplicitOverride() {
-        let key = KeyConfig(
+        let key = KeyDefinition(
             id: "delete",
             bindings: [.tap: KeyBinding(
                 label: "⌫",
