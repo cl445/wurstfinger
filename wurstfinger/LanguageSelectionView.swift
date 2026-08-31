@@ -19,25 +19,21 @@ struct LanguageSelectionView: View {
                         language: language,
                         isEnabled: languageSettings.isLanguageEnabled(language),
                         isDefault: languageSettings.pinnedLanguageId == language.id,
-                        onTap: {
-                            if languageSettings.isLanguageEnabled(language) {
-                                languageSettings.pinLanguage(language)
-                            } else {
-                                languageSettings.toggleLanguage(language)
-                                languageSettings.pinLanguage(language)
-                            }
-                        },
                         onToggle: {
                             if !languageSettings.toggleLanguage(language) {
                                 showLastLanguageAlert = true
                             }
+                        },
+                        onMakeDefault: {
+                            languageSettings.pinLanguage(language)
                         }
                     )
                 }
             } footer: {
-                if languageSettings.hasMultipleLanguages {
-                    Text("Swipe right on the globe key to switch languages. Tap a language to set it as the default startup language.")
-                }
+                Text(
+                    // swiftlint:disable:next line_length
+                    "Tap a language to enable or disable it. Tap the star to choose the language the keyboard starts with. Swipe right on the globe key to switch languages while typing."
+                )
             }
         }
         .navigationTitle("Languages")
@@ -54,15 +50,24 @@ private struct LanguageRow: View {
     let language: LanguageConfig
     let isEnabled: Bool
     let isDefault: Bool
-    let onTap: () -> Void
     let onToggle: () -> Void
+    let onMakeDefault: () -> Void
 
     var body: some View {
         HStack {
             Button(action: onToggle) {
-                Image(systemName: isEnabled ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(isEnabled ? .accentColor : .secondary)
-                    .imageScale(.large)
+                HStack {
+                    Image(systemName: isEnabled ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(isEnabled ? .accentColor : .secondary)
+                        .imageScale(.large)
+
+                    Text(language.name)
+                        .font(.body)
+                        .foregroundColor(.primary)
+
+                    Spacer()
+                }
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(
@@ -72,27 +77,17 @@ private struct LanguageRow: View {
             )
             .accessibilityValue(isEnabled ? String(localized: "Enabled") : String(localized: "Disabled"))
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(language.name)
-                    .font(.body)
-                    .foregroundColor(.primary)
-
-                Text("MessagEase Layout")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            if isDefault {
-                Text("Default")
-                    .font(.caption)
-                    .foregroundColor(.accentColor)
-                    .fontWeight(.medium)
+            if isEnabled {
+                Button(action: onMakeDefault) {
+                    Image(systemName: isDefault ? "star.fill" : "star")
+                        .foregroundColor(isDefault ? .yellow : .secondary)
+                        .imageScale(.large)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Make \(language.name) the default language"))
+                .accessibilityAddTraits(isDefault ? [.isSelected] : [])
             }
         }
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onTap)
     }
 }
 

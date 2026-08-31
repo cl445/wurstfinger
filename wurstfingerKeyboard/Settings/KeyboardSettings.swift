@@ -16,6 +16,7 @@ import Foundation
 /// Using an enum prevents typos and makes refactoring easier.
 /// The rawValues are persisted storage keys — never rename a case, even when
 /// the type it points to is renamed.
+/// `CaseIterable` powers the host app's "Reset All Settings" action.
 enum SettingsKey: String, CaseIterable {
     case hapticIntensityTap
     case hapticIntensityDrag
