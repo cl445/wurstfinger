@@ -110,51 +110,18 @@ custom_rules:
     match_kinds: [identifier]
     message: "`hideExtraSymbols` is rejected — the glossary term is `areExtraSymbolLabelsHidden` (docs/GLOSSARY.md)."
     severity: error
-    excluded:
-      - "wurstfinger/LabelVisibilitySettingsView\\.swift"
-      - "wurstfinger/SettingsView\\.swift"
-      - "wurstfingerKeyboard/Definition/Model/LabelCategory\\.swift"
-      - "wurstfingerKeyboard/Runtime/Pipeline/KeyboardViewModel\\+Pipeline\\.swift"
-      - "wurstfingerKeyboard/Runtime/View/DataDrivenKeyboardRootView\\.swift"
-      - "wurstfingerKeyboard/Runtime/View/KeyView\\.swift"
-      - "wurstfingerKeyboard/Settings/KeyboardSettings\\.swift"
-      - "wurstfingerTests/KeyboardGridRenderingTests\\.swift"
-      - "wurstfingerTests/LabelCategoryTests\\.swift"
-      - "wurstfingerTests/SlideGestureStateTests\\.swift"
   glossary_hide_letters:
     name: "Glossary: hideLetters"
     regex: "\\bhideLetters\\b"
     match_kinds: [identifier]
     message: "`hideLetters` is rejected — the glossary term is `areLetterLabelsHidden` (docs/GLOSSARY.md)."
     severity: error
-    excluded:
-      - "wurstfinger/LabelVisibilitySettingsView\\.swift"
-      - "wurstfinger/SettingsView\\.swift"
-      - "wurstfingerKeyboard/Definition/Model/LabelCategory\\.swift"
-      - "wurstfingerKeyboard/Runtime/Pipeline/KeyboardViewModel\\+Pipeline\\.swift"
-      - "wurstfingerKeyboard/Runtime/View/DataDrivenKeyboardRootView\\.swift"
-      - "wurstfingerKeyboard/Runtime/View/KeyView\\.swift"
-      - "wurstfingerKeyboard/Settings/KeyboardSettings\\.swift"
-      - "wurstfingerTests/KeyboardGridRenderingTests\\.swift"
-      - "wurstfingerTests/LabelCategoryTests\\.swift"
-      - "wurstfingerTests/SlideGestureStateTests\\.swift"
   glossary_hide_standard_symbols:
     name: "Glossary: hideStandardSymbols"
     regex: "\\bhideStandardSymbols\\b"
     match_kinds: [identifier]
     message: "`hideStandardSymbols` is rejected — the glossary term is `areStandardSymbolLabelsHidden` (docs/GLOSSARY.md)."
     severity: error
-    excluded:
-      - "wurstfinger/LabelVisibilitySettingsView\\.swift"
-      - "wurstfinger/SettingsView\\.swift"
-      - "wurstfingerKeyboard/Definition/Model/LabelCategory\\.swift"
-      - "wurstfingerKeyboard/Runtime/Pipeline/KeyboardViewModel\\+Pipeline\\.swift"
-      - "wurstfingerKeyboard/Runtime/View/DataDrivenKeyboardRootView\\.swift"
-      - "wurstfingerKeyboard/Runtime/View/KeyView\\.swift"
-      - "wurstfingerKeyboard/Settings/KeyboardSettings\\.swift"
-      - "wurstfingerTests/KeyboardGridRenderingTests\\.swift"
-      - "wurstfingerTests/LabelCategoryTests\\.swift"
-      - "wurstfingerTests/SlideGestureStateTests\\.swift"
   glossary_key_config:
     name: "Glossary: KeyConfig"
     regex: "\\bKeyConfig\\b"
@@ -208,12 +175,6 @@ custom_rules:
     match_kinds: [identifier]
     message: "`longPressNumbersEnabled` is rejected — the glossary term is `isLongPressDigitEnabled` (docs/GLOSSARY.md)."
     severity: error
-    excluded:
-      - "wurstfinger/SettingsView\\.swift"
-      - "wurstfingerKeyboard/Runtime/View/DataDrivenKeyboardRootView\\.swift"
-      - "wurstfingerKeyboard/Runtime/View/KeyView\\.swift"
-      - "wurstfingerKeyboard/Settings/KeyboardSettings\\.swift"
-      - "wurstfingerTests/KeyboardGridRenderingTests\\.swift"
   glossary_screenshot_config:
     name: "Glossary: ScreenshotConfig"
     regex: "\\bScreenshotConfig\\b"

@@ -14,8 +14,10 @@ import Foundation
 
 /// Centralized storage for all UserDefaults keys used by the keyboard.
 /// Using an enum prevents typos and makes refactoring easier.
-/// The rawValues are persisted storage keys — never rename a case, even when
-/// the type it points to is renamed.
+/// The rawValues are persisted storage keys. A case name may be brought in
+/// line with the glossary, but only together with an explicit rawValue that
+/// keeps the string already on disk — renaming a case that relies on the
+/// implicit rawValue silently resets that setting on every installed device.
 enum SettingsKey: String, CaseIterable {
     case hapticIntensityTap
     case hapticIntensityDrag
@@ -40,12 +42,17 @@ enum SettingsKey: String, CaseIterable {
     case keyboardStyle
     case keyboardFullAccess
     case cursorMovementStyle
-    case hideLetters
-    case hideStandardSymbols
-    case hideExtraSymbols
+    /// The three label-visibility flags and the long-press flag below were
+    /// renamed to read as assertions; their rawValues are pinned to the
+    /// strings they have always been stored under, so the settings of
+    /// everyone who already uses the keyboard survive the rename. The
+    /// strings are the persisted keys and must not change.
+    case areLetterLabelsHidden = "hideLetters"
+    case areStandardSymbolLabelsHidden = "hideStandardSymbols"
+    case areExtraSymbolLabelsHidden = "hideExtraSymbols"
     /// Holding a letter key types the digit that key carries in numeric
     /// mode, without switching to it.
-    case longPressNumbersEnabled
+    case isLongPressDigitEnabled = "longPressNumbersEnabled"
     /// Typing a second consecutive space inserts a period followed by a
     /// space (the iOS "." Shortcut), when the character before the pending
     /// space is a letter or digit.

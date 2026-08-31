@@ -123,13 +123,15 @@ Before renaming anything, ask who owns the name. Every term in `glossary.toml` r
   code sees them, so renaming is pure refactoring.
 - **Zone B, migratable.** Anything read back from disk. The Swift spelling and the stored
   spelling are two different names: rename the property and **pin the old string**
-  — `case areLetterLabelsHidden = "hideLetters"` — or ship a migration. Phase 1 already
-  works this way: the type is `NumpadType` while the stored key stays `numpadStyle`, and
-  that divergence is correct rather than drift.
+  — `case areLetterLabelsHidden = "hideLetters"` — or ship a migration. That line is real:
+  the four label-visibility and long-press flags were renamed exactly that way, and the
+  strings on their cases are the persisted keys. The same divergence exists from the other
+  side, where the type is `NumpadType` while the stored key stays `numpadStyle`; both are
+  correct rather than drift.
 
   | Name | Note |
   | --- | --- |
-  | `SettingsKey` cases | 24 cases, **all with implicit rawValues** — the case name *is* the stored key, so a rename orphans the setting unless the old string is pinned. |
+  | `SettingsKey` cases | 24 cases; four carry a **pinned rawValue** after their rename, the other 20 rely on the implicit one — there the case name *is* the stored key, so a rename orphans the setting unless the old string is pinned. |
   | `AppSettingsKey` cases | 3 cases, all with explicit rawValues (`onboarding.*`). Here the case names are free and the strings are the contract. |
   | `gesture.*` | The tuning keys in `GesturePreprocessor`, written as string literals. |
   | `KeyboardHealthLog.Entry` properties | `Codable` with no `CodingKeys`, written to a JSON file in the app group — the property names *are* the on-disk field names. |
@@ -252,7 +254,9 @@ These are not domain-specific, but they are where new code drifts most.
 
 - **Booleans read as assertions:** `is…`, `has…`, `should…` (`isSliding`, `shouldCapitalize`).
   A settings flag is `isSomethingEnabled`, not `enableSomething` or `hideSomething` — the
-  latter read as commands. Existing `hideLetters` / `longPressNumbersEnabled` are legacy.
+  latter read as commands. `areLetterLabelsHidden` and `isLongPressDigitEnabled` were
+  spelled `hideLetters` and `longPressNumbersEnabled` until they were renamed; the stored
+  keys still are.
 - **Tests carry no `test` prefix.** All `@Test` functions are named as the assertion
   they make: `symbolsKeySwitchesToNumeric()`, `allLanguagesHaveUniqueIds()`. Write the
   expected behavior as a sentence; the `@Test` attribute already says it is a test.
@@ -318,12 +322,8 @@ counts per file: they may shrink, never grow — and a shrink has to be recorded
 | Legacy spelling | Replacement | Sites | Files |
 | --- | --- | --- | --- |
 | `LanguageConfig` | `LanguageDescriptor` | 53 | 11 |
-| `hideLetters` | `areLetterLabelsHidden` | 37 | 10 |
-| `hideStandardSymbols` | `areStandardSymbolLabelsHidden` | 37 | 10 |
-| `hideExtraSymbols` | `areExtraSymbolLabelsHidden` | 35 | 10 |
-| `longPressNumbersEnabled` | `isLongPressDigitEnabled` | 13 | 5 |
 | `KeyboardInfo` | `LanguageDescriptor` | 6 | 4 |
-| **total** | | **181** | **24** |
+| **total** | | **59** | **15** |
 
 <!-- /generated: backlog -->
 

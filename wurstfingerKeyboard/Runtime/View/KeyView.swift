@@ -16,10 +16,10 @@ import SwiftUI
 /// setting changes and hands every key the fresh values.
 struct KeyRenderSettings: Equatable {
     var keyboardStyle: KeyboardStyle = .classic
-    var hideLetters = false
-    var hideStandardSymbols = false
-    var hideExtraSymbols = false
-    var longPressNumbersEnabled = false
+    var areLetterLabelsHidden = false
+    var areStandardSymbolLabelsHidden = false
+    var areExtraSymbolLabelsHidden = false
+    var isLongPressDigitEnabled = false
 
     /// The values a key renders with when nothing is stored yet. Single source
     /// for those defaults: `DataDrivenKeyboardRootView` initializes its
@@ -87,9 +87,9 @@ struct KeyView: View {
     /// label-visibility toggles (numbers and functional keys always show).
     private func isLabelVisible(_ binding: KeyBinding) -> Bool {
         LabelCategory.of(binding).isVisible(
-            hideLetters: settings.hideLetters,
-            hideStandardSymbols: settings.hideStandardSymbols,
-            hideExtraSymbols: settings.hideExtraSymbols
+            areLetterLabelsHidden: settings.areLetterLabelsHidden,
+            areStandardSymbolLabelsHidden: settings.areStandardSymbolLabelsHidden,
+            areExtraSymbolLabelsHidden: settings.areExtraSymbolLabelsHidden
         )
     }
 
@@ -261,7 +261,7 @@ struct KeyView: View {
     /// Long-press handler for the gesture recognizer, or nil when the
     /// opt-in setting is off or no handler is wired up (preview contexts).
     private var longPressHandler: (() -> Bool)? {
-        guard settings.longPressNumbersEnabled, let onLongPress else { return nil }
+        guard settings.isLongPressDigitEnabled, let onLongPress else { return nil }
         return { onLongPress(key) }
     }
 

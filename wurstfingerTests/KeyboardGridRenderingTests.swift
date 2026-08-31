@@ -230,10 +230,10 @@ struct KeyViewStyleTests {
         let stock = KeyRenderSettings.stock
 
         #expect(stock == KeyRenderSettings())
-        #expect(stock.hideLetters == store.bool(forKey: SettingsKey.hideLetters.rawValue))
-        #expect(stock.hideStandardSymbols == store.bool(forKey: SettingsKey.hideStandardSymbols.rawValue))
-        #expect(stock.hideExtraSymbols == store.bool(forKey: SettingsKey.hideExtraSymbols.rawValue))
-        #expect(stock.longPressNumbersEnabled == store.bool(forKey: SettingsKey.longPressNumbersEnabled.rawValue))
+        #expect(stock.areLetterLabelsHidden == store.bool(forKey: SettingsKey.areLetterLabelsHidden.rawValue))
+        #expect(stock.areStandardSymbolLabelsHidden == store.bool(forKey: SettingsKey.areStandardSymbolLabelsHidden.rawValue))
+        #expect(stock.areExtraSymbolLabelsHidden == store.bool(forKey: SettingsKey.areExtraSymbolLabelsHidden.rawValue))
+        #expect(stock.isLongPressDigitEnabled == store.bool(forKey: SettingsKey.isLongPressDigitEnabled.rawValue))
         // No stored style either, so the enum default is what renders.
         #expect(store.string(forKey: SettingsKey.keyboardStyle.rawValue) == nil)
         #expect(stock.keyboardStyle == .classic)

@@ -492,13 +492,13 @@ extension KeyboardViewModel {
     /// show them again, otherwise it hides both.
     private func toggleLabelVisibility(grouped: Bool) {
         if grouped {
-            let hidden = sharedDefaults.bool(forKey: SettingsKey.hideLetters.rawValue)
-                && sharedDefaults.bool(forKey: SettingsKey.hideStandardSymbols.rawValue)
-            setLabelFlag(!hidden, forKey: .hideLetters)
-            setLabelFlag(!hidden, forKey: .hideStandardSymbols)
+            let hidden = sharedDefaults.bool(forKey: SettingsKey.areLetterLabelsHidden.rawValue)
+                && sharedDefaults.bool(forKey: SettingsKey.areStandardSymbolLabelsHidden.rawValue)
+            setLabelFlag(!hidden, forKey: .areLetterLabelsHidden)
+            setLabelFlag(!hidden, forKey: .areStandardSymbolLabelsHidden)
         } else {
-            let hidden = sharedDefaults.bool(forKey: SettingsKey.hideExtraSymbols.rawValue)
-            setLabelFlag(!hidden, forKey: .hideExtraSymbols)
+            let hidden = sharedDefaults.bool(forKey: SettingsKey.areExtraSymbolLabelsHidden.rawValue)
+            setLabelFlag(!hidden, forKey: .areExtraSymbolLabelsHidden)
         }
         // Confirmation tick, not a second tap impact: the touch-down already
         // fired the tap haptic, and the toggle is a state change like a
