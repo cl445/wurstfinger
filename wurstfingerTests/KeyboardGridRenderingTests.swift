@@ -221,7 +221,7 @@ struct KeyViewStyleTests {
     }
 
     /// The stock snapshot describes what an untouched installation renders:
-    /// nothing hidden, classic style, long-press numbers off. It is what keys
+    /// nothing hidden, long-press numbers off. It is what keys
     /// built without a store render with (tests, previews) *and* what
     /// `DataDrivenKeyboardRootView` seeds its `@AppStorage` wrappers with, so a
     /// silent change here would move both at once.
@@ -234,9 +234,8 @@ struct KeyViewStyleTests {
         #expect(stock.hideStandardSymbols == store.bool(forKey: SettingsKey.hideStandardSymbols.rawValue))
         #expect(stock.hideExtraSymbols == store.bool(forKey: SettingsKey.hideExtraSymbols.rawValue))
         #expect(stock.longPressNumbersEnabled == store.bool(forKey: SettingsKey.longPressNumbersEnabled.rawValue))
-        // No stored style either, so the enum default is what renders.
-        #expect(store.string(forKey: SettingsKey.keyboardStyle.rawValue) == nil)
-        #expect(stock.keyboardStyle == .classic)
+        // Colors are no longer part of the snapshot — they come from the
+        // theme environment. `ThemeResolverTests` covers their defaults.
     }
 
     // MARK: - Label sizing

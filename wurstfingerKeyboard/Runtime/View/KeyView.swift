@@ -14,8 +14,11 @@ import SwiftUI
 /// The whole keyboard holds one defaults observation per setting, and the
 /// ~100 key views a mode builds hold none: the root re-renders when a
 /// setting changes and hands every key the fresh values.
+///
+/// Colors are not in here: the resolved theme travels through the
+/// `\.keyboardTheme` environment instead, because it also has to reach the
+/// board background that sits outside any key.
 struct KeyRenderSettings: Equatable {
-    var keyboardStyle: KeyboardStyle = .classic
     var hideLetters = false
     var hideStandardSymbols = false
     var hideExtraSymbols = false
@@ -67,6 +70,10 @@ struct KeyView: View {
     /// failing the build.
     let settings: KeyRenderSettings
 
+    /// Resolved once in `DataDrivenKeyboardRootView` and injected here — key
+    /// views never resolve theme data themselves.
+    @Environment(\.keyboardTheme) private var theme
+
     /// Resolved layout metrics injected by `KeyboardGridView` (same reasoning
     /// as there: an `@AppStorage` read desynchronizes from the width path
     /// when the view model is configured programmatically). Feeds the gesture
@@ -106,37 +113,33 @@ struct KeyView: View {
 
     @ViewBuilder
     private var keyContent: some View {
-        let base = ZStack {
-            background
-            label
-            hintOverlay
-        }
-        // Inset the drawn key from the touch cell by `visualInset`, so the
-        // visible key keeps its position/size while the cell itself extends into
-        // the inter-key gaps (see KeyboardGridLayout.gapInsets).
-        .padding(visualInset)
-        // Fill the cell frame imposed by KeyboardGridLayout. The layout sizes
-        // rows from the same effective key height, so single-row keys are
-        // unchanged while a spanning key (e.g. landscape return) grows to cover
-        // multiple rows.
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityLabel)
-        .accessibilityIdentifier(key.id)
-        .accessibilityAddTraits(.isButton)
-        .modifier(KeyAccessibilityActions(key: key, onGesture: onGesture))
-        // The whole cell is the touch target. Adjacent cells tile the surface
-        // with no gaps, so a plain rectangle covers it fully.
-        .contentShape(Rectangle())
-        // Pin the key's alignment/padding surface to physical LTR so the
-        // directional hints (`hintAlignments` / `hintEdgePadding`, which use
-        // semantic leading/trailing) always match the physical swipe
-        // directions — even when a host renders this key under an RTL locale
-        // (e.g. KeyboardShowcaseView / AppStoreScreenshotView for localized
-        // screenshots, or SwiftUI previews). Defense-in-depth alongside the
-        // root pin in DataDrivenKeyboardRootView; nested identical pins are
-        // harmless.
-        .environment(\.layoutDirection, .leftToRight)
+        let base = keyStack
+            // Inset the drawn key from the touch cell by `visualInset`, so the
+            // visible key keeps its position/size while the cell itself extends into
+            // the inter-key gaps (see KeyboardGridLayout.gapInsets).
+            .padding(visualInset)
+            // Fill the cell frame imposed by KeyboardGridLayout. The layout sizes
+            // rows from the same effective key height, so single-row keys are
+            // unchanged while a spanning key (e.g. landscape return) grows to cover
+            // multiple rows.
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityIdentifier(key.id)
+            .accessibilityAddTraits(.isButton)
+            .modifier(KeyAccessibilityActions(key: key, onGesture: onGesture))
+            // The whole cell is the touch target. Adjacent cells tile the surface
+            // with no gaps, so a plain rectangle covers it fully.
+            .contentShape(Rectangle())
+            // Pin the key's alignment/padding surface to physical LTR so the
+            // directional hints (`hintAlignments` / `hintEdgePadding`, which use
+            // semantic leading/trailing) always match the physical swipe
+            // directions — even when a host renders this key under an RTL locale
+            // (e.g. KeyboardShowcaseView / AppStoreScreenshotView for localized
+            // screenshots, or SwiftUI previews). Defense-in-depth alongside the
+            // root pin in DataDrivenKeyboardRootView; nested identical pins are
+            // harmless.
+            .environment(\.layoutDirection, .leftToRight)
 
         if usesSlideGesture {
             base.modifier(SlideGestureHandler(
@@ -242,14 +245,6 @@ struct KeyView: View {
         style == .utility
     }
 
-    /// Background fill for the key.
-    static func backgroundColor(for style: KeyStyle, active: Bool = false) -> Color {
-        if active {
-            return Color(.tertiarySystemFill)
-        }
-        return Color(.secondarySystemBackground)
-    }
-
     // MARK: - Gesture Selection
 
     /// Whether this key uses slide gesture handling instead of standard
@@ -267,18 +262,92 @@ struct KeyView: View {
 
     // MARK: - View Construction
 
+    /// Whether this key should render as native Liquid Glass (iOS 26 with a
+    /// glass key surface). The glass then wraps the label layer directly, so
+    /// the label stays crisp and picks up glass vibrancy — applying it to a
+    /// separate background layer instead blurs the label.
+    ///
+    /// One surface style decides this for pressed and unpressed alike, so the
+    /// subtree structure stays stable across a key press. (Two independent
+    /// fills used to allow a half-glass state; nothing changes for the shipped
+    /// Liquid Glass theme, where both fills were the material anyway.)
+    private var usesNativeGlass: Bool {
+        if #available(iOS 26.0, *) { return theme.hasGlassKeys }
+        return false
+    }
+
+    /// Glass keys on a system without native Liquid Glass — only reachable
+    /// before iOS 26.
+    private var usesGlassFallback: Bool {
+        theme.hasGlassKeys && !usesNativeGlass
+    }
+
+    /// A subtle neutral tint on the glass, so the keys gain a bit of presence
+    /// and stand out from the backdrop instead of reading as fully clear glass
+    /// — while staying native Liquid Glass that blends with the system row.
+    ///
+    /// `internal` so the theme gallery's swatch renders glass through the same
+    /// constant; a copy of the literal there would silently desynchronize the
+    /// moment this value is retuned.
+    static let glassTint = Color.gray.opacity(0.12)
+
+    /// The stacked key layers. Native glass wraps the label/hint content with
+    /// `glassEffect` (label as content = crisp); every other style keeps the
+    /// pre-engine order of a background layer beneath the labels.
+    ///
+    /// The glass branch has to claim the whole cell itself. The other branch
+    /// gets that for free from `background`, whose `RoundedRectangle` is a
+    /// flexible shape, but glass is applied to the content — and the content of
+    /// a key without swipe hints is only its glyph, or for the space bar
+    /// nothing at all. Without the frame the pane shrinks to the glyph and the
+    /// space bar disappears entirely.
+    @ViewBuilder
+    private var keyStack: some View {
+        if usesNativeGlass, #available(iOS 26.0, *) {
+            ZStack {
+                label
+                hintOverlay
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .glassEffect(.regular.tint(Self.glassTint), in: RoundedRectangle(cornerRadius: theme.cornerRadius))
+        } else {
+            ZStack {
+                background
+                label
+                hintOverlay
+            }
+        }
+    }
+
     @ViewBuilder
     private var background: some View {
-        let shape = RoundedRectangle(cornerRadius: KeyboardConstants.KeyDimensions.cornerRadius)
-        switch settings.keyboardStyle {
-        case .classic:
-            shape.fill(Self.backgroundColor(for: key.style, active: isActive))
-        case .liquidGlass:
-            shape.fill(.bar)
-                .overlay(
-                    shape.strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
-                )
+        let shape = RoundedRectangle(cornerRadius: theme.cornerRadius)
+        if usesGlassFallback {
+            // Reached only before iOS 26 (native glass takes the other branch):
+            // the bar material with a hairline border, pixel-identical to the
+            // pre-engine Liquid Glass rendering.
+            filled(shape, with: .bar)
+        } else {
+            filled(shape, with: isActive ? theme.keyColorActive : theme.keyColor)
         }
+    }
+
+    /// Fills `shape` and overlays the theme's hairline border when it has one.
+    /// A theme without a border (Classic) gets no overlay in the view tree at
+    /// all, so it renders exactly as before the theme engine.
+    @ViewBuilder
+    private func filled(_ shape: RoundedRectangle, with fill: some ShapeStyle) -> some View {
+        if let border = theme.keyBorder, theme.keyBorderWidth > 0 {
+            shape.fill(fill)
+                .overlay(shape.strokeBorder(border, lineWidth: theme.keyBorderWidth))
+        } else {
+            shape.fill(fill)
+        }
+    }
+
+    /// Center label color: utility glyphs may differ from letter keys.
+    private var labelColor: Color {
+        key.style == .utility ? theme.utilityLabel : theme.mainLabel
     }
 
     @ViewBuilder
@@ -294,11 +363,11 @@ struct KeyView: View {
             if let sfName = Self.sfSymbolMap[primaryLabel] {
                 Image(systemName: sfName)
                     .font(font)
-                    .foregroundColor(.primary)
+                    .foregroundColor(labelColor)
             } else {
                 Text(primaryLabel)
                     .font(font)
-                    .foregroundColor(.primary)
+                    .foregroundColor(labelColor)
                     // Multi-character labels ("123") outgrow the cell before
                     // the size cap does; shrink instead of wrapping.
                     .lineLimit(1)
@@ -407,7 +476,7 @@ struct KeyView: View {
                         if isLanguageLabelShown {
                             Text(languageLabel)
                                 .font(.system(size: scaledHintFontSize * 0.75, weight: .semibold, design: .rounded))
-                                .foregroundStyle(Color.primary.opacity(0.5))
+                                .foregroundStyle(theme.hintIconProminent)
                                 .fixedSize()
                                 .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
@@ -441,12 +510,12 @@ struct KeyView: View {
                 // Globe / dismiss: larger, bolder for discoverability
                 Image(systemName: iconName)
                     .font(.system(size: scaledHintFontSize * 0.75, weight: .medium))
-                    .foregroundStyle(Color.primary.opacity(0.5))
+                    .foregroundStyle(theme.hintIconProminent)
             } else {
                 // Copy / paste / cut: smaller, lighter to avoid visual clutter
                 Image(systemName: iconName)
                     .font(.system(size: scaledHintFontSize * 0.6, weight: .regular))
-                    .foregroundStyle(Color.secondary.opacity(0.45))
+                    .foregroundStyle(theme.hintIconSubtle)
             }
         } else {
             // Text hint — letters get higher prominence than symbols
@@ -457,11 +526,7 @@ struct KeyView: View {
                     weight: isLetter ? .medium : .regular,
                     design: .rounded
                 ))
-                .foregroundStyle(
-                    isLetter
-                        ? Color.primary.opacity(0.65)
-                        : Color.secondary.opacity(0.55)
-                )
+                .foregroundStyle(isLetter ? theme.hintLetter : theme.hintSymbol)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
         }

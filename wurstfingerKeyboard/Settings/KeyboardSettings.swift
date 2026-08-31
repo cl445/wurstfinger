@@ -37,7 +37,18 @@ enum SettingsKey: String, CaseIterable {
     case pinnedLanguageId
     case autoCapitalizeEnabled
     case expertModeEnabled
+    /// Legacy style selection — only read by `ThemeStore.migrateIfNeeded`,
+    /// then removed.
     case keyboardStyle
+    case selectedThemeLight
+    case selectedThemeDark
+    /// Whether the user assigns a separate theme for dark mode. Read by the
+    /// resolver (`ThemeStore.theme(lightId:darkId:hasSeparateDarkSlot:for:)`),
+    /// not just by the settings screen: with the flag off the dark slot is
+    /// ignored rather than overwritten, so turning the toggle off and on again
+    /// gives the user their dark assignment back.
+    case themeSeparateDarkSlot
+    case userThemes
     case keyboardFullAccess
     case cursorMovementStyle
     case hideLetters
@@ -342,12 +353,4 @@ enum NumpadType: String, CaseIterable {
 enum CursorMovementType: String, CaseIterable {
     case continuous // Joystick-style: drag distance controls cursor position
     case discrete // MessagEase-style: one swipe = one character, return-swipe = one word
-}
-
-// MARK: - Keyboard Style
-
-/// Visual style for the keyboard appearance
-enum KeyboardStyle: String, CaseIterable {
-    case classic // Traditional opaque key backgrounds
-    case liquidGlass // iOS 26+ Liquid Glass effect (renders as a simplified translucent style on older iOS)
 }

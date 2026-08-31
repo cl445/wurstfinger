@@ -10,15 +10,26 @@ deliberately left in English.
 | Catalog | Holds |
 | --- | --- |
 | `wurstfinger/Localizable.xcstrings` | Everything the host app displays: settings, onboarding, the test area — plus the keyboard's own strings, because the app renders real keyboards in its previews and showcase. |
-| `wurstfingerKeyboard/Localizable.xcstrings` | Only the strings the keyboard extension itself displays, today the VoiceOver labels of the utility keys. |
+| `wurstfingerKeyboard/Localizable.xcstrings` | The strings that live in extension sources: the VoiceOver labels of the utility keys, plus the built-in theme names and descriptions. |
 
 Sources under `wurstfingerKeyboard/` compile into **both** products, so a
 string used there is looked up in whichever bundle is running and must exist in
-**both** catalogs. A string that only ever appears in settings therefore belongs
-in the host target — that is why `KeyboardStyle.displayName` lives in
-`StyleSettingsView.swift` and `HapticIntensityLevel.displayName` in
-`HapticSettingsView.swift`, next to the screens that show them, rather than
-next to the enums in `wurstfingerKeyboard/Settings/`.
+**both** catalogs. `catalogsRequiredBySourceDir` in
+`wurstfingerTests/LocalizationCompletenessTests.swift` encodes exactly that rule:
+a string found under `wurstfinger/` is required in the host catalog only, one
+found under `wurstfingerKeyboard/` is required in both.
+
+Where a display name is declared therefore decides how often it has to be
+translated. `HapticIntensityLevel.displayName` lives in
+`wurstfinger/HapticSettingsView.swift`, next to the screen that shows it rather
+than next to the enum in `wurstfingerKeyboard/Settings/`, so "Minimal", "Soft"
+and "Strong" exist in the host catalog only. The theme names go the other way:
+`displayName` and `displayDescription` are declared on `KeyboardThemeDefinition`
+in `wurstfingerKeyboard/Runtime/Theme/BuiltInThemes.swift` because extension code
+reads them too — `ThemeStore.duplicate` names a copied theme after its source.
+"Classic", "Liquid Glass", "Dark Gold" and their three descriptions are
+consequently duplicated into **both** catalogs, and a new built-in theme has to
+be translated in both.
 
 ## English-only screens
 

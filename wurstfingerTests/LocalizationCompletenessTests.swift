@@ -81,6 +81,11 @@ struct LocalizationCompletenessTests {
         var problems: [String] = []
 
         for (key, entry) in catalog.strings {
+            // Entries marked "shouldTranslate": false stay in the source
+            // language everywhere (e.g. proper names like "Dark Gold").
+            if entry["shouldTranslate"] as? Bool == false {
+                continue
+            }
             let localizations = entry["localizations"] as? [String: Any] ?? [:]
             let present = Set(localizations.keys)
 
@@ -333,7 +338,10 @@ private let untranslatedProperNouns: Set<String> = ["GitHub", "MIT", "Wurstfinge
 /// `LocalizationUsageTests` cannot see: a bare literal carries no
 /// `String(localized:)` marker.
 private let viewLiteralRegex: NSRegularExpression = {
-    let inits = "Text|Button|Toggle|TextField|Section|Label|Picker|Link|Stepper|NavigationLink"
+    // `ColorPicker` is listed separately: `\bPicker\(` cannot match inside the
+    // word, so without its own alternative every color-well label in the theme
+    // editor would be invisible to this test.
+    let inits = "Text|Button|Toggle|TextField|Section|Label|ColorPicker|Picker|Link|Stepper|NavigationLink"
     let modifiers = "navigationTitle|accessibilityLabel|accessibilityHint|alert|confirmationDialog"
     let pattern = #"(?:\b(?:"# + inits + #")\(|\.(?:"# + modifiers + #")\()\s*"(?!"")((?:[^"\\]|\\.)*)""#
     guard let regex = try? NSRegularExpression(pattern: pattern) else {
