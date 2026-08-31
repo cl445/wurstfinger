@@ -333,8 +333,8 @@ counts per file: they may shrink, never grow — and a shrink has to be recorded
 Comments are not counted — the checker reads identifiers only — so nothing prose says can
 appear in the table above. The keyboard-mode sense of "layer" is gone from the comments
 too; what is left is the architectural sense, which is the ordinary English word and not
-the rejected one: eight lines about the definition layer, the view layer, and the order
-of the hint layer.
+the rejected one: nine lines about the definition layer, the view layer, and the order of
+the hint layer.
 
 ## 9. Waivers
 

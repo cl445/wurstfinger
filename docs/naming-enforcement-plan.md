@@ -63,9 +63,8 @@ families. Small enough to burn down in three changes rather than a campaign.
 | `keyConfig` locals | 5 | 2 | follows its type |
 
 Plus, at this baseline, 88 comment and string lines across 32 files saying "layer", which
-the checker does not see and which come out together with the identifiers. G3 rewrote
-them; the eight that remain use "layer" in the architectural sense, which the glossary
-does not reject.
+the checker does not see and which come out together with the identifiers. What G3 left
+behind is counted once, below.
 
 ### The one that is not cosmetic
 
@@ -152,8 +151,10 @@ senses here and only one is wrong:
 | Architecture | "the definition layer", "the view layer" | correct, stays |
 | Ordinary English or z-order | "layered on top", "the hint layer order" | correct, stays |
 
-72 comment lines carried the first sense and were rewritten; 12 carried the other two and
-were left. §1 of the glossary now says so, because a blanket "never write layer" would
+Measured against this change's own parent — 83 such lines in 31 files — 74 carried the
+first sense and were rewritten; the 9 that carried the other two were left. (The 88 in
+the inventory above is the figure recorded when this plan was written, against a tree
+that has moved since; this pair is measured across the change itself.) §1 of the glossary now says so, because a blanket "never write layer" would
 have produced "the definition mode", which means nothing. The identifier rule is
 unaffected — no identifier in this codebase uses the architectural sense.
 
