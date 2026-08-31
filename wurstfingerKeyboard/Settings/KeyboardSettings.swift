@@ -59,6 +59,12 @@ enum SettingsKey: String, CaseIterable {
     /// redrawing costs battery, so experienced users are not made to pay for
     /// it. Off also keeps the keyboard visually identical to before.
     case gestureTrailEnabled
+    case themeKeyColor
+    case themeMainColor
+    case themeHintColor
+    case themePressedColor
+    case themeCornerRadius
+    case themeKeyEdges
 }
 
 // MARK: - Haptic Settings
@@ -350,4 +356,5 @@ enum CursorMovementType: String, CaseIterable {
 enum KeyboardStyle: String, CaseIterable {
     case classic // Traditional opaque key backgrounds
     case liquidGlass // iOS 26+ Liquid Glass effect (renders as a simplified translucent style on older iOS)
+    case darkGold // Themed palette, dark keys with golden letters (see KeyboardTheme)
 }

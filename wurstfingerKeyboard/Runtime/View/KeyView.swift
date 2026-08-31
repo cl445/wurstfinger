@@ -16,6 +16,11 @@ import SwiftUI
 /// setting changes and hands every key the fresh values.
 struct KeyRenderSettings: Equatable {
     var keyboardStyle: KeyboardStyle = .classic
+    /// Palette for a themed style; nil for the styles that render from
+    /// semantic system colors. Derived rather than stored: the root resolves
+    /// it once from the stored theme settings, so the hex parsing does not
+    /// repeat per key (and per color lookup within a key).
+    var theme: KeyboardTheme?
     var hideLetters = false
     var hideStandardSymbols = false
     var hideExtraSymbols = false
@@ -250,6 +255,41 @@ struct KeyView: View {
         return Color(.secondarySystemBackground)
     }
 
+    // MARK: - Theme
+
+    /// The configured palette when the active style is themed; nil for styles
+    /// that render from semantic system colors.
+    private var theme: KeyboardTheme? {
+        settings.theme
+    }
+
+    /// Center label color.
+    private var labelColor: Color {
+        guard let theme else { return .primary }
+        return key.style == .utility ? theme.hintLabel : theme.mainLabel
+    }
+
+    /// Globe/dismiss icon hints and the language label.
+    private var globeHintColor: Color {
+        (theme?.hintLabel ?? Color.primary).opacity(0.5)
+    }
+
+    /// Copy/cut/paste icon hints.
+    private var editIconHintColor: Color {
+        (theme?.hintLabel ?? Color.secondary).opacity(0.45)
+    }
+
+    /// Letter text hints. Themed styles keep hints near full strength so the
+    /// secondary characters stay prominent.
+    private var letterHintColor: Color {
+        theme.map { $0.hintLabel.opacity(0.9) } ?? Color.primary.opacity(0.65)
+    }
+
+    /// Symbol text hints.
+    private var symbolHintColor: Color {
+        theme.map { $0.hintLabel.opacity(0.7) } ?? Color.secondary.opacity(0.55)
+    }
+
     // MARK: - Gesture Selection
 
     /// Whether this key uses slide gesture handling instead of standard
@@ -278,6 +318,13 @@ struct KeyView: View {
                 .overlay(
                     shape.strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
                 )
+        case .darkGold:
+            let theme = theme ?? .darkGold
+            let themedShape = RoundedRectangle(cornerRadius: theme.cornerRadius)
+            themedShape.fill(isActive ? theme.keyBackgroundActive : theme.keyBackground)
+                .overlay(
+                    themedShape.strokeBorder(theme.keyBorder, lineWidth: theme.keyBorderWidth)
+                )
         }
     }
 
@@ -294,11 +341,11 @@ struct KeyView: View {
             if let sfName = Self.sfSymbolMap[primaryLabel] {
                 Image(systemName: sfName)
                     .font(font)
-                    .foregroundColor(.primary)
+                    .foregroundColor(labelColor)
             } else {
                 Text(primaryLabel)
                     .font(font)
-                    .foregroundColor(.primary)
+                    .foregroundColor(labelColor)
                     // Multi-character labels ("123") outgrow the cell before
                     // the size cap does; shrink instead of wrapping.
                     .lineLimit(1)
@@ -407,7 +454,7 @@ struct KeyView: View {
                         if isLanguageLabelShown {
                             Text(languageLabel)
                                 .font(.system(size: scaledHintFontSize * 0.75, weight: .semibold, design: .rounded))
-                                .foregroundStyle(Color.primary.opacity(0.5))
+                                .foregroundStyle(globeHintColor)
                                 .fixedSize()
                                 .padding(Self.hintEdgePadding(for: gesture, horizontal: hPad, vertical: vPad))
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
@@ -441,12 +488,12 @@ struct KeyView: View {
                 // Globe / dismiss: larger, bolder for discoverability
                 Image(systemName: iconName)
                     .font(.system(size: scaledHintFontSize * 0.75, weight: .medium))
-                    .foregroundStyle(Color.primary.opacity(0.5))
+                    .foregroundStyle(globeHintColor)
             } else {
                 // Copy / paste / cut: smaller, lighter to avoid visual clutter
                 Image(systemName: iconName)
                     .font(.system(size: scaledHintFontSize * 0.6, weight: .regular))
-                    .foregroundStyle(Color.secondary.opacity(0.45))
+                    .foregroundStyle(editIconHintColor)
             }
         } else {
             // Text hint — letters get higher prominence than symbols
@@ -457,11 +504,7 @@ struct KeyView: View {
                     weight: isLetter ? .medium : .regular,
                     design: .rounded
                 ))
-                .foregroundStyle(
-                    isLetter
-                        ? Color.primary.opacity(0.65)
-                        : Color.secondary.opacity(0.55)
-                )
+                .foregroundStyle(isLetter ? letterHintColor : symbolHintColor)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
         }
