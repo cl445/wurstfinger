@@ -27,8 +27,8 @@ struct KeyboardLayoutSettingsView: View {
     /// Percent view onto the point-based wish width.
     private var sizePercent: Binding<Double> {
         Binding(
-            get: { width / DeviceLayoutUtils.defaultKeyboardWidth * 100 },
-            set: { width = $0 / 100 * DeviceLayoutUtils.defaultKeyboardWidth }
+            get: { width / DeviceLayout.defaultKeyboardWidth * 100 },
+            set: { width = $0 / 100 * DeviceLayout.defaultKeyboardWidth }
         )
     }
 
@@ -37,7 +37,7 @@ struct KeyboardLayoutSettingsView: View {
     /// side because the runtime caps the keyboard at the portrait width in
     /// every orientation (`KeyboardViewModel.keyboardWidthCap`).
     private static var fullWidthThreshold: Double {
-        Double(min(DeviceLayoutUtils.screenBounds.width, DeviceLayoutUtils.screenBounds.height))
+        Double(min(DeviceLayout.screenBounds.width, DeviceLayout.screenBounds.height))
     }
 
     private var isFullWidth: Bool {
@@ -74,9 +74,9 @@ struct KeyboardLayoutSettingsView: View {
             titleVisibility: .visible
         ) {
             Button("Reset", role: .destructive) {
-                aspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
-                width = DeviceLayoutUtils.defaultKeyboardWidth
-                position = DeviceLayoutUtils.defaultKeyboardPosition
+                aspectRatio = DeviceLayout.defaultKeyAspectRatio
+                width = DeviceLayout.defaultKeyboardWidth
+                position = DeviceLayout.defaultKeyboardPosition
             }
         }
     }
@@ -231,7 +231,7 @@ struct KeyboardLayoutSettingsView: View {
     NavigationStack {
         KeyboardLayoutSettingsView(
             aspectRatio: .constant(1.0),
-            width: .constant(DeviceLayoutUtils.defaultKeyboardWidth),
+            width: .constant(DeviceLayout.defaultKeyboardWidth),
             position: .constant(0.5)
         )
     }
