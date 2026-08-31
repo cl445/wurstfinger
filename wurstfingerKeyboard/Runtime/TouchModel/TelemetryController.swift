@@ -68,6 +68,17 @@ final class TelemetryController {
                 stat.add(value)
                 telemetry.features[name] = stat
             }
+            // §14.5: per-sector angular residual of directional swipes — a mean
+            // clearly ≠ 0 reveals a systematic bias the rotation can correct;
+            // a near-zero mean with high spread says the misses are variance.
+            if let residual = SwipeBiasModel.residual(
+                measuredAngle: Double(features.maxDisplacementAngle),
+                sector: gesture
+            ) {
+                var stat = telemetry.features["sectorResidual"] ?? FeatureStat()
+                stat.add(residual)
+                telemetry.features["sectorResidual"] = stat
+            }
         }
         classes[cls] = telemetry
         snapshot.classes[regimeKey] = classes
