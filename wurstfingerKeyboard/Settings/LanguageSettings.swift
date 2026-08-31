@@ -99,7 +99,7 @@ class LanguageSettings: ObservableObject {
         // Load enabled languages (filtering stale/unknown IDs), migrating from
         // a single-language setup by seeding with the current selection.
         let stored = loadEnabledLanguageIds(from: defaults) ?? []
-        let valid = stored.filter { LanguageConfig.language(withId: $0) != nil }
+        let valid = stored.filter { LanguageMetadata.language(withId: $0) != nil }
         let enabled = valid.isEmpty ? [resolvedSelected] : valid
 
         let selected = enabled.contains(resolvedSelected) ? resolvedSelected : enabled[0]
@@ -107,7 +107,7 @@ class LanguageSettings: ObservableObject {
         // A pin is only valid while its language is enabled and known.
         let storedPinned = defaults.string(forKey: SettingsKey.pinnedLanguageId.rawValue)
         let pinned = storedPinned.flatMap { pin in
-            enabled.contains(pin) && LanguageConfig.language(withId: pin) != nil ? pin : nil
+            enabled.contains(pin) && LanguageMetadata.language(withId: pin) != nil ? pin : nil
         }
 
         return NormalizedState(selected: selected, enabled: enabled, pinned: pinned)
@@ -138,7 +138,7 @@ class LanguageSettings: ObservableObject {
     /// — which itself falls back to English. Callers therefore always receive a
     /// renderable language id, so the keyboard never comes up blank.
     static func resolvedLanguageId(_ storedId: String?) -> String {
-        if let storedId, LanguageConfig.language(withId: storedId) != nil {
+        if let storedId, LanguageMetadata.language(withId: storedId) != nil {
             return storedId
         }
         return detectSystemLanguage()
@@ -156,27 +156,27 @@ class LanguageSettings: ObservableObject {
             let region = locale.region?.identifier ?? ""
 
             let exactId = "\(language)_\(region)"
-            if let match = LanguageConfig.allLanguages.first(where: { $0.id == exactId }) {
+            if let match = LanguageMetadata.allLanguages.first(where: { $0.id == exactId }) {
                 return match.id
             }
 
-            if let match = LanguageConfig.allLanguages.first(where: {
+            if let match = LanguageMetadata.allLanguages.first(where: {
                 $0.locale.language.languageCode?.identifier == language
             }) {
                 return match.id
             }
         }
 
-        return LanguageConfig.english.id
+        return LanguageMetadata.english.id
     }
 
-    var selectedLanguage: LanguageConfig {
-        LanguageConfig.language(withId: selectedLanguageId) ?? .english
+    var selectedLanguage: LanguageMetadata {
+        LanguageMetadata.language(withId: selectedLanguageId) ?? .english
     }
 
-    /// Resolved LanguageConfig objects for enabled IDs, preserving order
-    var enabledLanguages: [LanguageConfig] {
-        enabledLanguageIds.compactMap { LanguageConfig.language(withId: $0) }
+    /// Resolved LanguageMetadata objects for enabled IDs, preserving order
+    var enabledLanguages: [LanguageMetadata] {
+        enabledLanguageIds.compactMap { LanguageMetadata.language(withId: $0) }
     }
 
     var hasMultipleLanguages: Bool {
@@ -197,15 +197,15 @@ class LanguageSettings: ObservableObject {
         return lang.uppercased(with: locale)
     }
 
-    var pinnedLanguage: LanguageConfig? {
-        pinnedLanguageId.flatMap { LanguageConfig.language(withId: $0) }
+    var pinnedLanguage: LanguageMetadata? {
+        pinnedLanguageId.flatMap { LanguageMetadata.language(withId: $0) }
     }
 
     /// Returns the language the keyboard should open with: pinned if set and
     /// valid, otherwise the last-used selected language.
     var startupLanguageId: String {
         if let pinned = pinnedLanguageId, enabledLanguageIds.contains(pinned),
-           LanguageConfig.language(withId: pinned) != nil {
+           LanguageMetadata.language(withId: pinned) != nil {
             return pinned
         }
         return selectedLanguageId
@@ -222,7 +222,7 @@ class LanguageSettings: ObservableObject {
     }
 
     /// Pin a language as the default startup language. If already pinned, unpin it.
-    func pinLanguage(_ language: LanguageConfig) {
+    func pinLanguage(_ language: LanguageMetadata) {
         reloadFromStore()
         if pinnedLanguageId == language.id {
             pinnedLanguageId = nil
@@ -234,7 +234,7 @@ class LanguageSettings: ObservableObject {
         }
     }
 
-    func selectLanguage(_ language: LanguageConfig) {
+    func selectLanguage(_ language: LanguageMetadata) {
         reloadFromStore()
         if !enabledLanguageIds.contains(language.id) {
             enabledLanguageIds.append(language.id)
@@ -245,7 +245,7 @@ class LanguageSettings: ObservableObject {
     /// Toggle a language on/off in the enabled list. Returns false if trying to
     /// disable the last remaining language (operation is rejected).
     @discardableResult
-    func toggleLanguage(_ language: LanguageConfig) -> Bool {
+    func toggleLanguage(_ language: LanguageMetadata) -> Bool {
         reloadFromStore()
         if let index = enabledLanguageIds.firstIndex(of: language.id) {
             guard enabledLanguageIds.count > 1 else { return false }
@@ -260,7 +260,7 @@ class LanguageSettings: ObservableObject {
         return true
     }
 
-    func isLanguageEnabled(_ language: LanguageConfig) -> Bool {
+    func isLanguageEnabled(_ language: LanguageMetadata) -> Bool {
         enabledLanguageIds.contains(language.id)
     }
 

@@ -16,7 +16,7 @@ struct LanguageDescriptorTests {
         var didBuild = false
     }
 
-    /// Reading a descriptor's metadata — including via `KeyboardInfo` — must not
+    /// Reading a descriptor's metadata — including through `LanguageMetadata(from:)` — must not
     /// trigger the builder. This is the property that keeps keyboard-extension
     /// launch cheap: the registry can list and resolve languages without
     /// materialising any layout.
@@ -44,7 +44,7 @@ struct LanguageDescriptorTests {
         _ = descriptor.id
         _ = descriptor.title
         _ = descriptor.localeIdentifier
-        _ = KeyboardInfo(from: descriptor)
+        _ = LanguageMetadata(from: descriptor)
         #expect(flag.didBuild == false, "Reading metadata must not build the definition")
 
         _ = descriptor.makeDefinition()

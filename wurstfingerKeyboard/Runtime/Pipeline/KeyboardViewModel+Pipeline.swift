@@ -19,7 +19,7 @@ extension KeyboardViewModel {
         // a stale stored id for a language removed in a later version) so the
         // keyboard always renders a layout instead of coming up blank.
         guard let base = KeyboardRegistry.load(id: id)
-            ?? KeyboardRegistry.load(id: LanguageConfig.english.id)
+            ?? KeyboardRegistry.load(id: LanguageMetadata.english.id)
         else { return }
         let definition = applyNumpadType(to: base)
         currentDefinition = definition

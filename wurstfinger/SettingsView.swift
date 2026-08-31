@@ -286,14 +286,14 @@ struct SettingsView: View {
     // MARK: - Helpers
 
     private var enabledLanguagesSummary: String {
-        let names = languageSettings.enabledLanguages.map(\.name)
+        let names = languageSettings.enabledLanguages.map(\.title)
         let list = if names.count <= 2 {
             names.joined(separator: ", ")
         } else {
             String(localized: "\(names[0]) + \(names.count - 1) more")
         }
         if let pinned = languageSettings.pinnedLanguage {
-            return String(localized: "\(list) (default: \(pinned.name))")
+            return String(localized: "\(list) (default: \(pinned.title))")
         }
         return list
     }

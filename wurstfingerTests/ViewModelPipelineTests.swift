@@ -279,7 +279,7 @@ struct ViewModelDefinitionTests {
         vm.loadDefinition(for: "nonexistent_XX")
         // Must never leave the keyboard blank — falls back to a renderable layout.
         #expect(vm.currentDefinition != nil)
-        #expect(vm.currentDefinition?.id == LanguageConfig.english.id)
+        #expect(vm.currentDefinition?.id == LanguageMetadata.english.id)
         #expect(vm.activeModeFromDefinition != nil)
     }
 

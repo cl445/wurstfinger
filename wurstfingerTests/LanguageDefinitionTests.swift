@@ -39,29 +39,29 @@ struct LanguageDefinitionValidationTests {
     }
 
     @Test func allLanguagesAreResolvableById() {
-        // LanguageConfig.allLanguages is now derived from KeyboardRegistry.available.
+        // LanguageMetadata.allLanguages is now derived from KeyboardRegistry.available.
         // Verify every definition is resolvable via the lookup helper.
         for definition in LanguageDefinitions.all {
-            let config = LanguageConfig.language(withId: definition.id)
-            #expect(config != nil, "LanguageConfig.language(withId:) cannot resolve \(definition.id)")
+            let metadata = LanguageMetadata.language(withId: definition.id)
+            #expect(metadata != nil, "LanguageMetadata.language(withId:) cannot resolve \(definition.id)")
             #expect(
-                config?.id == definition.id,
+                metadata?.id == definition.id,
                 "ID mismatch for \(definition.id)"
             )
         }
     }
 
     @Test("Display order is the locale's alphabetical order, not codepoint order")
-    func sortedByNameUsesLocalizedOrdering() {
+    func sortedByTitleUsesLocalizedOrdering() {
         let unsorted = ["Zulu", "apfel", "Bravo"].map {
-            LanguageConfig(id: $0, name: $0, locale: Locale(identifier: "en_US"))
+            LanguageMetadata(id: $0, title: $0, localeIdentifier: "en_US")
         }
-        #expect(LanguageConfig.sortedByName(unsorted).map(\.name) == ["apfel", "Bravo", "Zulu"])
+        #expect(LanguageMetadata.sortedByTitle(unsorted).map(\.title) == ["apfel", "Bravo", "Zulu"])
     }
 
     @Test func allLanguagesAppliesTheDisplayOrder() {
-        let listed = LanguageConfig.allLanguages
-        #expect(listed.map(\.id) == LanguageConfig.sortedByName(listed).map(\.id))
+        let listed = LanguageMetadata.allLanguages
+        #expect(listed.map(\.id) == LanguageMetadata.sortedByTitle(listed).map(\.id))
     }
 }
 

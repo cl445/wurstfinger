@@ -182,15 +182,15 @@ struct LayoutValidationTests {
     // MARK: - Language Lookup
 
     @Test func languageLookupByIdWorks() {
-        for language in LanguageConfig.allLanguages {
-            let found = LanguageConfig.language(withId: language.id)
-            #expect(found != nil, "Language \(language.name) not found by id '\(language.id)'")
-            #expect(found?.name == language.name)
+        for language in LanguageMetadata.allLanguages {
+            let found = LanguageMetadata.language(withId: language.id)
+            #expect(found != nil, "Language \(language.title) not found by id '\(language.id)'")
+            #expect(found?.title == language.title)
         }
     }
 
     @Test func unknownLanguageIdReturnsNil() {
-        #expect(LanguageConfig.language(withId: "xx_XX") == nil)
+        #expect(LanguageMetadata.language(withId: "xx_XX") == nil)
     }
 
     @Test func registryLoadUnknownIdReturnsNil() {

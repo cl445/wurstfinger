@@ -3,24 +3,25 @@
 Canonical vocabulary for Wurstfinger. Written primarily for LLM agents working in this
 repo, but binding for humans too.
 
-**Scope: new and changed code only.** The existing codebase is grandfathered. This file is
-not a TODO list, and nothing here justifies a rename in code you were not already
-modifying — the existing names will be brought in line in their own dedicated changes.
-When code and this file disagree, the code wins for *reading*; this file wins for
-*writing*.
+**Scope: new and changed code only.** This file is not a TODO list, and nothing here
+justifies a rename in code you were not already modifying — the legacy names it once
+grandfathered have since been brought in line, one family per dedicated change. When code
+and this file disagree, the code wins for *reading*; this file wins for *writing*.
 
 **How to use it:** before naming a type, parameter, or test — and before writing a doc
 comment — check whether the concept already has a canonical term here. Use that term and
 nothing else. What the codebase still spells the old way is measured, not guessed: it is
-listed in [The backlog](#8-the-backlog), which is generated from the sources, so a name
-that contradicts this file is a legacy name rather than a counter-example.
+listed in [The backlog](#8-the-backlog), which is generated from the sources and is now
+empty, so a name that contradicts this file is a defect rather than a counter-example.
 
 **How it is enforced.** The machine-checkable half of this document — the vocabulary, the
 rejected spellings, the shape rules — lives in [`glossary.toml`](../glossary.toml).
 `scripts/check_naming.py` reads it and reports every identifier that contradicts it;
-`.naming-budget.json` records the backlog per file, may shrink but never grow, and is
-deleted once it reaches zero. The same source generates the `glossary_*` rules in
-`.swiftlint.yml`, so a rejected spelling is flagged in Xcode as you type it. Sections [7](#7-do-not-write), [8](#8-the-backlog) and
+`.naming-budget.json` recorded the backlog per file, could shrink but never grow, and was
+deleted when it reached zero — so the check now allows no rejected spelling anywhere. The
+same source generates the `glossary_*` rules in `.swiftlint.yml`, so a rejected spelling is
+flagged in Xcode as you type it, in every file, since no rule carries exclusions any more.
+Sections [7](#7-do-not-write), [8](#8-the-backlog) and
 [9](#9-waivers) below are generated from those two files — edit `glossary.toml` and run
 `render`, not this document.
 
@@ -167,7 +168,8 @@ because no rule can catch it: it fails in the App Store, not in CI.
 | label | `KeyBinding.label` | the text drawn on the key. May differ from the output (`"⇧"` for shift) and is empty for icon-driven utility keys |
 | compose | `ComposeRuleSet` (here), `ComposeEngine` (in `Runtime/Compose/`) | table-driven character composition (`' + a → á`) |
 | input method | `InputMethodType` | stateful transformation of committed text: `direct`, `telex`, `hangul` |
-| descriptor | `LanguageDescriptor` | lazy handle to a language: cheap metadata plus a builder that materializes the definition on demand |
+| descriptor | `LanguageDescriptor` | the authoring handle for a language: cheap metadata plus a builder that materializes the definition on demand. `LanguageDefinitions` declares languages as these |
+| metadata | `LanguageMetadata` | the value object a language is passed around as: `id`, `title`, `localeIdentifier`, and a `locale` derived from it. No builder, so it is constructible anywhere — which is why it is a separate type from the descriptor |
 
 ### Layout (`Definition/Layout/`)
 
@@ -218,6 +220,7 @@ because no rule can catch it: it fails in the App Store, not in CI.
 | --- | --- | --- |
 | `…Definition` | complete declarative data | `KeyboardDefinition` |
 | `…Descriptor` | lazy handle: metadata + a builder that materializes the real thing | `LanguageDescriptor` |
+| `…Metadata` | the cheap descriptive fields of a thing, without the thing itself | `LanguageMetadata` |
 | `…Configuration` | injected parameters of a runtime component | `SlideGestureConfiguration` |
 | `…Settings` | user-changeable, persisted | `LayoutSettings` |
 | `…Metrics` | computed geometry | `KeyboardLayoutMetrics` |
@@ -230,8 +233,8 @@ because no rule can catch it: it fails in the App Store, not in CI.
 
 Spell suffixes out: `…Configuration`, not `…Config`. Apple's own APIs are consistent about
 this (`URLSessionConfiguration`, `WKWebViewConfiguration`), and the Swift API Design
-Guidelines rule out abbreviations. `LanguageConfig` is the last `…Config` type left, and it
-is legacy.
+Guidelines rule out abbreviations. No `…Config` type is left in the tree, and the
+`config_suffix` rule keeps it that way.
 
 Do not introduce `…Manager` or `…Helper`. Both describe no responsibility; name the type
 after what it actually does.
@@ -283,10 +286,10 @@ Generated from `glossary.toml`; `scripts/check_naming.py` enforces every row.
 | `hideExtraSymbols` | `areExtraSymbolLabelsHidden` |
 | `hideLetters` | `areLetterLabelsHidden` |
 | `hideStandardSymbols` | `areStandardSymbolLabelsHidden` |
-| `KeyboardInfo` | `LanguageDescriptor` |
+| `KeyboardInfo` | `LanguageMetadata` |
 | `KeyConfig` | `KeyDefinition` |
 | kind suffix | `…Type` |
-| `LanguageConfig` | `LanguageDescriptor` |
+| `LanguageConfig` | `LanguageMetadata` |
 | layer word | `mode` |
 | `longPressNumbersEnabled` | `isLongPressDigitEnabled` |
 | `ScreenshotConfig` | `ScreenshotConfiguration` |
@@ -311,24 +314,23 @@ rather than how an identifier is spelled.
 
 ## 8. The backlog
 
-What the codebase still spells the old way, counted from the sources. **Do not rename
-these in passing** — each family comes out in its own dedicated change, so a rename you
-did not sign up for never lands in your pull request. `.naming-budget.json` freezes these
-counts per file: they may shrink, never grow — and a shrink has to be recorded with
-`update`, or the slot it frees stays open for the next rejected name.
+What the codebase still spells the old way, counted from the sources. It is empty:
+every rejected spelling has been retired, `.naming-budget.json` is gone, and the check
+allows no rejected spelling anywhere. Should a term added later find the tree already
+spelling it the old way, `update` writes the file again and freezes the new counts per
+file: they may then shrink, never grow — and a shrink has to be recorded with `update`, or
+the slot it frees stays open for the next rejected name. **Do not rename a family in
+passing** — each comes out in its own dedicated change, so a rename you did not sign up
+for never lands in your pull request.
 
 <!-- generated by scripts/check_naming.py — do not edit: backlog -->
 
-| Legacy spelling | Replacement | Sites | Files |
-| --- | --- | --- | --- |
-| `LanguageConfig` | `LanguageDescriptor` | 53 | 11 |
-| `KeyboardInfo` | `LanguageDescriptor` | 6 | 4 |
-| **total** | | **59** | **15** |
+The backlog is empty: no source file carries a rejected spelling.
 
 <!-- /generated: backlog -->
 
 Comments are not counted — the checker reads identifiers only — so nothing prose says can
-appear in the table above. The keyboard-mode sense of "layer" is gone from the comments
+raise that count. The keyboard-mode sense of "layer" is gone from the comments
 too; what is left is the architectural sense, which is the ordinary English word and not
 the rejected one: nine lines about the definition layer, the view layer, and the order of
 the hint layer.

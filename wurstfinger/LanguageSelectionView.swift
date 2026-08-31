@@ -14,7 +14,7 @@ struct LanguageSelectionView: View {
     var body: some View {
         List {
             Section {
-                ForEach(LanguageConfig.allLanguages) { language in
+                ForEach(LanguageMetadata.allLanguages) { language in
                     LanguageRow(
                         language: language,
                         isEnabled: languageSettings.isLanguageEnabled(language),
@@ -51,7 +51,7 @@ struct LanguageSelectionView: View {
 }
 
 private struct LanguageRow: View {
-    let language: LanguageConfig
+    let language: LanguageMetadata
     let isEnabled: Bool
     let isDefault: Bool
     let onTap: () -> Void
@@ -67,13 +67,13 @@ private struct LanguageRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel(
                 isEnabled
-                    ? String(localized: "Disable \(language.name)")
-                    : String(localized: "Enable \(language.name)")
+                    ? String(localized: "Disable \(language.title)")
+                    : String(localized: "Enable \(language.title)")
             )
             .accessibilityValue(isEnabled ? String(localized: "Enabled") : String(localized: "Disabled"))
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(language.name)
+                Text(language.title)
                     .font(.body)
                     .foregroundColor(.primary)
 

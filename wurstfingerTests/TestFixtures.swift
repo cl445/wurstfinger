@@ -46,13 +46,13 @@ extension KeyDefinition {
     }
 }
 
-extension LanguageConfig {
-    static let german = LanguageConfig(
-        id: "de_DE", name: "Deutsch", locale: Locale(identifier: "de_DE")
+extension LanguageMetadata {
+    static let german = LanguageMetadata(
+        id: "de_DE", title: "Deutsch", localeIdentifier: "de_DE"
     )
 
-    static let russian = LanguageConfig(
-        id: "ru_RU", name: "Русский", locale: Locale(identifier: "ru_RU")
+    static let russian = LanguageMetadata(
+        id: "ru_RU", title: "Русский", localeIdentifier: "ru_RU"
     )
 }
 
