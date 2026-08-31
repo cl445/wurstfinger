@@ -62,8 +62,9 @@ families. Small enough to burn down in three changes rather than a campaign.
 | `ScreenshotMode` | 2 | 1 | `ScreenshotType` |
 | `keyConfig` locals | 5 | 2 | follows its type |
 
-Plus 88 comment and string lines across 32 files still saying "layer", which the checker
-does not see and which come out together with the identifiers.
+Plus, at this baseline, 88 comment and string lines across 32 files saying "layer", which
+the checker does not see and which come out together with the identifiers. What G3 left
+behind is counted once, below.
 
 ### The one that is not cosmetic
 
@@ -128,11 +129,34 @@ stored key stays `numpadStyle`.
 | --- | --- | --- |
 | **G1** | `glossary.toml`, the checker, the budget frozen at 587, zones, generated §7–§9, CI and hook wiring | — |
 | **G2** | SwiftLint `custom_rules` generated from the same file, so the rules fire in Xcode while typing — 17 rules, `--strict` green | G1 |
-| **G3** | `slotId` → `keyId`, `layer` → `mode` (identifiers and comments), `create…` → `make…`, the vague type and file names | G1 |
+| **G3** | `slotId` → `keyId`, `layer` → `mode` (identifiers and comments), `create…` → `make…`, the vague type and file names — **587 → 367** | G1 |
 | **G4** | `KeyConfig` → `KeyDefinition`, `GesturePreprocessorConfig` → `…Configuration`, the `LanguageConfig` / `KeyboardInfo` merge, the settings booleans | G1; conflicts with the open PR stack |
 
 G4 touches 227 sites in files that #253, #250, #245 and #221 are all editing, so it waits
 until that stack lands rather than forcing four rebases.
+
+After G3 the budget holds 367 names in 51 files, and five of the seventeen SwiftLint rules
+carry no exclusions at all any more — `slotId`, `create…`, `layer`, the vague type suffix
+and `ScreenshotMode` are now gated everywhere, in every file, including files nobody has
+written yet.
+
+### What G3 taught the glossary
+
+Sweeping the comments turned up a distinction the rule did not have. "Layer" has three
+senses here and only one is wrong:
+
+| Sense | Example | Verdict |
+| --- | --- | --- |
+| Keyboard state | "the numeric layer", "a layer switch" | wrong — it is a **mode** |
+| Architecture | "the definition layer", "the view layer" | correct, stays |
+| Ordinary English or z-order | "layered on top", "the hint layer order" | correct, stays |
+
+Measured against this change's own parent — 83 such lines in 31 files — 74 carried the
+first sense and were rewritten; the 9 that carried the other two were left. (The 88 in
+the inventory above is the figure recorded when this plan was written, against a tree
+that has moved since; this pair is measured across the change itself.) §1 of the glossary now says so, because a blanket "never write layer" would
+have produced "the definition mode", which means nothing. The identifier rule is
+unaffected — no identifier in this codebase uses the architectural sense.
 
 ### Why the SwiftLint rules carry exclusions
 

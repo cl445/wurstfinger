@@ -5,7 +5,7 @@
 //  Regression tests for keyboard state hygiene:
 //  - the loaded-definition signature stays in sync after in-keyboard
 //    language switches (no needless pipeline rebuild on reappearance),
-//  - the keyboard reopens on the default (letters) layer,
+//  - the keyboard reopens in the default (letters) mode,
 //  - a no-op settings reload publishes no view updates.
 //
 
@@ -108,8 +108,8 @@ struct DefinitionSignatureTests {
 
 @Suite(.serialized)
 struct ModeResetTests {
-    @Test("Reopening resets the numeric layer back to letters")
-    func resetToDefaultModeLeavesNumericLayer() {
+    @Test("Reopening resets the numeric mode back to letters")
+    func reopeningResetsTheNumericModeToLetters() {
         let (vm, _) = makeViewModel()
         vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
         #expect(vm.activeModeName == ModeNames.numeric)

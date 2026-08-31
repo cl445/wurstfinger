@@ -33,13 +33,13 @@ struct KeyboardDefinition: Codable, Equatable {
     /// Keyboard-specific settings
     let settings: KeyboardDefinitionSettings
 
-    /// Label for the numeric layer's "back to alphabet" key (e.g. "abc",
+    /// Label for the numeric mode's "back to alphabet" key (e.g. "abc",
     /// "אבג", "абв"). Retained on the definition so the numeric mode can be
     /// rebuilt at load time (e.g. when switching the numpad style) without
     /// re-deriving the per-language label.
     let numericBackToAlphaLabel: String
 
-    /// Digit set (indexed by value 0–9) for the numeric layer. Retained on the
+    /// Digit set (indexed by value 0–9) for the numeric mode. Retained on the
     /// definition — like `numericBackToAlphaLabel` — so a numpad-style swap
     /// rebuilds the numeric mode with the correct script digits instead of
     /// falling back to Western ASCII. Defaults to `NumericLayouts.westernDigits`.
@@ -71,7 +71,7 @@ struct KeyboardDefinition: Codable, Equatable {
     }
 
     /// Returns a copy with `name`'s mode replaced. Used to swap the numeric
-    /// layer (phone/classic) at load time based on user settings.
+    /// mode (phone/classic) at load time based on user settings.
     func replacingMode(_ name: String, with mode: KeyboardMode) -> KeyboardDefinition {
         var updated = modes
         updated[name] = mode

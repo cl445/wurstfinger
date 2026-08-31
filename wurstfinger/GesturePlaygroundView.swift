@@ -18,10 +18,10 @@ struct GesturePlaygroundView: View {
     @State private var isCircularCW: Bool?
 
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
-    private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
+    private var keyAspectRatio = DeviceLayout.defaultKeyAspectRatio
 
     @AppStorage(SettingsKey.keyboardWidthPoints.rawValue, store: SharedDefaults.store)
-    private var keyboardWidth = DeviceLayoutUtils.defaultKeyboardWidth
+    private var keyboardWidth = DeviceLayout.defaultKeyboardWidth
 
     /// The cell the keyboard actually renders for the stored wish — the same
     /// resolution the Expert screen's key-height indicator reports. Gesture

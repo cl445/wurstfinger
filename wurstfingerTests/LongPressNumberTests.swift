@@ -4,7 +4,7 @@
 //
 //  Tests for the "type numbers by holding" feature.
 //  A .longPress gesture on a letter key resolves to the digit that key
-//  carries on the numeric layer (via GhostKeyResolver), and handleGesture
+//  carries in numeric mode (via GhostKeyResolver), and handleGesture
 //  reports whether the press was handled so the recognizer only consumes
 //  touches that actually dispatched an action.
 //
@@ -16,8 +16,8 @@ import Testing
 // MARK: - Definition Layer
 
 struct LongPressBindingTests {
-    @Test func numericLayerDigitsAreTapDigitsWithoutMirroredLongPress() {
-        // The numeric layer no longer mirrors each digit `.tap` as an identical
+    @Test func numericModeDigitsAreTapDigitsWithoutMirroredLongPress() {
+        // The numeric mode no longer mirrors each digit `.tap` as an identical
         // `.longPress` binding: `GhostKeyResolver` surfaces the `.digit` tap to
         // a hold instead. Verify the digits are present as category `.digit`
         // taps and carry no explicit long-press binding.
@@ -148,7 +148,7 @@ struct LongPressNumberPipelineTests {
 
     @Test func unhandledLongPressReportsFalseAndTypesNothing() {
         let (vm, target) = makeViewModel()
-        // Utility keys have no digit on the numeric layer: the long press must
+        // Utility keys have no digit in numeric mode: the long press must
         // report unhandled so the touch is not consumed and the key keeps its
         // normal tap on release.
         let handled = vm.handleGesture(.longPress, keyId: UtilitySlot.return, isReturn: false)
@@ -162,7 +162,7 @@ struct LongPressNumberPipelineTests {
     }
 
     @Test func longPressOnLetterKeyTypesNativeDigitArabic() {
-        // Regression lock for the removed numeric-layer `.longPress` mirror:
+        // Regression lock for the removed numeric-mode `.longPress` mirror:
         // holding a letter key must still surface the layout's native digit via
         // GhostKeyResolver mapping the hold to the fallback `.digit` tap. Arabic
         // top-left carries ١ (Arabic-Indic 1).

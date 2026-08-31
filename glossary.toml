@@ -37,7 +37,7 @@ name = "mode"
 zone = "A"
 definition = "One keyboard state with its own key set and arrangement: main, shifted, capsLock, numeric, symbols, emoji. The type is `KeyboardMode`, the action is `.switchMode(name)`."
 rejected = []
-note = "\"Layer\" means the same thing and is rejected everywhere — see the `layer_word` pattern. The screenshot tooling still passes `FORCE_LAYER` as an environment variable; that is a zone C name shared with `scripts/generate-screenshots.sh` and the workflows, so it moves with them, not before."
+note = "\"Layer\" is the non-canonical spelling of a keyboard state, rejected as an identifier by the `layer_word` pattern. In prose the word survives in its architectural sense (\"the definition layer\") and as an ordinary verb (\"layered on top\"); only the keyboard-state sense is wrong. The screenshot tooling still passes `FORCE_LAYER` as an environment variable; that is a zone C name shared with `scripts/generate-screenshots.sh` and the workflows, so it moves with them, not before."
 
 [[term]]
 name = "keyId"

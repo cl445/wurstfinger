@@ -44,7 +44,7 @@ extension KeyboardViewModel {
         "\(languageId)|\(numpadType ?? "")"
     }
 
-    /// Swaps the numeric layer to the classic (7-8-9) ordering when the user
+    /// Swaps the numeric mode to the classic (7-8-9) ordering when the user
     /// selected it. The registry caches the phone-style definition, so this
     /// always derives from the canonical phone layout and never mutates the cache.
     private func applyNumpadType(to definition: KeyboardDefinition) -> KeyboardDefinition {
@@ -288,9 +288,9 @@ extension KeyboardViewModel {
         return AutoCapitalization.shouldCapitalize(context: context)
     }
 
-    /// Engages the shifted layer for the next key. Only fires from `main`:
+    /// Engages the shifted mode for the next key. Only fires from `main`:
     /// caps lock must survive sentence enders, and the numeric/symbol
-    /// layers must not be hijacked into the letter layers.
+    /// modes must not be hijacked into the letter modes.
     func engageAutoCapitalization() {
         guard activeModeName == ModeNames.main else { return }
         switchToMode(ModeNames.shifted)
@@ -298,7 +298,7 @@ extension KeyboardViewModel {
     }
 
     /// Releases a pending auto-shift. Only fires from `shifted` so caps
-    /// lock and non-letter layers are never demoted.
+    /// lock and non-letter modes are never demoted.
     func releaseAutoCapitalization() {
         guard activeModeName == ModeNames.shifted else { return }
         switchToMode(ModeNames.main)
@@ -357,7 +357,7 @@ extension KeyboardViewModel {
     }
 
     /// Handles a circular gesture. Checks for an explicit binding first
-    /// (e.g. superscripts on the numeric layer), then falls back to
+    /// (e.g. superscripts in numeric mode), then falls back to
     /// inserting the uppercase center character, then tries the opposite
     /// direction's binding.
     private func handleCircular(keyId: String, in mode: KeyboardMode, gesture: GestureType) {
@@ -389,7 +389,7 @@ extension KeyboardViewModel {
         else { return false }
         let locale = pipelineLocale ?? Locale.current
         // keyboardUppercased (not plain uppercased) keeps ß → ẞ as a single
-        // character, matching the shifted-layer generation in the definition
+        // character, matching the shifted-mode generation in the definition
         // layer — a layout with ß on a tap position must not expand to "SS".
         let uppercased = text.keyboardUppercased(with: locale)
         dispatchAction(.commitText(uppercased))
@@ -415,7 +415,7 @@ extension KeyboardViewModel {
 
     /// Resets the active mode to the definition's default. Called by the
     /// controller on appearance so a keyboard hidden on the numeric or
-    /// shifted layer reopens on letters. No-op (and publish-free) when the
+    /// shifted mode reopens on letters. No-op (and publish-free) when the
     /// default mode is already active.
     func resetToDefaultMode() {
         guard let definition = currentDefinition else { return }

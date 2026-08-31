@@ -14,7 +14,7 @@ struct KeyboardSizePositionSettingsView: View {
     @Binding var position: Double
 
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
-    private var keyAspectRatio = DeviceLayoutUtils.defaultKeyAspectRatio
+    private var keyAspectRatio = DeviceLayout.defaultKeyAspectRatio
 
     /// Slider range as percent of the device default (270 pt on iPhone):
     /// 35 % ≈ 95 pt keeps the old 25 %-of-screen minimum reachable, 145 %
@@ -25,8 +25,8 @@ struct KeyboardSizePositionSettingsView: View {
     /// Percent view onto the point-based wish width.
     private var sizePercent: Binding<Double> {
         Binding(
-            get: { width / DeviceLayoutUtils.defaultKeyboardWidth * 100 },
-            set: { width = $0 / 100 * DeviceLayoutUtils.defaultKeyboardWidth }
+            get: { width / DeviceLayout.defaultKeyboardWidth * 100 },
+            set: { width = $0 / 100 * DeviceLayout.defaultKeyboardWidth }
         )
     }
 
@@ -59,8 +59,8 @@ struct KeyboardSizePositionSettingsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Reset") {
-                    width = DeviceLayoutUtils.defaultKeyboardWidth
-                    position = DeviceLayoutUtils.defaultKeyboardPosition
+                    width = DeviceLayout.defaultKeyboardWidth
+                    position = DeviceLayout.defaultKeyboardPosition
                 }
             }
         }

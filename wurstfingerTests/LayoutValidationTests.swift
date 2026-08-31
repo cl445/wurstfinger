@@ -105,10 +105,10 @@ struct LayoutValidationTests {
                 continue
             }
 
-            for slotId in expectedGridSlots {
+            for keyId in expectedGridSlots {
                 #expect(
-                    mainMode.key(for: slotId) != nil,
-                    "Language \(info.id) main mode missing grid key '\(slotId)'"
+                    mainMode.key(for: keyId) != nil,
+                    "Language \(info.id) main mode missing grid key '\(keyId)'"
                 )
             }
         }
@@ -125,10 +125,10 @@ struct LayoutValidationTests {
                 continue
             }
 
-            for slotId in expectedUtility {
+            for keyId in expectedUtility {
                 #expect(
-                    mainMode.key(for: slotId) != nil,
-                    "Language \(info.id) main mode missing utility key '\(slotId)'"
+                    mainMode.key(for: keyId) != nil,
+                    "Language \(info.id) main mode missing utility key '\(keyId)'"
                 )
             }
         }
@@ -144,20 +144,20 @@ struct LayoutValidationTests {
                   let mainMode = definition.mode(ModeNames.main)
             else { continue }
 
-            for slotId in gridSlots {
-                guard let key = mainMode.key(for: slotId) else {
-                    Issue.record("Language \(info.id) missing grid key '\(slotId)'")
+            for keyId in gridSlots {
+                guard let key = mainMode.key(for: keyId) else {
+                    Issue.record("Language \(info.id) missing grid key '\(keyId)'")
                     continue
                 }
 
                 guard let tapBinding = key.bindings[.tap] else {
-                    Issue.record("Language \(info.id) key '\(slotId)' is missing a .tap binding")
+                    Issue.record("Language \(info.id) key '\(keyId)' is missing a .tap binding")
                     continue
                 }
 
                 #expect(
                     !tapBinding.label.isEmpty,
-                    "Language \(info.id) key '\(slotId)' has empty tap label"
+                    "Language \(info.id) key '\(keyId)' has empty tap label"
                 )
             }
         }

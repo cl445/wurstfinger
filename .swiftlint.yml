@@ -127,9 +127,6 @@ custom_rules:
     match_kinds: [identifier]
     message: "`make…` is the factory verb; a second one alongside it splits the vocabulary. Write `make…` instead (docs/GLOSSARY.md)."
     severity: error
-    excluded:
-      - "wurstfingerTests/KeyboardSettingsTests\\.swift"
-      - "wurstfingerTests/LanguageSettingsTests\\.swift"
   glossary_gesture_preprocessor_config:
     name: "Glossary: GesturePreprocessorConfig"
     regex: "\\bGesturePreprocessorConfig\\b"
@@ -265,17 +262,6 @@ custom_rules:
     match_kinds: [identifier]
     message: "\"Layer\" is not canonical for a keyboard state. Write `mode` instead (docs/GLOSSARY.md)."
     severity: error
-    excluded:
-      - "wurstfinger/AppStoreScreenshotView\\.swift"
-      - "wurstfinger/KeyboardShowcaseView\\.swift"
-      - "wurstfingerKeyboard/KeyboardViewController\\.swift"
-      - "wurstfingerTests/AutoCapitalizationTests\\.swift"
-      - "wurstfingerTests/KeyboardStateHygieneTests\\.swift"
-      - "wurstfingerTests/LongPressNumberTests\\.swift"
-      - "wurstfingerTests/ModeDefinitionValidationTests\\.swift"
-      - "wurstfingerTests/ScriptLayoutTests\\.swift"
-      - "wurstfingerUITests/ScreenshotTests\\.swift"
-      - "wurstfingerUITests/TypingTests\\.swift"
   glossary_long_press_numbers_enabled:
     name: "Glossary: longPressNumbersEnabled"
     regex: "\\blongPressNumbersEnabled\\b"
@@ -302,48 +288,22 @@ custom_rules:
     match_kinds: [identifier]
     message: "`ScreenshotMode` is rejected — the glossary term is `ScreenshotType` (docs/GLOSSARY.md)."
     severity: error
-    excluded:
-      - "wurstfinger/wurstfingerApp\\.swift"
   glossary_show_language_label:
     name: "Glossary: showLanguageLabel"
     regex: "\\bshowLanguageLabel\\b"
     match_kinds: [identifier]
     message: "`showLanguageLabel` is rejected — the glossary term is `isLanguageLabelShown` (docs/GLOSSARY.md)."
     severity: error
-    excluded:
-      - "wurstfingerKeyboard/Runtime/View/DataDrivenKeyboardRootView\\.swift"
-      - "wurstfingerKeyboard/Runtime/View/KeyView\\.swift"
-      - "wurstfingerKeyboard/Runtime/View/KeyboardGridView\\.swift"
   glossary_slot_id:
     name: "Glossary: slotId"
     regex: "\\bslotId\\b"
     match_kinds: [identifier]
     message: "`slotId` is rejected — the glossary term is `keyId` (docs/GLOSSARY.md)."
     severity: error
-    excluded:
-      - "wurstfingerKeyboard/Definition/Language/GridKeyboardFactory\\.swift"
-      - "wurstfingerKeyboard/Definition/Language/NumericLayouts\\.swift"
-      - "wurstfingerTests/LayoutValidationTests\\.swift"
-      - "wurstfingerTests/ReturnSwipeLanguageTests\\.swift"
   glossary_vague_type_suffix:
     name: "Glossary: vague type suffix"
     regex: "(?!(?:FileManager|fileManager)\\b)\\b[A-Za-z]*(Manager|Helper|Helpers|Utils|Util)\\b"
     match_kinds: [identifier]
     message: "`…Manager`, `…Helper` and `…Utils` describe no responsibility. Write a name that says what the type does instead (docs/GLOSSARY.md)."
     severity: error
-    excluded:
-      - "wurstfinger/AspectRatioSettingsView\\.swift"
-      - "wurstfinger/ExpertSettingsView\\.swift"
-      - "wurstfinger/GesturePlaygroundView\\.swift"
-      - "wurstfinger/HapticSettingsView\\.swift"
-      - "wurstfinger/InteractiveKeyboardPreview\\.swift"
-      - "wurstfinger/KeyboardSizePositionSettingsView\\.swift"
-      - "wurstfinger/LabelVisibilitySettingsView\\.swift"
-      - "wurstfinger/SettingsView\\.swift"
-      - "wurstfinger/StyleSettingsView\\.swift"
-      - "wurstfinger/wurstfingerApp\\.swift"
-      - "wurstfingerKeyboard/KeyboardViewModel\\.swift"
-      - "wurstfingerKeyboard/Settings/KeyboardSettings\\.swift"
-      - "wurstfingerTests/KeyboardSettingsTests\\.swift"
-      - "wurstfingerTests/OrientationLayoutTests\\.swift"
   # --- end generated ---

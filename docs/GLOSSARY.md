@@ -47,9 +47,13 @@ A **mode** is one keyboard state with its own key set and arrangement: `main`, `
 `Definition/Language/KeyboardDefinition.swift`). The type is `KeyboardMode`, the action is
 `.switchMode(name)`.
 
-"Layer" means the same thing and still appears in 30 identifiers and 88 comment and
-string lines across 32 files. It is **not** canonical — never introduce it in new code,
-comments, or test names. `KeyboardMode+Shifted.swift`
+"Layer" is the non-canonical spelling of the same thing — never introduce it in new
+code, comments, or test names for a keyboard state.
+
+The word itself is not banned: "the definition layer", "the view layer" and "layered on
+top" are the architectural and ordinary English senses, and they stay. Only the sense
+that means a keyboard state is wrong, and that one is always replaceable by `mode`
+without changing the sentence. `KeyboardMode+Shifted.swift`
 currently manages both words in one sentence; that is the bug this rule prevents.
 
 Do not confuse `KeyboardMode` (keyboard state) with `SwipeMode` (which *directions* a
@@ -77,8 +81,8 @@ and `KeyPlacement.keyId` references it.
   (`globe`, `delete`, `return`, `space`, `symbols`).
 - The **variable/parameter name** for such a string is `keyId` (established API surface,
   e.g. `GestureResolver.resolve(keyId:gesture:in:)`).
-- `slotId` is a rejected alias, still carried by two factories and two test files
-  ([the backlog](#8-the-backlog) has the count). Never write it in new code.
+- `slotId` is a rejected alias with no sites left. The SwiftLint rule
+  `glossary_slot_id` now covers every file, so writing it is a build error.
 
 Use "slot" when talking about the *position* ("the `topLeft` slot"), "key" when talking
 about the *thing bound to it* ("the `topLeft` key commits `q`").
@@ -313,27 +317,24 @@ counts per file: they may shrink, never grow — and a shrink has to be recorded
 | Legacy spelling | Replacement | Sites | Files |
 | --- | --- | --- | --- |
 | `KeyConfig` | `KeyDefinition` | 98 | 22 |
-| create prefix | `make…` | 97 | 2 |
 | `GesturePreprocessorConfig` | `GesturePreprocessorConfiguration` | 80 | 7 |
-| vague type suffix | a name that says what the type does | 54 | 16 |
 | `LanguageConfig` | `LanguageDescriptor` | 53 | 11 |
 | `hideLetters` | `areLetterLabelsHidden` | 37 | 10 |
 | `hideStandardSymbols` | `areStandardSymbolLabelsHidden` | 37 | 10 |
 | `hideExtraSymbols` | `areExtraSymbolLabelsHidden` | 35 | 10 |
-| `slotId` | `keyId` | 31 | 4 |
-| layer word | `mode` | 30 | 10 |
 | `longPressNumbersEnabled` | `isLongPressDigitEnabled` | 13 | 5 |
 | `KeyboardInfo` | `LanguageDescriptor` | 6 | 4 |
-| `showLanguageLabel` | `isLanguageLabelShown` | 6 | 3 |
 | config suffix | `…Configuration` for injected runtime parameters, `…Definition` for declarative data | 5 | 2 |
 | `ScreenshotConfig` | `ScreenshotConfiguration` | 3 | 1 |
-| `ScreenshotMode` | `ScreenshotType` | 2 | 1 |
-| **total** | | **587** | **69** |
+| **total** | | **367** | **51** |
 
 <!-- /generated: backlog -->
 
-Comments are not counted — the checker reads identifiers only — so the ~85 comment lines
-still saying "layer" are not in the table above. They come out with the identifiers.
+Comments are not counted — the checker reads identifiers only — so nothing prose says can
+appear in the table above. The keyboard-mode sense of "layer" is gone from the comments
+too; what is left is the architectural sense, which is the ordinary English word and not
+the rejected one: nine lines about the definition layer, the view layer, and the order of
+the hint layer.
 
 ## 9. Waivers
 

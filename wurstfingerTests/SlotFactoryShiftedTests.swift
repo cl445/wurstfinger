@@ -3,7 +3,7 @@
 //  WurstfingerTests
 //
 //  Tests for GridSlot, UtilitySlot, KeyConfig factories,
-//  and shifted layer generation.
+//  and shifted mode generation.
 //
 
 import Foundation

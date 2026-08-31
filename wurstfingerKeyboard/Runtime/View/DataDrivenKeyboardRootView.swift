@@ -80,7 +80,7 @@ struct DataDrivenKeyboardRootView: View {
                         viewModel.handleGesture(.longPress, keyId: key.id, isReturn: false)
                     },
                     languageLabel: viewModel.currentLanguageLabel,
-                    showLanguageLabel: viewModel.hasMultipleLanguages,
+                    isLanguageLabelShown: viewModel.hasMultipleLanguages,
                     renderSettings: renderSettings,
                     metrics: metrics
                 )

@@ -537,7 +537,7 @@ extension LanguageDefinitions {
         ],
         // 、 and 。 replace the shared Latin comma and full stop, which stay one
         // return swipe away (see `hiraganaReturnOverrides`) and keep their
-        // positions on the numeric layer. `AutoCapitalization` counts 。 as a
+        // positions in numeric mode. `AutoCapitalization` counts 。 as a
         // sentence ender.
         GridSlot.bottomCenter: [
             .swipeUp: "て", .swipeUpLeft: "゛", .swipeLeft: "ね",

@@ -317,13 +317,13 @@ struct AutoCapitalizationTests {
         #expect(vm.activeModeName == ModeNames.capsLock)
     }
 
-    @Test func numericLayerStaysOnSentenceEnder() {
+    @Test func numericModeStaysOnSentenceEnder() {
         let (vm, target) = makeAutoCapViewModel()
 
         vm.handleGesture(.tap, keyId: UtilitySlot.symbols, isReturn: false)
         #expect(vm.activeModeName == ModeNames.numeric)
 
-        // Typing ". " on the numeric layer must not teleport to shifted.
+        // Typing ". " in numeric mode must not teleport to shifted.
         vm.dispatchAction(.commitText(". "))
         #expect(vm.activeModeName == ModeNames.numeric)
 

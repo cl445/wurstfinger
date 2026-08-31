@@ -25,7 +25,7 @@ struct KeyboardGridView: View {
     /// Active-language hint for the switch key, supplied by `KeyboardViewModel`
     /// so it reflects the loaded definition rather than re-derived storage.
     var languageLabel: String = ""
-    var showLanguageLabel: Bool = false
+    var isLanguageLabelShown: Bool = false
 
     /// Render settings snapshot forwarded to every `KeyView`, read once in
     /// `DataDrivenKeyboardRootView` (see `KeyRenderSettings`). Undefaulted
@@ -97,7 +97,7 @@ struct KeyboardGridView: View {
                 settings: renderSettings,
                 metrics: metrics,
                 languageLabel: languageLabel,
-                showLanguageLabel: showLanguageLabel
+                isLanguageLabelShown: isLanguageLabelShown
             )
             .id(cell.keyId)
         } else {

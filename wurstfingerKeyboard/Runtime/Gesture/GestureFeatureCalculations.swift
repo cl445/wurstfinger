@@ -237,5 +237,5 @@ enum GestureCalculations {
     }
 }
 
-// Note: CGPoint extensions (distance, magnitude, asVector) are defined in GeometryUtils.swift
+// Note: CGPoint extensions (distance, magnitude, asVector) are defined in GeometryExtensions.swift
 // Note: Vector2D type is defined in Vector2D.swift

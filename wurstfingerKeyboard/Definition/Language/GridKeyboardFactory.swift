@@ -8,7 +8,7 @@
 import Foundation
 
 /// Factory for creating complete grid-based keyboard definitions.
-/// All shared structure (punctuation, utility keys, arrangements, shifted layer)
+/// All shared structure (punctuation, utility keys, arrangements, shifted mode)
 /// is generated automatically — only language-specific parameters are needed.
 enum GridKeyboardFactory {
     /// Creates a complete keyboard definition from language-specific parameters.
@@ -35,13 +35,13 @@ enum GridKeyboardFactory {
     ///     Caseless scripts (Hebrew) pass `false`: the layout then has no
     ///     shifted/capsLock modes, no shift binding on the midRight key, and
     ///     auto-capitalization is disabled in the definition settings.
-    ///   - numericBackToAlphaLabel: Label shown on the symbols key in numeric
-    ///     mode that switches back to the main (alphabetic) layer. Defaults to
-    ///     the Latin "abc"; non-Latin layouts (Hebrew, Russian, …) should
-    ///     supply a script-appropriate label.
-    ///   - numericDigits: Digit set (indexed by value 0–9) used in the numeric
-    ///     layer. Defaults to Western ASCII digits; Arabic, Persian, and Urdu
-    ///     layouts should pass their script-specific digit set.
+    ///   - numericBackToAlphaLabel: Label shown on the symbols key that leaves
+    ///     numeric mode for the main (alphabetic) one. Defaults to the Latin
+    ///     "abc"; non-Latin layouts (Hebrew, Russian, …) should supply a
+    ///     script-appropriate label.
+    ///   - numericDigits: Digit set (indexed by value 0–9) used in numeric mode.
+    ///     Defaults to Western ASCII digits; Arabic, Persian, and Urdu layouts
+    ///     should pass their script-specific digit set.
     ///   - inputMethod: Which input method is applied to committed characters.
     ///     Defaults to `.direct`; Vietnamese layouts should pass `.telex` so
     ///     that `SequentialCompositionMiddleware` activates for this keyboard
@@ -73,10 +73,10 @@ enum GridKeyboardFactory {
         var letterKeys: [String: KeyConfig] = [:]
         for (rowIdx, row) in centerCharacters.enumerated() {
             for (colIdx, char) in row.enumerated() {
-                let slotId = GridSlot.allSlots[rowIdx][colIdx]
+                let keyId = GridSlot.allSlots[rowIdx][colIdx]
 
                 // Start with shared defaults for this slot
-                var bindings = CommonKeys.defaultSlotBindings[slotId] ?? [:]
+                var bindings = CommonKeys.defaultSlotBindings[keyId] ?? [:]
 
                 // Apply language-specific overrides (replace default binding for that gesture).
                 // Letters get an auto-generated uppercase return action — but only where
@@ -85,7 +85,7 @@ enum GridKeyboardFactory {
                 // no-op hiding a missing `returnOverrides` entry: without a return action
                 // the resolver falls through to the primary binding and commits the same
                 // glyph anyway.
-                if let overrides = directionalOverrides[slotId] {
+                if let overrides = directionalOverrides[keyId] {
                     for (gesture, text) in overrides {
                         let isLetter = text.unicodeScalars.contains { CharacterSet.letters.contains($0) }
                         let uppercased = text.keyboardUppercased(with: locale)
@@ -111,16 +111,16 @@ enum GridKeyboardFactory {
                 // Apply explicit return-swipe outputs (replace the auto-generated
                 // uppercase return action). Needed for caseless scripts where
                 // uppercasing is the identity, e.g. Hebrew final forms (כ → ך).
-                if let returns = returnOverrides[slotId] {
+                if let returns = returnOverrides[keyId] {
                     for (gesture, text) in returns {
                         guard gesture.isSwipe else {
                             preconditionFailure(
-                                "returnOverrides[\(slotId)][\(gesture)] must target a swipe gesture"
+                                "returnOverrides[\(keyId)][\(gesture)] must target a swipe gesture"
                             )
                         }
                         guard let base = bindings[gesture] else {
                             preconditionFailure(
-                                "returnOverrides[\(slotId)][\(gesture)] has no base binding"
+                                "returnOverrides[\(keyId)][\(gesture)] has no base binding"
                             )
                         }
                         bindings[gesture] = KeyBinding(
@@ -136,7 +136,7 @@ enum GridKeyboardFactory {
                 // so a distinct circle output has to be declared here. Both
                 // directions get the same binding — a thumb circle rarely comes
                 // out the way it was intended (same reasoning as `CommonKeys.cutAll`).
-                if let text = circularOverrides[slotId] {
+                if let text = circularOverrides[keyId] {
                     let circle = KeyBinding(
                         label: text, action: .commitText(text),
                         category: nil, returnAction: nil, accessibilityLabel: nil
@@ -145,8 +145,8 @@ enum GridKeyboardFactory {
                     bindings[.circularCounterclockwise] = circle
                 }
 
-                letterKeys[slotId] = KeyConfig(
-                    id: slotId, bindings: bindings, swipeMode: .eightWay,
+                letterKeys[keyId] = KeyConfig(
+                    id: keyId, bindings: bindings, swipeMode: .eightWay,
                     slideType: .none, style: .primary, tapCycleActions: nil
                 )
             }

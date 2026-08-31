@@ -245,10 +245,10 @@ enum LanguageDefinitions {
                     .swipeDownLeft: "כ", .swipeLeft: "ע",
                 ],
                 GridSlot.bottomLeft: [.swipeUpRight: "ז"],
-                // Geresh and gershayim carry Hebrew abbreviations, acronyms and
-                // numerals (ד״ר, צה״ל); the reference puts them where the Latin
-                // quotes sit. Those stay one return swipe away, and on the
-                // numeric layer.
+                // Geresh and gershayim carry Hebrew abbreviations, acronyms
+                // and numerals (ד״ר, צה״ל); the reference puts them where the
+                // Latin quotes sit. Those stay one return swipe away, and in
+                // numeric mode.
                 GridSlot.bottomCenter: [.swipeUp: "ס", .swipeUpLeft: "״", .swipeUpRight: "׳"],
                 GridSlot.bottomRight: [.swipeUpLeft: "ט"],
             ],

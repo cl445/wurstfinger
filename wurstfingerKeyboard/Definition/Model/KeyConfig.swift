@@ -13,7 +13,7 @@ struct KeyConfig: Codable, Equatable, Identifiable {
     let id: String
 
     /// Binding for each gesture. Only set entries are active.
-    /// `var` so a derived key (shifted layer, removed binding) can be made by
+    /// `var` so a derived key (shifted mode, removed binding) can be made by
     /// copying this one and swapping the bindings — rebuilding it field by
     /// field silently drops everything added to the type later.
     var bindings: [GestureType: KeyBinding]

@@ -4,7 +4,7 @@
 //
 //  Numeric keyboard modes (phone and classic digit ordering).
 //  Swipe bindings are inherited from CommonKeys.defaultSlotBindings so that
-//  the numeric layer has the same punctuation layout as the letter layer.
+//  the numeric mode has the same punctuation layout as the letter modes.
 //
 
 import Foundation
@@ -97,7 +97,7 @@ enum NumericLayouts {
                 // Tap only. A hold on a letter key reaches this digit via
                 // `GhostKeyResolver`, which maps a `.longPress` to the fallback
                 // key's `.tap` when that tap emits a digit — so the numeric
-                // layer no longer mirrors every digit as an explicit long press.
+                // mode no longer mirrors every digit as an explicit long press.
                 .tap: KeyBinding(
                     label: digit, action: .commitText(digit),
                     category: .digit, returnAction: nil, accessibilityLabel: nil
@@ -123,7 +123,7 @@ enum NumericLayouts {
 
     // MARK: - Numeric-Specific Overrides
 
-    /// Extra swipe bindings that only appear on the numeric layer
+    /// Extra swipe bindings that only appear in numeric mode
     /// (beyond what CommonKeys.defaultSlotBindings provides).
     private static let numericExtraSwipes: [String: [GestureType: KeyBinding]] = [
         GridSlot.topLeft: [
@@ -225,33 +225,33 @@ enum NumericLayouts {
 
         for (rowIdx, row) in centerDigits.enumerated() {
             for (colIdx, digit) in row.enumerated() {
-                let slotId = GridSlot.allSlots[rowIdx][colIdx]
+                let keyId = GridSlot.allSlots[rowIdx][colIdx]
 
-                // Start with shared punctuation defaults (same as letter layer),
+                // Start with shared punctuation defaults (same as letter modes),
                 // but remove shift/capsLock bindings that don't apply to numeric.
                 // This intentionally drops the entire binding including any returnAction
                 // (e.g. midRight.swipeUp carries capitalizeWord as returnAction).
                 var bindings: [GestureType: KeyBinding] = [:]
-                for (gesture, binding) in CommonKeys.defaultSlotBindings[slotId] ?? [:] {
+                for (gesture, binding) in CommonKeys.defaultSlotBindings[keyId] ?? [:] {
                     if case .switchMode = binding.action { continue }
                     bindings[gesture] = binding
                 }
 
                 // Merge numeric-specific extras (doesn't replace existing)
-                if let extras = numericExtraSwipes[slotId] {
+                if let extras = numericExtraSwipes[keyId] {
                     for (gesture, binding) in extras where bindings[gesture] == nil {
                         bindings[gesture] = binding
                     }
                 }
 
                 // Add circular gesture bindings
-                if let circBinding = circularOverrides[slotId] {
+                if let circBinding = circularOverrides[keyId] {
                     bindings[.circularClockwise] = circBinding
                     bindings[.circularCounterclockwise] = circBinding
                 }
 
-                // Tap → digit. `GhostKeyResolver` falls back to this layer for
-                // gestures the letter layer leaves unbound; for a `.longPress`
+                // Tap → digit. `GhostKeyResolver` falls back to this mode for
+                // gestures the letter modes leave unbound; for a `.longPress`
                 // it maps to this `.digit` tap, so holding a letter key types
                 // its digit without a mode switch and without mirroring the tap
                 // as an explicit long-press binding. Long presses only occur
@@ -261,8 +261,8 @@ enum NumericLayouts {
                     category: .digit, returnAction: nil, accessibilityLabel: nil
                 )
 
-                digitKeys[slotId] = KeyConfig(
-                    id: slotId, bindings: bindings, swipeMode: .eightWay,
+                digitKeys[keyId] = KeyConfig(
+                    id: keyId, bindings: bindings, swipeMode: .eightWay,
                     slideType: .none, style: .primary, tapCycleActions: nil
                 )
             }

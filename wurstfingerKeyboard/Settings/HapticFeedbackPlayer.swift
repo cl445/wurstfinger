@@ -108,7 +108,7 @@ final class HapticFeedbackPlayer {
         trigger(.drag)
     }
 
-    /// Triggers a confirmation tick for layer/language changes and system
+    /// Triggers a confirmation tick for mode/language changes and system
     /// actions (globe, dismiss, clipboard).
     func stateChange() {
         trigger(.stateChange)
