@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check_naming import (  # noqa: E402
     Glossary,
+    budget_drift,
     Pattern,
     Term,
     load_glossary,
@@ -162,6 +163,37 @@ class GlossaryFileTests(unittest.TestCase):
     def test_every_term_has_a_definition(self) -> None:
         for term in load_glossary().terms:
             self.assertTrue(term.definition, f"{term.name} has no definition")
+
+
+class BudgetDriftTests(unittest.TestCase):
+    """A recorded budget and the tree it describes may not drift apart."""
+
+    def test_matching_counts_are_clean(self) -> None:
+        self.assertEqual(budget_drift({"a.swift": 3}, {"a.swift": 3}), ([], [], []))
+
+    def test_a_count_above_its_budget_is_over(self) -> None:
+        over, stale, slack = budget_drift({"a.swift": 4}, {"a.swift": 3})
+        self.assertEqual((over, stale, slack), (["a.swift"], [], []))
+
+    def test_a_file_absent_from_the_budget_is_over(self) -> None:
+        over, _, _ = budget_drift({"new.swift": 1}, {})
+        self.assertEqual(over, ["new.swift"])
+
+    def test_a_budget_entry_with_nothing_left_is_stale(self) -> None:
+        over, stale, slack = budget_drift({}, {"gone.swift": 2})
+        self.assertEqual((over, stale, slack), ([], ["gone.swift"], []))
+
+    def test_a_partial_shrink_is_slack(self) -> None:
+        # The sequence this guards: 14 -> 13 without recording it leaves the
+        # budget holding a slot, and the next rejected name takes it back to
+        # 14 without ever exceeding the recorded number.
+        over, stale, slack = budget_drift({"a.swift": 13}, {"a.swift": 14})
+        self.assertEqual((over, stale, slack), ([], [], ["a.swift"]))
+
+    def test_a_name_returning_into_unrecorded_slack_would_pass_unnoticed(self) -> None:
+        # Same file, after the slack was recorded: the slot is gone, so the
+        # returning name is over budget rather than free.
+        self.assertEqual(budget_drift({"a.swift": 14}, {"a.swift": 13})[0], ["a.swift"])
 
 
 if __name__ == "__main__":

@@ -454,18 +454,45 @@ def load_budget() -> dict[str, int]:
 # ---------------------------------------------------------------------------
 
 
+def budget_drift(
+    actual: dict[str, int], budget: dict[str, int]
+) -> tuple[list[str], list[str], list[str]]:
+    """Return the three ways a live count and its recorded budget disagree.
+
+    `over` grew past what was recorded, `stale` lost everything it carried,
+    `slack` lost some of it. All three are failures: the first is a new
+    rejected name, the other two are an unrecorded shrink, which leaves the
+    budget holding a slot the tree no longer needs.
+
+    Split out of `mode_check` so the rule can be tested without a source tree.
+    """
+    over = sorted(path for path, count in actual.items() if count > budget.get(path, 0))
+    stale = sorted(set(budget) - set(actual))
+    slack = sorted(
+        path for path, count in actual.items() if path in budget and count < budget[path]
+    )
+    return over, stale, slack
+
+
 def mode_check(glossary: Glossary) -> int:
-    """Fail when any file carries more rejected names than it is allowed."""
+    """Fail when a file's count and its recorded budget have drifted apart.
+
+    Both directions fail, because a ratchet that only catches growth is not
+    one: a file that drops from 14 to 13 while the budget still reads 14
+    leaves a slot open, and the next rejected name walks into it without CI
+    noticing. Holding the lower number is what makes the budget mean
+    something, so a shrink has to be recorded rather than merely allowed.
+    """
     findings = scan(glossary, swift_files())
     actual = counts_by_file(findings)
     budget = load_budget()
 
-    over: list[str] = []
-    for path, count in actual.items():
-        allowed = budget.get(path, 0)
-        if count > allowed:
-            plural = "" if count == 1 else "s"
-            over.append(f"{path}: {count} rejected name{plural}, budget {allowed}")
+    over_paths, stale, slack_paths = budget_drift(actual, budget)
+    over = [
+        f"{path}: {actual[path]} rejected name{'' if actual[path] == 1 else 's'}, "
+        f"budget {budget.get(path, 0)}"
+        for path in over_paths
+    ]
 
     if over:
         by_file: dict[str, list[Finding]] = {}
@@ -484,11 +511,24 @@ def mode_check(glossary: Glossary) -> int:
         )
         return 1
 
-    stale = sorted(set(budget) - set(actual))
     if stale:
         print("Budget entries that no longer carry anything — run `update`:", file=sys.stderr)
         for path in stale:
             print(f"  {path}", file=sys.stderr)
+        return 1
+
+    # A file that lost some — but not all — of its backlog. `stale` above only
+    # catches the count reaching zero, which leaves the partial case as free
+    # headroom for the next rejected name.
+    if slack_paths:
+        print("Budget entries that are now too generous — run `update`:", file=sys.stderr)
+        for path in slack_paths:
+            print(f"  {path}: {actual[path]} rejected names, budget {budget[path]}", file=sys.stderr)
+        print(
+            "\nA name was removed without recording it. Until the budget is"
+            "\nlowered, that slot stays open for the next one.",
+            file=sys.stderr,
+        )
         return 1
 
     total = sum(actual.values())
