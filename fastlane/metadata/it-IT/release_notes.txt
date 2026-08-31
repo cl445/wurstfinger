@@ -1,0 +1,13 @@
+Versione 1.2.0
+
+Novità:
+• Niente più zone morte: ora ogni pixel della tastiera risponde al tocco
+• Feedback aptico più reattivo: la vibrazione scatta al tocco, non dopo l'azione
+• La tastiera resta allineata correttamente dopo una rotazione in background
+
+Correzioni:
+• Layout francese: corretto lo scorrimento di ritorno sul tasto centrale
+• Le maiuscole automatiche dopo la cancellazione funzionano di nuovo
+• L'apostrofo non attiva più la modalità accenti/composizione
+• iOS ora segnala correttamente la lingua della tastiera
+• Varie altre correzioni per gesti e impostazioni

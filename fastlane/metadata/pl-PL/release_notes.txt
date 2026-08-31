@@ -1,0 +1,13 @@
+Wersja 1.2.0
+
+Najważniejsze zmiany:
+• Koniec z martwymi strefami – każdy piksel klawiatury reaguje teraz na dotyk
+• Szybsze sprzężenie haptyczne – wibracja uruchamia się przy dotknięciu, a nie po akcji
+• Klawiatura pozostaje prawidłowo wyrównana po obróceniu w tle
+
+Poprawki:
+• Układ francuski: naprawiono gest powrotny na klawiszu środkowym
+• Automatyczne wielkie litery po usunięciu znów działają
+• Apostrof nie uruchamia już trybu akcentów/składania
+• iOS zgłasza teraz poprawny język klawiatury
+• Różne inne poprawki gestów i ustawień

@@ -1,0 +1,13 @@
+Versión 1.2.0
+
+Novedades:
+• Se acabaron las zonas muertas: ahora cada píxel del teclado responde al tacto
+• Respuesta háptica más ágil: la vibración se activa al tocar, no después de la acción
+• El teclado permanece bien alineado tras girar el dispositivo en segundo plano
+
+Correcciones:
+• Distribución francesa: corregido el deslizamiento de retorno en la tecla central
+• El uso de mayúsculas automático tras borrar vuelve a funcionar
+• El apóstrofo ya no activa el modo de acentos/composición
+• iOS ahora informa correctamente del idioma del teclado
+• Varias correcciones adicionales en gestos y ajustes
