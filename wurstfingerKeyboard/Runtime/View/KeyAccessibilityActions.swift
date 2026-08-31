@@ -11,11 +11,12 @@ import SwiftUI
 ///
 /// VoiceOver activates an element by synthesizing a touch, which reaches the
 /// gesture recognizer as a plain tap — so every swipe-only binding is out of
-/// reach, including the globe's input-method switch, whose tap is inert by
-/// design. Each labelled binding becomes a named custom action, and a key
-/// with an inert tap additionally overrides the element's default activation
-/// with the gesture it declares. Both dispatch through the same `onGesture`
-/// callback as a real touch, so they share the resolver chain and pipeline.
+/// reach, including the globe's input-method switch, which lives on swipe-left
+/// while the tap opens the emoji layer. Each labelled binding becomes a named
+/// custom action, and a key whose tap is inert additionally overrides the
+/// element's default activation with the gesture it declares. Both dispatch
+/// through the same `onGesture` callback as a real touch, so they share the
+/// resolver chain and pipeline.
 struct KeyAccessibilityActions: ViewModifier {
     let key: KeyConfig
     let onGesture: (KeyConfig, GestureType, Bool) -> Void

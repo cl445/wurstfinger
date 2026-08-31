@@ -62,7 +62,7 @@ extension LabelCategory {
         switch binding.resolvedCategory {
         case .letter: .letter
         case .digit: .number
-        case .modifier, .utility, .whitespace: .functional
+        case .modifier, .utility, .whitespace, .emoji: .functional
         case .compose:
             // The accent-cycle key (🅒) is a control and stays visible; compose
             // *triggers* (´ ¨ ~ ° …) read as symbols and hide with the symbol
