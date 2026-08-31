@@ -9,6 +9,9 @@ STAGED_GLOSSARY=$(git diff --cached --name-only --diff-filter=ACMR -- glossary.t
 # Separate from the sources above: a hand-edit to a generated section of
 # GLOSSARY.md has to reach `render --check` even when nothing else is staged.
 STAGED_GLOSSARY_DOC=$(git diff --cached --name-only --diff-filter=ACMR -- docs/GLOSSARY.md)
+# The generator decides what the generated files should contain, so a change to
+# it can make them stale without touching them.
+STAGED_NAMING_TOOL=$(git diff --cached --name-only --diff-filter=ACMR -- scripts/check_naming.py)
 
 if [ -z "$STAGED_SWIFT" ] && [ -z "$STAGED_MARKDOWN" ] && [ -z "$STAGED_GLOSSARY" ]; then
     exit 0
@@ -103,17 +106,26 @@ fi
 # per file in .naming-budget.json. The check reads the whole tree rather than the
 # staged files, because a budget is only meaningful as a total — it takes about
 # half a second.
-if [ -n "$STAGED_SWIFT" ] || [ -n "$STAGED_GLOSSARY" ]; then
+if [ -n "$STAGED_SWIFT" ] || [ -n "$STAGED_GLOSSARY" ] || [ -n "$STAGED_NAMING_TOOL" ]; then
     echo "Checking naming against the glossary..."
     if ! python3 scripts/check_naming.py check; then
         FAILED=1
     fi
 fi
 
-# The generated documents are checked whenever their sources *or* GLOSSARY.md
-# itself is staged. Editing only the document is exactly how a generated table
-# goes stale, so that case must not fall through.
-if [ -n "$STAGED_GLOSSARY" ] || [ -n "$STAGED_GLOSSARY_DOC" ]; then
+# The generated documents are checked whenever their sources, the generator, or
+# the generated files themselves are staged. Editing only GLOSSARY.md is exactly
+# how a generated table goes stale, and a generator change can stale all of them
+# without touching one, so neither case may fall through.
+if [ -n "$STAGED_GLOSSARY" ] || [ -n "$STAGED_GLOSSARY_DOC" ] || [ -n "$STAGED_NAMING_TOOL" ]; then
+    # Same caveat as SwiftLint above: these read the working tree, not the
+    # index, so a partially staged generated file is checked in the version on
+    # disk rather than the one about to be committed.
+    for generated in .swiftlint.yml docs/GLOSSARY.md .naming-budget.json; do
+        if ! git diff --quiet -- "$generated" 2>/dev/null; then
+            echo "warning: $generated has unstaged changes — checking working tree version"
+        fi
+    done
     if ! python3 scripts/check_naming.py render --check; then
         FAILED=1
     fi
