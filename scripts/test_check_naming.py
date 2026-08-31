@@ -196,6 +196,40 @@ class LintRuleTests(unittest.TestCase):
                 if regex.search(finding.rejected):
                     self.assertIn(finding.path, carriers.get(pattern_id, set()))
 
+    def test_pattern_carriers_see_a_spelling_its_term_owns(self) -> None:
+        """The same guard, on a synthetic backlog, so it asserts something today.
+
+        The repository-wide test above goes vacuous whenever the backlog is
+        empty. This one builds the overlap on purpose: a term rejects
+        `FooConfig`, a pattern matches every `…Config`, and the pattern's
+        carriers must still include the file — otherwise the generated
+        SwiftLint rule would leave it unexcluded and fail `--strict`.
+        """
+        glossary = Glossary(
+            terms=(Term(name="FooConfiguration", zone="A", definition="", rejected=("FooConfig",), note=""),),
+            patterns=(
+                Pattern(
+                    id="config_suffix",
+                    regex=r"\b[A-Za-z]*Config\b",
+                    replacement="`…Configuration`",
+                    rationale="",
+                    allowed=(),
+                    applies_to=("identifier",),
+                ),
+            ),
+            exceptions={},
+            exception_reasons={},
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            file = root / "Sample.swift"
+            file.write_text("let a = FooConfig()\n", encoding="utf-8")
+            findings = scan(glossary, [file], root=root)
+            carriers = _pattern_carriers(glossary, [file], root=root)
+
+        self.assertEqual([finding.rejected for finding in findings], ["FooConfig"])
+        self.assertEqual(carriers["config_suffix"], {"Sample.swift"})
+
     def test_rules_are_indented_for_the_custom_rules_block(self) -> None:
         for line in _lint_rules(load_glossary()).splitlines():
             self.assertTrue(line.startswith("  "), line)
