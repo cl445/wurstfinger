@@ -59,6 +59,16 @@ enum SettingsKey: String, CaseIterable {
     /// redrawing costs battery, so experienced users are not made to pay for
     /// it. Off also keeps the keyboard visually identical to before.
     case gestureTrailEnabled
+    /// Master toggle for the learned touch-offset correction feature (default off).
+    /// See `docs/touch-offset-correction.md` §6.1.
+    case touchOffsetEnabled
+    /// User-declared hand posture (`PostureClass.rawValue`) that selects the
+    /// active learning regime. Explicit choice, not auto-detected; default
+    /// `oneThumbRight`. See §3.1/§6.3.
+    case touchOffsetPosture
+    /// Schema version of the persisted touch-offset model; bump invalidates
+    /// incompatible stored state. See §7.
+    case touchModelSchemaVersion
 }
 
 // MARK: - Haptic Settings

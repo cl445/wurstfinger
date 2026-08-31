@@ -21,6 +21,11 @@ struct KeyboardGridLayout: Layout {
     let rowHeight: CGFloat
     let horizontalSpacing: CGFloat
     let verticalSpacing: CGFloat
+    /// Per-key learned offset in pitch fractions (`keyId` → `(dx, dy)`), driving
+    /// Key-Target-Resizing of the touch cells (§5.4). Empty = no resizing.
+    var offsets: [String: CGVector] = [:]
+    /// Per-axis clamp on the offset (pitch fraction) so cells never invert (§4.3).
+    var offsetClamp: CGFloat = 0.35
 
     private var rowCount: Int {
         cells.map { $0.row + $0.rowSpan }.max() ?? 0
@@ -40,7 +45,9 @@ struct KeyboardGridLayout: Layout {
             bounds: bounds,
             rowHeight: rowHeight,
             horizontalSpacing: horizontalSpacing,
-            verticalSpacing: verticalSpacing
+            verticalSpacing: verticalSpacing,
+            offsets: offsets,
+            offsetClamp: offsetClamp
         )
         for (index, frame) in frames.enumerated() where index < subviews.count {
             subviews[index].place(
@@ -68,12 +75,20 @@ struct KeyboardGridLayout: Layout {
         bounds: CGRect,
         rowHeight: CGFloat,
         horizontalSpacing: CGFloat,
-        verticalSpacing: CGFloat
+        verticalSpacing: CGFloat,
+        offsets: [String: CGVector] = [:],
+        offsetClamp: CGFloat = 0.35
     ) -> [CGRect] {
         guard columns > 0 else { return [] }
         let totalHorizontalSpacing = CGFloat(columns - 1) * horizontalSpacing
         let columnWidth = max((bounds.width - totalHorizontalSpacing) / CGFloat(columns), 0)
         let totalRows = cells.map { $0.row + $0.rowSpan }.max() ?? 0
+        let (vLine, hLine) = offsets.isEmpty
+            ? ([CGFloat](repeating: 0, count: columns + 1), [CGFloat](repeating: 0, count: totalRows + 1))
+            : lineShifts(
+                cells: cells, columns: columns, totalRows: totalRows, offsets: offsets,
+                clamp: offsetClamp, columnWidth: columnWidth, rowHeight: rowHeight
+            )
 
         return cells.map { cell in
             // Visible frame: the key's drawn bounds (geometry unchanged).
@@ -92,13 +107,75 @@ struct KeyboardGridLayout: Layout {
                 horizontalSpacing: horizontalSpacing,
                 verticalSpacing: verticalSpacing
             )
-            return CGRect(
-                x: originX - insets.leading,
-                y: originY - insets.top,
-                width: width + insets.leading + insets.trailing,
-                height: height + insets.top + insets.bottom
-            )
+            // Key-Target-Resizing (§5.4): the touch grid lines are perturbed
+            // (separable per line), so the tiling stays a valid rectangular
+            // partition even for 2D offsets. Each edge follows its shared line.
+            let leftEdge = originX - insets.leading + vLine[cell.column]
+            let rightEdge = originX + width + insets.trailing + vLine[cell.column + cell.columnSpan]
+            let topEdge = originY - insets.top + hLine[cell.row]
+            let bottomEdge = originY + height + insets.bottom + hLine[cell.row + cell.rowSpan]
+            return CGRect(x: leftEdge, y: topEdge, width: rightEdge - leftEdge, height: bottomEdge - topEdge)
         }
+    }
+
+    private struct GridPos: Hashable { let row: Int; let column: Int }
+
+    /// Signed shift (points) of every interior grid line, derived from per-key
+    /// offsets. A single vertical/horizontal line is shared by all cells along
+    /// it, so it must move by **one** value — hence the per-key offsets adjacent
+    /// to a line are averaged onto it (the smooth reach-bias component is
+    /// captured; per-key residual is partially realized). Outer lines stay at 0.
+    /// This guarantees a disjoint, gapless partition for arbitrary 2D offsets,
+    /// which independent per-edge shifts cannot (diagonal-corner mismatch).
+    /// Per-line touch-grid shifts (points), exposed so `KeyboardGridView` can
+    /// derive the matching **visible** compensation (keep the drawn key fixed
+    /// while the touch frame moves, §5.5). Both callers must use the same
+    /// `columnWidth`/`rowHeight` for the shifts to agree.
+    static func lineShifts(
+        cells: [SolvedCell], columns: Int, totalRows: Int,
+        offsets: [String: CGVector], clamp: CGFloat, columnWidth: CGFloat, rowHeight: CGFloat
+    ) -> (vertical: [CGFloat], horizontal: [CGFloat]) {
+        var grid: [GridPos: CGVector] = [:]
+        for cell in cells {
+            let raw = offsets[cell.keyId] ?? .zero
+            let clamped = CGVector(dx: min(max(raw.dx, -clamp), clamp), dy: min(max(raw.dy, -clamp), clamp))
+            for r in cell.row ..< (cell.row + cell.rowSpan) {
+                for c in cell.column ..< (cell.column + cell.columnSpan) {
+                    grid[GridPos(row: r, column: c)] = clamped
+                }
+            }
+        }
+
+        var vertical = [CGFloat](repeating: 0, count: columns + 1)
+        if columns > 1 {
+            for c in 1 ..< columns {
+                var sum: CGFloat = 0
+                var n = 0
+                for r in 0 ..< totalRows {
+                    guard let l = grid[GridPos(row: r, column: c - 1)],
+                          let rt = grid[GridPos(row: r, column: c)] else { continue }
+                    sum += (l.dx + rt.dx) / 2 * columnWidth
+                    n += 1
+                }
+                vertical[c] = n > 0 ? sum / CGFloat(n) : 0
+            }
+        }
+
+        var horizontal = [CGFloat](repeating: 0, count: totalRows + 1)
+        if totalRows > 1 {
+            for r in 1 ..< totalRows {
+                var sum: CGFloat = 0
+                var n = 0
+                for c in 0 ..< columns {
+                    guard let t = grid[GridPos(row: r - 1, column: c)],
+                          let b = grid[GridPos(row: r, column: c)] else { continue }
+                    sum += (t.dy + b.dy) / 2 * rowHeight
+                    n += 1
+                }
+                horizontal[r] = n > 0 ? sum / CGFloat(n) : 0
+            }
+        }
+        return (vertical, horizontal)
     }
 
     /// Per-side amount by which a cell's touch frame grows into the gap toward

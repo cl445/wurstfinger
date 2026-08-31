@@ -52,6 +52,9 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.gestureTrailEnabled.rawValue, store: SharedDefaults.store)
     private var gestureTrailEnabled = false
 
+    @AppStorage(SettingsKey.touchOffsetEnabled.rawValue, store: SharedDefaults.store)
+    private var touchOffsetEnabled = false
+
     @AppStorage(SettingsKey.keyboardFullAccess.rawValue, store: SharedDefaults.store)
     private var hasFullAccess = false
 
@@ -196,6 +199,17 @@ struct SettingsView: View {
                     color: .green,
                     title: "Size & Position",
                     subtitle: sizePositionDescription
+                )
+            }
+
+            NavigationLink(destination: TouchOffsetSettingsView()) {
+                SettingsRow(
+                    icon: "scope",
+                    color: .red,
+                    title: "Touch Correction",
+                    subtitle: touchOffsetEnabled
+                        ? String(localized: "Learning your taps")
+                        : String(localized: "Adapt targets to your taps")
                 )
             }
 
