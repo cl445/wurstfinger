@@ -52,9 +52,9 @@ struct ThemeEditorView: View {
         theme: KeyboardThemeDefinition,
         isNewTheme: Bool,
         appearanceOverride: ColorScheme? = nil,
-        previewAspectRatio: Binding<Double> = .constant(DeviceLayoutUtils.defaultKeyAspectRatio),
-        previewWidth: Binding<Double> = .constant(DeviceLayoutUtils.defaultKeyboardWidth),
-        previewPosition: Binding<Double> = .constant(DeviceLayoutUtils.defaultKeyboardPosition),
+        previewAspectRatio: Binding<Double> = .constant(DeviceLayout.defaultKeyAspectRatio),
+        previewWidth: Binding<Double> = .constant(DeviceLayout.defaultKeyboardWidth),
+        previewPosition: Binding<Double> = .constant(DeviceLayout.defaultKeyboardPosition),
         onSave: @escaping (KeyboardThemeDefinition) -> Void,
         onDelete: @escaping (String) -> Void
     ) {

@@ -158,13 +158,13 @@ extension ThemeColor: Codable {
         case type, token, opacity, hex, light, dark
     }
 
-    private enum Kind: String, Codable {
+    private enum EncodedType: String, Codable {
         case semantic, fixed, adaptive
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        switch try container.decode(Kind.self, forKey: .type) {
+        switch try container.decode(EncodedType.self, forKey: .type) {
         case .semantic:
             let token = try container.decode(ThemeSemanticToken.self, forKey: .token)
             let opacity = try container.decodeIfPresent(Double.self, forKey: .opacity) ?? 1
@@ -183,14 +183,14 @@ extension ThemeColor: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case let .semantic(token, opacity):
-            try container.encode(Kind.semantic, forKey: .type)
+            try container.encode(EncodedType.semantic, forKey: .type)
             try container.encode(token, forKey: .token)
             try container.encode(opacity, forKey: .opacity)
         case let .fixed(hex):
-            try container.encode(Kind.fixed, forKey: .type)
+            try container.encode(EncodedType.fixed, forKey: .type)
             try container.encode(hex, forKey: .hex)
         case let .adaptive(light, dark):
-            try container.encode(Kind.adaptive, forKey: .type)
+            try container.encode(EncodedType.adaptive, forKey: .type)
             try container.encode(light, forKey: .light)
             try container.encode(dark, forKey: .dark)
         }

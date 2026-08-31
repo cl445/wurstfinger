@@ -113,7 +113,7 @@ struct KeyView: View {
 
     @ViewBuilder
     private var keyContent: some View {
-        let base = keyLayers
+        let base = keyStack
             // Inset the drawn key from the touch cell by `visualInset`, so the
             // visible key keeps its position/size while the cell itself extends into
             // the inter-key gaps (see KeyboardGridLayout.gapInsets).
@@ -302,7 +302,7 @@ struct KeyView: View {
     /// nothing at all. Without the frame the pane shrinks to the glyph and the
     /// space bar disappears entirely.
     @ViewBuilder
-    private var keyLayers: some View {
+    private var keyStack: some View {
         if usesNativeGlass, #available(iOS 26.0, *) {
             ZStack {
                 label
