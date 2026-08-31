@@ -62,8 +62,10 @@ families. Small enough to burn down in three changes rather than a campaign.
 | `ScreenshotMode` | 2 | 1 | `ScreenshotType` |
 | `keyConfig` locals | 5 | 2 | follows its type |
 
-Plus 88 comment and string lines across 32 files still saying "layer", which the checker
-does not see and which come out together with the identifiers.
+Plus, at this baseline, 88 comment and string lines across 32 files saying "layer", which
+the checker does not see and which come out together with the identifiers. G3 rewrote
+them; the eight that remain use "layer" in the architectural sense, which the glossary
+does not reject.
 
 ### The one that is not cosmetic
 
