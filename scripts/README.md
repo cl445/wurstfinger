@@ -1,6 +1,7 @@
-# Screenshot Generation
+# Scripts
 
-This directory contains scripts for automated screenshot generation.
+Developer tooling: screenshot generation, the naming checker, and the git hooks
+that run them.
 
 ## generate-screenshots.sh
 
@@ -47,7 +48,7 @@ Screenshots are saved to `../docs/images/` as WebP files:
 
 All screenshots are automatically cropped to show only the keyboard area.
 
-## Implementation Details
+## Screenshot Implementation Details
 
 The screenshot system consists of:
 
@@ -61,3 +62,26 @@ The app enters "screenshot mode" when launched with the `SCREENSHOT_MODE` argume
 - `FORCE_LANGUAGE` - Sets keyboard language (e.g., "en_US")
 - `FORCE_LAYER` - Sets keyboard layer ("lower", "upper", "numbers", "symbols")
 - `FORCE_APPEARANCE` - Sets theme ("light", "dark")
+
+## check_naming.py
+
+Checks Swift identifiers against the domain vocabulary in `glossary.toml` and
+reports every spelling that vocabulary rejects. Needs Python 3.11 or newer for
+`tomllib`; no third-party packages.
+
+```bash
+python3 scripts/check_naming.py check            # what CI and the pre-commit hook run
+python3 scripts/check_naming.py list <path>      # the findings in one file or directory
+python3 scripts/check_naming.py list --statistics # a tally per rejected spelling
+python3 scripts/check_naming.py update           # re-freeze the budget after a rename
+python3 scripts/check_naming.py render           # regenerate docs/GLOSSARY.md sections 7-9
+```
+
+The backlog lives in `.naming-budget.json`: one entry per file, holding the number
+of rejected names it carries today. A file may not exceed its entry, and a file
+without one may not carry a single rejected name — so the existing code is
+grandfathered while new code is not. `update` writes the current counts and
+refuses to record a number that grew, unless `--allow-raise` says why.
+
+The vocabulary itself, the zones, and the reasoning are in
+[`docs/GLOSSARY.md`](../docs/GLOSSARY.md).

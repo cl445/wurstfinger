@@ -5,8 +5,12 @@
 # Get staged files (added, copied, modified, renamed)
 STAGED_SWIFT=$(git diff --cached --name-only --diff-filter=ACMR -- '*.swift')
 STAGED_MARKDOWN=$(git diff --cached --name-only --diff-filter=ACMR -- '*.md')
+STAGED_GLOSSARY=$(git diff --cached --name-only --diff-filter=ACMR -- glossary.toml .naming-budget.json)
+# Separate from the sources above: a hand-edit to a generated section of
+# GLOSSARY.md has to reach `render --check` even when nothing else is staged.
+STAGED_GLOSSARY_DOC=$(git diff --cached --name-only --diff-filter=ACMR -- docs/GLOSSARY.md)
 
-if [ -z "$STAGED_SWIFT" ] && [ -z "$STAGED_MARKDOWN" ]; then
+if [ -z "$STAGED_SWIFT" ] && [ -z "$STAGED_MARKDOWN" ] && [ -z "$STAGED_GLOSSARY" ]; then
     exit 0
 fi
 
@@ -91,6 +95,26 @@ if [ -n "$STAGED_MARKDOWN" ]; then
         fi
     else
         echo "error: markdownlint-cli2 not installed (brew install markdownlint-cli2)"
+        FAILED=1
+    fi
+fi
+
+# Naming: identifiers are checked against glossary.toml, with the backlog frozen
+# per file in .naming-budget.json. The check reads the whole tree rather than the
+# staged files, because a budget is only meaningful as a total — it takes about
+# half a second.
+if [ -n "$STAGED_SWIFT" ] || [ -n "$STAGED_GLOSSARY" ]; then
+    echo "Checking naming against the glossary..."
+    if ! python3 scripts/check_naming.py check; then
+        FAILED=1
+    fi
+fi
+
+# The generated sections are checked whenever their sources *or* the document
+# itself is staged. Editing only GLOSSARY.md is exactly how a generated table
+# goes stale, so that case must not fall through.
+if [ -n "$STAGED_GLOSSARY" ] || [ -n "$STAGED_GLOSSARY_DOC" ]; then
+    if ! python3 scripts/check_naming.py render --check; then
         FAILED=1
     fi
 fi

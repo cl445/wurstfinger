@@ -11,9 +11,23 @@ When code and this file disagree, the code wins for *reading*; this file wins fo
 
 **How to use it:** before naming a type, parameter, or test — and before writing a doc
 comment — check whether the concept already has a canonical term here. Use that term and
-nothing else. Known mismatches are listed under
-[Legacy exceptions](#7-legacy-exceptions); that list is not exhaustive, so a name in the
-codebase that contradicts this file is a legacy name, not a counter-example.
+nothing else. What the codebase still spells the old way is measured, not guessed: it is
+listed in [The backlog](#8-the-backlog), which is generated from the sources, so a name
+that contradicts this file is a legacy name rather than a counter-example.
+
+**How it is enforced.** The machine-checkable half of this document — the vocabulary, the
+rejected spellings, the shape rules — lives in [`glossary.toml`](../glossary.toml).
+`scripts/check_naming.py` reads it and reports every identifier that contradicts it;
+`.naming-budget.json` records the backlog per file, may shrink but never grow, and is
+deleted once it reaches zero. Sections [7](#7-do-not-write), [8](#8-the-backlog) and
+[9](#9-waivers) below are generated from those two files — edit `glossary.toml` and run
+`render`, not this document.
+
+```bash
+python3 scripts/check_naming.py list <path>   # what a file carries
+python3 scripts/check_naming.py check         # what CI runs
+python3 scripts/check_naming.py update        # record a rename
+```
 
 Where this file does not decide something, the
 [Swift API Design Guidelines](https://www.swift.org/documentation/api-design-guidelines/)
@@ -32,8 +46,9 @@ A **mode** is one keyboard state with its own key set and arrangement: `main`, `
 `Definition/Language/KeyboardDefinition.swift`). The type is `KeyboardMode`, the action is
 `.switchMode(name)`.
 
-"Layer" means the same thing and appears in ~70 comment lines. It is **not** canonical —
-never introduce it in new code, comments, or test names. `KeyboardMode+Shifted.swift`
+"Layer" means the same thing and still appears in 30 identifiers and 88 comment and
+string lines across 32 files. It is **not** canonical — never introduce it in new code,
+comments, or test names. `KeyboardMode+Shifted.swift`
 currently manages both words in one sentence; that is the bug this rule prevents.
 
 Do not confuse `KeyboardMode` (keyboard state) with `SwipeMode` (which *directions* a
@@ -61,7 +76,8 @@ and `KeyPlacement.keyId` references it.
   (`globe`, `delete`, `return`, `space`, `symbols`).
 - The **variable/parameter name** for such a string is `keyId` (established API surface,
   e.g. `GestureResolver.resolve(keyId:gesture:in:)`).
-- `slotId` is an alias used in a few factories. Prefer `keyId` in new code.
+- `slotId` is a rejected alias, still carried by two factories and two test files
+  ([the backlog](#8-the-backlog) has the count). Never write it in new code.
 
 Use "slot" when talking about the *position* ("the `topLeft` slot"), "key" when talking
 about the *thing bound to it* ("the `topLeft` key commits `q`").
@@ -94,7 +110,43 @@ to be able to tell from the name alone which of several classifications applies.
 
 ---
 
-## 2. Core vocabulary
+## 2. Zones: who owns a name
+
+Before renaming anything, ask who owns the name. Every term in `glossary.toml` records it.
+
+- **Zone A, free.** Types, properties, parameters, locals, test names. Nobody outside the
+  code sees them, so renaming is pure refactoring.
+- **Zone B, migratable.** Anything read back from disk. The Swift spelling and the stored
+  spelling are two different names: rename the property and **pin the old string**
+  — `case areLetterLabelsHidden = "hideLetters"` — or ship a migration. Phase 1 already
+  works this way: the type is `NumpadType` while the stored key stays `numpadStyle`, and
+  that divergence is correct rather than drift.
+
+  | Name | Note |
+  | --- | --- |
+  | `SettingsKey` cases | 24 cases, **all with implicit rawValues** — the case name *is* the stored key, so a rename orphans the setting unless the old string is pinned. |
+  | `AppSettingsKey` cases | 3 cases, all with explicit rawValues (`onboarding.*`). Here the case names are free and the strings are the contract. |
+  | `gesture.*` | The tuning keys in `GesturePreprocessor`, written as string literals. |
+  | `KeyboardHealthLog.Entry` properties | `Codable` with no `CodingKeys`, written to a JSON file in the app group — the property names *are* the on-disk field names. |
+  | Language ids (`de_DE`, `ja_JP_katakana`, …) | Persisted in `selectedLanguageId`, `enabledLanguageIds`, `pinnedLanguageId`. |
+
+- **Zone C, contract.** Names that leave the codebase. Renaming one costs somebody
+  something outside this repository, so it is a release decision, not a refactoring:
+
+  | Name | What a rename costs |
+  | --- | --- |
+  | `Localizable.xcstrings` keys | The English source string *is* the key. Rewording a UI string re-keys the entry and drops its translations — 156 keys across 22 languages. A case-only difference is a separate key, and has collided once already (`Switch Keyboard` vs. `Switch keyboard`). |
+  | `accessibilityIdentifier` values | The UI tests query keys by slot id; renaming a slot renames the test hook with it. |
+  | `group.de.akator.wurstfinger.shared` | The app-group suite. Renaming it orphans every setting on every installed device. |
+  | `FORCE_LANGUAGE`, `FORCE_LAYER`, `SCREENSHOT_MODE`, `GENERATE_SCREENSHOTS`, … | Read by `scripts/generate-screenshots.sh` and the workflows. They move together with those files or not at all — which is why `FORCE_LAYER` still says "layer", and why its values are `lower`, `upper`, `numbers`, `symbols` rather than the mode names they map to. |
+  | `ISOLATED_DEFAULTS` | Declared in `SharedDefaults` **and hand-copied** into `UITestApp`, because the UI-test target cannot import the app module. Renaming one side compiles cleanly and silently stops isolating the test defaults. |
+
+The checker only sees zone A and the Swift half of zone B. Zone C is documented here
+because no rule can catch it: it fails in the App Store, not in CI.
+
+---
+
+## 3. Core vocabulary
 
 ### Declarative model (`Definition/`)
 
@@ -106,7 +158,7 @@ to be able to tell from the name alone which of several classifications applies.
 | binding | `KeyBinding` | what one gesture on one key does: `label`, `action`, `category`, `returnAction`, `accessibilityLabel` |
 | action | `KeyAction` | the command enum — `commitText`, `compose`, `cycleAccents`, `switchMode`, `capitalizeWord`, `advanceToNextInputMode`, `dismissKeyboard`, `switchToNextLanguage`, `deleteBackward`, `deleteForward`, `space`, `newline`, `moveCursor`, `copy`, `paste`, `cut`, `cutAll`, `none` |
 | label | `KeyBinding.label` | the text drawn on the key. May differ from the output (`"⇧"` for shift) and is empty for icon-driven utility keys |
-| compose | `ComposeRuleSet`, `ComposeEngine` | table-driven character composition (`' + a → á`) |
+| compose | `ComposeRuleSet` (here), `ComposeEngine` (in `Runtime/Compose/`) | table-driven character composition (`' + a → á`) |
 | input method | `InputMethodType` | stateful transformation of committed text: `direct`, `telex`, `hangul` |
 | descriptor | `LanguageDescriptor` | lazy handle to a language: cheap metadata plus a builder that materializes the definition on demand |
 
@@ -119,7 +171,7 @@ to be able to tell from the name alone which of several classifications applies.
 | arrangement context | `ArrangementContext` | the situation an arrangement applies to: `portrait`, `portraitUtilityLeft`, `landscape`, `landscapeUtilityLeft` |
 | placement | `KeyPlacement` | one key's entry in an arrangement: `keyId` + `widthMultiplier` + `heightMultiplier` |
 | cell | `SolvedCell` | a *computed* grid rectangle, output of `GridLayoutSolver`. "Cell" is always a result, never a declaration — declare with slot/placement, compute into cells |
-| metrics | `KeyboardLayoutMetrics` | resolved pixel geometry (heights, insets) for the current device and orientation |
+| metrics | `KeyboardLayoutMetrics` (in `Settings/`) | resolved pixel geometry (heights, insets) for the current device and orientation |
 
 ### Gestures (`Runtime/Gesture/`)
 
@@ -128,7 +180,7 @@ to be able to tell from the name alone which of several classifications applies.
 | gesture | one recognized input, typed as `GestureType`: `tap`, the eight `swipe…` directions, `circularClockwise` / `circularCounterclockwise`, `longPress` |
 | swipe | a directional gesture from the key center. Qualify direction; never say "swipe" for a slide |
 | return swipe | out-and-back to the start position; fires `KeyBinding.returnAction`. Always two words |
-| slide | a sustained drag on a held key, typed as `SlideType` (`none`, `moveCursor`, `delete`) and phased as `SlidePhase` (`began`, `changed(deltaX:)`, `ended`, `tap`). Never call this a swipe |
+| slide | a sustained drag on a held key, typed as `SlideType` (`none`, `moveCursor`, `delete`; declared in `Definition/Model/`) and phased as `SlidePhase` (`began`, `changed(deltaX:)`, `swipeUp(isReturn:)`, `ended`, `tap`, `cancelled`). Never call this a swipe |
 | ghost key | a binding inherited from a fallback mode when the active mode leaves that gesture unbound (`GhostKeyResolver`) |
 | trail | the visual stroke drawn behind the finger (`GestureTrail*`). Purely cosmetic — it never resolves to an action |
 
@@ -141,7 +193,7 @@ to be able to tell from the name alone which of several classifications applies.
 | middleware | `ActionMiddleware` — `process(_ context:next:)`; may mutate the context, call `next`, or short-circuit |
 | action pipeline | `ActionPipeline` — the ordered middleware chain an action runs through |
 | context | `ActionContext` — the mutable state carried through the pipeline |
-| target | `TextInputTarget` — the abstraction all text manipulation goes through. Production implementation is `DocumentProxyTarget` wrapping `UITextDocumentProxy`; tests substitute a mock |
+| target | `TextInputTarget` (declared in `Definition/Model/`) — the abstraction all text manipulation goes through. Production implementation is `DocumentProxyTarget` wrapping `UITextDocumentProxy`; tests substitute a mock |
 
 ### Settings (`Settings/`)
 
@@ -153,7 +205,7 @@ to be able to tell from the name alone which of several classifications applies.
 
 ---
 
-## 3. Type-name suffixes
+## 4. Type-name suffixes
 
 | Suffix | Reserved for | Example |
 | --- | --- | --- |
@@ -176,7 +228,7 @@ Guidelines rule out abbreviations. The three `…Config` types in the codebase a
 Do not introduce `…Manager` or `…Helper`. Both describe no responsibility; name the type
 after what it actually does.
 
-## 4. Function-name verbs
+## 5. Function-name verbs
 
 | Verb | Reserved for |
 | --- | --- |
@@ -188,7 +240,7 @@ after what it actually does.
 
 `make…` is the factory verb — do not introduce `create…` alongside it.
 
-## 5. General naming rules
+## 6. General naming rules
 
 These are not domain-specific, but they are where new code drifts most.
 
@@ -205,29 +257,90 @@ These are not domain-specific, but they are where new code drifts most.
   in use.
 - **Name parameters by role, not by type:** `keyId: String`, not `string: String`.
 
-## 6. Do not write
+## 7. Do not write
+
+### In code
+
+Generated from `glossary.toml`; `scripts/check_naming.py` enforces every row.
+
+<!-- generated by scripts/check_naming.py — do not edit: rejected -->
 
 | Avoid | Write instead |
 | --- | --- |
-| layer | mode |
-| slotId | keyId |
-| `…Config` | `…Configuration` |
-| `…Kind` | `…Type` |
+| config suffix | `…Configuration` for injected runtime parameters, `…Definition` for declarative data |
+| create prefix | `make…` |
+| `GesturePreprocessorConfig` | `GesturePreprocessorConfiguration` |
+| `hideExtraSymbols` | `areExtraSymbolLabelsHidden` |
+| `hideLetters` | `areLetterLabelsHidden` |
+| `hideStandardSymbols` | `areStandardSymbolLabelsHidden` |
+| `KeyboardInfo` | `LanguageDescriptor` |
+| `KeyConfig` | `KeyDefinition` |
+| kind suffix | `…Type` |
+| `LanguageConfig` | `LanguageDescriptor` |
+| layer word | `mode` |
+| `longPressNumbersEnabled` | `isLongPressDigitEnabled` |
+| `ScreenshotConfig` | `ScreenshotConfiguration` |
+| `ScreenshotMode` | `ScreenshotType` |
+| `showLanguageLabel` | `isLanguageLabelShown` |
+| `slotId` | `keyId` |
+| vague type suffix | a name that says what the type does |
+
+<!-- /generated: rejected -->
+
+### In prose
+
+The rules a checker cannot see, because they are about which word describes a thing
+rather than how an identifier is spelled.
+
+| Avoid | Write instead |
+| --- | --- |
+| "layer" for a keyboard state | "mode" |
 | "return" for the gesture | "return swipe" |
 | "swipe" for a held drag | "slide" |
-| number (for 0–9 keys) | digit — except inside `LabelCategory`, where the case is named `number` |
+| "number" for the 0–9 keys | "digit" — except inside `LabelCategory`, where the case is named `number` |
 
-## 7. Legacy exceptions
+## 8. The backlog
 
-Known violations, deliberately left in place. **Do not rename them** — the existing code
-will be brought in line in its own dedicated changes. This list is not exhaustive.
+What the codebase still spells the old way, counted from the sources. **Do not rename
+these in passing** — each family comes out in its own dedicated change, so a rename you
+did not sign up for never lands in your pull request. `.naming-budget.json` freezes these
+counts per file: they may shrink, never grow — and a shrink has to be recorded with
+`update`, or the slot it frees stays open for the next rejected name.
 
-| Name | Problem |
-| --- | --- |
-| `GesturePreprocessorConfig`, `KeyConfig`, `LanguageConfig` | abbreviated suffix |
-| `KeyConfig`, `LanguageConfig` | declarative data carrying the runtime-parameter suffix on top of that |
-| `KeyboardInfo` | `…Info` says nothing about the contents; would be `…Metadata` |
-| `LanguageConfig` / `LanguageDescriptor` / `KeyboardInfo` | three near-identical language metadata types; the latter two are field-identical. A merge, not a rename |
-| `hideLetters`, `hideStandardSymbols`, `hideExtraSymbols`, `longPressNumbersEnabled` | booleans that do not read as assertions |
-| `slotId` in `GridKeyboardFactory` and `NumericLayouts` | alias for `keyId` |
-| ~70 comment lines saying "layer" | pre-date this glossary |
+<!-- generated by scripts/check_naming.py — do not edit: backlog -->
+
+| Legacy spelling | Replacement | Sites | Files |
+| --- | --- | --- | --- |
+| `KeyConfig` | `KeyDefinition` | 98 | 22 |
+| create prefix | `make…` | 97 | 2 |
+| `GesturePreprocessorConfig` | `GesturePreprocessorConfiguration` | 80 | 7 |
+| vague type suffix | a name that says what the type does | 54 | 16 |
+| `LanguageConfig` | `LanguageDescriptor` | 53 | 11 |
+| `hideLetters` | `areLetterLabelsHidden` | 37 | 10 |
+| `hideStandardSymbols` | `areStandardSymbolLabelsHidden` | 37 | 10 |
+| `hideExtraSymbols` | `areExtraSymbolLabelsHidden` | 35 | 10 |
+| `slotId` | `keyId` | 31 | 4 |
+| layer word | `mode` | 30 | 10 |
+| `longPressNumbersEnabled` | `isLongPressDigitEnabled` | 13 | 5 |
+| `KeyboardInfo` | `LanguageDescriptor` | 6 | 4 |
+| `showLanguageLabel` | `isLanguageLabelShown` | 6 | 3 |
+| config suffix | `…Configuration` for injected runtime parameters, `…Definition` for declarative data | 5 | 2 |
+| `ScreenshotConfig` | `ScreenshotConfiguration` | 3 | 1 |
+| `ScreenshotMode` | `ScreenshotType` | 2 | 1 |
+| **total** | | **587** | **69** |
+
+<!-- /generated: backlog -->
+
+Comments are not counted — the checker reads identifiers only — so the ~85 comment lines
+still saying "layer" are not in the table above. They come out with the identifiers.
+
+## 9. Waivers
+
+Where a rejected spelling is the correct name after all. Each one needs a reason;
+without it the checker's findings stop being trustworthy.
+
+<!-- generated by scripts/check_naming.py — do not edit: exceptions -->
+
+No waivers are recorded.
+
+<!-- /generated: exceptions -->

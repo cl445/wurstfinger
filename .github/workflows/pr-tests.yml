@@ -4,6 +4,13 @@ on:
   pull_request:
     branches: [ "develop" ]
 
+# Nothing here writes to the repository: every job reads the tree, builds it
+# and reports. Declaring it keeps a same-repository pull request from running
+# with whatever the repository default happens to be — fork runs are already
+# read-only.
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: macos-latest
@@ -20,6 +27,32 @@ jobs:
 
       - name: Run SwiftLint
         run: swiftlint lint --strict --reporter github-actions-logging
+
+  naming:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        # This job runs Python out of the pull request's own tree, so it does
+        # not get the checkout token left behind in .git/config.
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      # A miscount would be written straight into the budget, so the counting
+      # itself is tested: comments and strings must not count, interpolations must.
+      - name: Test the Naming Checker
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
+      # Vocabulary in glossary.toml, backlog in .naming-budget.json. The budget
+      # may shrink but never grow, so a rejected spelling cannot be added to a
+      # file that does not already carry one.
+      - name: Check Naming Against the Glossary
+        run: python3 scripts/check_naming.py check
+
+      # Sections 7-9 of docs/GLOSSARY.md are generated from the same two files.
+      - name: Check the Generated Glossary Sections
+        run: python3 scripts/check_naming.py render --check
 
   markdown:
     runs-on: ubuntu-latest

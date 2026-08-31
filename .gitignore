@@ -31,6 +31,10 @@ vendor/bundle/
 .bundle/
 Gemfile.lock
 
+# Python bytecode from the tooling in scripts/ and tools/
+__pycache__/
+*.pyc
+
 # Linked git worktrees checked out inside the repository
 /worktrees/
 

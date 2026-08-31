@@ -159,6 +159,9 @@ wurstfinger/
 
 Naming across the codebase follows [`docs/GLOSSARY.md`](docs/GLOSSARY.md) — the canonical
 vocabulary for modes, slots, gestures, and the pipeline. Check it before adding a type.
+Its machine-checkable half lives in [`glossary.toml`](glossary.toml); run
+`python3 scripts/check_naming.py check` to see where you stand, which is what CI and the
+pre-commit hook do.
 
 ## License
 
