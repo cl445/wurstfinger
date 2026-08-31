@@ -19,7 +19,8 @@ that contradicts this file is a legacy name rather than a counter-example.
 rejected spellings, the shape rules — lives in [`glossary.toml`](../glossary.toml).
 `scripts/check_naming.py` reads it and reports every identifier that contradicts it;
 `.naming-budget.json` records the backlog per file, may shrink but never grow, and is
-deleted once it reaches zero. Sections [7](#7-do-not-write), [8](#8-the-backlog) and
+deleted once it reaches zero. The same source generates the `glossary_*` rules in
+`.swiftlint.yml`, so a rejected spelling is flagged in Xcode as you type it. Sections [7](#7-do-not-write), [8](#8-the-backlog) and
 [9](#9-waivers) below are generated from those two files — edit `glossary.toml` and run
 `render`, not this document.
 

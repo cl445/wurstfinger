@@ -127,7 +127,7 @@ stored key stays `numpadStyle`.
 | Step | Content | Depends on |
 | --- | --- | --- |
 | **G1** | `glossary.toml`, the checker, the budget frozen at 587, zones, generated §7–§9, CI and hook wiring | — |
-| **G2** | SwiftLint `custom_rules` generated from the same file, so the rules fire in Xcode while typing | G1 |
+| **G2** | SwiftLint `custom_rules` generated from the same file, so the rules fire in Xcode while typing — 17 rules, `--strict` green | G1 |
 | **G3** | `slotId` → `keyId`, `layer` → `mode` (identifiers and comments), `create…` → `make…`, the vague type and file names | G1 |
 | **G4** | `KeyConfig` → `KeyDefinition`, `GesturePreprocessorConfig` → `…Configuration`, the `LanguageConfig` / `KeyboardInfo` merge, the settings booleans | G1; conflicts with the open PR stack |
 
@@ -144,7 +144,15 @@ every file added tomorrow — is gated in the editor. As a rename lands, `update
 both lists at once.
 
 This is not the same as excluding a file wholesale: the budget still refuses a second
-`slotId` in a file that carries one.
+`slotId` in a file that carries one. Both halves are verified — adding a `slotId` to a
+clean file fails SwiftLint, adding one to `GridKeyboardFactory.swift` passes SwiftLint and
+fails the budget.
+
+One subtlety the generator has to handle: SwiftLint has no notion of a spelling belonging
+to a term rather than a pattern. `check_naming.py` reports `KeyConfig` once, under its
+term, so the `config_suffix` pattern's own findings are only the two `keyConfig` locals —
+but SwiftLint's `config_suffix` regex sees all 22 `KeyConfig` files too. A pattern's
+exclusions are therefore computed from its regex alone, and there is a test for it.
 
 ## 6. Open naming questions
 
