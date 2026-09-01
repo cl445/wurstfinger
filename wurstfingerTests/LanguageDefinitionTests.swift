@@ -39,7 +39,7 @@ struct LanguageDefinitionValidationTests {
     }
 
     @Test func allLanguagesAreResolvableById() {
-        // LanguageMetadata.allLanguages is now derived from KeyboardRegistry.available.
+        // LanguageMetadata.allLanguages is derived from KeyboardRegistry.available.
         // Verify every definition is resolvable via the lookup helper.
         for definition in LanguageDefinitions.all {
             let metadata = LanguageMetadata.language(withId: definition.id)
