@@ -177,7 +177,7 @@ that has moved since; this pair is measured across the change itself.) §1 of th
 have produced "the definition mode", which means nothing. The identifier rule is
 unaffected — no identifier in this codebase uses the architectural sense.
 
-### Why the SwiftLint rules carried exclusions
+### Why a rule with a backlog carries exclusions
 
 CI lints with `--strict`, so a warning fails the build. A rule for a spelling that still
 has a backlog would therefore block every commit until the rename lands. Each generated
@@ -186,15 +186,15 @@ stay covered by `.naming-budget.json`, which forbids growth. Every other file �
 every file added tomorrow — is gated in the editor. As a rename lands, `update` shrinks
 both lists at once.
 
-This is not the same as excluding a file wholesale: the budget still refuses a second
-`slotId` in a file that carries one.
-
-None of that applies any more — every rule is unconditional and the budget file is gone.
-The mechanism is documented because it is what the next backlog will need: adding a term
-for a spelling the tree already uses re-creates both the budget and the exclusions, and
-`update` shrinks them together as the rename lands. Both halves are verified — adding a `slotId` to a
-clean file fails SwiftLint, adding one to `GridKeyboardFactory.swift` passes SwiftLint and
+This is not the same as excluding a file wholesale. The two halves fail on different
+things, and each is checkable on its own: a rejected spelling in a file with no exclusion
+fails SwiftLint, and a second one in a file that has an exclusion passes SwiftLint and
 fails the budget.
+
+No rule carries an exclusion today, and there is no budget file to carry. The mechanism
+stays written down because it is what the next backlog needs: adding a term for a spelling
+the tree already uses re-creates both lists, and `update` shrinks them together as the
+rename lands.
 
 One subtlety the generator has to handle: SwiftLint has no notion of a spelling belonging
 to a term rather than a pattern. `check_naming.py` reports `KeyConfig` once, under its

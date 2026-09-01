@@ -42,11 +42,10 @@ enum SettingsKey: String, CaseIterable {
     case keyboardStyle
     case keyboardFullAccess
     case cursorMovementStyle
-    /// The three label-visibility flags and the long-press flag below were
-    /// renamed to read as assertions; their rawValues are pinned to the
-    /// strings they have always been stored under, so the settings of
-    /// everyone who already uses the keyboard survive the rename. The
-    /// strings are the persisted keys and must not change.
+    /// The three label-visibility flags and the long-press flag below carry
+    /// an explicit rawValue: the case name reads as an assertion, while the
+    /// string stays the one every installed device already has the setting
+    /// written under. The strings are the persisted keys and must not change.
     case areLetterLabelsHidden = "hideLetters"
     case areStandardSymbolLabelsHidden = "hideStandardSymbols"
     case areExtraSymbolLabelsHidden = "hideExtraSymbols"

@@ -373,14 +373,13 @@ struct SettingsKeyTests {
         #expect(SettingsKey.numpadStyle.rawValue == "numpadStyle")
     }
 
-    /// The four label- and long-press flags were renamed to read as
-    /// assertions, so their cases carry an explicit rawValue pinning the
-    /// string they have always been stored under. The literals below are
-    /// deliberately spelled out instead of read from `SettingsKey`: comparing
-    /// a case against its own rawValue would still pass after an unpinned
-    /// rename, which is exactly the change that would reset these settings on
+    /// The four label- and long-press flags carry an explicit rawValue
+    /// pinning the string their setting is stored under on disk. The literals
+    /// below are deliberately spelled out instead of read from `SettingsKey`:
+    /// comparing a case against its own rawValue would still pass without the
+    /// pin, and dropping a pin is exactly what would reset these settings on
     /// every installed device.
-    @Test func renamedLabelFlagsStillReadTheirLegacyStorageKeys() {
+    @Test func labelFlagsReadTheirPinnedStorageKeys() {
         let defaults = InMemoryUserDefaults()
         defaults.set(true, forKey: "hideLetters")
         defaults.set(true, forKey: "hideStandardSymbols")
@@ -388,7 +387,7 @@ struct SettingsKeyTests {
         defaults.set(true, forKey: "longPressNumbersEnabled")
 
         // Reads the four values the way `DataDrivenKeyboardRootView` does:
-        // by the rawValue of the renamed case.
+        // by the rawValue of the case.
         let settings = KeyRenderSettings(
             areLetterLabelsHidden: defaults.bool(forKey: SettingsKey.areLetterLabelsHidden.rawValue),
             areStandardSymbolLabelsHidden: defaults.bool(forKey: SettingsKey.areStandardSymbolLabelsHidden.rawValue),
@@ -397,7 +396,7 @@ struct SettingsKeyTests {
         )
 
         // All four default to false, so reading true proves the stored value
-        // was found under its old key rather than falling back.
+        // was found under its pinned key rather than falling back.
         #expect(settings.areLetterLabelsHidden)
         #expect(settings.areStandardSymbolLabelsHidden)
         #expect(settings.areExtraSymbolLabelsHidden)
