@@ -367,7 +367,7 @@ struct GesturePlaygroundView: View {
 
     private func processGesture() {
         // 1. Load Config (including aspect ratio, just like the real keyboard)
-        let config = GesturePreprocessorConfig.fromUserDefaults().with(aspectRatio: keyCell.cellAspectRatio)
+        let config = GesturePreprocessorConfiguration.fromUserDefaults().with(aspectRatio: keyCell.cellAspectRatio)
         let preprocessor = GesturePreprocessor(config: config)
 
         // 2. Preprocess

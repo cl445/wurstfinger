@@ -49,7 +49,7 @@ private func loadedDefinitions() throws -> [KeyboardDefinition] {
 struct AccessibilityLabelTests {
     /// Mirrors KeyView's accessibility-label resolution
     /// (custom accessibility label → tap label → slot id fallback).
-    private func accessibilityLabel(for key: KeyConfig) -> String {
+    private func accessibilityLabel(for key: KeyDefinition) -> String {
         if let tap = key.bindings[.tap] {
             return tap.accessibilityLabel ?? tap.label
         }
@@ -228,7 +228,7 @@ struct NamedAccessibilityBindingTests {
 
     /// Non-tap gestures of a key that carry a non-empty name. The tap is the
     /// element's own label, not a custom action, so it is never in here.
-    private func namedGestures(of key: KeyConfig) -> Set<GestureType> {
+    private func namedGestures(of key: KeyDefinition) -> Set<GestureType> {
         Set(
             key.bindings
                 .filter { $0.key != .tap && !($0.value.accessibilityLabel ?? "").isEmpty }

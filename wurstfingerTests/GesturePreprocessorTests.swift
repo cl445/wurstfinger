@@ -13,7 +13,7 @@ struct GesturePreprocessorTests {
     // MARK: - Jitter Filter Tests
 
     @Test func jitterFilterRemovesClosePoints() {
-        let config = GesturePreprocessorConfig(
+        let config = GesturePreprocessorConfiguration(
             jitterThreshold: 5.0,
             maxJumpDistance: 100.0,
             smoothingWindow: 5,
@@ -40,7 +40,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func jitterFilterKeepsDistantPoints() {
-        let config = GesturePreprocessorConfig.default
+        let config = GesturePreprocessorConfiguration.default
         let preprocessor = GesturePreprocessor(config: config)
 
         // All points are far apart
@@ -59,7 +59,7 @@ struct GesturePreprocessorTests {
     // MARK: - Outlier Filter Tests
 
     @Test func outlierFilterRemovesLargeJumps() {
-        let config = GesturePreprocessorConfig(
+        let config = GesturePreprocessorConfiguration(
             jitterThreshold: 3.0,
             maxJumpDistance: 30.0,
             smoothingWindow: 5,
@@ -83,7 +83,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterRemovesTrailingGlitchPoint() {
-        let config = GesturePreprocessorConfig(
+        let config = GesturePreprocessorConfiguration(
             jitterThreshold: 3.0,
             maxJumpDistance: 30.0,
             smoothingWindow: 5,
@@ -109,7 +109,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterKeepsTailAfterDroppedFrameGap() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         // A dropped frame under main-thread load creates one inter-sample
@@ -129,7 +129,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterRemovesClusteredGlitchPair() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         // Two mutually close ghost points far from the path must not admit
@@ -150,7 +150,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterKeepsAFlickFasterThanTheJumpThreshold() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         // A fling at ~0.5 m/s delivered at 60 Hz puts ~53pt between
@@ -167,7 +167,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterRejectsAJumpTheFingerWasTooSlowFor() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         // Same direction as the established motion, but ~15x its per-sample
@@ -189,7 +189,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterRejectsATeleportThatReturnsToThePath() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         // A glitch on the first sample after touch-down, where the accepted
@@ -210,7 +210,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterRemovesATrailingGlitchOnAFastSwipe() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         // An ordinary fast right swipe with one glitch sample on the end. The
@@ -232,7 +232,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterKeepsTheGenuineTailAfterRejectingAGlitch() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         // The same glitch with the swipe continuing past it. Accepting a
@@ -254,7 +254,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterRejectsAJumpAcrossTheEstablishedDirection() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         // A 3-4-5 step: 100pt long, 53° off the established direction. The
@@ -276,7 +276,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterCannotRaiseItsOwnJumpBudget() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         // A 53pt flick, then jumps of 159 and 477 — each one exactly 3x its
@@ -309,7 +309,7 @@ struct GesturePreprocessorTests {
     /// is the direction cone and the magnitude ceiling, pinned by the
     /// tests around this one.
     @Test func outlierFilterMeasuresAJumpAgainstTheLongerCandidateStep() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         let points: [CGPoint] = [
@@ -332,7 +332,7 @@ struct GesturePreprocessorTests {
     /// flick sample fails the same way and the classifier only ever saw
     /// the drift. The flick's own following step is what vouches for it.
     @Test func outlierFilterKeepsAFlickThatLaunchesOutOfARollingStart() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         let points: [CGPoint] = [
@@ -357,7 +357,7 @@ struct GesturePreprocessorTests {
     /// the direction cone rejects it — the criterion the mid-path case
     /// rests on entirely.
     @Test func outlierFilterRejectsAMidPathTeleportThatReturnsToThePath() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         let points: [CGPoint] = [
@@ -382,7 +382,7 @@ struct GesturePreprocessorTests {
     /// does not point its way, and the second is past the ceiling by the
     /// time the first is refused.
     @Test func outlierFilterRejectsAGhostBurstThatTurnsBetweenItsSamples() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         let points: [CGPoint] = [
@@ -469,7 +469,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func outlierFilterKeepsSustainedFarRun() {
-        let config = GesturePreprocessorConfig.default // maxJumpDistance = 50
+        let config = GesturePreprocessorConfiguration.default // maxJumpDistance = 50
         let preprocessor = GesturePreprocessor(config: config)
 
         // A run of >= 3 mutually consistent samples beyond the ceiling is
@@ -491,7 +491,7 @@ struct GesturePreprocessorTests {
     // MARK: - Aspect Ratio Normalization Tests
 
     @Test func aspectRatioNormalizationDividesX() {
-        let config = GesturePreprocessorConfig(
+        let config = GesturePreprocessorConfiguration(
             jitterThreshold: 3.0,
             maxJumpDistance: 50.0,
             smoothingWindow: 5,
@@ -514,7 +514,7 @@ struct GesturePreprocessorTests {
     }
 
     @Test func aspectRatioNormalizationSkipsForSquare() {
-        let config = GesturePreprocessorConfig.default // aspectRatio = 1.0
+        let config = GesturePreprocessorConfiguration.default // aspectRatio = 1.0
         let preprocessor = GesturePreprocessor(config: config)
 
         let points: [CGPoint] = [
@@ -529,7 +529,7 @@ struct GesturePreprocessorTests {
     // MARK: - Savitzky-Golay Smoothing Tests
 
     @Test func savitzkyGolaySmoothsPath() {
-        let config = GesturePreprocessorConfig.default
+        let config = GesturePreprocessorConfiguration.default
         let preprocessor = GesturePreprocessor(config: config)
 
         // A noisy path
@@ -555,7 +555,7 @@ struct GesturePreprocessorTests {
     // MARK: - Full Pipeline Tests
 
     @Test func preprocessPipelineProducesCleanPath() {
-        let config = GesturePreprocessorConfig.default.with(aspectRatio: 1.5)
+        let config = GesturePreprocessorConfiguration.default.with(aspectRatio: 1.5)
         let preprocessor = GesturePreprocessor(config: config)
 
         // A realistic swipe path with some noise
@@ -814,9 +814,9 @@ struct ExpertModeGatingTests {
         store.set(expertModeEnabled, forKey: SettingsKey.expertModeEnabled.rawValue)
         // Inside the Expert ranges: out-of-range values are clamped (see
         // ExpertValueClampingTests).
-        store.set(9.0, forKey: GesturePreprocessorConfig.jitterThresholdKey)
-        store.set(90.0, forKey: GesturePreprocessorConfig.maxJumpDistanceKey)
-        store.set(7, forKey: GesturePreprocessorConfig.smoothingWindowKey)
+        store.set(9.0, forKey: GesturePreprocessorConfiguration.jitterThresholdKey)
+        store.set(90.0, forKey: GesturePreprocessorConfiguration.maxJumpDistanceKey)
+        store.set(7, forKey: GesturePreprocessorConfiguration.smoothingWindowKey)
         store.set(42.0, forKey: GestureClassificationThresholds.minSwipeLengthKey)
         store.set(0.7, forKey: GestureClassificationThresholds.maxReturnRatioKey)
         store.set(0.6, forKey: GestureClassificationThresholds.minCircularityKey)
@@ -826,17 +826,17 @@ struct ExpertModeGatingTests {
     @Test func configIgnoresCustomValuesWhenExpertModeIsOff() {
         let store = storeWithCustomValues(expertModeEnabled: false)
 
-        let config = GesturePreprocessorConfig.fromUserDefaults(store: store)
+        let config = GesturePreprocessorConfiguration.fromUserDefaults(store: store)
 
-        #expect(config.jitterThreshold == GesturePreprocessorConfig.defaultJitterThreshold)
-        #expect(config.maxJumpDistance == GesturePreprocessorConfig.defaultMaxJumpDistance)
-        #expect(config.smoothingWindow == GesturePreprocessorConfig.defaultSmoothingWindow)
+        #expect(config.jitterThreshold == GesturePreprocessorConfiguration.defaultJitterThreshold)
+        #expect(config.maxJumpDistance == GesturePreprocessorConfiguration.defaultMaxJumpDistance)
+        #expect(config.smoothingWindow == GesturePreprocessorConfiguration.defaultSmoothingWindow)
     }
 
     @Test func configAppliesCustomValuesWhenExpertModeIsOn() {
         let store = storeWithCustomValues(expertModeEnabled: true)
 
-        let config = GesturePreprocessorConfig.fromUserDefaults(store: store)
+        let config = GesturePreprocessorConfiguration.fromUserDefaults(store: store)
 
         #expect(config.jitterThreshold == 9.0)
         #expect(config.maxJumpDistance == 90.0)
@@ -847,9 +847,9 @@ struct ExpertModeGatingTests {
         let store = storeWithCustomValues(expertModeEnabled: false)
         store.removeObject(forKey: SettingsKey.expertModeEnabled.rawValue)
 
-        let config = GesturePreprocessorConfig.fromUserDefaults(store: store)
+        let config = GesturePreprocessorConfiguration.fromUserDefaults(store: store)
 
-        #expect(config.jitterThreshold == GesturePreprocessorConfig.defaultJitterThreshold)
+        #expect(config.jitterThreshold == GesturePreprocessorConfiguration.defaultJitterThreshold)
     }
 
     @Test func thresholdsIgnoreCustomValuesWhenExpertModeIsOff() {
@@ -887,11 +887,11 @@ struct ExpertModeGatingTests {
         let store = storeWithCustomValues(expertModeEnabled: true)
 
         store.set(false, forKey: SettingsKey.expertModeEnabled.rawValue)
-        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).jitterThreshold
-            == GesturePreprocessorConfig.defaultJitterThreshold)
+        #expect(GesturePreprocessorConfiguration.fromUserDefaults(store: store).jitterThreshold
+            == GesturePreprocessorConfiguration.defaultJitterThreshold)
 
         store.set(true, forKey: SettingsKey.expertModeEnabled.rawValue)
-        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).jitterThreshold == 9.0)
-        #expect(GesturePreprocessorConfig.fromUserDefaults(store: store).maxJumpDistance == 90.0)
+        #expect(GesturePreprocessorConfiguration.fromUserDefaults(store: store).jitterThreshold == 9.0)
+        #expect(GesturePreprocessorConfiguration.fromUserDefaults(store: store).maxJumpDistance == 90.0)
     }
 }

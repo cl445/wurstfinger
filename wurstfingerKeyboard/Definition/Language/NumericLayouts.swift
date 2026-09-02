@@ -80,8 +80,8 @@ enum NumericLayouts {
     /// first letters ("abc", "абв", "कखग"), which VoiceOver spells out or reads
     /// as a nonsense word, so the tap carries a semantic name that is the same in
     /// every layout — the counterpart to `CommonKeys.symbols`, named "Numbers".
-    private static func backToMain(label: String) -> KeyConfig {
-        KeyConfig.utility(
+    private static func backToMain(label: String) -> KeyDefinition {
+        KeyDefinition.utility(
             UtilitySlot.symbols, label: label, action: .switchMode(ModeNames.main),
             swipeMode: .eightWay,
             swipes: CommonKeys.clipboardBindings,
@@ -90,8 +90,8 @@ enum NumericLayouts {
     }
 
     /// Standalone "0" digit key in the bottom row.
-    private static func zeroKey(digit: String) -> KeyConfig {
-        KeyConfig(
+    private static func zeroKey(digit: String) -> KeyDefinition {
+        KeyDefinition(
             id: GridSlot.zero,
             bindings: [
                 // Tap only. A hold on a letter key reaches this digit via
@@ -110,7 +110,7 @@ enum NumericLayouts {
         )
     }
 
-    private static func utilityKeys(zeroDigit: String, backToAlphaLabel: String) -> [String: KeyConfig] {
+    private static func utilityKeys(zeroDigit: String, backToAlphaLabel: String) -> [String: KeyDefinition] {
         [
             UtilitySlot.globe: CommonKeys.globe,
             UtilitySlot.delete: CommonKeys.delete,
@@ -221,7 +221,7 @@ enum NumericLayouts {
             centerDigits.count == 3 && centerDigits.allSatisfy { $0.count == 3 },
             "centerDigits must be a 3×3 matrix"
         )
-        var digitKeys: [String: KeyConfig] = [:]
+        var digitKeys: [String: KeyDefinition] = [:]
 
         for (rowIdx, row) in centerDigits.enumerated() {
             for (colIdx, digit) in row.enumerated() {
@@ -261,7 +261,7 @@ enum NumericLayouts {
                     category: .digit, returnAction: nil, accessibilityLabel: nil
                 )
 
-                digitKeys[keyId] = KeyConfig(
+                digitKeys[keyId] = KeyDefinition(
                     id: keyId, bindings: bindings, swipeMode: .eightWay,
                     slideType: .none, style: .primary, tapCycleActions: nil
                 )

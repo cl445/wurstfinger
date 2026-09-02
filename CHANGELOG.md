@@ -6,6 +6,10 @@
 
 - The naming glossary is now checkable: its vocabulary lives in `glossary.toml` with a zone per term (internal, persisted, or user-facing contract), `scripts/check_naming.py` reports every identifier that contradicts it, and `.naming-budget.json` freezes the existing backlog per file so it can shrink but never grow. Sections 7 to 9 of `docs/GLOSSARY.md` are generated from the same source, so the list of rejected spellings and the list of what is actually enforced cannot drift apart
 
+### Changed
+
+- The names the codebase uses internally now match the glossary everywhere: the backlog it was measured against is down to zero. Nothing about the keyboard's behaviour changes, and the settings you have set stay set — the four renamed settings flags keep the storage keys they have always been written under, and a test holds that in place
+
 ### Fixed
 
 - Flicks that launch out of a rolling start are recognized again. A flick that follows a slight drag — settling on the key, then flicking — lost every one of its fast samples, because the filter measured them against the drift and a drift is slow by definition. The letter that got committed came from the drift instead, which for a drift running across the flick is a neighbouring letter rather than the center one. A jump is now measured against the longer of the movement already established and the movement it leads into (#303)

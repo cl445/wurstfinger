@@ -89,7 +89,11 @@ struct LabelCategoryTests {
                 guard let key = mode.keys[slot] else { continue }
                 for (_, keyBinding) in key.bindings where !keyBinding.label.isEmpty {
                     let category = LabelCategory.of(keyBinding)
-                    if category.isVisible(hideLetters: true, hideStandardSymbols: true, hideExtraSymbols: true) {
+                    if category.isVisible(
+                        areLetterLabelsHidden: true,
+                        areStandardSymbolLabelsHidden: true,
+                        areExtraSymbolLabelsHidden: true
+                    ) {
                         visibleLabels.insert(keyBinding.label)
                     }
                 }
@@ -105,18 +109,50 @@ struct LabelCategoryTests {
     // MARK: - isVisible(...)
 
     @Test func eachHideableCategoryTogglesIndependently() {
-        #expect(LabelCategory.letter.isVisible(hideLetters: false, hideStandardSymbols: true, hideExtraSymbols: true))
-        #expect(!LabelCategory.letter.isVisible(hideLetters: true, hideStandardSymbols: false, hideExtraSymbols: false))
+        #expect(LabelCategory.letter.isVisible(
+            areLetterLabelsHidden: false,
+            areStandardSymbolLabelsHidden: true,
+            areExtraSymbolLabelsHidden: true
+        ))
+        #expect(!LabelCategory.letter.isVisible(
+            areLetterLabelsHidden: true,
+            areStandardSymbolLabelsHidden: false,
+            areExtraSymbolLabelsHidden: false
+        ))
 
-        #expect(LabelCategory.standardSymbol.isVisible(hideLetters: true, hideStandardSymbols: false, hideExtraSymbols: true))
-        #expect(!LabelCategory.standardSymbol.isVisible(hideLetters: false, hideStandardSymbols: true, hideExtraSymbols: false))
+        #expect(LabelCategory.standardSymbol.isVisible(
+            areLetterLabelsHidden: true,
+            areStandardSymbolLabelsHidden: false,
+            areExtraSymbolLabelsHidden: true
+        ))
+        #expect(!LabelCategory.standardSymbol.isVisible(
+            areLetterLabelsHidden: false,
+            areStandardSymbolLabelsHidden: true,
+            areExtraSymbolLabelsHidden: false
+        ))
 
-        #expect(LabelCategory.extraSymbol.isVisible(hideLetters: true, hideStandardSymbols: true, hideExtraSymbols: false))
-        #expect(!LabelCategory.extraSymbol.isVisible(hideLetters: false, hideStandardSymbols: false, hideExtraSymbols: true))
+        #expect(LabelCategory.extraSymbol.isVisible(
+            areLetterLabelsHidden: true,
+            areStandardSymbolLabelsHidden: true,
+            areExtraSymbolLabelsHidden: false
+        ))
+        #expect(!LabelCategory.extraSymbol.isVisible(
+            areLetterLabelsHidden: false,
+            areStandardSymbolLabelsHidden: false,
+            areExtraSymbolLabelsHidden: true
+        ))
     }
 
     @Test func numbersAndFunctionalAreAlwaysVisible() {
-        #expect(LabelCategory.number.isVisible(hideLetters: true, hideStandardSymbols: true, hideExtraSymbols: true))
-        #expect(LabelCategory.functional.isVisible(hideLetters: true, hideStandardSymbols: true, hideExtraSymbols: true))
+        #expect(LabelCategory.number.isVisible(
+            areLetterLabelsHidden: true,
+            areStandardSymbolLabelsHidden: true,
+            areExtraSymbolLabelsHidden: true
+        ))
+        #expect(LabelCategory.functional.isVisible(
+            areLetterLabelsHidden: true,
+            areStandardSymbolLabelsHidden: true,
+            areExtraSymbolLabelsHidden: true
+        ))
     }
 }

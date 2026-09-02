@@ -19,7 +19,7 @@ extension KeyboardViewModel {
         // a stale stored id for a language removed in a later version) so the
         // keyboard always renders a layout instead of coming up blank.
         guard let base = KeyboardRegistry.load(id: id)
-            ?? KeyboardRegistry.load(id: LanguageConfig.english.id)
+            ?? KeyboardRegistry.load(id: LanguageMetadata.english.id)
         else { return }
         let definition = applyNumpadType(to: base)
         currentDefinition = definition
@@ -382,7 +382,7 @@ extension KeyboardViewModel {
 
     /// Tries to insert the uppercase center character.
     @discardableResult
-    private func tryCircularUppercase(key: KeyConfig) -> Bool {
+    private func tryCircularUppercase(key: KeyDefinition) -> Bool {
         guard let tapBinding = key.bindings[.tap],
               case let .commitText(text) = tapBinding.action,
               text.first?.isLetter == true
@@ -425,7 +425,7 @@ extension KeyboardViewModel {
     // MARK: - Slide Gesture Handling
 
     /// Handles slide events from keys with `slideType != .none`.
-    func handleSlide(_ key: KeyConfig, phase: SlidePhase) {
+    func handleSlide(_ key: KeyDefinition, phase: SlidePhase) {
         switch key.slideType {
         case .moveCursor:
             handleSpaceSlide(phase: phase, key: key)
@@ -443,7 +443,7 @@ extension KeyboardViewModel {
         return raw.flatMap(CursorMovementType.init(rawValue:)) ?? .continuous
     }
 
-    func handleSpaceSlide(phase: SlidePhase, key: KeyConfig) {
+    func handleSpaceSlide(phase: SlidePhase, key: KeyDefinition) {
         switch phase {
         case .began:
             isSpaceDragging = true
@@ -492,13 +492,13 @@ extension KeyboardViewModel {
     /// show them again, otherwise it hides both.
     private func toggleLabelVisibility(grouped: Bool) {
         if grouped {
-            let hidden = sharedDefaults.bool(forKey: SettingsKey.hideLetters.rawValue)
-                && sharedDefaults.bool(forKey: SettingsKey.hideStandardSymbols.rawValue)
-            setLabelFlag(!hidden, forKey: .hideLetters)
-            setLabelFlag(!hidden, forKey: .hideStandardSymbols)
+            let hidden = sharedDefaults.bool(forKey: SettingsKey.areLetterLabelsHidden.rawValue)
+                && sharedDefaults.bool(forKey: SettingsKey.areStandardSymbolLabelsHidden.rawValue)
+            setLabelFlag(!hidden, forKey: .areLetterLabelsHidden)
+            setLabelFlag(!hidden, forKey: .areStandardSymbolLabelsHidden)
         } else {
-            let hidden = sharedDefaults.bool(forKey: SettingsKey.hideExtraSymbols.rawValue)
-            setLabelFlag(!hidden, forKey: .hideExtraSymbols)
+            let hidden = sharedDefaults.bool(forKey: SettingsKey.areExtraSymbolLabelsHidden.rawValue)
+            setLabelFlag(!hidden, forKey: .areExtraSymbolLabelsHidden)
         }
         // Confirmation tick, not a second tap impact: the touch-down already
         // fired the tap haptic, and the toggle is a state change like a
@@ -645,7 +645,7 @@ extension KeyboardViewModel {
         return count
     }
 
-    func handleDeleteSlide(phase: SlidePhase, key: KeyConfig) {
+    func handleDeleteSlide(phase: SlidePhase, key: KeyDefinition) {
         switch phase {
         case .began:
             isDeleteDragging = true

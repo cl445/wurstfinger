@@ -37,7 +37,7 @@ final class KeyboardViewController: UIInputViewController {
             // query this eagerly/repeatedly, so it must never build a layout.
             let id = selectedLanguageId
             return (KeyboardRegistry.available.first { $0.id == id }?.localeIdentifier)
-                ?? LanguageConfig.english.locale.identifier
+                ?? LanguageMetadata.english.locale.identifier
         }
         set {
             super.primaryLanguage = newValue

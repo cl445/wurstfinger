@@ -2,7 +2,7 @@
 //  KeyView.swift
 //  Wurstfinger
 //
-//  Generic key view that renders any KeyConfig with style-based appearance
+//  Generic key view that renders any KeyDefinition with style-based appearance
 //  and full gesture recognition.
 //
 
@@ -16,10 +16,10 @@ import SwiftUI
 /// setting changes and hands every key the fresh values.
 struct KeyRenderSettings: Equatable {
     var keyboardStyle: KeyboardStyle = .classic
-    var hideLetters = false
-    var hideStandardSymbols = false
-    var hideExtraSymbols = false
-    var longPressNumbersEnabled = false
+    var areLetterLabelsHidden = false
+    var areStandardSymbolLabelsHidden = false
+    var areExtraSymbolLabelsHidden = false
+    var isLongPressDigitEnabled = false
 
     /// The values a key renders with when nothing is stored yet. Single source
     /// for those defaults: `DataDrivenKeyboardRootView` initializes its
@@ -29,7 +29,7 @@ struct KeyRenderSettings: Equatable {
     static let stock = KeyRenderSettings()
 }
 
-/// Generic key view that renders any `KeyConfig`.
+/// Generic key view that renders any `KeyDefinition`.
 ///
 /// Visual appearance is driven by `key.style`. Hints derive directly from
 /// `key.bindings`, so only the gestures actually defined on a key are shown.
@@ -37,14 +37,14 @@ struct KeyRenderSettings: Equatable {
 /// continuous drag tracking. All other keys use `KeyGestureRecognizer` for
 /// swipe/tap/circular gesture classification.
 struct KeyView: View {
-    let key: KeyConfig
-    let onGesture: (KeyConfig, GestureType, Bool) -> Void
+    let key: KeyDefinition
+    let onGesture: (KeyDefinition, GestureType, Bool) -> Void
     var onTouchDown: (() -> Void)?
-    var onSlide: ((KeyConfig, SlidePhase) -> Void)?
+    var onSlide: ((KeyDefinition, SlidePhase) -> Void)?
     /// Handles a long press on this key; returns whether it dispatched an
     /// action (a handled long press consumes the touch). Long-press detection
     /// only runs when this is set and the user setting is enabled.
-    var onLongPress: ((KeyConfig) -> Bool)?
+    var onLongPress: ((KeyDefinition) -> Bool)?
     /// Shared swipe-trail collector, supplied by `KeyboardGridView`. Forwarded
     /// to whichever gesture modifier this key uses; nil means no trail
     /// (previews, tests).
@@ -87,9 +87,9 @@ struct KeyView: View {
     /// label-visibility toggles (numbers and functional keys always show).
     private func isLabelVisible(_ binding: KeyBinding) -> Bool {
         LabelCategory.of(binding).isVisible(
-            hideLetters: settings.hideLetters,
-            hideStandardSymbols: settings.hideStandardSymbols,
-            hideExtraSymbols: settings.hideExtraSymbols
+            areLetterLabelsHidden: settings.areLetterLabelsHidden,
+            areStandardSymbolLabelsHidden: settings.areStandardSymbolLabelsHidden,
+            areExtraSymbolLabelsHidden: settings.areExtraSymbolLabelsHidden
         )
     }
 
@@ -261,7 +261,7 @@ struct KeyView: View {
     /// Long-press handler for the gesture recognizer, or nil when the
     /// opt-in setting is off or no handler is wired up (preview contexts).
     private var longPressHandler: (() -> Bool)? {
-        guard settings.longPressNumbersEnabled, let onLongPress else { return nil }
+        guard settings.isLongPressDigitEnabled, let onLongPress else { return nil }
         return { onLongPress(key) }
     }
 

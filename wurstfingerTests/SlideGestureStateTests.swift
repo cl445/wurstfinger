@@ -521,14 +521,14 @@ struct SpaceLabelTogglePipelineTests {
         let vm = KeyboardViewModel(userDefaults: defaults, shouldPersistSettings: false)
         vm.loadDefinition(for: "de_DE")
         let spaceKey = try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))
-        defaults.set(true, forKey: SettingsKey.hideLetters.rawValue)
+        defaults.set(true, forKey: SettingsKey.areLetterLabelsHidden.rawValue)
         defaults.resetWrites()
 
         vm.handleSlide(spaceKey, phase: .swipeUp(isReturn: true))
 
-        #expect(defaults.writtenKeys == [SettingsKey.hideStandardSymbols.rawValue])
-        #expect(defaults.bool(forKey: SettingsKey.hideLetters.rawValue))
-        #expect(defaults.bool(forKey: SettingsKey.hideStandardSymbols.rawValue))
+        #expect(defaults.writtenKeys == [SettingsKey.areStandardSymbolLabelsHidden.rawValue])
+        #expect(defaults.bool(forKey: SettingsKey.areLetterLabelsHidden.rawValue))
+        #expect(defaults.bool(forKey: SettingsKey.areStandardSymbolLabelsHidden.rawValue))
     }
 
     @Test(arguments: [CursorMovementType.continuous, .discrete])
@@ -538,16 +538,16 @@ struct SpaceLabelTogglePipelineTests {
         let spaceKey = try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))
 
         vm.handleSlide(spaceKey, phase: .swipeUp(isReturn: false))
-        #expect(hides(vm, .hideExtraSymbols))
+        #expect(hides(vm, .areExtraSymbolLabelsHidden))
         // No space typed, no cursor movement.
         #expect(target.events.isEmpty)
 
         vm.handleSlide(spaceKey, phase: .swipeUp(isReturn: false))
-        #expect(!hides(vm, .hideExtraSymbols))
+        #expect(!hides(vm, .areExtraSymbolLabelsHidden))
         #expect(target.events.isEmpty)
         // Letter/standard visibility is untouched by the plain up-swipe.
-        #expect(!hides(vm, .hideLetters))
-        #expect(!hides(vm, .hideStandardSymbols))
+        #expect(!hides(vm, .areLetterLabelsHidden))
+        #expect(!hides(vm, .areStandardSymbolLabelsHidden))
     }
 
     /// Return-up group semantics: only when letters AND standard symbols are
@@ -563,15 +563,15 @@ struct SpaceLabelTogglePipelineTests {
         start: (letters: Bool, symbols: Bool, expected: Bool)
     ) throws {
         let (vm, target) = makeViewModel(languageId: "de_DE")
-        vm.sharedDefaults.set(start.letters, forKey: SettingsKey.hideLetters.rawValue)
-        vm.sharedDefaults.set(start.symbols, forKey: SettingsKey.hideStandardSymbols.rawValue)
+        vm.sharedDefaults.set(start.letters, forKey: SettingsKey.areLetterLabelsHidden.rawValue)
+        vm.sharedDefaults.set(start.symbols, forKey: SettingsKey.areStandardSymbolLabelsHidden.rawValue)
         let spaceKey = try #require(vm.activeModeFromDefinition?.key(for: UtilitySlot.space))
 
         vm.handleSlide(spaceKey, phase: .swipeUp(isReturn: true))
-        #expect(hides(vm, .hideLetters) == start.expected)
-        #expect(hides(vm, .hideStandardSymbols) == start.expected)
+        #expect(hides(vm, .areLetterLabelsHidden) == start.expected)
+        #expect(hides(vm, .areStandardSymbolLabelsHidden) == start.expected)
         // Extra symbols belong to the plain up-swipe, not the return swipe.
-        #expect(!hides(vm, .hideExtraSymbols))
+        #expect(!hides(vm, .areExtraSymbolLabelsHidden))
         #expect(target.events.isEmpty)
     }
 
@@ -583,8 +583,8 @@ struct SpaceLabelTogglePipelineTests {
         vm.handleSlide(deleteKey, phase: .swipeUp(isReturn: false))
         vm.handleSlide(deleteKey, phase: .swipeUp(isReturn: true))
         #expect(target.events.isEmpty)
-        #expect(!hides(vm, .hideLetters))
-        #expect(!hides(vm, .hideStandardSymbols))
-        #expect(!hides(vm, .hideExtraSymbols))
+        #expect(!hides(vm, .areLetterLabelsHidden))
+        #expect(!hides(vm, .areStandardSymbolLabelsHidden))
+        #expect(!hides(vm, .areExtraSymbolLabelsHidden))
     }
 }

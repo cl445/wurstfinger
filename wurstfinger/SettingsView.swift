@@ -40,8 +40,8 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.autoCapitalizeEnabled.rawValue, store: SharedDefaults.store)
     private var autoCapitalizeEnabled = false
 
-    @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
-    private var longPressNumbersEnabled = false
+    @AppStorage(SettingsKey.isLongPressDigitEnabled.rawValue, store: SharedDefaults.store)
+    private var isLongPressDigitEnabled = false
 
     @AppStorage(SettingsKey.doubleSpacePeriodEnabled.rawValue, store: SharedDefaults.store)
     private var doubleSpacePeriodEnabled = false
@@ -66,14 +66,14 @@ struct SettingsView: View {
     @AppStorage(SettingsKey.expertModeEnabled.rawValue, store: SharedDefaults.store)
     private var expertModeEnabled = false
 
-    @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
-    private var hideLetters = false
+    @AppStorage(SettingsKey.areLetterLabelsHidden.rawValue, store: SharedDefaults.store)
+    private var areLetterLabelsHidden = false
 
-    @AppStorage(SettingsKey.hideStandardSymbols.rawValue, store: SharedDefaults.store)
-    private var hideStandardSymbols = false
+    @AppStorage(SettingsKey.areStandardSymbolLabelsHidden.rawValue, store: SharedDefaults.store)
+    private var areStandardSymbolLabelsHidden = false
 
-    @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
-    private var hideExtraSymbols = false
+    @AppStorage(SettingsKey.areExtraSymbolLabelsHidden.rawValue, store: SharedDefaults.store)
+    private var areExtraSymbolLabelsHidden = false
 
     var body: some View {
         NavigationStack {
@@ -121,7 +121,7 @@ struct SettingsView: View {
                 )
             }
 
-            Toggle(isOn: $longPressNumbersEnabled) {
+            Toggle(isOn: $isLongPressDigitEnabled) {
                 SettingsRow(
                     icon: "123.rectangle", color: .pink,
                     title: "Type Numbers by Holding",
@@ -286,14 +286,14 @@ struct SettingsView: View {
     // MARK: - Helpers
 
     private var enabledLanguagesSummary: String {
-        let names = languageSettings.enabledLanguages.map(\.name)
+        let names = languageSettings.enabledLanguages.map(\.title)
         let list = if names.count <= 2 {
             names.joined(separator: ", ")
         } else {
             String(localized: "\(names[0]) + \(names.count - 1) more")
         }
         if let pinned = languageSettings.pinnedLanguage {
-            return String(localized: "\(list) (default: \(pinned.name))")
+            return String(localized: "\(list) (default: \(pinned.title))")
         }
         return list
     }
@@ -340,9 +340,9 @@ struct SettingsView: View {
 
     private var labelVisibilityDescription: String {
         let hidden = [
-            hideLetters ? String(localized: "letters") : nil,
-            hideStandardSymbols ? String(localized: "standard symbols") : nil,
-            hideExtraSymbols ? String(localized: "extra symbols") : nil,
+            areLetterLabelsHidden ? String(localized: "letters") : nil,
+            areStandardSymbolLabelsHidden ? String(localized: "standard symbols") : nil,
+            areExtraSymbolLabelsHidden ? String(localized: "extra symbols") : nil,
         ].compactMap(\.self)
         if hidden.isEmpty {
             return String(localized: "All labels visible")

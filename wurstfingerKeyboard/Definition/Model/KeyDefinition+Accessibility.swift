@@ -1,5 +1,5 @@
 //
-//  KeyConfig+Accessibility.swift
+//  KeyDefinition+Accessibility.swift
 //  Wurstfinger
 //
 //  What a key offers to assistive technologies, derived from its bindings.
@@ -13,7 +13,7 @@ struct KeyAccessibilityAction: Equatable {
     let gesture: GestureType
 }
 
-extension KeyConfig {
+extension KeyDefinition {
     /// Gesture that must replace the synthesized tap when an assistive
     /// technology activates this key, or nil when the tap already does
     /// something — VoiceOver activation reaches the recognizer as a plain

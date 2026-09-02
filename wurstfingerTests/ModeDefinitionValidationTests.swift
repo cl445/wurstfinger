@@ -15,12 +15,12 @@ private func letterBinding(_ char: String) -> KeyBinding {
     KeyBinding(label: char, action: .commitText(char), category: nil, returnAction: nil, accessibilityLabel: nil)
 }
 
-private func letterKey(_ id: String, _ char: String) -> KeyConfig {
-    KeyConfig(id: id, bindings: [.tap: letterBinding(char)], swipeMode: .eightWay, slideType: .none, style: .primary, tapCycleActions: nil)
+private func letterKey(_ id: String, _ char: String) -> KeyDefinition {
+    KeyDefinition(id: id, bindings: [.tap: letterBinding(char)], swipeMode: .eightWay, slideType: .none, style: .primary, tapCycleActions: nil)
 }
 
-private func utilityKey(_ id: String, action: KeyAction) -> KeyConfig {
-    KeyConfig(
+private func utilityKey(_ id: String, action: KeyAction) -> KeyDefinition {
+    KeyDefinition(
         id: id,
         bindings: [.tap: KeyBinding(label: id, action: action, category: .utility, returnAction: nil, accessibilityLabel: nil)],
         swipeMode: .none, slideType: .none, style: .utility, tapCycleActions: nil
@@ -32,7 +32,7 @@ private func minimalMode(
     name: String = "main",
     autoTransitions: [KeyCategory: String] = [:]
 ) -> KeyboardMode {
-    let keys: [String: KeyConfig] = [
+    let keys: [String: KeyDefinition] = [
         "a": letterKey("a", "a"),
         "b": letterKey("b", "b"),
         "c": letterKey("c", "c"),
@@ -308,7 +308,7 @@ struct ValidationTests {
     }
 
     @Test func missingSwitchModeTarget() {
-        let shiftKey = KeyConfig(
+        let shiftKey = KeyDefinition(
             id: "shift",
             bindings: [.tap: KeyBinding(
                 label: "⇧",
@@ -319,7 +319,7 @@ struct ValidationTests {
             )],
             swipeMode: .none, slideType: .none, style: .utility, tapCycleActions: nil
         )
-        let keys: [String: KeyConfig] = ["a": letterKey("a", "a"), "shift": shiftKey]
+        let keys: [String: KeyDefinition] = ["a": letterKey("a", "a"), "shift": shiftKey]
         let arrangement = GridArrangement(columns: 2, rows: [
             [KeyPlacement(keyId: "a"), KeyPlacement(keyId: "shift")],
         ])
@@ -330,7 +330,7 @@ struct ValidationTests {
     }
 
     @Test func missingSwitchModeTargetInReturnAction() {
-        let key = KeyConfig(
+        let key = KeyDefinition(
             id: "shift",
             bindings: [.tap: KeyBinding(
                 label: "⇧",
@@ -348,7 +348,7 @@ struct ValidationTests {
     }
 
     @Test func missingSwitchModeTargetInTapCycleActions() {
-        let key = KeyConfig(
+        let key = KeyDefinition(
             id: "cycle",
             bindings: [.tap: KeyBinding(
                 label: "c", action: .commitText("c"), category: nil,

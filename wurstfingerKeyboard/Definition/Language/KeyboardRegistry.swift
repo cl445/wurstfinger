@@ -15,7 +15,7 @@ enum KeyboardRegistry {
     /// Reads descriptor metadata only — no `KeyboardDefinition` is built, so
     /// listing languages (and the extension's `primaryLanguage` lookup) stays
     /// cheap at launch.
-    static let available: [KeyboardInfo] = LanguageDefinitions.all.map { KeyboardInfo(from: $0) }
+    static let available: [LanguageMetadata] = LanguageDefinitions.all.map { LanguageMetadata(from: $0) }
 
     /// Precomputed index for O(1) descriptor lookup by id. Holds descriptors
     /// (metadata + lazy builders), not built definitions.

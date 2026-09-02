@@ -8,6 +8,11 @@ backlog comes out.
 
 Measured against `develop` @ `d9e8cce`, 188 Swift files, 36,352 lines.
 
+**Status: the backlog is empty.** `.naming-budget.json` has been deleted, all seventeen
+SwiftLint rules are unconditional, and `check` now means "no rejected spelling anywhere".
+The measurement below is kept as written, because it is what the decisions were made
+against.
+
 ## 1. What the machine now owns
 
 | Artefact | Holds |
@@ -15,7 +20,7 @@ Measured against `develop` @ `d9e8cce`, 188 Swift files, 36,352 lines.
 | `docs/GLOSSARY.md` §1–§6 | The convention: ambiguity traps, zones, vocabulary, suffix and verb rules. Prose, hand-written. |
 | `glossary.toml` | The machine-checkable half: one term per concept with its zone, the spellings it replaces, and shape rules for names nobody has written yet. |
 | `scripts/check_naming.py` | Reads both. Reports findings, enforces the budget, regenerates §7–§9. |
-| `.naming-budget.json` | The backlog, per file. Shrinks only. Deleted when it reaches zero. |
+| `.naming-budget.json` | The backlog, per file. Shrinks only, and is deleted when it reaches zero — which it has. It comes back only if a term is added for a spelling the tree already uses. |
 
 The split follows the failure it prevents. A hand-maintained copy of the rejected-spelling
 list would drift from the rules that are actually enforced, and a spelling that is listed
@@ -130,15 +135,29 @@ stored key stays `numpadStyle`.
 | **G1** | `glossary.toml`, the checker, the budget frozen at 587, zones, generated §7–§9, CI and hook wiring | — |
 | **G2** | SwiftLint `custom_rules` generated from the same file, so the rules fire in Xcode while typing — 17 rules, `--strict` green | G1 |
 | **G3** | `slotId` → `keyId`, `layer` → `mode` (identifiers and comments), `create…` → `make…`, the vague type and file names — **587 → 367** | G1 |
-| **G4** | `KeyConfig` → `KeyDefinition`, `GesturePreprocessorConfig` → `…Configuration`, the `LanguageConfig` / `KeyboardInfo` merge, the settings booleans | G1; conflicts with the open PR stack |
+| **G4** | `KeyConfig` → `KeyDefinition` and the other two `…Config` types, the settings booleans, the `LanguageConfig` / `KeyboardInfo` merge — **367 → 0** | G1 |
 
-G4 touches 227 sites in files that #253, #250, #245 and #221 are all editing, so it waits
-until that stack lands rather than forcing four rebases.
+G4 was planned to wait for #253, #250, #245 and #221, since it touches the files all four
+are editing. It was pulled forward instead: those branches were already carrying the
+conflict, so deferring bought nothing and only widened the window in which new code could
+be written against the old names.
 
-After G3 the budget holds 367 names in 51 files, and five of the seventeen SwiftLint rules
-carry no exclusions at all any more — `slotId`, `create…`, `layer`, the vague type suffix
-and `ScreenshotMode` are now gated everywhere, in every file, including files nobody has
-written yet.
+It came out in three parts, because they fail differently:
+
+1. **The `…Config` suffix** (186 sites). Zone A, mechanical. `KeyConfig` became
+   `KeyDefinition` and `GesturePreprocessorConfig` / `ScreenshotConfig` became
+   `…Configuration` — the suffix rule discriminates, so this was a judgement per type
+   rather than one search-and-replace.
+2. **The settings booleans** (122 sites). Zone B, and the first change in this repository
+   to touch a persisted key. The four `SettingsKey` cases now carry explicit rawValues
+   pinning the strings they have always been stored under
+   (`case areLetterLabelsHidden = "hideLetters"`), and a test writes those literal strings
+   into a defaults store and reads them back through the renamed cases. Without the pin,
+   every installed device would silently lose the setting; the test was mutation-checked
+   by removing a pin and watching it fail.
+3. **The language merge** (59 sites). Not a rename: three types described one concept and
+   their fields disagreed. `LanguageConfig` and `KeyboardInfo` are gone, folded into a new
+   `LanguageMetadata`.
 
 ### What G3 taught the glossary
 
@@ -158,7 +177,7 @@ that has moved since; this pair is measured across the change itself.) §1 of th
 have produced "the definition mode", which means nothing. The identifier rule is
 unaffected — no identifier in this codebase uses the architectural sense.
 
-### Why the SwiftLint rules carry exclusions
+### Why a rule with a backlog carries exclusions
 
 CI lints with `--strict`, so a warning fails the build. A rule for a spelling that still
 has a backlog would therefore block every commit until the rename lands. Each generated
@@ -167,10 +186,15 @@ stay covered by `.naming-budget.json`, which forbids growth. Every other file �
 every file added tomorrow — is gated in the editor. As a rename lands, `update` shrinks
 both lists at once.
 
-This is not the same as excluding a file wholesale: the budget still refuses a second
-`slotId` in a file that carries one. Both halves are verified — adding a `slotId` to a
-clean file fails SwiftLint, adding one to `GridKeyboardFactory.swift` passes SwiftLint and
+This is not the same as excluding a file wholesale. The two halves fail on different
+things, and each is checkable on its own: a rejected spelling in a file with no exclusion
+fails SwiftLint, and a second one in a file that has an exclusion passes SwiftLint and
 fails the budget.
+
+No rule carries an exclusion today, and there is no budget file to carry. The mechanism
+stays written down because it is what the next backlog needs: adding a term for a spelling
+the tree already uses re-creates both lists, and `update` shrinks them together as the
+rename lands.
 
 One subtlety the generator has to handle: SwiftLint has no notion of a spelling belonging
 to a term rather than a pattern. `check_naming.py` reports `KeyConfig` once, under its

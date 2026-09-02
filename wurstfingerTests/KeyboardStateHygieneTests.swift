@@ -97,7 +97,7 @@ struct DefinitionSignatureTests {
         #expect(
             vm.loadedDefinitionSignature
                 == KeyboardViewModel.definitionSignature(
-                    languageId: LanguageConfig.english.id,
+                    languageId: LanguageMetadata.english.id,
                     numpadType: nil
                 )
         )

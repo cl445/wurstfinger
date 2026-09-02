@@ -16,12 +16,12 @@ import SwiftUI
 /// cell's column/row span, without hardcoding any positions.
 struct KeyboardGridView: View {
     let arrangement: GridArrangement
-    let keys: [String: KeyConfig]
-    let onGesture: (KeyConfig, GestureType, Bool) -> Void
+    let keys: [String: KeyDefinition]
+    let onGesture: (KeyDefinition, GestureType, Bool) -> Void
     var onTouchDown: (() -> Void)?
-    var onSlide: ((KeyConfig, SlidePhase) -> Void)?
+    var onSlide: ((KeyDefinition, SlidePhase) -> Void)?
     /// Forwarded to `KeyView`; returns whether the long press was handled.
-    var onLongPress: ((KeyConfig) -> Bool)?
+    var onLongPress: ((KeyDefinition) -> Bool)?
     /// Active-language hint for the switch key, supplied by `KeyboardViewModel`
     /// so it reflects the loaded definition rather than re-derived storage.
     var languageLabel: String = ""

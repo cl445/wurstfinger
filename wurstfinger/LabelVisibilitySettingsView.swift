@@ -9,14 +9,14 @@
 import SwiftUI
 
 struct LabelVisibilitySettingsView: View {
-    @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
-    private var hideLetters = false
+    @AppStorage(SettingsKey.areLetterLabelsHidden.rawValue, store: SharedDefaults.store)
+    private var areLetterLabelsHidden = false
 
-    @AppStorage(SettingsKey.hideStandardSymbols.rawValue, store: SharedDefaults.store)
-    private var hideStandardSymbols = false
+    @AppStorage(SettingsKey.areStandardSymbolLabelsHidden.rawValue, store: SharedDefaults.store)
+    private var areStandardSymbolLabelsHidden = false
 
-    @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
-    private var hideExtraSymbols = false
+    @AppStorage(SettingsKey.areExtraSymbolLabelsHidden.rawValue, store: SharedDefaults.store)
+    private var areExtraSymbolLabelsHidden = false
 
     @AppStorage(SettingsKey.keyAspectRatio.rawValue, store: SharedDefaults.store)
     private var previewAspectRatio = DeviceLayout.defaultKeyAspectRatio
@@ -35,18 +35,18 @@ struct LabelVisibilitySettingsView: View {
             Form {
                 Section {
                     Toggle("Show Letters", isOn: Binding(
-                        get: { !hideLetters },
-                        set: { hideLetters = !$0 }
+                        get: { !areLetterLabelsHidden },
+                        set: { areLetterLabelsHidden = !$0 }
                     ))
 
                     Toggle("Show Standard Symbols", isOn: Binding(
-                        get: { !hideStandardSymbols },
-                        set: { hideStandardSymbols = !$0 }
+                        get: { !areStandardSymbolLabelsHidden },
+                        set: { areStandardSymbolLabelsHidden = !$0 }
                     ))
 
                     Toggle("Show Extra Symbols", isOn: Binding(
-                        get: { !hideExtraSymbols },
-                        set: { hideExtraSymbols = !$0 }
+                        get: { !areExtraSymbolLabelsHidden },
+                        set: { areExtraSymbolLabelsHidden = !$0 }
                     ))
                 } footer: {
                     Text("Hide labels to practice the layout from memory. Numbers and control keys are always visible.")

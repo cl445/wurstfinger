@@ -19,8 +19,8 @@ private enum Fixtures {
         bindings: [GestureType: KeyBinding],
         swipeMode: SwipeMode = .eightWay,
         style: KeyStyle = .primary
-    ) -> KeyConfig {
-        KeyConfig(
+    ) -> KeyDefinition {
+        KeyDefinition(
             id: id,
             bindings: bindings,
             swipeMode: swipeMode,
@@ -31,7 +31,7 @@ private enum Fixtures {
     }
 
     /// Builds a single-mode KeyboardMode from a list of keys.
-    static func mode(name: String = "main", keys: [KeyConfig]) -> KeyboardMode {
+    static func mode(name: String = "main", keys: [KeyDefinition]) -> KeyboardMode {
         KeyboardMode(
             name: name,
             keys: Dictionary(uniqueKeysWithValues: keys.map { ($0.id, $0) }),

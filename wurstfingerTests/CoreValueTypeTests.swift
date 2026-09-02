@@ -3,7 +3,7 @@
 //  WurstfingerTests
 //
 //  Tests for the core value types: KeyAction, KeyCategory, GestureType,
-//  SwipeMode, SlideType, KeyStyle, KeyBinding, KeyConfig.
+//  SwipeMode, SlideType, KeyStyle, KeyBinding, KeyDefinition.
 //
 
 import Foundation
@@ -271,11 +271,11 @@ struct KeyBindingTests {
     }
 }
 
-// MARK: - KeyConfig Tests
+// MARK: - KeyDefinition Tests
 
-struct KeyConfigTests {
+struct KeyDefinitionTests {
     @Test func identifiable() {
-        let config = KeyConfig(
+        let config = KeyDefinition(
             id: "topLeft",
             bindings: [
                 .tap: KeyBinding(
@@ -292,7 +292,7 @@ struct KeyConfigTests {
     }
 
     @Test func codableRoundtrip() throws {
-        let config = KeyConfig(
+        let config = KeyDefinition(
             id: "center",
             bindings: [
                 .tap: KeyBinding(
@@ -311,12 +311,12 @@ struct KeyConfigTests {
             tapCycleActions: nil
         )
         let data = try JSONEncoder().encode(config)
-        let decoded = try JSONDecoder().decode(KeyConfig.self, from: data)
+        let decoded = try JSONDecoder().decode(KeyDefinition.self, from: data)
         #expect(decoded == config)
     }
 
     @Test func codableRoundtripWithTapCycleActions() throws {
-        let config = KeyConfig(
+        let config = KeyDefinition(
             id: "space",
             bindings: [
                 .tap: KeyBinding(
@@ -330,12 +330,12 @@ struct KeyConfigTests {
             tapCycleActions: [.space, .commitText(","), .commitText(".")]
         )
         let data = try JSONEncoder().encode(config)
-        let decoded = try JSONDecoder().decode(KeyConfig.self, from: data)
+        let decoded = try JSONDecoder().decode(KeyDefinition.self, from: data)
         #expect(decoded == config)
     }
 
     @Test func codableRoundtripUtilityKey() throws {
-        let config = KeyConfig(
+        let config = KeyDefinition(
             id: "delete",
             bindings: [
                 .tap: KeyBinding(
@@ -350,7 +350,7 @@ struct KeyConfigTests {
             tapCycleActions: nil
         )
         let data = try JSONEncoder().encode(config)
-        let decoded = try JSONDecoder().decode(KeyConfig.self, from: data)
+        let decoded = try JSONDecoder().decode(KeyDefinition.self, from: data)
         #expect(decoded == config)
     }
 
@@ -359,17 +359,17 @@ struct KeyConfigTests {
             label: "a", action: .commitText("a"),
             category: nil, returnAction: nil, accessibilityLabel: nil
         )
-        let config1 = KeyConfig(
+        let config1 = KeyDefinition(
             id: "topLeft", bindings: [.tap: binding],
             swipeMode: .eightWay, slideType: .none,
             style: .primary, tapCycleActions: nil
         )
-        let config2 = KeyConfig(
+        let config2 = KeyDefinition(
             id: "topLeft", bindings: [.tap: binding],
             swipeMode: .eightWay, slideType: .none,
             style: .primary, tapCycleActions: nil
         )
-        let config3 = KeyConfig(
+        let config3 = KeyDefinition(
             id: "topRight", bindings: [.tap: binding],
             swipeMode: .eightWay, slideType: .none,
             style: .primary, tapCycleActions: nil

@@ -78,17 +78,19 @@ python3 scripts/check_naming.py render           # regenerate docs/GLOSSARY.md s
 python3 scripts/check_naming.py sync-lint        # regenerate the glossary_* rules in .swiftlint.yml
 ```
 
-The backlog lives in `.naming-budget.json`: one entry per file, holding the number
-of rejected names it carries today. A file may not exceed its entry, and a file
-without one may not carry a single rejected name — so the existing code is
-grandfathered while new code is not. `update` writes the current counts and
-refuses to record a number that grew, unless `--allow-raise` says why.
+A backlog, while there is one, lives in `.naming-budget.json`: one entry per
+file, holding the number of rejected names it carries. A file may not exceed its
+entry, and a file without one may not carry a single rejected name — so legacy
+code is grandfathered while new code is not. `update` writes the current counts,
+refuses to record a number that grew unless `--allow-raise` says why, and deletes
+the file once the last entry reaches zero. That has happened: there is no budget
+file today, and the check allows no rejected spelling anywhere.
 
 `sync-lint` writes one SwiftLint custom rule per rejected spelling, so a
-violation shows up in Xcode while typing rather than only in CI. Each rule
-excludes the files that still carry a backlog for it — CI lints with `--strict`,
-and a warning in legacy code would block every commit — while the budget keeps
-those same files from growing.
+violation shows up in Xcode while typing rather than only in CI. A rule with a
+backlog excludes the files carrying it — CI lints with `--strict`, and a warning
+in legacy code would block every commit — while the budget keeps those same files
+from growing. With the backlog empty, no rule carries exclusions.
 
 The vocabulary itself, the zones, and the reasoning are in
 [`docs/GLOSSARY.md`](../docs/GLOSSARY.md).

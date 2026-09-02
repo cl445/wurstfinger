@@ -26,25 +26,25 @@ struct DataDrivenKeyboardRootView: View {
     @AppStorage(SettingsKey.keyboardStyle.rawValue, store: SharedDefaults.store)
     private var keyboardStyle: KeyboardStyle = KeyRenderSettings.stock.keyboardStyle
 
-    @AppStorage(SettingsKey.hideLetters.rawValue, store: SharedDefaults.store)
-    private var hideLetters = KeyRenderSettings.stock.hideLetters
+    @AppStorage(SettingsKey.areLetterLabelsHidden.rawValue, store: SharedDefaults.store)
+    private var areLetterLabelsHidden = KeyRenderSettings.stock.areLetterLabelsHidden
 
-    @AppStorage(SettingsKey.hideStandardSymbols.rawValue, store: SharedDefaults.store)
-    private var hideStandardSymbols = KeyRenderSettings.stock.hideStandardSymbols
+    @AppStorage(SettingsKey.areStandardSymbolLabelsHidden.rawValue, store: SharedDefaults.store)
+    private var areStandardSymbolLabelsHidden = KeyRenderSettings.stock.areStandardSymbolLabelsHidden
 
-    @AppStorage(SettingsKey.hideExtraSymbols.rawValue, store: SharedDefaults.store)
-    private var hideExtraSymbols = KeyRenderSettings.stock.hideExtraSymbols
+    @AppStorage(SettingsKey.areExtraSymbolLabelsHidden.rawValue, store: SharedDefaults.store)
+    private var areExtraSymbolLabelsHidden = KeyRenderSettings.stock.areExtraSymbolLabelsHidden
 
-    @AppStorage(SettingsKey.longPressNumbersEnabled.rawValue, store: SharedDefaults.store)
-    private var longPressNumbersEnabled = KeyRenderSettings.stock.longPressNumbersEnabled
+    @AppStorage(SettingsKey.isLongPressDigitEnabled.rawValue, store: SharedDefaults.store)
+    private var isLongPressDigitEnabled = KeyRenderSettings.stock.isLongPressDigitEnabled
 
     private var renderSettings: KeyRenderSettings {
         KeyRenderSettings(
             keyboardStyle: keyboardStyle,
-            hideLetters: hideLetters,
-            hideStandardSymbols: hideStandardSymbols,
-            hideExtraSymbols: hideExtraSymbols,
-            longPressNumbersEnabled: longPressNumbersEnabled
+            areLetterLabelsHidden: areLetterLabelsHidden,
+            areStandardSymbolLabelsHidden: areStandardSymbolLabelsHidden,
+            areExtraSymbolLabelsHidden: areExtraSymbolLabelsHidden,
+            isLongPressDigitEnabled: isLongPressDigitEnabled
         )
     }
 

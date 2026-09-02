@@ -170,21 +170,65 @@ class LintRuleTests(unittest.TestCase):
             if pattern.checks_identifiers:
                 self.assertIn(f"glossary_{pattern.id}:", rules)
 
-    def test_pattern_exclusions_cover_the_aliases_it_also_matches(self) -> None:
+    def test_pattern_exclusions_cover_the_aliases_they_also_match(self) -> None:
         """SwiftLint has no alias/pattern dedup, so the exclusions must.
 
-        `config_suffix` matches `KeyConfig` as well as `keyConfig`. If its
-        exclusions only listed the files this script attributes to the pattern,
-        `--strict` would fail in all 22 `KeyConfig` files.
+        A pattern such as `config_suffix` matches spellings a term already
+        rejects as well as spellings no term lists, and `scan` reports those
+        only once, under the term. If a pattern's exclusions listed only the
+        files this script attributes to the pattern, `--strict` would fail in
+        every file the term already covers. Vacuous while the backlog is empty,
+        which is the point: it guards the next one.
         """
         glossary = load_glossary()
-        carriers = _pattern_carriers(glossary, swift_files())
-        alias_files = {
-            finding.path
-            for finding in scan(glossary, swift_files())
-            if finding.rejected in {"KeyConfig", "LanguageConfig", "GesturePreprocessorConfig"}
-        }
-        self.assertTrue(alias_files <= carriers["config_suffix"])
+        files = swift_files()
+        carriers = _pattern_carriers(glossary, files)
+        aliases = {alias for term in glossary.terms for alias in term.rejected}
+        patterns = [
+            (pattern.id, pattern.compiled())
+            for pattern in glossary.patterns
+            if pattern.checks_identifiers
+        ]
+        for finding in scan(glossary, files):
+            if finding.rejected not in aliases:
+                continue
+            for pattern_id, regex in patterns:
+                if regex.search(finding.rejected):
+                    self.assertIn(finding.path, carriers.get(pattern_id, set()))
+
+    def test_pattern_carriers_see_a_spelling_its_term_owns(self) -> None:
+        """The same guard, on a synthetic backlog, so it asserts something today.
+
+        The repository-wide test above goes vacuous whenever the backlog is
+        empty. This one builds the overlap on purpose: a term rejects
+        `FooConfig`, a pattern matches every `…Config`, and the pattern's
+        carriers must still include the file — otherwise the generated
+        SwiftLint rule would leave it unexcluded and fail `--strict`.
+        """
+        glossary = Glossary(
+            terms=(Term(name="FooConfiguration", zone="A", definition="", rejected=("FooConfig",), note=""),),
+            patterns=(
+                Pattern(
+                    id="config_suffix",
+                    regex=r"\b[A-Za-z]*Config\b",
+                    replacement="`…Configuration`",
+                    rationale="",
+                    allowed=(),
+                    applies_to=("identifier",),
+                ),
+            ),
+            exceptions={},
+            exception_reasons={},
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            file = root / "Sample.swift"
+            file.write_text("let a = FooConfig()\n", encoding="utf-8")
+            findings = scan(glossary, [file], root=root)
+            carriers = _pattern_carriers(glossary, [file], root=root)
+
+        self.assertEqual([finding.rejected for finding in findings], ["FooConfig"])
+        self.assertEqual(carriers["config_suffix"], {"Sample.swift"})
 
     def test_rules_are_indented_for_the_custom_rules_block(self) -> None:
         for line in _lint_rules(load_glossary()).splitlines():

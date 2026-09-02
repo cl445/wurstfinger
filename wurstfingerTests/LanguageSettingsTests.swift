@@ -147,25 +147,25 @@ struct LanguageSettingsTests {
 
     // MARK: - Language ID Normalization Tests
 
-    @Test("Unknown language ID resolves to English via LanguageConfig")
+    @Test("Unknown language ID resolves to English via LanguageMetadata")
     func unknownLanguageIdResolvesToEnglish() {
-        // If a stale or unknown language ID is stored, LanguageConfig.language(withId:) returns nil
+        // If a stale or unknown language ID is stored, LanguageMetadata.language(withId:) returns nil
         let unknownId = "zz_ZZ"
-        let resolved = LanguageConfig.language(withId: unknownId)?.id ?? LanguageConfig.english.id
+        let resolved = LanguageMetadata.language(withId: unknownId)?.id ?? LanguageMetadata.english.id
         #expect(resolved == "en_US")
     }
 
     @Test("Valid language ID resolves to itself")
     func validLanguageIdResolvesToItself() {
         let validId = "de_DE"
-        let resolved = LanguageConfig.language(withId: validId)?.id ?? LanguageConfig.english.id
+        let resolved = LanguageMetadata.language(withId: validId)?.id ?? LanguageMetadata.english.id
         #expect(resolved == "de_DE")
     }
 
     @Test("All known language IDs resolve correctly")
     func allKnownLanguageIdsResolve() {
-        for language in LanguageConfig.allLanguages {
-            let resolved = LanguageConfig.language(withId: language.id)
+        for language in LanguageMetadata.allLanguages {
+            let resolved = LanguageMetadata.language(withId: language.id)
             #expect(resolved != nil, "Language \(language.id) should resolve")
             #expect(resolved?.id == language.id)
         }
@@ -327,7 +327,7 @@ struct MultiLanguageSettingsTests {
         #expect(deSettings.currentLanguageLabel == "DE")
     }
 
-    @Test("enabledLanguages returns resolved LanguageConfig objects")
+    @Test("enabledLanguages returns resolved LanguageMetadata objects")
     func enabledLanguagesResolved() {
         let defaults = makeTestDefaults()
 
@@ -502,7 +502,7 @@ struct PinnedLanguageTests {
         #expect(settings.pinnedLanguageId == nil)
     }
 
-    @Test("pinnedLanguage returns resolved LanguageConfig")
+    @Test("pinnedLanguage returns resolved LanguageMetadata")
     func pinnedLanguageResolved() {
         let defaults = makeTestDefaults()
 
@@ -606,7 +606,7 @@ struct ResolvedLanguageIdTests {
 
     @Test("Keeps every known language id")
     func keepsAllKnownIds() {
-        for language in LanguageConfig.allLanguages {
+        for language in LanguageMetadata.allLanguages {
             #expect(LanguageSettings.resolvedLanguageId(language.id) == language.id)
         }
     }
@@ -630,7 +630,7 @@ struct ResolvedLanguageIdTests {
             let resolved = LanguageSettings.resolvedLanguageId(stored)
             let info = metadataByID[resolved]
             #expect(info != nil, "Resolved id \(resolved) (from \(stored ?? "nil")) missing in registry metadata")
-            let expectedLocale = LanguageConfig.language(withId: resolved)?.locale.identifier
+            let expectedLocale = LanguageMetadata.language(withId: resolved)?.locale.identifier
             #expect(info?.localeIdentifier == expectedLocale)
         }
     }

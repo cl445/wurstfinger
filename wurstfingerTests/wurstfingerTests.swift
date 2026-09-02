@@ -164,8 +164,8 @@ struct wurstfingerTests {
         for info in KeyboardRegistry.available {
             guard let definition = KeyboardRegistry.load(id: info.id) else { continue }
             for (modeName, mode) in definition.modes {
-                for (keyId, keyConfig) in mode.keys {
-                    for (gesture, binding) in keyConfig.bindings {
+                for (keyId, keyDefinition) in mode.keys {
+                    for (gesture, binding) in keyDefinition.bindings {
                         if case let .compose(trigger) = binding.action {
                             #expect(
                                 trigger != "'",
@@ -184,8 +184,8 @@ struct wurstfingerTests {
         for info in KeyboardRegistry.available {
             guard let definition = KeyboardRegistry.load(id: info.id) else { continue }
             for (modeName, mode) in definition.modes {
-                for (keyId, keyConfig) in mode.keys {
-                    for (gesture, binding) in keyConfig.bindings {
+                for (keyId, keyDefinition) in mode.keys {
+                    for (gesture, binding) in keyDefinition.bindings {
                         if case let .compose(trigger) = binding.action {
                             #expect(
                                 trigger != "`",

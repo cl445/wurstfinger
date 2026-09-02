@@ -372,4 +372,34 @@ struct SettingsKeyTests {
         #expect(SettingsKey.keyboardWidthPoints.rawValue == "keyboardWidthPoints")
         #expect(SettingsKey.numpadStyle.rawValue == "numpadStyle")
     }
+
+    /// The four label- and long-press flags carry an explicit rawValue
+    /// pinning the string their setting is stored under on disk. The literals
+    /// below are deliberately spelled out instead of read from `SettingsKey`:
+    /// comparing a case against its own rawValue would still pass without the
+    /// pin, and dropping a pin is exactly what would reset these settings on
+    /// every installed device.
+    @Test func labelFlagsReadTheirPinnedStorageKeys() {
+        let defaults = InMemoryUserDefaults()
+        defaults.set(true, forKey: "hideLetters")
+        defaults.set(true, forKey: "hideStandardSymbols")
+        defaults.set(true, forKey: "hideExtraSymbols")
+        defaults.set(true, forKey: "longPressNumbersEnabled")
+
+        // Reads the four values the way `DataDrivenKeyboardRootView` does:
+        // by the rawValue of the case.
+        let settings = KeyRenderSettings(
+            areLetterLabelsHidden: defaults.bool(forKey: SettingsKey.areLetterLabelsHidden.rawValue),
+            areStandardSymbolLabelsHidden: defaults.bool(forKey: SettingsKey.areStandardSymbolLabelsHidden.rawValue),
+            areExtraSymbolLabelsHidden: defaults.bool(forKey: SettingsKey.areExtraSymbolLabelsHidden.rawValue),
+            isLongPressDigitEnabled: defaults.bool(forKey: SettingsKey.isLongPressDigitEnabled.rawValue)
+        )
+
+        // All four default to false, so reading true proves the stored value
+        // was found under its pinned key rather than falling back.
+        #expect(settings.areLetterLabelsHidden)
+        #expect(settings.areStandardSymbolLabelsHidden)
+        #expect(settings.areExtraSymbolLabelsHidden)
+        #expect(settings.isLongPressDigitEnabled)
+    }
 }

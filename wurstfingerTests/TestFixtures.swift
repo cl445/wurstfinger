@@ -5,14 +5,14 @@
 //  Fixture builders and call conveniences that only the test suite uses.
 //  They live here rather than in `wurstfingerKeyboard/` so they stay out of
 //  the keyboard extension's binary — and so nobody mistakes them for a
-//  supported production path (the definition layer builds `KeyConfig`s in
-//  `GridKeyboardFactory`, not through `KeyConfig.letter`).
+//  supported production path (the definition layer builds `KeyDefinition`s in
+//  `GridKeyboardFactory`, not through `KeyDefinition.letter`).
 //
 
 import Foundation
 @testable import WurstfingerApp
 
-extension KeyConfig {
+extension KeyDefinition {
     /// Creates a letter key. Category is automatically derived from the action.
     static func letter(
         _ id: String,
@@ -20,7 +20,7 @@ extension KeyConfig {
         swipes: [GestureType: String] = [:],
         returnSwipes: [GestureType: String] = [:],
         composeSwipes: [GestureType: (trigger: String, label: String)] = [:]
-    ) -> KeyConfig {
+    ) -> KeyDefinition {
         var bindings: [GestureType: KeyBinding] = [:]
         bindings[.tap] = KeyBinding(
             label: tap, action: .commitText(tap),
@@ -39,20 +39,20 @@ extension KeyConfig {
                 category: .compose, returnAction: nil, accessibilityLabel: nil
             )
         }
-        return KeyConfig(
+        return KeyDefinition(
             id: id, bindings: bindings, swipeMode: .eightWay,
             slideType: .none, style: .primary, tapCycleActions: nil
         )
     }
 }
 
-extension LanguageConfig {
-    static let german = LanguageConfig(
-        id: "de_DE", name: "Deutsch", locale: Locale(identifier: "de_DE")
+extension LanguageMetadata {
+    static let german = LanguageMetadata(
+        id: "de_DE", title: "Deutsch", localeIdentifier: "de_DE"
     )
 
-    static let russian = LanguageConfig(
-        id: "ru_RU", name: "Русский", locale: Locale(identifier: "ru_RU")
+    static let russian = LanguageMetadata(
+        id: "ru_RU", title: "Русский", localeIdentifier: "ru_RU"
     )
 }
 

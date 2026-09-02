@@ -78,11 +78,15 @@ extension LabelCategory {
 
     /// Whether a label of this category should be shown given the user's
     /// hide toggles. Numbers and functional labels are always visible.
-    func isVisible(hideLetters: Bool, hideStandardSymbols: Bool, hideExtraSymbols: Bool) -> Bool {
+    func isVisible(
+        areLetterLabelsHidden: Bool,
+        areStandardSymbolLabelsHidden: Bool,
+        areExtraSymbolLabelsHidden: Bool
+    ) -> Bool {
         switch self {
-        case .letter: !hideLetters
-        case .standardSymbol: !hideStandardSymbols
-        case .extraSymbol: !hideExtraSymbols
+        case .letter: !areLetterLabelsHidden
+        case .standardSymbol: !areStandardSymbolLabelsHidden
+        case .extraSymbol: !areExtraSymbolLabelsHidden
         case .number, .functional: true
         }
     }

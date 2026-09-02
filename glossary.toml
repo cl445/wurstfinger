@@ -42,7 +42,7 @@ note = "\"Layer\" is the non-canonical spelling of a keyboard state, rejected as
 [[term]]
 name = "keyId"
 zone = "A"
-definition = "The string identifying a key. Same value as the slot name: `KeyConfig.id` is the semantic slot, `KeyPlacement.keyId` references it."
+definition = "The string identifying a key. Same value as the slot name: `KeyDefinition.id` is the semantic slot, `KeyPlacement.keyId` references it."
 rejected = ["slotId"]
 note = "`keyId` is the established API surface — `GestureResolver.resolve(keyId:gesture:in:)`. Say \"slot\" for the position, \"key\" for the thing bound to it."
 
@@ -81,16 +81,23 @@ note = "Its own doc comment already reads \"Complete definition of a single key\
 [[term]]
 name = "LanguageDescriptor"
 zone = "A"
-definition = "The lazy handle to one language: id, title, locale identifier, plus a builder that materialises the definition on demand."
+definition = "The authoring handle for one language: id, title, locale identifier, plus a builder that materialises the definition on demand. `LanguageDefinitions` declares every language as one of these, and `KeyboardRegistry` builds from them."
+rejected = []
+note = "The descriptor is where a language is written down, not what the rest of the app passes around — that is `LanguageMetadata`. Reading a descriptor's metadata must never run its builder; `LanguageDescriptorTests` asserts it, because that property is what keeps extension launch cheap."
+
+[[term]]
+name = "LanguageMetadata"
+zone = "A"
+definition = "The value object describing one language to the UI and the settings: `id`, `title`, `localeIdentifier`, and a `locale` derived from that identifier."
 rejected = ["LanguageConfig", "KeyboardInfo"]
-note = "Three types describe one concept today, and their fields disagree across the boundary — `LanguageConfig.name` versus `LanguageDescriptor.title`, `locale: Locale` versus `localeIdentifier: String`. That is a merge, not a rename, and it is the one item on this list that can produce a wrong value rather than only an ugly one."
+note = "Three types described one concept and disagreed across the boundary — `name` versus `title`, `locale: Locale` versus `localeIdentifier: String` — with the same three fields re-spelled twice on the way out of the registry. They became two types rather than one: the descriptor carries the builder and can therefore only exist where a layout is declared, while the metadata has to be freely constructible, because `LanguageSettings` hands it out all over its API and names an `english` fallback that no registry lookup produced. Folding both into the descriptor would have forced that fallback to invent a builder."
 
 [[term]]
 name = "GesturePreprocessorConfiguration"
 zone = "A"
 definition = "The injected tuning parameters of `GesturePreprocessor`."
 rejected = ["GesturePreprocessorConfig"]
-note = "`…Configuration` is for injected runtime parameters, `…Definition` for declarative data. The two `…Config` types in the tree take different suffixes for that reason."
+note = "`…Configuration` is for injected runtime parameters, `…Definition` for declarative data. `GesturePreprocessorConfig` and `KeyConfig` were retired together and took different suffixes for that reason."
 
 [[term]]
 name = "ScreenshotType"

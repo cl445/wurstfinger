@@ -39,8 +39,8 @@ private enum PipelineFixtures {
     static func key(
         id: String,
         bindings: [GestureType: KeyBinding]
-    ) -> KeyConfig {
-        KeyConfig(
+    ) -> KeyDefinition {
+        KeyDefinition(
             id: id,
             bindings: bindings,
             swipeMode: .eightWay,
@@ -53,7 +53,7 @@ private enum PipelineFixtures {
     static func mode(
         name: String,
         autoTransitions: [KeyCategory: String] = [:],
-        keys: [KeyConfig] = []
+        keys: [KeyDefinition] = []
     ) -> KeyboardMode {
         let keyMap = Dictionary(uniqueKeysWithValues: keys.map { ($0.id, $0) })
         return KeyboardMode(

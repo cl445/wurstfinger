@@ -2,27 +2,27 @@
 //  KeyboardRegistryTests.swift
 //  WurstfingerTests
 //
-//  Tests for KeyboardInfo and KeyboardRegistry.
+//  Tests for LanguageMetadata and KeyboardRegistry.
 //
 
 import Foundation
 import Testing
 @testable import WurstfingerApp
 
-// MARK: - KeyboardInfo
+// MARK: - LanguageMetadata
 
-struct KeyboardInfoTests {
+struct LanguageMetadataTests {
     @Test func initFromDescriptor() {
         let descriptor = LanguageDefinitions.german
-        let info = KeyboardInfo(from: descriptor)
-        #expect(info.id == descriptor.id)
-        #expect(info.title == descriptor.title)
-        #expect(info.localeIdentifier == descriptor.localeIdentifier)
+        let metadata = LanguageMetadata(from: descriptor)
+        #expect(metadata.id == descriptor.id)
+        #expect(metadata.title == descriptor.title)
+        #expect(metadata.localeIdentifier == descriptor.localeIdentifier)
     }
 
     @Test func identifiable() {
-        let info = KeyboardInfo(id: "test", title: "Test", localeIdentifier: "en_US")
-        #expect(info.id == "test")
+        let metadata = LanguageMetadata(id: "test", title: "Test", localeIdentifier: "en_US")
+        #expect(metadata.id == "test")
     }
 }
 
