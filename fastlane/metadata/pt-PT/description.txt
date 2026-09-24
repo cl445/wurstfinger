@@ -1,0 +1,27 @@
+Wurstfinger: o teclado para dedos grandes
+
+Farto de erros ao escrever? O Wurstfinger é um teclado que respeita a privacidade, com teclas grandes e gestos de deslize. Substitui a apertada grelha QWERTY por uma comprovada disposição 3x3 otimizada para escrever com os polegares.
+
+Ao contrário dos teclados convencionais, o Wurstfinger não depende de previsão de palavras invasiva: alcança precisão através de um design ergonómico. Teclas grandes e bem espaçadas reduzem os toques falhados, e o sistema de gestos dá acesso a todos os caracteres sem procurar botões minúsculos.
+
+FUNCIONALIDADES:
+
+• Grelha de teclas 3x3 — pensada para os polegares, não para a pontaria precisa
+• Gestos de deslize — aceda a 8 caracteres adicionais por tecla ao deslizar
+• 15 idiomas — catalão, croata, inglês, estónio-finlandês, finlandês, francês, alemão, hebraico, italiano, polaco, russo, espanhol, sueco, tagalo e vietnamita (com entrada Telex)
+• Regras de composição — crie acentos através de combinações (ex.: ' + a = á)
+• Gestos circulares — desenhe um círculo para letras maiúsculas
+• Controlo do cursor — arraste na barra de espaços para mover o cursor; mantenha premido para selecionar texto
+• Resposta tátil — intensidade de vibração personalizável
+• Totalmente ajustável — adapte o tamanho do teclado à sua preferência
+
+PRIVACIDADE EM PRIMEIRO LUGAR:
+
+• Sem recolha de dados
+• Sem acesso à rede
+• Sem rastreio por previsão de palavras
+• Todo o processamento acontece localmente no seu dispositivo
+
+O Wurstfinger exige prática: conte com alguns dias para criar memória muscular. Mas, depois de ultrapassar esse limite, não vai querer voltar a um teclado normal. Os gestos tornam-se naturais e vai escrever mais depressa e com menos erros do que nunca.
+
+Os seus dedos vão agradecer!

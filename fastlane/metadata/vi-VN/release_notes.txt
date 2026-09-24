@@ -1,0 +1,13 @@
+Phiên bản 1.2.0
+
+Điểm nổi bật:
+• Không còn vùng chết – giờ đây mọi điểm ảnh trên bàn phím đều phản hồi khi chạm
+• Phản hồi rung nhanh hơn – rung kích hoạt ngay khi chạm thay vì sau hành động
+• Bàn phím vẫn căn chỉnh đúng sau khi xoay máy ở chế độ nền
+
+Sửa lỗi:
+• Bố cục tiếng Pháp: sửa cử chỉ vuốt quay lại trên phím giữa
+• Tự động viết hoa sau khi xóa hoạt động trở lại
+• Dấu nháy đơn không còn kích hoạt chế độ dấu/ghép
+• iOS giờ báo đúng ngôn ngữ bàn phím
+• Nhiều sửa lỗi khác cho cử chỉ và cài đặt

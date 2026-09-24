@@ -1,0 +1,13 @@
+Versjon 1.2.0
+
+Høydepunkter:
+• Slutt på døde soner – hver piksel på tastaturet reagerer nå på berøring
+• Raskere haptisk tilbakemelding – vibrasjonen utløses ved berøring i stedet for etter handlingen
+• Tastaturet holder seg riktig justert etter rotering i bakgrunnen
+
+Rettelser:
+• Fransk oppsett: rettet retursveip på midttasten
+• Automatisk stor forbokstav etter sletting virker igjen
+• Apostrofen utløser ikke lenger aksent-/komposisjonsmodus
+• iOS rapporterer nå riktig tastaturspråk
+• Diverse andre rettelser for bevegelser og innstillinger

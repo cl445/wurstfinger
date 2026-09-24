@@ -1,0 +1,13 @@
+Version 1.2.0
+
+Højdepunkter:
+• Slut med døde zoner – hver pixel på tastaturet reagerer nu på berøring
+• Hurtigere haptisk feedback – vibrationen udløses ved berøring i stedet for efter handlingen
+• Tastaturet forbliver korrekt justeret efter rotation i baggrunden
+
+Rettelser:
+• Fransk layout: rettet retur-strygning på midtertasten
+• Automatisk stort begyndelsesbogstav efter sletning virker igen
+• Apostroffen udløser ikke længere accent-/sammensætningstilstand
+• iOS rapporterer nu det korrekte tastatursprog
+• Diverse andre rettelser til bevægelser og indstillinger

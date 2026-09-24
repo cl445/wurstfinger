@@ -1,0 +1,13 @@
+Versie 1.2.0
+
+Hoogtepunten:
+• Geen dode zones meer: elke pixel van het toetsenbord reageert nu op aanraking
+• Snellere haptische feedback: de trilling komt bij aanraken, niet na de actie
+• Het toetsenbord blijft correct uitgelijnd na draaien op de achtergrond
+
+Opgelost:
+• Franse indeling: terugveeg op de middelste toets gecorrigeerd
+• Automatische hoofdletters na verwijderen werkt weer
+• De apostrof activeert niet langer de accent-/samenstelmodus
+• iOS meldt nu de juiste toetsenbordtaal
+• Diverse andere correcties voor gebaren en instellingen

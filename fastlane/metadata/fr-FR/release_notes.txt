@@ -1,0 +1,13 @@
+Version 1.2.0
+
+Nouveautés :
+• Fini les zones mortes — chaque pixel du clavier réagit désormais au toucher
+• Retour haptique plus réactif — la vibration se déclenche au contact, plus après l'action
+• Le clavier reste bien aligné après une rotation en arrière-plan
+
+Corrections :
+• Disposition française : correction du glissement de retour sur la touche centrale
+• La majuscule automatique après suppression fonctionne de nouveau
+• L'apostrophe ne déclenche plus le mode accent/composition
+• iOS indique désormais correctement la langue du clavier
+• Diverses autres corrections pour les gestes et les réglages

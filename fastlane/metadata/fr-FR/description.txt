@@ -1,0 +1,27 @@
+Wurstfinger : le clavier pour gros doigts
+
+Fatigué des fautes de frappe ? Wurstfinger est un clavier respectueux de la vie privée, doté de grandes touches et de gestes de glissement. Il remplace la grille QWERTY exiguë par une disposition 3x3 éprouvée, optimisée pour la saisie au pouce.
+
+Contrairement aux claviers classiques, Wurstfinger ne repose pas sur une prédiction de mots intrusive : il atteint la précision grâce à une conception ergonomique. Des touches grandes et bien espacées réduisent les fautes de frappe, et le système de gestes donne accès à tous les caractères sans chercher de minuscules boutons.
+
+FONCTIONNALITÉS :
+
+• Grille de touches 3x3 — pensée pour les pouces, pas pour la précision d'un stylet
+• Gestes de glissement — accédez à 8 caractères supplémentaires par touche en glissant
+• 15 langues — catalan, croate, anglais, estonien-finnois, finnois, français, allemand, hébreu, italien, polonais, russe, espagnol, suédois, tagalog et vietnamien (saisie Telex)
+• Règles de composition — créez des accents par combinaisons (p. ex. ' + a = á)
+• Gestes circulaires — dessinez un cercle pour les majuscules
+• Contrôle du curseur — glissez sur la barre d'espace pour déplacer le curseur, appui long pour sélectionner du texte
+• Retour haptique — intensité de vibration personnalisable
+• Entièrement réglable — ajustez la taille du clavier selon vos préférences
+
+LA CONFIDENTIALITÉ AVANT TOUT :
+
+• Aucune collecte de données
+• Aucun accès au réseau
+• Aucun suivi par prédiction de mots
+• Tout le traitement se fait localement sur votre appareil
+
+Wurstfinger demande un peu d'entraînement : comptez quelques jours pour acquérir des automatismes. Mais une fois ce cap franchi, vous ne voudrez plus revenir à un clavier classique. Les gestes deviennent une seconde nature et vous taperez plus vite et avec moins d'erreurs que jamais.
+
+Vos doigts vous remercieront !
