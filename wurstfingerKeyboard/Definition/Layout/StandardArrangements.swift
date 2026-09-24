@@ -101,6 +101,30 @@ enum StandardArrangements {
         ]
     )
 
+    // MARK: - Emoji Portrait
+
+    /// Emoji mode portrait: same shape as `portrait`, but the space bar is
+    /// split into three direct-select emoji keys.
+    private static let emojiPortrait = GridArrangement(
+        columns: 4,
+        rows: [
+            [.init(keyId: GridSlot.topLeft), .init(keyId: GridSlot.topCenter), .init(keyId: GridSlot.topRight), .init(keyId: UtilitySlot.globe)],
+            [.init(keyId: GridSlot.midLeft), .init(keyId: GridSlot.center), .init(keyId: GridSlot.midRight), .init(keyId: UtilitySlot.symbols)],
+            [
+                .init(keyId: GridSlot.bottomLeft),
+                .init(keyId: GridSlot.bottomCenter),
+                .init(keyId: GridSlot.bottomRight),
+                .init(keyId: UtilitySlot.delete),
+            ],
+            [
+                .init(keyId: GridSlot.emojiExtraLeft),
+                .init(keyId: GridSlot.emojiExtraCenter),
+                .init(keyId: GridSlot.emojiExtraRight),
+                .init(keyId: UtilitySlot.return),
+            ],
+        ]
+    )
+
     // MARK: - Utility-Left Variants
 
     /// The utility keys that move to the leading edge when "Utility Keys on
@@ -131,5 +155,14 @@ enum StandardArrangements {
         .portraitUtilityLeft: utilityLeft(numericPortrait),
         .landscape: numericLandscape,
         .landscapeUtilityLeft: utilityLeft(numericLandscape),
+    ]
+
+    /// Emoji mode: the portrait arrangement is used in all contexts — the
+    /// 3-row landscape shape has no room for the three extra bottom-row keys.
+    static let emoji3x3: [ArrangementContext: GridArrangement] = [
+        .portrait: emojiPortrait,
+        .portraitUtilityLeft: utilityLeft(emojiPortrait),
+        .landscape: emojiPortrait,
+        .landscapeUtilityLeft: utilityLeft(emojiPortrait),
     ]
 }
