@@ -34,10 +34,20 @@ protocol TextInputTarget: AnyObject {
     /// Required for delete-forward and word-boundary movement.
     var documentContextAfterInput: String? { get }
 
+    /// Identifies the active document when one proxy target serves multiple fields.
+    var documentIdentifier: UUID? { get }
+
     /// Currently selected text, if any.
     var selectedText: String? { get }
 
     /// Whether Full Access (Open Access) is enabled for the keyboard.
     /// Clipboard operations require this.
     var hasFullAccess: Bool { get }
+}
+
+extension TextInputTarget {
+    /// Preview and in-memory targets each represent a single document.
+    var documentIdentifier: UUID? {
+        nil
+    }
 }

@@ -421,7 +421,6 @@ struct SequentialCompositionCombineTests {
             isActive: { true },
             documentContextBefore: { "इ" },
             deleteBackward: { deleted += 1 },
-            composeDigraph: nil,
             composeSingle: { previous, trigger in
                 (previous == "इ" && trigger == "इ") ? "ई" : nil
             }
@@ -440,7 +439,6 @@ struct SequentialCompositionCombineTests {
             isActive: { true },
             documentContextBefore: { "अ" },
             deleteBackward: { Issue.record("Must not delete when no rule matches") },
-            composeDigraph: nil,
             composeSingle: { _, _ in nil }
         )
         let sink = RecordingMiddleware()
@@ -456,7 +454,6 @@ struct SequentialCompositionCombineTests {
             isActive: { false },
             documentContextBefore: { Issue.record("Must not read context when inactive"); return "इ" },
             deleteBackward: { Issue.record("Must not delete when inactive") },
-            composeDigraph: nil,
             composeSingle: { _, _ in Issue.record("Must not combine when inactive"); return nil }
         )
         let sink = RecordingMiddleware()
@@ -472,7 +469,6 @@ struct SequentialCompositionCombineTests {
             isActive: { true },
             documentContextBefore: { "" },
             deleteBackward: { Issue.record("Must not delete without a previous char") },
-            composeDigraph: nil,
             composeSingle: { _, _ in Issue.record("Must not combine without a previous char"); return nil }
         )
         let sink = RecordingMiddleware()
@@ -575,14 +571,14 @@ struct SequentialCompositionTelexTests {
     private func pipeline(
         spy: Spy,
         isActive: @escaping () -> Bool = { true },
-        digraph: @escaping (String, String, String) -> (String, Int)? = { _, _, _ in nil },
+        suffix: @escaping (String, String) -> (String, Int)? = { _, _ in nil },
         single: @escaping (String, String) -> String? = { _, _ in nil }
     ) -> (ActionPipeline, RecordingMiddleware) {
         let telex = SequentialCompositionMiddleware(
             isActive: isActive,
             documentContextBefore: { spy.context },
             deleteBackward: { spy.deleteBackward() },
-            composeDigraph: digraph,
+            composeSuffix: suffix,
             composeSingle: single
         )
         let sink = RecordingMiddleware()
@@ -621,7 +617,7 @@ struct SequentialCompositionTelexTests {
         // Both would match — the middleware must prefer the digraph.
         let (pipe, sink) = pipeline(
             spy: spy,
-            digraph: { p2, p1, t in p2 == "u" && p1 == "o" && t == "w" ? ("ươ", 2) : nil },
+            suffix: { text, key in text.hasSuffix("uo") && key == "w" ? ("ươ", 2) : nil },
             single: { _, _ in "should-not-win" }
         )
         pipe.process(PipelineFixtures.context(action: .commitText("w")))

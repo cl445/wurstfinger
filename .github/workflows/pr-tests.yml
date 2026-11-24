@@ -80,7 +80,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install Periphery
-        run: brew install peripheryapp/periphery/periphery
+        run: brew install periphery
 
       - name: Scan for Dead Code
         run: periphery scan --disable-update-check

@@ -25,8 +25,7 @@ struct ModeTransitionMiddleware: ActionMiddleware {
         next(context)
         guard let currentMode = definition.modes[context.mode] else { return }
         let category = Self.transitionCategory(for: context)
-        guard let nextMode = currentMode.nextMode(after: category) else { return }
-        guard nextMode != context.mode else { return }
+        guard let nextMode = currentMode.nextMode(after: category), nextMode != context.mode else { return }
         onModeChange(nextMode)
     }
 

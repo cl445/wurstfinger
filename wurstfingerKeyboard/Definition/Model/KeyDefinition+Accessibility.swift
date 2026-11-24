@@ -21,8 +21,8 @@ extension KeyDefinition {
     var accessibilityActivationOverride: GestureType? {
         // Annotated so `.none` reads as the key action, not `Optional.none`.
         let tapAction: KeyAction = bindings[.tap]?.action ?? .none
-        guard tapAction == .none else { return nil }
-        guard let gesture = accessibilityActivationGesture,
+        guard tapAction == .none,
+              let gesture = accessibilityActivationGesture,
               let binding = bindings[gesture], binding.action != .none
         else { return nil }
         return gesture

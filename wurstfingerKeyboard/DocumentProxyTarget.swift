@@ -49,6 +49,10 @@ final class DocumentProxyTarget: TextInputTarget {
         proxy?.documentContextAfterInput
     }
 
+    var documentIdentifier: UUID? {
+        proxy?.documentIdentifier
+    }
+
     var selectedText: String? {
         proxy?.selectedText
     }

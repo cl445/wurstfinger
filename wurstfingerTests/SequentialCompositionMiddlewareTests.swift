@@ -3,8 +3,8 @@
 //  WurstfingerTests
 //
 //  Seam tests for the unified SequentialCompositionMiddleware — the single
-//  middleware that backs both Vietnamese Telex (two-char digraph + single
-//  lookback) and sequential combine (single lookback: rule table or Hangul).
+//  middleware that backs both Vietnamese Telex (syllable lookback) and
+//  sequential combine (single lookback: rule table or Hangul).
 //  Locks the shared skeleton: isActive guard, single-char commit check,
 //  selection skip, lookback read, and delete-then-rewrite for both flavours.
 //
@@ -35,7 +35,6 @@ struct SequentialCompositionMiddlewareTests {
             isActive: { true },
             documentContextBefore: { "か" },
             deleteBackward: { deletes += 1 },
-            composeDigraph: nil,
             composeSingle: { previous, trigger in
                 previous == "か" && trigger == "゛" ? "が" : nil
             }
@@ -53,7 +52,6 @@ struct SequentialCompositionMiddlewareTests {
             isActive: { true },
             documentContextBefore: { "x" },
             deleteBackward: { deletes += 1 },
-            composeDigraph: nil,
             composeSingle: { _, _ in nil }
         )
         let context = ActionContext(action: .commitText("y"), binding: nil, mode: "main")
@@ -71,8 +69,8 @@ struct SequentialCompositionMiddlewareTests {
             isActive: { true },
             documentContextBefore: { "uo" },
             deleteBackward: { deletes += 1 },
-            composeDigraph: { prev2, prev1, trigger in
-                prev2 == "u" && prev1 == "o" && trigger == "w" ? ("ươ", 2) : nil
+            composeSuffix: { context, trigger in
+                context.hasSuffix("uo") && trigger == "w" ? ("ươ", 2) : nil
             },
             composeSingle: { _, _ in "SHOULD_NOT_BE_USED" }
         )
@@ -89,7 +87,7 @@ struct SequentialCompositionMiddlewareTests {
             isActive: { true },
             documentContextBefore: { "ba" },
             deleteBackward: { deletes += 1 },
-            composeDigraph: { _, _, _ in nil },
+            composeSuffix: { _, _ in nil },
             composeSingle: { previous, trigger in
                 previous == "a" && trigger == "s" ? "á" : nil
             }
@@ -109,7 +107,6 @@ struct SequentialCompositionMiddlewareTests {
             isActive: { false },
             documentContextBefore: { "か" },
             deleteBackward: { deletes += 1 },
-            composeDigraph: nil,
             composeSingle: { _, _ in "が" }
         )
         let context = ActionContext(action: .commitText("゛"), binding: nil, mode: "main")
@@ -126,7 +123,6 @@ struct SequentialCompositionMiddlewareTests {
             documentContextBefore: { "か" },
             deleteBackward: { deletes += 1 },
             selectedText: { "SEL" },
-            composeDigraph: nil,
             composeSingle: { _, _ in "が" }
         )
         let context = ActionContext(action: .commitText("゛"), binding: nil, mode: "main")
@@ -140,7 +136,6 @@ struct SequentialCompositionMiddlewareTests {
             isActive: { true },
             documentContextBefore: { "か" },
             deleteBackward: {},
-            composeDigraph: nil,
             composeSingle: { _, _ in "SHOULD_NOT_RUN" }
         )
         let result = run(middleware, trigger: "ab")
@@ -152,7 +147,6 @@ struct SequentialCompositionMiddlewareTests {
             isActive: { true },
             documentContextBefore: { "" },
             deleteBackward: {},
-            composeDigraph: nil,
             composeSingle: { _, _ in "SHOULD_NOT_RUN" }
         )
         let result = run(middleware, trigger: "y")
@@ -164,7 +158,6 @@ struct SequentialCompositionMiddlewareTests {
             isActive: { true },
             documentContextBefore: { "か" },
             deleteBackward: {},
-            composeDigraph: nil,
             composeSingle: { _, _ in "SHOULD_NOT_RUN" }
         )
         var captured: KeyAction?
@@ -194,8 +187,7 @@ struct SequentialCombinerResolutionTests {
     }
 
     @Test func noCombinerForTelexSingleLookback() {
-        // Telex composes via the digraph/single Telex closures, not this
-        // single-lookback combiner.
+        // Telex has its own syllable and letter shaping rules.
         #expect(settings(inputMethod: .telex).sequentialCombiner == nil)
     }
 

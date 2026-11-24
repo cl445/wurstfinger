@@ -149,8 +149,7 @@ struct AccessibilityLabelTests {
                     )
                     for (gesture, binding) in key.bindings
                         where gesture != .tap && binding.action != .none {
-                        guard let label = binding.accessibilityLabel, !label.isEmpty else { continue }
-                        guard gesture != key.accessibilityActivationOverride else { continue }
+                        guard let label = binding.accessibilityLabel, !label.isEmpty, gesture != key.accessibilityActivationOverride else { continue }
                         let origin = "\(def.id)/\(modeName)/\(keyId) \(gesture)"
                         guard let offeredGesture = offered[label] else {
                             Issue.record("\(origin) is named \"\(label)\" but unreachable")

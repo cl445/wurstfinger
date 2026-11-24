@@ -129,33 +129,11 @@ extension KeyboardViewModel {
             selectedText: { [weak self] in self?.textInputTarget?.selectedText }
         ))
 
-        // 3. Sequential composition — one shared middleware in two flavours:
-        //
-        //    3a. Vietnamese Telex: two-char digraph lookback plus single-char
-        //        lookback. Always appended; inert (a single closure call) via
-        //        `isActive` on non-Telex layouts.
-        //    3b. Sequential combine (static rule table or the algorithmic
-        //        Hangul automaton, resolved once by `settings.sequentialCombiner`
-        //        in the definition layer). Only appended when the definition
-        //        opts into a combiner, so the ~40 other layouts never allocate
-        //        the middleware or evaluate its closures.
-        let inputMethod = definition.settings.inputMethod
-        middlewares.append(SequentialCompositionMiddleware(
-            isActive: { inputMethod == .telex },
-            documentContextBefore: { [weak self] in
-                self?.textInputTarget?.documentContextBeforeInput
-            },
-            deleteBackward: { [weak self] in
-                self?.textInputTarget?.deleteBackward()
-            },
-            selectedText: { [weak self] in self?.textInputTarget?.selectedText },
-            composeDigraph: { prev2, prev1, trigger in
-                ComposeEngine.composeTelexDigraph(prev2: prev2, prev1: prev1, trigger: trigger)
-            },
-            composeSingle: { previous, trigger in
-                ComposeEngine.composeTelex(previous: previous, trigger: trigger)
-            }
-        ))
+        // 3. Only layouts with a composition rule need a middleware. The
+        // standalone w escape belongs to this Telex pipeline (and text target).
+        if definition.settings.inputMethod == .telex {
+            middlewares.append(TelexInputMiddleware(target: { [weak self] in self?.textInputTarget }))
+        }
 
         if let combiner = definition.settings.sequentialCombiner {
             middlewares.append(SequentialCompositionMiddleware(
@@ -167,7 +145,6 @@ extension KeyboardViewModel {
                     self?.textInputTarget?.deleteBackward()
                 },
                 selectedText: { [weak self] in self?.textInputTarget?.selectedText },
-                composeDigraph: nil,
                 composeSingle: combiner
             ))
         }
