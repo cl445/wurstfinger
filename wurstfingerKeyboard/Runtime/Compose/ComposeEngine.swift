@@ -142,7 +142,7 @@ struct ComposeEngine {
         "ô": ("o", "o"), "ơ": ("o", "w"), "ư": ("u", "w"), "đ": ("d", "d")
     ]
 
-    private static let telexToneMap: [String: String] = [
+    static let telexToneMap: [String: String] = [
         "s": "´",
         "f": "ˋ",
         "r": "?",
@@ -150,13 +150,13 @@ struct ComposeEngine {
         "j": "*"
     ]
 
-    private static let vietnameseBaseVowels: Set<String> = [
+    static let vietnameseBaseVowels: Set<String> = [
         "a", "ă", "â", "e", "ê", "i", "o", "ô", "ơ", "u", "ư", "y"
     ]
 
     /// Reverse tone map built from the Telex compose rules: toned char -> (base, telex trigger).
     /// Includes both lowercase and uppercase entries so the caller can pass original case.
-    private static let telexToneReverseMap: [String: (base: String, trigger: String)] = {
+    static let telexToneReverseMap: [String: (base: String, trigger: String)] = {
         let vowels: Set = [
             "a", "A", "ă", "Ă", "â", "Â",
             "e", "E", "ê", "Ê",

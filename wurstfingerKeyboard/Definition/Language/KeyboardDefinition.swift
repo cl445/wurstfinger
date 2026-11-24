@@ -104,7 +104,7 @@ enum InputMethodType: String, Codable, Equatable {
     /// Characters are committed verbatim. Default.
     case direct
 
-    /// Vietnamese Telex: single-char and digraph lookback composition
+    /// Vietnamese Telex: syllable tone placement and letter shaping
     /// handled by `SequentialCompositionMiddleware`.
     case telex
 
@@ -180,9 +180,7 @@ extension KeyboardDefinitionSettings {
         case .hangul:
             return { previous, trigger in HangulComposer.combine(previous: previous, jamo: trigger) }
         case .direct, .telex:
-            // `.telex` composes via its own two-char digraph path
-            // (`SequentialCompositionMiddleware.composeDigraph`), not this
-            // single-lookback combiner.
+            // Telex needs the whole syllable, not this single-lookback combiner.
             return nil
         }
     }

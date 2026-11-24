@@ -131,8 +131,8 @@ extension KeyboardViewModel {
 
         // 3. Sequential composition — one shared middleware in two flavours:
         //
-        //    3a. Vietnamese Telex: two-char digraph lookback plus single-char
-        //        lookback. Always appended; inert (a single closure call) via
+        //    3a. Vietnamese Telex: syllable tone placement and letter shaping.
+        //        Always appended; inert (a single closure call) via
         //        `isActive` on non-Telex layouts.
         //    3b. Sequential combine (static rule table or the algorithmic
         //        Hangul automaton, resolved once by `settings.sequentialCombiner`
@@ -149,9 +149,7 @@ extension KeyboardViewModel {
                 self?.textInputTarget?.deleteBackward()
             },
             selectedText: { [weak self] in self?.textInputTarget?.selectedText },
-            composeDigraph: { prev2, prev1, trigger in
-                ComposeEngine.composeTelexDigraph(prev2: prev2, prev1: prev1, trigger: trigger)
-            },
+            composeSuffix: ComposeEngine.composeTelexSyllable,
             composeSingle: { previous, trigger in
                 ComposeEngine.composeTelex(previous: previous, trigger: trigger)
             }
@@ -167,7 +165,6 @@ extension KeyboardViewModel {
                     self?.textInputTarget?.deleteBackward()
                 },
                 selectedText: { [weak self] in self?.textInputTarget?.selectedText },
-                composeDigraph: nil,
                 composeSingle: combiner
             ))
         }

@@ -4,7 +4,7 @@
 //
 //  Integration tests for the Vietnamese Telex input method end-to-end through
 //  KeyboardViewModel: typing key gestures on the vi_VN layout should trigger
-//  TelexMiddleware composition (digraphs and tone marks), not just commit the
+//  Telex composition (vowel shapes and syllable tones), not just commit the
 //  raw letters.
 //
 //  vi_VN center grid (taps):  a n i / h o r / t e s
@@ -55,6 +55,45 @@ struct TelexTypingTests {
         vm.handleGesture(.swipeDown, keyId: GridSlot.center, isReturn: false) // d → đ
 
         #expect(target.documentContextBeforeInput == "đ")
+    }
+
+    /// Whole keystroke sequences, not precomposed fixtures: a tone may come
+    /// after a final consonant, or before the rest of its syllable is known.
+    @Test(arguments: [
+        ("Tieengs Vieetj", "Tiếng Việt"), ("dduwowngf", "đường"), ("nuowcs", "nước"),
+        ("hoangf", "hoàng"), ("hoafng", "hoàng"), ("hofang", "hoàng"),
+        ("hoaf", "hòa"), ("khoer", "khỏe"), ("thuys", "thúy"), ("mair", "mải"), ("ngoais", "ngoái"),
+        ("nguyeenx", "nguyễn"), ("quowr", "quở"), ("buowir", "bưởi"),
+        ("quas", "quá"), ("quoocs", "quốc"), ("giaf", "già"), ("ginf", "gìn"),
+        ("muoosi", "muối"), ("asw", "ắ"), ("TOANS", "TOÁN"),
+        ("toanfs", "toán"), ("toansz", "toan"), ("tieengsz", "tiêng"), ("toanss", "toans"),
+        ("a s", "a s"), ("an,s", "an,s"), ("an1s", "an1s"), ("an🙂s", "an🙂s"),
+    ])
+    func typingSyllable(keys: String, expected: String) {
+        let (vm, target) = makeViewModel(languageId: "vi_VN")
+        for key in keys {
+            vm.dispatchAction(.commitText(String(key)))
+        }
+        #expect(target.documentContextBeforeInput == expected)
+    }
+
+    @Test func toneAtCursorRewritesOnlyChangedSuffix() {
+        let (vm, target) = makeViewModel(languageId: "vi_VN")
+        target.documentContextBeforeInput = "🙂 tie\u{302}ng"
+        target.documentContextAfterInput = "!"
+        vm.dispatchAction(.commitText("s"))
+        #expect(target.events == [.deleteBackward, .deleteBackward, .deleteBackward, .insertText("ếng")])
+        #expect(target.documentContextBeforeInput == "🙂 tiếng")
+        #expect(target.documentContextAfterInput == "!")
+    }
+
+    @Test func selectedTextIsReplacedByLiteralToneKey() {
+        let (vm, target) = makeViewModel(languageId: "vi_VN")
+        target.documentContextBeforeInput = "tiêng"
+        target.selectedText = "word"
+        vm.dispatchAction(.commitText("s"))
+        #expect(target.events == [.insertText("s")])
+        #expect(target.documentContextBeforeInput == "tiêngs")
     }
 
     /// A non-Telex language (de_DE) does NOT apply Telex composition — typing

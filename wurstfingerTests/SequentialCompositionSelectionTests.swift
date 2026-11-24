@@ -42,7 +42,6 @@ struct SequentialCompositionSelectionTests {
             documentContextBefore: { "한" },
             deleteBackward: { deletes += 1 },
             selectedText: { "X" },
-            composeDigraph: nil,
             composeSingle: { previous, trigger in
                 HangulComposer.combine(previous: previous, jamo: trigger)
             }
@@ -66,7 +65,6 @@ struct SequentialCompositionSelectionTests {
             documentContextBefore: { "한" },
             deleteBackward: { deletes += 1 },
             selectedText: { nil },
-            composeDigraph: nil,
             composeSingle: { previous, trigger in
                 HangulComposer.combine(previous: previous, jamo: trigger)
             }
