@@ -1,7 +1,5 @@
 project: wurstfinger.xcodeproj
 schemes:
   - Wurstfinger
-targets:
-  - Wurstfinger
-  - WurstfingerApp
-  - WurstfingerTests
+exclude_targets:
+  - WurstfingerUITests
