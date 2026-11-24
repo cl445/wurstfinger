@@ -129,31 +129,11 @@ extension KeyboardViewModel {
             selectedText: { [weak self] in self?.textInputTarget?.selectedText }
         ))
 
-        // 3. Sequential composition — one shared middleware in two flavours:
-        //
-        //    3a. Vietnamese Telex: syllable tone placement and letter shaping.
-        //        Always appended; inert (a single closure call) via
-        //        `isActive` on non-Telex layouts.
-        //    3b. Sequential combine (static rule table or the algorithmic
-        //        Hangul automaton, resolved once by `settings.sequentialCombiner`
-        //        in the definition layer). Only appended when the definition
-        //        opts into a combiner, so the ~40 other layouts never allocate
-        //        the middleware or evaluate its closures.
-        let inputMethod = definition.settings.inputMethod
-        middlewares.append(SequentialCompositionMiddleware(
-            isActive: { inputMethod == .telex },
-            documentContextBefore: { [weak self] in
-                self?.textInputTarget?.documentContextBeforeInput
-            },
-            deleteBackward: { [weak self] in
-                self?.textInputTarget?.deleteBackward()
-            },
-            selectedText: { [weak self] in self?.textInputTarget?.selectedText },
-            composeSuffix: ComposeEngine.composeTelexSyllable,
-            composeSingle: { previous, trigger in
-                ComposeEngine.composeTelex(previous: previous, trigger: trigger)
-            }
-        ))
+        // 3. Only layouts with a composition rule need a middleware. The
+        // standalone w escape belongs to this Telex pipeline (and text target).
+        if definition.settings.inputMethod == .telex {
+            middlewares.append(TelexInputMiddleware(target: { [weak self] in self?.textInputTarget }))
+        }
 
         if let combiner = definition.settings.sequentialCombiner {
             middlewares.append(SequentialCompositionMiddleware(

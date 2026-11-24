@@ -22,6 +22,7 @@ final class MockTextTarget: TextInputTarget {
     var events: [Event] = []
     var documentContextBeforeInput: String?
     var documentContextAfterInput: String?
+    var documentIdentifier: UUID?
     var selectedText: String?
     var hasFullAccess: Bool = false
 

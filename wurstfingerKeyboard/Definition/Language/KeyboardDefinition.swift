@@ -104,8 +104,8 @@ enum InputMethodType: String, Codable, Equatable {
     /// Characters are committed verbatim. Default.
     case direct
 
-    /// Vietnamese Telex: syllable tone placement and letter shaping
-    /// handled by `SequentialCompositionMiddleware`.
+    /// Vietnamese syllable tones, letter shaping, and the standalone w shortcut.
+    /// Handled by `TelexInputMiddleware`.
     case telex
 
     /// Korean Hangul: jamo → syllable composition handled by

@@ -77,6 +77,71 @@ struct TelexTypingTests {
         #expect(target.documentContextBeforeInput == expected)
     }
 
+    @Test func standaloneWGestureCanBeEscaped() {
+        let (vm, target) = makeViewModel(languageId: "vi_VN")
+        vm.handleGesture(.swipeUp, keyId: GridSlot.bottomCenter, isReturn: false)
+        #expect(target.documentContextBeforeInput == "ư")
+        // Hosts can report either nil or empty text at the end of the field.
+        target.documentContextAfterInput = ""
+        vm.handleGesture(.swipeUp, keyId: GridSlot.bottomCenter, isReturn: false)
+        #expect(target.documentContextBeforeInput == "w")
+    }
+
+    @Test(arguments: [
+        ("twf", "từ"), ("wweb", "web"), ("W", "Ư"), ("Wweb", "Web"), ("WW", "W"), ("wW", "w"),
+        ("aw ow uw uow", "ă ơ ư ươ"), ("aww oww uww", "aw ow uw"), ("www", "wư"),
+    ])
+    func standaloneWTyping(keys: String, expected: String) {
+        let (vm, target) = makeViewModel(languageId: "vi_VN")
+        for key in keys {
+            vm.dispatchAction(.commitText(String(key)))
+        }
+        #expect(target.documentContextBeforeInput == expected)
+    }
+
+    @Test func interveningEditsDisarmStandaloneW() {
+        let (vm, target) = makeViewModel(languageId: "vi_VN")
+        vm.dispatchAction(.commitText("w"))
+        vm.dispatchAction(.commitText("n"))
+        vm.dispatchAction(.deleteBackward)
+        vm.dispatchAction(.commitText("w"))
+        #expect(target.documentContextBeforeInput == "uw") // ordinary undo on an existing ư
+    }
+
+    @Test func caretMoveDoesNotEscapeAnUnrelatedHorn() {
+        let (vm, target) = makeViewModel(languageId: "vi_VN")
+        vm.dispatchAction(.commitText("w"))
+        target.documentContextBeforeInput = "tư"
+        vm.dispatchAction(.commitText("w"))
+        #expect(target.documentContextBeforeInput == "tuw")
+    }
+
+    @Test func fieldSwitchDoesNotEscapeAnIdenticalHorn() {
+        let (vm, target) = makeViewModel(languageId: "vi_VN")
+        target.documentIdentifier = UUID()
+        vm.dispatchAction(.commitText("w"))
+        target.documentIdentifier = UUID() // new field, same visible text on both sides
+        vm.dispatchAction(.commitText("w"))
+        #expect(target.documentContextBeforeInput == "uw")
+    }
+
+    @Test func selectedTextAndMultiCharacterCommitsKeepLiteralW() {
+        let (vm, target) = makeViewModel(languageId: "vi_VN")
+        vm.dispatchAction(.commitText("w"))
+        target.selectedText = "selection"
+        vm.dispatchAction(.commitText("w"))
+        vm.dispatchAction(.commitText("ww"))
+        #expect(target.documentContextBeforeInput == "ưwww")
+        #expect(!target.events.contains(.deleteBackward))
+    }
+
+    @Test func standaloneWDoesNotApplyToOtherLanguages() {
+        let (vm, target) = makeViewModel(languageId: "de_DE")
+        vm.dispatchAction(.commitText("w"))
+        vm.dispatchAction(.commitText("w"))
+        #expect(target.documentContextBeforeInput == "ww")
+    }
+
     @Test func toneAtCursorRewritesOnlyChangedSuffix() {
         let (vm, target) = makeViewModel(languageId: "vi_VN")
         target.documentContextBeforeInput = "🙂 tie\u{302}ng"

@@ -15,6 +15,8 @@ This area is managed entirely by iOS — keyboard extensions are placed *above* 
 
 On the Vietnamese layout, type the letters of a syllable, then its tone key: `s` (sắc), `f` (huyền), `r` (hỏi), `x` (ngã), or `j` (nặng). The key doesn't have to be next to the vowel. Try `Tieengs Vieetj` → **Tiếng Việt** or `dduwowngf` → **đường**.
 
+A standalone `w` types **ư** immediately (`twf` → **từ**). Press `w` again for a literal **w** (`wweb` → **web**, `Ww` → **W**). After a vowel, `w` still shapes it: `aw` → **ă**, `ow` → **ơ**, `uw` → **ư**. Repeating `w` in `uww` gives **uw**, preserving the `u` you typed.
+
 You can change a tone before leaving the syllable: `toanfs` → **toán**. Use `z` to remove just the tone (`tieengsz` → **tiêng**), or repeat the tone key to type it literally (`toanss` → **toans**).
 
 For open syllables with `oa`, `oe`, or `uy`, Wurstfinger uses the traditional spelling: **hòa**, **khỏe**, **thủy**. If you continue typing, the tone moves when needed: `hoaf` → **hòa**, then `ng` → **hoàng**.
