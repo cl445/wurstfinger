@@ -48,8 +48,7 @@ extension KeyDefinition {
     func autoShifted(locale: Locale) -> KeyDefinition {
         var shifted = self
         shifted.bindings = bindings.mapValues { binding -> KeyBinding in
-            guard binding.resolvedCategory == .letter else { return binding }
-            guard case let .commitText(text) = binding.action else { return binding }
+            guard binding.resolvedCategory == .letter, case let .commitText(text) = binding.action else { return binding }
             let upperLabel = binding.label.keyboardUppercased(with: locale)
             let upperText = text.keyboardUppercased(with: locale)
             return KeyBinding(

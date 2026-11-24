@@ -17,8 +17,8 @@ struct ReturnSwipeResolver: GestureResolver {
     func resolve(keyId: String, gesture: GestureType, in mode: KeyboardMode) -> KeyBinding? {
         guard let key = mode.key(for: keyId) else { return nil }
         // Return swipes only make sense for swipe gestures.
-        guard gesture.isSwipe, key.swipeMode.allows(gesture) else { return nil }
-        guard let binding = key.bindings[gesture],
+        guard gesture.isSwipe, key.swipeMode.allows(gesture),
+              let binding = key.bindings[gesture],
               let returnAction = binding.returnAction
         else {
             return nil
